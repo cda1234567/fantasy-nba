@@ -209,6 +209,8 @@ async function refreshState() {
     state.summaryShownFor = newChampion;
     setTimeout(() => { onShowSummary().catch(() => {}); }, 500);
   }
+  // Refresh activity ticker if panel is visible.
+  renderActivityTicker();
 }
 
 async function refreshLogs() {
@@ -1829,11 +1831,50 @@ function renderLeagueView(root) {
     buildCurrentMatchupsPanel(),
   );
 
-  root.append(calendarPanel, controls, tradesPanel, historyPanel, grid);
+  const activityPanel = el('div', { class: 'panel activity-ticker', id: 'panel-activity' },
+    el('div', { class: 'panel-head' }, el('h2', {}, '📋 動態消息')),
+    el('div', { class: 'activity-ticker-body', id: 'activity-ticker-body' },
+      el('div', { class: 'empty-state' }, '載入中...'),
+    ),
+  );
+
+  root.append(calendarPanel, controls, tradesPanel, historyPanel, grid, activityPanel);
 
   // Kick off trade data fetch + render.
   refreshTrades();
   if (state.tradeHistoryOpen) refreshTradeHistory();
+  renderActivityTicker();
+}
+
+async function renderActivityTicker() {
+  const body = document.getElementById('activity-ticker-body');
+  if (!body) return;
+  try {
+    const data = await apiSoft('/api/season/activity?limit=20');
+    const items = data?.activity || [];
+    if (!items.length) {
+      body.innerHTML = '<div class="empty-state">暫無動態。</div>';
+      return;
+    }
+    const EMOJI = {
+      trade_accepted: '🔄', trade_executed: '🔄', trade_rejected: '❌',
+      trade_vetoed: '🚫', fa_claim: '📝', milestone_blowout: '💥',
+      milestone_nailbiter: '😅', milestone_win_streak: '🔥',
+      milestone_lose_streak: '📉', milestone_top_performer: '🌟',
+      injury_new: '🏥', injury_return: '💪', champion: '🏆',
+    };
+    body.innerHTML = '';
+    for (const item of items) {
+      const emoji = EMOJI[item.type] || '•';
+      const row = el('div', { class: 'activity-row' },
+        el('span', { class: 'activity-emoji' }, emoji),
+        el('span', { class: 'activity-summary' }, item.summary),
+      );
+      body.append(row);
+    }
+  } catch (_) {
+    // silently ignore if season not started
+  }
 }
 
 function buildStandingsPanel() {

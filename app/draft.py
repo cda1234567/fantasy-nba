@@ -336,7 +336,7 @@ class DraftState:
             if use_current_fppg:
                 ctx["eval_fppg"] = p.fppg
             else:
-                ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, 0.0)
+                ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, p.fppg)
 
             s = scorer(p, ctx)
 
