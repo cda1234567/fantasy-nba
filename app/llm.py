@@ -11,8 +11,6 @@ DEFAULT_MODEL_ID = "anthropic/claude-haiku-4.5"
 OPENROUTER_MODELS: list[str] = [
     "anthropic/claude-haiku-4.5",
     "openai/gpt-4o-mini",
-    "openai/gpt-4.1-mini",
-    "google/gemini-flash-1.5",
     "google/gemini-2.0-flash-001",
     "meta-llama/llama-3.3-70b-instruct",
     "mistralai/mistral-small-3.1-24b-instruct",

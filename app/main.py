@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.4.1"
+APP_VERSION = "0.4.2"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -134,6 +134,20 @@ def _load_or_init_season() -> Optional[SeasonState]:
         state.standings = {int(k): v for k, v in state.standings.items()}
         state.lineups = {int(k): v for k, v in state.lineups.items()}
         state.injuries = {int(k): v for k, v in state.injuries.items()}
+        # Sanitize obsolete model IDs (e.g. retired gemini-flash-1.5 endpoint)
+        from .llm import OPENROUTER_MODELS, DEFAULT_MODEL_ID
+        valid = set(OPENROUTER_MODELS)
+        remapped = False
+        state.ai_models = {int(k): v for k, v in state.ai_models.items()}
+        for tid, mid in list(state.ai_models.items()):
+            if mid not in valid:
+                state.ai_models[tid] = DEFAULT_MODEL_ID
+                remapped = True
+        if remapped:
+            try:
+                storage.save_season(state.model_dump())
+            except Exception:
+                pass
         return state
     except Exception:
         return None

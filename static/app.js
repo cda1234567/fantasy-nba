@@ -968,25 +968,48 @@ function buildClockPanel(d) {
 }
 
 function buildAvailablePanel(d, displayMode) {
-  const modeNote = displayMode === 'prev_full'
-    ? '（顯示上季 FPPG）'
-    : displayMode === 'prev_no_fppg'
-    ? '（隱藏數據模式）'
-    : '（顯示本季數據）';
-
   const panel = el('div', { class: 'panel', id: 'panel-available' });
+  const modeOpts = [
+    ['prev_full',    '上季完整（含 FPPG）'],
+    ['prev_no_fppg', '上季完整（不含 FPPG）'],
+    ['current_full', '本季完整（劇透）'],
+  ].map(([v,l]) => `<option value="${v}" ${displayMode === v ? 'selected' : ''}>${l}</option>`).join('');
+  const modeSel = el('select', {
+    id: 'draft-display-mode-switch',
+    style: 'margin-left:8px; padding:4px 8px; border-radius:6px;',
+    title: '即時切換選秀顯示模式（會儲存到聯盟設定）',
+    html: modeOpts,
+    onchange: onDraftDisplayModeChange,
+  });
   panel.append(
     el('div', { class: 'panel-head' },
-      el('h2', {}, `剩餘球員 ${modeNote}`),
+      el('h2', {}, '剩餘球員'),
+      el('span', { class: 'mode-switch-label', style: 'margin-left:8px; font-size:12px; color:var(--muted);' }, '顯示：'),
+      modeSel,
     ),
     el('div', { class: 'panel-body' },
-      buildFilterBar('draftFilter', () => renderAvailableTable(displayMode)),
+      buildFilterBar('draftFilter', () => renderAvailableTable(state.draftDisplayMode || 'prev_full')),
       el('div', { class: 'table-wrap' },
         el('table', { class: 'data players-table responsive', id: 'tbl-available' }),
       ),
     ),
   );
   return panel;
+}
+
+async function onDraftDisplayModeChange(e) {
+  const newMode = e.target.value;
+  state.draftDisplayMode = newMode;
+  renderAvailableTable(newMode);
+  // Persist to league settings (best-effort; ignore errors so UI stays snappy)
+  try {
+    const cur = state.leagueSettings || {};
+    const payload = { ...cur, draft_display_mode: newMode };
+    await api('/api/league/settings', { method: 'POST', body: JSON.stringify(payload) });
+    if (state.leagueSettings) state.leagueSettings.draft_display_mode = newMode;
+  } catch (err) {
+    console.warn('save draft_display_mode failed', err);
+  }
 }
 
 function buildBoardPanel(d) {
@@ -2457,6 +2480,8 @@ async function onAdvance() {
   await mutate(async () => {
     const r = await api('/api/draft/ai-advance', { method: 'POST' });
     state.draft = r.state;
+    // Also pull a fresh authoritative snapshot to make sure nothing is stale
+    await refreshState();
     render();
   });
 }
@@ -2465,6 +2490,7 @@ async function onSimToMe() {
   await mutate(async () => {
     const r = await api('/api/draft/sim-to-me', { method: 'POST' });
     state.draft = r.state;
+    await refreshState();
     render();
   });
 }
