@@ -6,7 +6,6 @@ API key is configured or when the LLM call fails.
 """
 from __future__ import annotations
 
-import asyncio
 import json
 import os
 import random
@@ -112,22 +111,6 @@ class AIGM:
             fallback = self._heuristic(team, roster_players, injured_out)
             fallback["excerpt"] = f"fallback after error: {type(e).__name__}"
             return fallback
-
-    async def decide_day_async(
-        self,
-        team: Team,
-        roster_players: list[Player],
-        fa_top_20: list[Player],
-        standings: dict[int, dict[str, float]],
-        persona_key: str,
-        injured_out: set[int] | None = None,
-        model_id: str = DEFAULT_MODEL_ID,
-    ) -> dict[str, Any]:
-        """Async wrapper: runs decide_day in a thread so many teams can run concurrently."""
-        return await asyncio.to_thread(
-            self.decide_day,
-            team, roster_players, fa_top_20, standings, persona_key, injured_out, model_id,
-        )
 
     # ------------------------------------------------------------- internals
     def _heuristic(

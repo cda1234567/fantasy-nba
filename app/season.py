@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import random
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Optional
 
 from .injuries import roll_daily_injuries, roll_preseason_injuries, tick_injuries
@@ -350,6 +351,7 @@ def _set_lineups(
                         "day": season.current_day,
                         "week": season.current_week,
                     })
+                    season.lineup_override_alerts = season.lineup_override_alerts[-10:]
                     season.lineup_overrides.pop(team.id, None)
                     season.lineup_override_today_only.pop(team.id, None)
                     season.lineups[team.id] = default_lineup(
@@ -366,24 +368,25 @@ def _set_lineups(
                 team.roster, draft.players_by_id, lineup_sz, injured_out
             )
 
-    # Run all AI decisions in parallel (asyncio.gather with to_thread per team)
+    # Run all AI decisions in parallel via ThreadPoolExecutor
     if ai_teams:
-        async def _gather_decisions() -> list[dict]:
-            tasks = [
-                ai_gm.decide_day_async(
-                    team=t,
-                    roster_players=[draft.players_by_id[pid] for pid in t.roster],
-                    fa_top_20=fa_top,
-                    standings=season.standings,
-                    persona_key=t.gm_persona or "bpa",
-                    injured_out=injured_out,
-                    model_id=season.ai_models.get(t.id, DEFAULT_MODEL_ID),
+        futures_map: dict = {}
+        with ThreadPoolExecutor(max_workers=min(8, len(ai_teams))) as ex:
+            for t in ai_teams:
+                fut = ex.submit(
+                    ai_gm.decide_day,
+                    t,
+                    [draft.players_by_id[pid] for pid in t.roster],
+                    fa_top,
+                    season.standings,
+                    t.gm_persona or "bpa",
+                    injured_out,
+                    season.ai_models.get(t.id, DEFAULT_MODEL_ID),
                 )
-                for t in ai_teams
-            ]
-            return list(await asyncio.gather(*tasks))
-
-        decisions = asyncio.run(_gather_decisions())
+                futures_map[fut] = t
+            # Collect results keyed by team so we can iterate in original order
+            results_map: dict = {futures_map[f]: f.result() for f in as_completed(futures_map)}
+        decisions = [results_map[t] for t in ai_teams]
         for team, decision in zip(ai_teams, decisions):
             if decision.get("used_api"):
                 season.ai_calls_today += 1
