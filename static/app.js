@@ -32,6 +32,18 @@ function escapeHtml(s) {
 const fmtStat = (n) => (typeof n === 'number' ? n.toFixed(1) : '-');
 const fppg    = (n) => (typeof n === 'number' ? n.toFixed(1) : '-');
 
+// Day 1 maps to a real date so the season has a calendar. Oct 22 is NBA tip-off.
+const SEASON_EPOCH = new Date(2025, 9, 22); // 2025-10-22
+function seasonDate(dayNum) {
+  const d = new Date(SEASON_EPOCH);
+  d.setDate(SEASON_EPOCH.getDate() + Math.max(0, (dayNum || 1) - 1));
+  return d;
+}
+const WEEKDAYS_TW = ['週日','週一','週二','週三','週四','週五','週六'];
+function formatSeasonDate(d) {
+  return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日（${WEEKDAYS_TW[d.getDay()]}）`;
+}
+
 // ---------------------------------------------------------------- state
 const state = {
   draft: null,
@@ -1065,10 +1077,14 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
 
   let head;
   if (isPrevNoFppg) {
-    // Hardcore: only name/team/age/position
+    // Hide FPPG only — raw counting stats remain visible.
     head = `<thead><tr>
       <th>球員</th><th>位置</th><th>球隊</th>
       <th class="num">年齡</th>
+      <th class="num">PTS</th><th class="num">REB</th>
+      <th class="num">AST</th><th class="num">STL</th>
+      <th class="num">BLK</th><th class="num">TO</th>
+      <th class="num">出賽</th>
       ${withDraft ? '<th></th>' : ''}
     </tr></thead>`;
   } else if (isPrevFull) {
@@ -1094,7 +1110,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
     </tr></thead>`;
   }
 
-  const colCount = isPrevNoFppg ? (withDraft ? 5 : 4) : isPrevFull ? (withDraft ? 7 : 6) : (withDraft ? 13 : 12);
+  const colCount = isPrevNoFppg ? (withDraft ? 12 : 11) : isPrevFull ? (withDraft ? 7 : 6) : (withDraft ? 13 : 12);
 
   if (!players.length) {
     return head + `<tbody><tr><td colspan="${colCount}" class="empty-state">找不到符合的球員。</td></tr></tbody>`;
@@ -1111,6 +1127,17 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
+        <td class="stats" colspan="1">
+          <span class="s"><b>${fmtStat(p.pts)}</b>PTS</span>
+          <span class="s"><b>${fmtStat(p.reb)}</b>REB</span>
+          <span class="s"><b>${fmtStat(p.ast)}</b>AST</span>
+        </td>
+        <td class="num hidden-m">${fmtStat(p.reb)}</td>
+        <td class="num hidden-m">${fmtStat(p.ast)}</td>
+        <td class="num hidden-m">${fmtStat(p.stl)}</td>
+        <td class="num hidden-m">${fmtStat(p.blk)}</td>
+        <td class="num hidden-m">${fmtStat(p.to)}</td>
+        <td class="num meta hidden-m">${p.gp ?? '-'}</td>
         ${actionCell}
       </tr>`;
     }).join('');
@@ -1208,7 +1235,25 @@ async function renderTeamBody() {
     container.innerHTML = `<div class="empty-state"><h3>錯誤</h3><p>${escapeHtml(e.message)}</p></div>`;
     return;
   }
-  const { team, players, totals, persona_desc } = data;
+  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out } = data;
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const injSet = new Set(injured_out || []);
+
+  const slotRows = (lineup_slots || []).map((s) => {
+    const p = s.player_id != null ? playerById.get(s.player_id) : null;
+    const injured = p && injSet.has(p.id);
+    return `<tr class="slot-row${injured ? ' injured' : ''}">
+      <td class="slot-label"><span class="slot-badge slot-${s.slot}">${s.slot}</span></td>
+      ${p
+        ? `<td class="slot-name">${escapeHtml(p.name)}</td>
+           <td class="slot-pos hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+           <td class="num slot-fppg">${fppg(p.fppg)}</td>
+           <td class="slot-team hidden-m">${escapeHtml(p.team)}</td>`
+        : `<td class="slot-name empty" colspan="4">—</td>`}
+    </tr>`;
+  }).join('');
+
+  const benchPlayers = (bench || []).map((id) => playerById.get(id)).filter(Boolean);
 
   const html = `
     <div class="team-summary">
@@ -1223,14 +1268,20 @@ async function renderTeamBody() {
         <span class="stat">PTS <b>${fmtStat(totals.pts)}</b></span>
         <span class="stat">REB <b>${fmtStat(totals.reb)}</b></span>
         <span class="stat">AST <b>${fmtStat(totals.ast)}</b></span>
-        <span class="stat">STL <b>${fmtStat(totals.stl)}</b></span>
-        <span class="stat">BLK <b>${fmtStat(totals.blk)}</b></span>
-        <span class="stat">TO <b>${fmtStat(totals.to)}</b></span>
       </div>
     </div>
-    ${players.length === 0
-      ? `<div class="empty-state"><p>尚未選入任何球員。</p></div>`
-      : `<div class="table-wrap"><table class="data players-table responsive">${renderPlayersTable(players)}</table></div>`}
+    ${slotRows
+      ? `<div class="table-wrap slot-wrap"><table class="data lineup-slots">
+          <thead><tr><th>位置</th><th>球員</th><th class="hidden-m">定位</th><th class="num">FPPG</th><th class="hidden-m">球隊</th></tr></thead>
+          <tbody>${slotRows}</tbody>
+        </table></div>`
+      : ''}
+    ${benchPlayers.length
+      ? `<div class="panel-head bench-head"><h2>板凳 (${benchPlayers.length})</h2></div>
+         <div class="table-wrap"><table class="data players-table responsive">${renderPlayersTable(benchPlayers)}</table></div>`
+      : players.length === 0
+        ? `<div class="empty-state"><p>尚未選入任何球員。</p></div>`
+        : ''}
   `;
   container.innerHTML = html;
 }
@@ -1312,6 +1363,9 @@ function renderLeagueView(root) {
     return;
   }
 
+  // Calendar strip — today + current-week visualisation.
+  const calendarPanel = buildCalendarPanel(state.standings);
+
   // Standings + controls + matchups.
   const controls = el('div', { class: 'panel' },
     el('div', { class: 'panel-head' },
@@ -1364,7 +1418,7 @@ function renderLeagueView(root) {
     buildCurrentMatchupsPanel(),
   );
 
-  root.append(controls, tradesPanel, historyPanel, grid);
+  root.append(calendarPanel, controls, tradesPanel, historyPanel, grid);
 
   // Kick off trade data fetch + render.
   refreshTrades();
@@ -1643,22 +1697,50 @@ async function refreshTrades() {
   renderPendingTrades(body);
 }
 
+function buildCalendarPanel(st) {
+  const currentDay = (st && st.current_day) || 0;
+  const currentWeek = (st && st.current_week) || 1;
+  const today = seasonDate(currentDay || 1);
+  const dayInWeek = currentDay ? ((currentDay - 1) % 7) : 0;
+  const weekStartDay = currentDay ? currentDay - dayInWeek : 1;
+
+  const cells = [];
+  for (let i = 0; i < 7; i++) {
+    const d = weekStartDay + i;
+    const date = seasonDate(d);
+    const played = currentDay > 0 && d < currentDay;
+    const isToday = d === currentDay;
+    const isFuture = d > currentDay;
+    const cls = ['cal-cell'];
+    if (played)   cls.push('played');
+    if (isToday)  cls.push('today');
+    if (isFuture) cls.push('future');
+    cells.push(el('div', { class: cls.join(' ') },
+      el('span', { class: 'cal-dow' }, WEEKDAYS_TW[date.getDay()]),
+      el('span', { class: 'cal-md' }, `${date.getMonth() + 1}/${date.getDate()}`),
+      el('span', { class: 'cal-status' }, played ? '已結束' : isToday ? '今日' : '—'),
+    ));
+  }
+
+  const todayLabel = currentDay > 0
+    ? `今日 · ${formatSeasonDate(today)}`
+    : `賽季即將開打 · ${formatSeasonDate(seasonDate(1))}`;
+
+  return el('div', { class: 'panel cal-panel' },
+    el('div', { class: 'panel-head' },
+      el('h2', {}, todayLabel),
+      el('span', { class: 'pill muted' }, `第 ${currentWeek} 週`),
+    ),
+    el('div', { class: 'panel-body cal-strip' }, ...cells),
+  );
+}
+
 function renderTradeQuota(wrap) {
   if (!wrap) return;
-  const q = state.standings?.trade_quota;
   const pendingCount = state.standings?.pending_count ?? state.tradesPending.length;
-  if (!q) { wrap.innerHTML = ''; return; }
-  const behind = q.behind ?? 0;
-  let cls = 'ok';
-  if (behind >= 3) cls = 'bad';
-  else if (behind >= 1) cls = 'warn';
-  wrap.innerHTML = `
-    <span class="trade-quota-badge ${cls}">
-      本季交易數：<b>${q.executed}</b> / ${q.target}
-      ${behind > 0 ? ` · 落後 ${behind}` : ' · 進度 OK'}
-    </span>
-    ${pendingCount ? `<span class="pill warn">${pendingCount} 待處理</span>` : ''}
-  `;
+  wrap.innerHTML = pendingCount
+    ? `<span class="pill warn">${pendingCount} 待處理</span>`
+    : '';
 }
 
 function renderPendingTrades(body) {
@@ -2202,9 +2284,13 @@ async function onSubmitProposeTrade() {
         force,
       }),
     });
-    toast(force ? '交易已強制執行' : '交易已發起', 'success');
+    toast(force ? '交易已強制執行' : '交易已發起,等 AI 回覆中...', 'success');
     $('#trade-propose').close();
     await afterTradeMutation();
+    // AI peer commentary + counterparty decision run in backend background task.
+    // Poll a couple of times so UI picks up the response without manual refresh.
+    setTimeout(() => { afterTradeMutation().catch(() => {}); }, 3000);
+    setTimeout(() => { afterTradeMutation().catch(() => {}); }, 10000);
   } catch (e) {
     toast(e.message || '提案失敗', 'error');
   }

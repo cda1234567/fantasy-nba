@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.3.0"
+APP_VERSION = "0.4.0"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -142,7 +142,7 @@ def _load_or_init_season() -> Optional[SeasonState]:
 def _require_season() -> SeasonState:
     state = _load_or_init_season()
     if state is None or not state.started:
-        raise HTTPException(400, "Season has not started")
+        raise HTTPException(400, "賽季尚未開始")
     return state
 
 
@@ -150,7 +150,7 @@ def _require_setup() -> None:
     """Raise 409 if league is not yet configured."""
     settings = _current_settings()
     if not settings.setup_complete:
-        raise HTTPException(409, "League not yet configured — complete setup first")
+        raise HTTPException(409, "聯盟尚未設定,請先完成設定")
 
 
 # ---------------------------------------------------------------------------
@@ -328,11 +328,27 @@ def get_team(team_id: int):
         raise HTTPException(404, "Unknown team_id")
     team = draft.teams[team_id]
     players = [draft.players_by_id[pid].model_dump() for pid in team.roster]
+
+    # Attach injury status + compute slot assignment for the 10 starters.
+    season = _load_or_init_season()
+    injured_out: set[int] = set()
+    if season is not None:
+        injured_out = {pid for pid, inj in season.injuries.items() if inj.status == "out"}
+
+    from .season import assign_slots as _assign_slots, LINEUP_SLOTS, LINEUP_SIZE
+    healthy = [pid for pid in team.roster if pid not in injured_out]
+    slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
+    assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
+    bench = [pid for pid in team.roster if pid not in assigned_ids]
+
     return {
         "team": team.model_dump(),
         "players": players,
         "totals": draft.team_totals(team_id),
         "persona_desc": GM_PERSONAS[team.gm_persona]["desc"] if team.gm_persona else None,
+        "lineup_slots": slot_rows,   # [{slot, player_id|None}, ...]
+        "bench": bench,              # roster ids not in any slot
+        "injured_out": sorted(injured_out & set(team.roster)),
     }
 
 
@@ -585,9 +601,9 @@ def trades_history(limit: int = Query(50, ge=1, le=500)):
 
 
 @app.post("/api/trades/propose")
-def trades_propose(req: TradeProposeRequest):
+def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
     if req.from_team != draft.human_team_id:
-        raise HTTPException(400, "Only the human team may propose via this endpoint")
+        raise HTTPException(400, "只有玩家隊伍可透過此端點發起交易")
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
@@ -608,15 +624,6 @@ def trades_propose(req: TradeProposeRequest):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    # Collect peer commentary (sync, non-blocking fallback on error)
-    try:
-        mgr.collect_peer_commentary_sync(trade, ai_gm)
-    except Exception:
-        pass
-    # Auto-decide for AI counterparty
-    cp = draft.teams[req.to_team]
-    if not cp.is_human:
-        mgr.auto_decide_ai(ai_gm, season.current_day)
     storage.append_log({
         "type": "trade_proposed",
         "trade_id": trade.id,
@@ -628,6 +635,36 @@ def trades_propose(req: TradeProposeRequest):
         "week": season.current_week,
         "reasoning": "human",
     })
+
+    # Defer LLM calls (peer commentary + counterparty auto-decide) to background
+    # so the POST returns immediately. Frontend polls /api/trades/pending to
+    # pick up commentary and the eventual decision.
+    def _finalize(trade_id: str, to_team: int, current_day: int) -> None:
+        try:
+            fresh_season = _load_or_init_season()
+            if fresh_season is None:
+                return
+            bg_mgr = TradeManager(
+                storage, draft, fresh_season,
+                settings=settings if settings.setup_complete else None,
+            )
+            bg_trade = bg_mgr._find(trade_id)
+            if bg_trade is None:
+                return
+            try:
+                bg_mgr.collect_peer_commentary_sync(bg_trade, ai_gm)
+            except Exception:
+                pass
+            cp = draft.teams[to_team]
+            if not cp.is_human:
+                try:
+                    bg_mgr.auto_decide_ai(ai_gm, current_day)
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    background.add_task(_finalize, trade.id, req.to_team, season.current_day)
     return trade.model_dump()
 
 

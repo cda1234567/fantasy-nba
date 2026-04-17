@@ -46,10 +46,14 @@ html, body {
   color: var(--text);
   font: 14px/1.5 var(--sans);
   min-height: 100vh;
-  overscroll-behavior-y: none;
-  /* P1: prevent global horizontal overflow on mobile */
-  overflow-x: hidden;
   max-width: 100%;
+}
+/* Mobile only: prevent horizontal overflow. On desktop leave scrolling defaults alone. */
+@media (max-width: 900px) {
+  html, body {
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
+  }
 }
 
 h1, h2, h3, h4 { margin: 0; font-weight: 600; }
@@ -136,8 +140,10 @@ input, select, textarea { font-family: inherit; }
   min-width: 0;
   max-width: 100%;
   width: 100%;
-  overflow-x: hidden;
   outline: none;
+}
+@media (max-width: 900px) {
+  .main-view { overflow-x: hidden; }
 }
 
 /* ---------------------------------------------------------- bottom tabs (mobile) */
@@ -1613,4 +1619,82 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   .headlines-toggle {
     min-height: 44px;
   }
+}
+
+/* ---------------------------------------------------------- lineup slots */
+.slot-wrap { margin-top: var(--sp-3); }
+.bench-head { margin-top: var(--sp-3); padding: var(--sp-2) var(--sp-3); }
+.lineup-slots { width: 100%; }
+.lineup-slots td, .lineup-slots th { padding: var(--sp-2) var(--sp-3); }
+.lineup-slots tbody tr.slot-row { border-bottom: 1px solid var(--border-muted); }
+.lineup-slots tbody tr.slot-row.injured { opacity: 0.55; }
+.slot-badge {
+  display: inline-block;
+  min-width: 38px; text-align: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  background: rgba(88,166,255,0.14);
+  color: var(--accent);
+  border: 1px solid rgba(88,166,255,0.35);
+}
+.slot-badge.slot-PG, .slot-badge.slot-SG, .slot-badge.slot-G {
+  background: rgba(163,113,247,0.14); color: #b392f0; border-color: rgba(163,113,247,0.35);
+}
+.slot-badge.slot-SF, .slot-badge.slot-PF, .slot-badge.slot-F {
+  background: rgba(63,185,80,0.14); color: var(--success); border-color: rgba(63,185,80,0.35);
+}
+.slot-badge.slot-C {
+  background: rgba(248,81,73,0.14); color: var(--danger); border-color: rgba(248,81,73,0.35);
+}
+.slot-badge.slot-UTIL {
+  background: rgba(255,191,0,0.14); color: #f1c232; border-color: rgba(255,191,0,0.35);
+}
+.slot-name { font-weight: 600; }
+.slot-name.empty { color: var(--text-dim); font-weight: 400; }
+@media (max-width: 639px) {
+  .lineup-slots td, .lineup-slots th { padding: 6px 8px; font-size: 13px; }
+  .slot-badge { min-width: 32px; padding: 2px 6px; font-size: 10px; }
+}
+
+/* ---------------------------------------------------------- season calendar */
+.cal-panel .panel-head h2 { font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--text); }
+.cal-strip {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+}
+.cal-cell {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px;
+  padding: var(--sp-2) 2px;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius);
+  background: var(--bg);
+  font-size: 12px;
+}
+.cal-cell .cal-dow  { color: var(--text-muted); font-size: 11px; }
+.cal-cell .cal-md   { font-weight: 600; font-size: 14px; }
+.cal-cell .cal-status { font-size: 10px; color: var(--text-dim); }
+.cal-cell.played {
+  background: rgba(63,185,80,0.08);
+  border-color: rgba(63,185,80,0.35);
+}
+.cal-cell.played .cal-status { color: var(--success); }
+.cal-cell.today {
+  background: rgba(88,166,255,0.14);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.cal-cell.today .cal-status { color: var(--accent); font-weight: 600; }
+.cal-cell.future { opacity: 0.7; }
+@media (max-width: 639px) {
+  .cal-strip { gap: 4px; padding: var(--sp-2); }
+  .cal-cell { padding: 6px 2px; }
+  .cal-cell .cal-md { font-size: 12px; }
+  .cal-cell .cal-dow, .cal-cell .cal-status { font-size: 10px; }
 }

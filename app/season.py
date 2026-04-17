@@ -24,6 +24,55 @@ PLAYOFF_WEEKS = 3           # 6-team bracket: round1 + semis + finals
 TOTAL_WEEKS = REGULAR_WEEKS + PLAYOFF_WEEKS
 LINEUP_SIZE = 10            # default starters; overridden by settings
 
+# Yahoo-style lineup slots: strict positions first, then G/F, then UTIL.
+LINEUP_SLOTS: list[str] = [
+    "PG", "SG", "SF", "PF", "C", "C", "G", "F", "UTIL", "UTIL"
+]
+SLOT_ELIGIBILITY: dict[str, set[str]] = {
+    "PG":   {"PG"},
+    "SG":   {"SG"},
+    "SF":   {"SF"},
+    "PF":   {"PF"},
+    "C":    {"C"},
+    "G":    {"PG", "SG"},
+    "F":    {"SF", "PF"},
+    "UTIL": {"PG", "SG", "SF", "PF", "C"},
+}
+
+
+def _player_positions(pos: str) -> set[str]:
+    """A player's eligible positions. Supports dual ('PG/SG') and forward shorthand."""
+    if not pos:
+        return set()
+    return {p.strip().upper() for p in pos.replace(",", "/").split("/") if p.strip()}
+
+
+def assign_slots(
+    player_ids: list[int],
+    players_by_id: dict[int, "Player"],
+    slot_order: list[str] = LINEUP_SLOTS,
+) -> list[dict]:
+    """Greedy: fill stricter slots first; for each slot pick the best-eligible
+    unassigned player by FPPG. Returns [{slot, player_id|None}, ...] in slot_order.
+    """
+    remaining = [pid for pid in player_ids if pid in players_by_id]
+    slots: list[dict] = [{"slot": s, "player_id": None} for s in slot_order]
+
+    # Fill strictness order: single-position slots first (already at front of slot_order),
+    # then G/F (2-pos), then UTIL (any). slot_order is already in that order.
+    used: set[int] = set()
+    for i, slot_name in enumerate(slot_order):
+        eligible_pos = SLOT_ELIGIBILITY.get(slot_name, set())
+        candidates = [
+            pid for pid in remaining
+            if pid not in used and (_player_positions(players_by_id[pid].pos) & eligible_pos)
+        ]
+        candidates.sort(key=lambda pid: players_by_id[pid].fppg, reverse=True)
+        if candidates:
+            slots[i]["player_id"] = candidates[0]
+            used.add(candidates[0])
+    return slots
+
 
 # ---------------------------------------------------------------------------
 # Schedule
@@ -77,15 +126,30 @@ def default_lineup(
     lineup_size: int = LINEUP_SIZE,
     injured_out: set[int] | None = None,
 ) -> list[int]:
-    """Heuristic starters: top-N by FPPG, skipping players who are 'out'."""
+    """Heuristic starters: fill Yahoo-style position slots greedily.
+
+    Falls back to top-N by FPPG if the slot assignment can't fill all slots
+    (e.g. roster lacks a PG). Players with status='out' are excluded.
+    """
     injured_out = injured_out or set()
-    roster = [
-        players_by_id[pid]
-        for pid in roster_ids
+    healthy = [
+        pid for pid in roster_ids
         if pid in players_by_id and pid not in injured_out
     ]
-    roster.sort(key=lambda p: p.fppg, reverse=True)
-    return [p.id for p in roster[:lineup_size]]
+    # Use the first `lineup_size` entries of LINEUP_SLOTS (default covers 10).
+    slots = assign_slots(healthy, players_by_id, LINEUP_SLOTS[:lineup_size])
+    picked = [s["player_id"] for s in slots if s["player_id"] is not None]
+
+    # Top-up from remaining roster by FPPG if slot assignment left gaps.
+    if len(picked) < lineup_size:
+        used = set(picked)
+        rest = [players_by_id[pid] for pid in healthy if pid not in used]
+        rest.sort(key=lambda p: p.fppg, reverse=True)
+        for p in rest:
+            if len(picked) >= lineup_size:
+                break
+            picked.append(p.id)
+    return picked[:lineup_size]
 
 
 # ---------------------------------------------------------------------------

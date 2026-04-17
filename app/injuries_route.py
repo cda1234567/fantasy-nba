@@ -17,7 +17,7 @@ def list_active():
     _load_or_init_season, draft = _get_season_and_draft()
     season = _load_or_init_season()
     if season is None or not season.started:
-        raise HTTPException(400, "Season has not started")
+        raise HTTPException(400, "賽季尚未開始")
 
     active = []
     for pid, inj in season.injuries.items():
@@ -46,7 +46,7 @@ def injury_history(limit: int = 100):
     _load_or_init_season, draft = _get_season_and_draft()
     season = _load_or_init_season()
     if season is None or not season.started:
-        raise HTTPException(400, "Season has not started")
+        raise HTTPException(400, "賽季尚未開始")
 
     history = []
     for inj in season.injury_history[-limit:]:
