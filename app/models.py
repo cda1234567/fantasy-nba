@@ -161,6 +161,8 @@ class SeasonState(BaseModel):
     ai_models: dict[int, str] = Field(default_factory=dict)
     # Human free-agent pickups: [{day, drop, add, ts}]
     human_claims: list[dict] = Field(default_factory=list)
+    # Human lineup overrides: team_id -> [player_id x10]
+    lineup_overrides: dict[int, list[int]] = Field(default_factory=dict)
 
 
 class Injury(BaseModel):

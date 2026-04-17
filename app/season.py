@@ -302,9 +302,22 @@ def _set_lineups(
 
     for team in draft.teams:
         if team.is_human:
-            season.lineups[team.id] = default_lineup(
-                team.roster, draft.players_by_id, lineup_sz, injured_out
-            )
+            override = season.lineup_overrides.get(team.id)
+            if override:
+                # Validate override: keep only ids still on roster and not injured out
+                roster_set = set(team.roster)
+                valid = [pid for pid in override if pid in roster_set and pid not in injured_out]
+                if len(valid) >= lineup_sz:
+                    season.lineups[team.id] = valid[:lineup_sz]
+                else:
+                    # Fall back to default if override no longer has enough valid players
+                    season.lineups[team.id] = default_lineup(
+                        team.roster, draft.players_by_id, lineup_sz, injured_out
+                    )
+            else:
+                season.lineups[team.id] = default_lineup(
+                    team.roster, draft.players_by_id, lineup_sz, injured_out
+                )
             continue
 
         if ai_gm and use_ai and season.ai_calls_today < ai_gm.daily_budget:

@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.3"
+APP_VERSION = "0.5.4"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -355,8 +355,24 @@ def get_team(team_id: int):
 
     from .season import assign_slots as _assign_slots, LINEUP_SLOTS, LINEUP_SIZE
     healthy = [pid for pid in team.roster if pid not in injured_out]
-    slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
-    assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
+
+    # Check for human lineup override
+    lineup_override: list[int] | None = None
+    has_override = False
+    if season is not None and team.is_human:
+        lineup_override = season.lineup_overrides.get(team.id)
+        if lineup_override:
+            has_override = True
+
+    if lineup_override:
+        # Build slot_rows from the override order (assign_slots greedily from overridden starters)
+        valid_override = [pid for pid in lineup_override if pid in draft.players_by_id and pid not in injured_out]
+        slot_rows = _assign_slots(valid_override, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
+        assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
+    else:
+        slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
+        assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
+
     bench = [pid for pid in team.roster if pid not in assigned_ids and pid not in injured_out]
 
     return {
@@ -367,6 +383,7 @@ def get_team(team_id: int):
         "lineup_slots": slot_rows,   # [{slot, player_id|None}, ...]
         "bench": bench,              # roster ids not in any slot
         "injured_out": sorted(injured_out & set(team.roster)),
+        "has_lineup_override": has_override,
     }
 
 
@@ -587,6 +604,74 @@ def fa_claim(req: FAClaimRequest):
         "add": add_name,
         "remaining": HUMAN_DAILY_CLAIM_LIMIT - (used + 1),
     }
+
+
+class LineupOverrideRequest(BaseModel):
+    team_id: int
+    starters: list[int]  # exactly 10 player_ids
+
+
+@app.post("/api/season/lineup")
+def set_lineup_override(req: LineupOverrideRequest):
+    """Human user manually sets their 10 starters. Persists until cleared."""
+    state = _require_season()
+    human = next((t for t in draft.teams if t.is_human), None)
+    if human is None:
+        raise HTTPException(400, "找不到人類隊伍")
+    if req.team_id != human.id:
+        raise HTTPException(403, "只能修改自己的陣容")
+
+    from .season import SLOT_ELIGIBILITY, _player_positions, LINEUP_SIZE
+    lineup_sz = LINEUP_SIZE
+    settings = storage.load_settings()
+    if settings:
+        lineup_sz = settings.starters_per_day
+
+    if len(req.starters) != lineup_sz:
+        raise HTTPException(400, f"必須選滿 {lineup_sz} 名先發球員")
+    if len(set(req.starters)) != lineup_sz:
+        raise HTTPException(400, "先發球員不可重複")
+
+    roster_set = set(human.roster)
+    for pid in req.starters:
+        if pid not in roster_set:
+            raise HTTPException(400, f"球員 {pid} 不在你的名單中")
+        player = draft.players_by_id.get(pid)
+        if player is None:
+            raise HTTPException(400, f"找不到球員 {pid}")
+        # Check player can fill at least one slot
+        player_pos = _player_positions(player.pos)
+        eligible_for_any = any(
+            player_pos & eligible_pos
+            for eligible_pos in SLOT_ELIGIBILITY.values()
+        )
+        if not eligible_for_any:
+            raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
+
+    state.lineup_overrides[human.id] = list(req.starters)
+    storage.save_season(state.model_dump())
+    storage.append_log({
+        "type": "lineup_override_set",
+        "team_id": human.id,
+        "starters": req.starters,
+    })
+    return {"ok": True, "starters": req.starters}
+
+
+@app.delete("/api/season/lineup/{team_id}")
+def clear_lineup_override(team_id: int):
+    """Reset human lineup override back to auto."""
+    state = _require_season()
+    human = next((t for t in draft.teams if t.is_human), None)
+    if human is None:
+        raise HTTPException(400, "找不到人類隊伍")
+    if team_id != human.id:
+        raise HTTPException(403, "只能修改自己的陣容")
+
+    state.lineup_overrides.pop(human.id, None)
+    storage.save_season(state.model_dump())
+    storage.append_log({"type": "lineup_override_cleared", "team_id": human.id})
+    return {"ok": True}
 
 
 @app.get("/api/season/standings")

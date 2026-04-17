@@ -1309,13 +1309,17 @@ async function renderTeamBody() {
     container.innerHTML = `<div class="empty-state"><h3>錯誤</h3><p>${escapeHtml(e.message)}</p></div>`;
     return;
   }
-  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out } = data;
+  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out, has_lineup_override } = data;
   const playerById = new Map(players.map((p) => [p.id, p]));
   const injSet = new Set(injured_out || []);
+  const isHuman = !!team.is_human;
 
-  const slotRows = (lineup_slots || []).map((s) => {
+  const slotRows = (lineup_slots || []).map((s, idx) => {
     const p = s.player_id != null ? playerById.get(s.player_id) : null;
     const injured = p && injSet.has(p.id);
+    const changeBtn = isHuman
+      ? `<td class="slot-change"><button class="btn small ghost lineup-change-btn" data-slot-idx="${idx}" data-slot="${s.slot}" data-current="${s.player_id ?? ''}">換</button></td>`
+      : '';
     return `<tr class="slot-row${injured ? ' injured' : ''}">
       <td class="slot-label"><span class="slot-badge slot-${s.slot}">${s.slot}</span></td>
       ${p
@@ -1324,16 +1328,32 @@ async function renderTeamBody() {
            <td class="num slot-fppg">${fppg(p.fppg)}</td>
            <td class="slot-team hidden-m">${escapeHtml(p.team)}</td>`
         : `<td class="slot-name empty" colspan="4">—</td>`}
+      ${changeBtn}
     </tr>`;
   }).join('');
 
   const benchPlayers = (bench || []).map((id) => playerById.get(id)).filter(Boolean);
+
+  const overrideBadge = has_lineup_override
+    ? `<span class="pill warn" title="手動設定陣容">手動陣容</span>`
+    : `<span class="pill" title="自動最佳化">自動陣容</span>`;
+
+  const lineupActions = isHuman ? `
+    <div class="lineup-actions">
+      ${has_lineup_override ? `<button class="btn small ghost" id="btn-clear-override">恢復自動陣容</button>` : ''}
+      <button class="btn small" id="btn-set-lineup">設定先發陣容</button>
+    </div>` : '';
+
+  const slotHeader = isHuman
+    ? `<thead><tr><th>位置</th><th>球員</th><th class="hidden-m">定位</th><th class="num">FPPG</th><th class="hidden-m">球隊</th><th></th></tr></thead>`
+    : `<thead><tr><th>位置</th><th>球員</th><th class="hidden-m">定位</th><th class="num">FPPG</th><th class="hidden-m">球隊</th></tr></thead>`;
 
   const html = `
     <div class="team-summary">
       <div class="name-row">
         <span class="tname">${escapeHtml(team.name)}</span>
         ${team.is_human ? '<span class="pill success">你</span>' : ''}
+        ${isHuman ? overrideBadge : ''}
         ${team.gm_persona ? `<span class="tmeta">風格：${escapeHtml(team.gm_persona)}</span>` : ''}
       </div>
       ${persona_desc ? `<div class="persona">${escapeHtml(persona_desc)}</div>` : ''}
@@ -1343,10 +1363,11 @@ async function renderTeamBody() {
         <span class="stat">REB <b>${fmtStat(totals.reb)}</b></span>
         <span class="stat">AST <b>${fmtStat(totals.ast)}</b></span>
       </div>
+      ${lineupActions}
     </div>
     ${slotRows
       ? `<div class="table-wrap slot-wrap"><table class="data lineup-slots">
-          <thead><tr><th>位置</th><th>球員</th><th class="hidden-m">定位</th><th class="num">FPPG</th><th class="hidden-m">球隊</th></tr></thead>
+          ${slotHeader}
           <tbody>${slotRows}</tbody>
         </table></div>`
       : ''}
@@ -1358,6 +1379,230 @@ async function renderTeamBody() {
         : ''}
   `;
   container.innerHTML = html;
+
+  if (isHuman) {
+    // "設定先發陣容" button — opens full lineup picker modal
+    const btnSet = $('#btn-set-lineup');
+    if (btnSet) btnSet.addEventListener('click', () => openLineupModal(data));
+
+    // "恢復自動陣容" button
+    const btnClear = $('#btn-clear-override');
+    if (btnClear) btnClear.addEventListener('click', async () => {
+      try {
+        await api(`/api/season/lineup/${team.id}`, { method: 'DELETE' });
+        renderTeamBody();
+      } catch (e) {
+        alert('清除失敗：' + e.message);
+      }
+    });
+
+    // Per-slot "換" buttons — open single-slot swap picker
+    container.querySelectorAll('.lineup-change-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const slotName = btn.dataset.slot;
+        const currentId = btn.dataset.current ? Number(btn.dataset.current) : null;
+        openSlotSwapModal(data, slotName, currentId);
+      });
+    });
+  }
+}
+
+// ---------------------------------------------------------------- Lineup modal helpers
+
+function _slotEligibility() {
+  // Mirror of Python SLOT_ELIGIBILITY
+  return {
+    PG:   new Set(['PG']),
+    SG:   new Set(['SG']),
+    SF:   new Set(['SF']),
+    PF:   new Set(['PF']),
+    C:    new Set(['C']),
+    G:    new Set(['PG', 'SG']),
+    F:    new Set(['SF', 'PF']),
+    UTIL: new Set(['PG', 'SG', 'SF', 'PF', 'C']),
+  };
+}
+
+function _playerPositions(pos) {
+  if (!pos) return new Set();
+  return new Set(pos.replace(',', '/').split('/').map(p => p.trim().toUpperCase()).filter(Boolean));
+}
+
+function _canFillSlot(player, slotName) {
+  const eligibility = _slotEligibility();
+  const eligible = eligibility[slotName] || new Set();
+  const ppos = _playerPositions(player.pos);
+  for (const p of ppos) { if (eligible.has(p)) return true; }
+  return false;
+}
+
+function openSlotSwapModal(data, slotName, currentPlayerId) {
+  const { team, players, lineup_slots, bench, injured_out } = data;
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const injSet = new Set(injured_out || []);
+
+  // Current starters
+  const currentStarters = (lineup_slots || []).map(s => s.player_id).filter(id => id != null);
+
+  // Candidates: all roster players eligible for this slot, not injured out
+  const candidates = players.filter(p =>
+    !injSet.has(p.id) && _canFillSlot(p, slotName)
+  ).sort((a, b) => b.fppg - a.fppg);
+
+  const rows = candidates.map(p => {
+    const isCurrent = p.id === currentPlayerId;
+    const isStarter = currentStarters.includes(p.id) && !isCurrent;
+    return `<tr class="${isCurrent ? 'row-current' : ''}">
+      <td>${escapeHtml(p.name)}</td>
+      <td><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+      <td class="num">${fppg(p.fppg)}</td>
+      <td>${isStarter ? '<span class="pill">先發中</span>' : isCurrent ? '<span class="pill success">目前</span>' : ''}</td>
+      <td><button class="btn small slot-pick-btn" data-pid="${p.id}" ${isCurrent ? 'disabled' : ''}>選</button></td>
+    </tr>`;
+  }).join('');
+
+  const modal = el('div', { class: 'modal-overlay', id: 'lineup-swap-modal' },
+    el('div', { class: 'modal-box' },
+      el('div', { class: 'modal-head' },
+        el('h3', {}, `替換 ${slotName} 位置`),
+        el('button', { class: 'modal-close', id: 'close-swap-modal' }, '✕'),
+      ),
+      el('div', { class: 'modal-body' },
+        el('div', { class: 'table-wrap' },
+          el('table', { class: 'data players-table' },
+            el('thead', {},
+              el('tr', {},
+                el('th', {}, '球員'), el('th', {}, '位置'), el('th', { class: 'num' }, 'FPPG'),
+                el('th', {}, ''), el('th', {}, ''),
+              ),
+            ),
+            el('tbody', { innerHTML: rows }),
+          ),
+        ),
+      ),
+    ),
+  );
+  document.body.appendChild(modal);
+
+  $('#close-swap-modal').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  modal.querySelectorAll('.slot-pick-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const newPid = Number(btn.dataset.pid);
+      // Build new starters: replace currentPlayerId with newPid (or add if slot was empty)
+      let newStarters = [...currentStarters];
+      if (currentPlayerId != null) {
+        const idx = newStarters.indexOf(currentPlayerId);
+        if (idx !== -1) newStarters[idx] = newPid;
+        else newStarters.push(newPid);
+      } else {
+        newStarters.push(newPid);
+      }
+      // Remove newPid from another slot if it was already a starter
+      newStarters = newStarters.filter((id, i) => id !== newPid || i === newStarters.lastIndexOf(newPid));
+      modal.remove();
+      await _saveLineupOverride(team.id, newStarters);
+    });
+  });
+}
+
+function openLineupModal(data) {
+  const { team, players, lineup_slots, injured_out } = data;
+  const injSet = new Set(injured_out || []);
+  const playerById = new Map(players.map((p) => [p.id, p]));
+
+  // Start from current slot assignment
+  let selected = new Set((lineup_slots || []).map(s => s.player_id).filter(id => id != null));
+
+  function renderRows() {
+    return players
+      .filter(p => !injSet.has(p.id))
+      .sort((a, b) => b.fppg - a.fppg)
+      .map(p => {
+        const checked = selected.has(p.id);
+        return `<tr class="${checked ? 'row-selected' : ''}">
+          <td><input type="checkbox" class="lineup-check" data-pid="${p.id}" ${checked ? 'checked' : ''}></td>
+          <td>${escapeHtml(p.name)}</td>
+          <td><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+          <td class="num">${fppg(p.fppg)}</td>
+          <td>${escapeHtml(p.team)}</td>
+        </tr>`;
+      }).join('');
+  }
+
+  const targetCount = (lineup_slots || []).length || 10;
+  const modal = el('div', { class: 'modal-overlay', id: 'lineup-full-modal' },
+    el('div', { class: 'modal-box modal-wide' },
+      el('div', { class: 'modal-head' },
+        el('h3', {}, `設定先發陣容（選 ${targetCount} 人）`),
+        el('button', { class: 'modal-close', id: 'close-lineup-modal' }, '✕'),
+      ),
+      el('div', { class: 'modal-body' },
+        el('p', { class: 'muted', id: 'lineup-count-msg' }, `已選：${selected.size} / ${targetCount}`),
+        el('div', { class: 'table-wrap' },
+          el('table', { class: 'data players-table', id: 'lineup-full-tbl' },
+            el('thead', {},
+              el('tr', {},
+                el('th', {}, ''), el('th', {}, '球員'), el('th', {}, '位置'),
+                el('th', { class: 'num' }, 'FPPG'), el('th', {}, '球隊'),
+              ),
+            ),
+            el('tbody', { innerHTML: renderRows() }),
+          ),
+        ),
+      ),
+      el('div', { class: 'modal-foot' },
+        el('button', { class: 'btn', id: 'btn-save-lineup' }, '儲存先發'),
+        el('button', { class: 'btn ghost', id: 'btn-cancel-lineup' }, '取消'),
+      ),
+    ),
+  );
+  document.body.appendChild(modal);
+
+  function refreshCount() {
+    const msg = $('#lineup-count-msg');
+    if (msg) msg.textContent = `已選：${selected.size} / ${targetCount}`;
+  }
+
+  modal.querySelectorAll('.lineup-check').forEach((cb) => {
+    cb.addEventListener('change', () => {
+      const pid = Number(cb.dataset.pid);
+      if (cb.checked) {
+        if (selected.size >= targetCount) { cb.checked = false; return; }
+        selected.add(pid);
+      } else {
+        selected.delete(pid);
+      }
+      cb.closest('tr').classList.toggle('row-selected', cb.checked);
+      refreshCount();
+    });
+  });
+
+  $('#close-lineup-modal').addEventListener('click', () => modal.remove());
+  $('#btn-cancel-lineup').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  $('#btn-save-lineup').addEventListener('click', async () => {
+    if (selected.size !== targetCount) {
+      alert(`請選滿 ${targetCount} 名先發球員（目前 ${selected.size} 人）`);
+      return;
+    }
+    modal.remove();
+    await _saveLineupOverride(team.id, [...selected]);
+  });
+}
+
+async function _saveLineupOverride(teamId, starters) {
+  try {
+    await api('/api/season/lineup', {
+      method: 'POST',
+      body: JSON.stringify({ team_id: teamId, starters }),
+    });
+    renderTeamBody();
+  } catch (e) {
+    alert('儲存失敗：' + e.message);
+  }
 }
 
 // ================================================================ FREE AGENTS
