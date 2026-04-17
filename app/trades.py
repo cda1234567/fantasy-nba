@@ -35,6 +35,32 @@ VETO_WINDOW_DAYS = 2
 VETO_THRESHOLD = 3
 
 
+def _urgency_multiplier(
+    team_id: int,
+    current_week: int,
+    standings: "dict[int, dict[str, float]]",
+    settings: Any,
+) -> float:
+    """Return 2.0 if team is bottom-4 by W-L AND within 2 weeks of trade deadline.
+    Otherwise return 1.0. Returns 1.0 if trade_deadline_week is None/unset.
+    """
+    deadline = None
+    if settings is not None:
+        deadline = getattr(settings, "trade_deadline_week", None)
+    if deadline is None:
+        return 1.0
+    if current_week < int(deadline) - 2:
+        return 1.0
+
+    # Sort teams by wins descending, losses ascending
+    ranked = sorted(
+        standings.items(),
+        key=lambda kv: (-kv[1].get("w", 0), kv[1].get("l", 0)),
+    )
+    bottom_4 = {tid for tid, _ in ranked[-4:]}
+    return 2.0 if team_id in bottom_4 else 1.0
+
+
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
@@ -351,7 +377,13 @@ class TradeManager:
             else:
                 # Skip counter-offer chains: only allow one counter per original
                 already_counter = trade.counter_of is not None
-                accept, _ = ai_gm.decide_trade(trade, cp, self.draft, self._settings)
+                standings = getattr(self.season, "standings", {}) or {}
+                _cur_week = getattr(self.season, "current_week", 0)
+                accept, _ = ai_gm.decide_trade(
+                    trade, cp, self.draft, self._settings,
+                    current_week=_cur_week,
+                    standings=standings,
+                )
                 if not accept and not already_counter:
                     counter_dict = ai_gm.maybe_counter(trade, cp, self.draft, self._settings)
                     if counter_dict is not None:

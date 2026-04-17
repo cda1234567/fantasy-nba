@@ -402,6 +402,16 @@ def _run_trades_daily(
             if has_pending_from:
                 continue
             quota_signal = behind if not force_final else 99
+
+            # Deadline drama: bottom-4 teams near deadline propose more often
+            from .trades import _urgency_multiplier
+            urgency = _urgency_multiplier(
+                team.id, current_week, season.standings, settings
+            )
+            if urgency != 1.0:
+                # Elevate quota_signal to increase proposal probability
+                quota_signal = max(quota_signal, round(urgency * max(behind, 1)))
+
             proposal = ai_gm.propose_trade_heuristic(
                 team=team,
                 draft_state=draft,
@@ -450,7 +460,11 @@ def _run_trades_daily(
                     import traceback, sys
                     print(f"[season-daily] peer_commentary failed: {exc!r}", file=sys.stderr)
                     traceback.print_exc()
-            accept, _ = ai_gm.decide_trade(trade, cp, draft, settings)
+            accept, _ = ai_gm.decide_trade(
+                trade, cp, draft, settings,
+                current_week=current_week,
+                standings=season.standings,
+            )
             try:
                 mgr.decide(trade.id, cp.id, accept, current_day)
                 storage.append_log({

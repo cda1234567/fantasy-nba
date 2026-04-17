@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.6"
+APP_VERSION = "0.5.10"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -741,6 +741,74 @@ def season_matchup(week: int = Query(..., ge=1)):
 @app.get("/api/season/logs")
 def season_logs(limit: int = Query(50, ge=1, le=500)):
     return {"logs": storage.load_log(limit=limit)}
+
+
+@app.get("/api/season/activity")
+def season_activity(limit: int = Query(20, ge=1, le=100)):
+    """Return up to `limit` notable activity feed entries, newest first."""
+    teams_by_id: dict[int, str] = {t.id: t.name for t in draft.teams}
+
+    def _team(tid) -> str:
+        return teams_by_id.get(tid, f"隊伍{tid}")
+
+    NOTABLE = {
+        "trade_accepted", "trade_executed", "trade_rejected", "trade_vetoed",
+        "fa_claim", "milestone_blowout", "milestone_nailbiter",
+        "milestone_win_streak", "milestone_lose_streak", "milestone_top_performer",
+        "injury_new", "injury_return", "champion",
+    }
+
+    def _summary(e: dict) -> str:
+        t = e.get("type", "")
+        w = e.get("week") or e.get("day", "?")
+        d = e.get("day", "")
+        prefix = f"W{e['week']} D{d}" if e.get("week") and d else (f"W{w}" if e.get("week") else f"D{d}" if d else "")
+
+        if t == "trade_accepted":
+            return f"{prefix} {_team(e.get('from_team','?'))} ↔ {_team(e.get('to_team','?'))} 交易接受"
+        if t == "trade_executed":
+            return f"{prefix} {_team(e.get('from_team','?'))} ↔ {_team(e.get('to_team','?'))} 交易完成"
+        if t == "trade_rejected":
+            return f"{prefix} {_team(e.get('to_team','?'))} 拒絕 {_team(e.get('from_team','?'))} 的交易"
+        if t == "trade_vetoed":
+            return f"{prefix} {_team(e.get('from_team','?'))} ↔ {_team(e.get('to_team','?'))} 交易被否決"
+        if t == "fa_claim":
+            return f"{prefix} {_team(e.get('team_id','?'))} 簽下 {e.get('add_name','?')} / 放走 {e.get('drop_name','?')}"
+        if t == "milestone_blowout":
+            return f"W{e.get('week','?')} {_team(e.get('winner','?'))} 大勝 {_team(e.get('loser','?'))} (+{e.get('diff','?')})"
+        if t == "milestone_nailbiter":
+            return f"W{e.get('week','?')} {_team(e.get('winner','?'))} 驚險勝出 (差距 {e.get('diff','?')})"
+        if t == "milestone_win_streak":
+            return f"W{e.get('week','?')} {_team(e.get('team_id','?'))} 連勝 {e.get('streak',3)} 週"
+        if t == "milestone_lose_streak":
+            return f"W{e.get('week','?')} {_team(e.get('team_id','?'))} 連敗 {e.get('streak',3)} 週"
+        if t == "milestone_top_performer":
+            return f"W{e.get('week','?')} {e.get('player_name','?')} 單週得 {e.get('fp','?')} 分 ({_team(e.get('team_id','?'))})"
+        if t == "injury_new":
+            return f"{prefix} {e.get('player_name', e.get('player_id','?'))} 受傷 ({_team(e.get('team_id','?'))})"
+        if t == "injury_return":
+            return f"{prefix} {e.get('player_name', e.get('player_id','?'))} 復出 ({_team(e.get('team_id','?'))})"
+        if t == "champion":
+            return f"🏆 {_team(e.get('team_id','?'))} 奪冠！"
+        return t
+
+    raw = storage.load_log(limit=50)
+    notable = [e for e in raw if e.get("type") in NOTABLE]
+    notable = list(reversed(notable))[:limit]
+
+    result = []
+    for e in notable:
+        result.append({
+            "day": e.get("day"),
+            "week": e.get("week"),
+            "type": e.get("type"),
+            "summary": _summary(e),
+            "team_names": [
+                _team(e[k]) for k in ("from_team", "to_team", "team_id", "winner", "loser")
+                if k in e and e[k] is not None
+            ],
+        })
+    return {"activity": result}
 
 
 @app.get("/api/season/ai-models")
