@@ -1698,3 +1698,68 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   .cal-cell .cal-md { font-size: 12px; }
   .cal-cell .cal-dow, .cal-cell .cal-status { font-size: 10px; }
 }
+
+/* ---- Championship summary overlay ---- */
+.summary-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.78);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  overflow-y: auto;
+  animation: summary-fade 0.3s ease-out;
+}
+@keyframes summary-fade { from { opacity: 0; } to { opacity: 1; } }
+.summary-dialog {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  max-width: 960px; width: 100%;
+  padding: 24px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  max-height: 90vh; overflow-y: auto;
+}
+.summary-champion { text-align: center; margin-bottom: 8px; }
+.summary-trophy { font-size: 56px; line-height: 1; }
+.summary-champ-name {
+  font-size: 28px; font-weight: 700; color: #f5d76e;
+  margin-top: 4px;
+  text-shadow: 0 0 12px rgba(245,215,110,0.4);
+}
+.summary-champ-name.muted { color: var(--text-muted); text-shadow: none; }
+.summary-sub { text-align: center; color: var(--text-muted); margin-bottom: 16px; }
+.summary-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: 1fr; margin-top: 12px;
+}
+@media (min-width: 720px) {
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+}
+.summary-card {
+  background: var(--bg);
+  border: 1px solid var(--border-muted);
+  border-radius: 10px;
+  padding: 14px;
+}
+.summary-card-title { font-weight: 600; color: var(--accent); margin-bottom: 8px; }
+.summary-mvp-name { font-size: 20px; font-weight: 700; }
+.summary-mvp-sub { color: var(--text-muted); font-size: 13px; }
+.summary-mvp-stats { margin-top: 6px; color: var(--success); font-weight: 600; }
+.summary-top-games { padding-left: 20px; margin: 0; }
+.summary-top-games li { margin: 4px 0; font-size: 13px; }
+.summary-top-games .tg-player { font-weight: 600; }
+.summary-top-games .tg-team { color: var(--text-muted); }
+.summary-top-games .tg-fp { color: var(--success); font-weight: 600; }
+.summary-top-games .tg-meta { color: var(--text-dim); font-size: 11px; }
+.summary-standings, .summary-leaders {
+  width: 100%; border-collapse: collapse; font-size: 13px;
+}
+.summary-standings th, .summary-leaders th,
+.summary-standings td, .summary-leaders td {
+  padding: 4px 6px; text-align: left;
+  border-bottom: 1px solid var(--border-muted);
+}
+.summary-standings .human-row { background: rgba(88,166,255,0.08); font-weight: 600; }
+.summary-actions {
+  display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;
+}

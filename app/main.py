@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.0"
+APP_VERSION = "0.5.1"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -662,6 +662,118 @@ def season_reset():
     storage.clear_trades()
     storage.append_log({"type": "season_reset"})
     return {"ok": True}
+
+
+@app.get("/api/season/summary")
+def season_summary():
+    """Championship summary: final standings, MVP (highest season fp),
+    top 5 single-game performances, human record, persona callouts."""
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        raise HTTPException(400, "Season not started")
+    players_by_id = {p.id: p for p in draft.players}
+    teams_by_id = {t.id: t for t in draft.teams}
+
+    # aggregate player totals from game_logs
+    totals: dict[int, dict] = {}
+    for g in state.game_logs:
+        if not g.played:
+            continue
+        e = totals.setdefault(g.player_id, {
+            "player_id": g.player_id, "team_id": g.team_id,
+            "gp": 0, "fp": 0.0, "pts": 0.0, "reb": 0.0,
+            "ast": 0.0, "stl": 0.0, "blk": 0.0, "to": 0.0,
+        })
+        e["gp"] += 1
+        e["fp"] += float(g.fp)
+        e["pts"] += float(g.pts)
+        e["reb"] += float(g.reb)
+        e["ast"] += float(g.ast)
+        e["stl"] += float(g.stl)
+        e["blk"] += float(g.blk)
+        e["to"] += float(g.to)
+
+    def _stamp(entry):
+        p = players_by_id.get(entry["player_id"])
+        t = teams_by_id.get(entry["team_id"])
+        gp = max(1, entry["gp"])
+        return {
+            **entry,
+            "name": p.name if p else f"#{entry['player_id']}",
+            "pos": p.pos if p else "",
+            "team_name": t.name if t else "FA",
+            "fppg": round(entry["fp"] / gp, 2),
+            "fp_total": round(entry["fp"], 2),
+        }
+
+    mvp = None
+    season_leaders = sorted(totals.values(), key=lambda e: e["fp"], reverse=True)[:10]
+    season_leaders = [_stamp(e) for e in season_leaders]
+    if season_leaders:
+        mvp = season_leaders[0]
+
+    # top 5 single-game performances
+    top_games = sorted(
+        [g for g in state.game_logs if g.played],
+        key=lambda g: g.fp, reverse=True,
+    )[:5]
+    top_games_out = []
+    for g in top_games:
+        p = players_by_id.get(g.player_id)
+        t = teams_by_id.get(g.team_id)
+        top_games_out.append({
+            "player": p.name if p else f"#{g.player_id}",
+            "team": t.name if t else "",
+            "week": g.week,
+            "day": g.day,
+            "fp": round(g.fp, 2),
+            "pts": round(g.pts, 1), "reb": round(g.reb, 1),
+            "ast": round(g.ast, 1), "stl": round(g.stl, 1),
+            "blk": round(g.blk, 1), "to": round(g.to, 1),
+        })
+
+    # final standings sorted
+    settings = _current_settings()
+    reg_weeks = settings.regular_season_weeks if settings.setup_complete else REGULAR_WEEKS
+    final_standings = []
+    for team in draft.teams:
+        s = state.standings.get(team.id, {"w": 0, "l": 0, "pf": 0, "pa": 0})
+        final_standings.append({
+            "team_id": team.id, "name": team.name,
+            "is_human": team.is_human, "persona": team.gm_persona,
+            "w": int(s.get("w", 0)), "l": int(s.get("l", 0)),
+            "pf": round(float(s.get("pf", 0.0)), 2),
+            "pa": round(float(s.get("pa", 0.0)), 2),
+        })
+    final_standings.sort(key=lambda r: (r["w"], r["pf"]), reverse=True)
+
+    human_team = next((t for t in draft.teams if t.is_human), None)
+    human_id = human_team.id if human_team else None
+    human_rank = None
+    if human_id is not None:
+        for i, row in enumerate(final_standings):
+            if row["team_id"] == human_id:
+                human_rank = i + 1
+                break
+
+    champ_name = None
+    if state.champion is not None:
+        ct = teams_by_id.get(state.champion)
+        champ_name = ct.name if ct else None
+
+    return {
+        "is_complete": state.champion is not None,
+        "champion_id": state.champion,
+        "champion_name": champ_name,
+        "human_team_id": human_id,
+        "human_rank": human_rank,
+        "num_teams": len(draft.teams),
+        "regular_weeks": reg_weeks,
+        "final_standings": final_standings,
+        "mvp": mvp,
+        "season_leaders": season_leaders,
+        "top_games": top_games_out,
+    }
 
 
 # ---------------------------------------------------------------------------

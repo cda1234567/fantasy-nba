@@ -197,11 +197,18 @@ async function refreshState() {
     apiSoft('/api/season/standings'),
     apiSoft('/api/season/schedule'),
   ]);
+  const prevChampion = state.standings?.champion;
   state.standings = standings;
   state.schedule  = schedule;
   // Season is "live" only when the backend has populated standings rows.
   const rows = standings?.standings || [];
   state.season = rows.length ? { active: true } : null;
+  // Auto-pop summary when champion was just crowned this turn.
+  const newChampion = standings?.champion;
+  if (newChampion != null && prevChampion == null && !state.summaryShownFor) {
+    state.summaryShownFor = newChampion;
+    setTimeout(() => { onShowSummary().catch(() => {}); }, 500);
+  }
 }
 
 async function refreshLogs() {
@@ -1531,6 +1538,9 @@ function renderLeagueView(root) {
         el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
         el('button', { id: 'btn-propose-trade', class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
         el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
+        state.standings && state.standings.champion != null
+          ? el('button', { class: 'btn primary', onclick: onShowSummary }, '🏆 賽季總結')
+          : null,
         el('button', {
           type: 'button',
           class: 'icon-btn league-settings-btn',
@@ -2705,6 +2715,142 @@ async function onSimPlayoffs() {
     refreshLogs();
     render();
   }, '季後賽模擬完成');
+}
+
+async function onShowSummary() {
+  try {
+    const data = await api('/api/season/summary');
+    renderSummaryOverlay(data);
+  } catch (err) {
+    toast('讀取總結失敗: ' + (err?.message || err), 'error');
+  }
+}
+
+function renderSummaryOverlay(s) {
+  const existing = document.getElementById('summary-overlay');
+  if (existing) existing.remove();
+
+  const tn = (id) => {
+    const t = state.draft?.teams?.find(t => t.id === id);
+    return t ? t.name : `#${id}`;
+  };
+
+  const champBanner = s.champion_id != null
+    ? el('div', { class: 'summary-champion' },
+        el('div', { class: 'summary-trophy' }, '🏆'),
+        el('div', { class: 'summary-champ-name' }, `${s.champion_name} 奪冠！`),
+      )
+    : el('div', { class: 'summary-champion' },
+        el('div', { class: 'summary-champ-name muted' }, '賽季總結（尚未封王）'),
+      );
+
+  const humanLine = s.human_rank != null
+    ? el('div', { class: 'summary-sub' }, `你排名第 ${s.human_rank} / ${s.num_teams} 名`)
+    : null;
+
+  const mvpPanel = s.mvp
+    ? el('div', { class: 'summary-card' },
+        el('div', { class: 'summary-card-title' }, '🌟 賽季 MVP'),
+        el('div', { class: 'summary-mvp-name' }, s.mvp.name),
+        el('div', { class: 'summary-mvp-sub' },
+          `${s.mvp.team_name} · ${s.mvp.pos}`),
+        el('div', { class: 'summary-mvp-stats' },
+          `${fppg(s.mvp.fppg)} FP/場 · ${s.mvp.gp} 場 · 總 FP ${fppg(s.mvp.fp_total)}`),
+      )
+    : null;
+
+  const topGamesPanel = el('div', { class: 'summary-card' },
+    el('div', { class: 'summary-card-title' }, '🔥 賽季五大神表現'),
+    el('ol', { class: 'summary-top-games' },
+      ...(s.top_games || []).map(g =>
+        el('li', {},
+          el('span', { class: 'tg-player' }, g.player),
+          el('span', { class: 'tg-team' }, ` (${g.team})`),
+          el('span', { class: 'tg-fp' }, ` — ${fppg(g.fp)} FP`),
+          el('span', { class: 'tg-meta' },
+            ` · W${g.week}D${((g.day - 1) % 7) + 1} · ${fmtStat(g.pts)}分/${fmtStat(g.reb)}籃/${fmtStat(g.ast)}助`),
+        ),
+      ),
+    ),
+  );
+
+  const standingsPanel = el('div', { class: 'summary-card' },
+    el('div', { class: 'summary-card-title' }, '📊 最終戰績'),
+    el('table', { class: 'summary-standings' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, '#'), el('th', {}, '隊伍'),
+        el('th', {}, '戰績'), el('th', {}, '得分'),
+      )),
+      el('tbody', {},
+        ...s.final_standings.map((row, i) =>
+          el('tr', { class: row.is_human ? 'human-row' : '' },
+            el('td', {}, i + 1),
+            el('td', {},
+              row.team_id === s.champion_id ? '👑 ' : '',
+              row.name,
+              row.is_human ? ' (你)' : '',
+            ),
+            el('td', {}, `${row.w}-${row.l}`),
+            el('td', {}, fppg(row.pf)),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  const leadersPanel = el('div', { class: 'summary-card' },
+    el('div', { class: 'summary-card-title' }, '🏀 場均領袖 Top 10'),
+    el('table', { class: 'summary-leaders' },
+      el('thead', {}, el('tr', {},
+        el('th', {}, '#'), el('th', {}, '球員'),
+        el('th', {}, '隊伍'), el('th', {}, 'FPPG'), el('th', {}, '場次'),
+      )),
+      el('tbody', {},
+        ...(s.season_leaders || []).map((p, i) =>
+          el('tr', {},
+            el('td', {}, i + 1),
+            el('td', {}, `${p.name} (${p.pos})`),
+            el('td', {}, p.team_name),
+            el('td', {}, fppg(p.fppg)),
+            el('td', {}, p.gp),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  const closeBtn = el('button', {
+    class: 'btn', onclick: () => document.getElementById('summary-overlay')?.remove(),
+  }, '關閉');
+
+  const shareBtn = el('button', {
+    class: 'btn ghost',
+    onclick: () => {
+      const text = [
+        `🏆 ${s.champion_name || '—'} 奪冠！`,
+        `MVP: ${s.mvp?.name || '—'} (${fppg(s.mvp?.fppg || 0)} FPPG)`,
+        `我排名第 ${s.human_rank || '—'} / ${s.num_teams}`,
+      ].join('\n');
+      navigator.clipboard?.writeText(text).then(
+        () => toast('已複製到剪貼簿'),
+        () => toast('複製失敗', 'error'),
+      );
+    },
+  }, '📋 複製戰報');
+
+  const overlay = el('div', {
+    id: 'summary-overlay', class: 'summary-overlay',
+    onclick: (e) => { if (e.target.id === 'summary-overlay') e.currentTarget.remove(); },
+  },
+    el('div', { class: 'summary-dialog' },
+      champBanner, humanLine,
+      el('div', { class: 'summary-grid' },
+        mvpPanel, topGamesPanel, standingsPanel, leadersPanel,
+      ),
+      el('div', { class: 'summary-actions' }, shareBtn, closeBtn),
+    ),
+  );
+  document.body.append(overlay);
 }
 
 // ================================================================ wiring
