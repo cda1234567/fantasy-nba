@@ -330,6 +330,8 @@ class AIGM:
         draft_state: "DraftState",
         settings: Any = None,
         model_id: str = DEFAULT_MODEL_ID,
+        current_week: int = 0,
+        standings: Optional[dict] = None,
     ) -> tuple[bool, str]:
         """Decide whether receiver_team should accept the trade.
 
@@ -342,6 +344,7 @@ class AIGM:
         If the receiver benefits (incoming > outgoing), bias toward accept.
         Falls back to ai_trade_style="balanced" when settings not provided.
         When LLM is available, uses it with proposer_message in context.
+        Deadline drama: bottom-4 teams within 2 weeks of deadline get threshold relaxed 20%.
         """
         persona = receiver_team.gm_persona or "bpa"
         style = "balanced"
@@ -350,6 +353,14 @@ class AIGM:
 
         thresholds = {"conservative": 0.05, "balanced": 0.10, "aggressive": 0.18}
         threshold = thresholds.get(style, 0.10)
+
+        # Deadline drama: relax threshold 20% for bottom-4 teams near deadline
+        from .trades import _urgency_multiplier
+        urgency = _urgency_multiplier(
+            receiver_team.id, current_week, standings or {}, settings
+        )
+        if urgency > 1.0:
+            threshold = threshold * 1.20
 
         # From receiver's perspective: they give away receive_player_ids, get send_player_ids
         cp_give_fp = _side_fppg(list(trade.receive_player_ids), draft_state)
@@ -644,9 +655,13 @@ class AIGM:
         penalty = 0.50*fppg_ratio_penalty + 0.25*star_asymmetry
                 + 0.15*depth_penalty + 0.10*need_alignment
 
+        Direction-aware: only veto when the receiver (to_team) is unfairly
+        gifted value — i.e. from_team massively overpays. If the sender
+        benefits (side_a_fp <= side_b_fp), return False immediately.
+
         Thresholds by persona:
             balanced:                0.12 (strict)
-            contrarian / vet / vet:  0.18 (lenient)
+            contrarian / vet:        0.18 (lenient)
             others:                  0.15
         """
         persona = voter_persona_key
@@ -654,9 +669,14 @@ class AIGM:
         side_a_fp = _side_fppg(trade.send_player_ids, draft_state)
         side_b_fp = _side_fppg(trade.receive_player_ids, draft_state)
 
-        # fppg_ratio_penalty
+        # Direction check: only veto when sender overpays (receiver gifted value).
+        # If sender benefits or trade is balanced, no veto from this voter.
+        if side_a_fp <= side_b_fp:
+            return False
+
+        # fppg_ratio_penalty — directional: sender overpays so side_a > side_b
         denom = max(side_b_fp, 0.01)
-        fppg_ratio_penalty = abs(1.0 - side_a_fp / denom)
+        fppg_ratio_penalty = min(side_a_fp / denom - 1.0, 1.0)
 
         # star_asymmetry
         max_a = max(
@@ -678,8 +698,41 @@ class AIGM:
             0.3,
         )
 
-        # need_alignment (placeholder)
+        # need_alignment: how much the receiver fills positional holes.
+        # Positions receiver gains minus positions receiver loses, weighted by
+        # slot scarcity. A receiver filling a thin position raises unfairness.
+        _POSITIONS = ("PG", "SG", "SF", "PF", "C")
+        # Scarcity weight: C/PF typically deeper shortages in fantasy
+        _SCARCITY = {"PG": 1.0, "SG": 1.0, "SF": 1.0, "PF": 1.1, "C": 1.2}
+        receiver_team = next(
+            (t for t in draft_state.teams if t.id == trade.to_team), None
+        )
         need_alignment = 0.0
+        if receiver_team is not None:
+            # Current positional counts on receiver roster (excluding sent players)
+            receiver_roster_ids = set(receiver_team.roster) - set(trade.receive_player_ids)
+            pos_before: dict[str, int] = {p: 0 for p in _POSITIONS}
+            for pid in receiver_roster_ids:
+                pl = draft_state.players_by_id.get(pid)
+                if pl and pl.pos in pos_before:
+                    pos_before[pl.pos] += 1
+
+            # Positional counts after receiving send_player_ids
+            pos_after = dict(pos_before)
+            for pid in trade.send_player_ids:
+                pl = draft_state.players_by_id.get(pid)
+                if pl and pl.pos in pos_after:
+                    pos_after[pl.pos] += 1
+
+            # Each position where receiver was thin (<=1) and gains a player
+            # contributes to need_alignment (fills a hole → more unfair gift)
+            raw = 0.0
+            for pos in _POSITIONS:
+                delta = pos_after[pos] - pos_before[pos]
+                if delta > 0 and pos_before[pos] <= 1:
+                    raw += delta * _SCARCITY[pos]
+            # Normalise: cap at 3.0 scarcity units → [0, 1]
+            need_alignment = min(raw / 3.0, 1.0)
 
         penalty = (
             0.50 * fppg_ratio_penalty
