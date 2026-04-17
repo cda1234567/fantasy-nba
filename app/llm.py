@@ -81,7 +81,7 @@ def _call_anthropic(
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        client = anthropic.Anthropic(api_key=api_key, timeout=_TIMEOUT)
         resp = client.messages.create(
             model=sdk_model,
             max_tokens=max_tokens,
