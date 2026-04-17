@@ -16,6 +16,7 @@ Lifecycle:
 from __future__ import annotations
 
 import uuid
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Any, Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -261,7 +262,7 @@ class TradeManager:
         trade: TradeProposal,
         ai_gm: Any,
     ) -> None:
-        """Synchronous version: collect peer commentary sequentially."""
+        """Synchronous version: collect peer commentary in parallel via threadpool."""
         commentators = [
             t for t in self.draft.teams
             if t.id not in (trade.from_team, trade.to_team) and not t.is_human
@@ -271,19 +272,29 @@ class TradeManager:
             return
 
         model_map: dict[int, str] = getattr(self.season, "ai_models", {}) or {}
-        trade.peer_commentary = []
-        for team in commentators:
+
+        def _call_one(team: Any) -> dict:
             model_id = model_map.get(team.id, "anthropic/claude-haiku-4.5")
             try:
                 text = ai_gm.peer_commentary(trade, self.draft, team, model_id)
             except Exception:
                 text = "挺有趣的交易提案。"
-            trade.peer_commentary.append({
+            return {
                 "team_id": team.id,
                 "team_name": team.name,
                 "model": model_id,
                 "text": text,
-            })
+            }
+
+        results: dict[int, dict] = {}
+        with ThreadPoolExecutor(max_workers=min(6, len(commentators))) as pool:
+            futures = {pool.submit(_call_one, team): team.id for team in commentators}
+            for future in as_completed(futures):
+                tid = futures[future]
+                results[tid] = future.result()
+
+        # Preserve original sorted order
+        trade.peer_commentary = [results[t.id] for t in commentators if t.id in results]
         self._save()
 
     def decide(
