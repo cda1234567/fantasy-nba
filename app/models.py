@@ -48,6 +48,7 @@ class LeagueSettings(BaseModel):
     draft_display_mode: str = "prev_full"
     show_offseason_headlines: bool = True
     setup_complete: bool = False
+    use_openrouter: bool = True
 
 
 class Player(BaseModel):
@@ -156,6 +157,8 @@ class SeasonState(BaseModel):
     injuries: dict[int, Injury] = Field(default_factory=dict)
     # All historical injuries including healed ones
     injury_history: list[Injury] = Field(default_factory=list)
+    # team_id -> model_id assigned at season start
+    ai_models: dict[int, str] = Field(default_factory=dict)
 
 
 class Injury(BaseModel):

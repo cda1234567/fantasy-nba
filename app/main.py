@@ -342,7 +342,15 @@ def human_pick(req: PickRequest):
     try:
         pick = draft.human_pick(req.player_id)
     except ValueError as e:
-        raise HTTPException(400, str(e))
+        msg = str(e)
+        if "not the human's turn" in msg:
+            _, _, next_team = draft.current_pointers()
+            raise HTTPException(400, {
+                "detail": "human_slot_already_consumed",
+                "next_picker": next_team,
+                "is_complete": draft.is_complete,
+            })
+        raise HTTPException(400, msg)
     _persist_draft()
     return {"pick": pick.model_dump(), "state": _state_snapshot().model_dump()}
 
@@ -459,6 +467,11 @@ def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
 
 @app.get("/api/season/standings")
 def season_standings():
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        return {"standings": [], "current_week": 0, "current_day": 0,
+                "is_playoffs": False, "champion": None, "regular_weeks": REGULAR_WEEKS,
+                "trade_quota": {"executed": 0, "target": 0, "behind": 0}, "pending_count": 0}
     state = _require_season()
     settings = _current_settings()
     reg_weeks = settings.regular_season_weeks if settings.setup_complete else REGULAR_WEEKS
@@ -491,7 +504,9 @@ def season_standings():
 
 @app.get("/api/season/schedule")
 def season_schedule():
-    state = _require_season()
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        return {"schedule": []}
     return {"schedule": [m.model_dump() for m in state.schedule]}
 
 
@@ -507,6 +522,18 @@ def season_matchup(week: int = Query(..., ge=1)):
 @app.get("/api/season/logs")
 def season_logs(limit: int = Query(50, ge=1, le=500)):
     return {"logs": storage.load_log(limit=limit)}
+
+
+@app.get("/api/season/ai-models")
+def season_ai_models():
+    state = _require_season()
+    result: dict[str, dict] = {}
+    for team in draft.teams:
+        if team.is_human:
+            continue
+        model_id = state.ai_models.get(team.id, "anthropic/claude-haiku-4.5")
+        result[str(team.id)] = {"name": team.name, "model": model_id}
+    return result
 
 
 @app.post("/api/season/reset")
@@ -535,6 +562,8 @@ class TradeProposeRequest(BaseModel):
     to_team: int
     send: list[int]
     receive: list[int]
+    proposer_message: str = ""
+    force: bool = False
 
 
 class TradeVetoRequest(BaseModel):
@@ -574,9 +603,16 @@ def trades_propose(req: TradeProposeRequest):
             current_day=season.current_day,
             current_week=season.current_week,
             reasoning="human",
+            proposer_message=req.proposer_message,
+            force=req.force,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+    # Collect peer commentary (sync, non-blocking fallback on error)
+    try:
+        mgr.collect_peer_commentary_sync(trade, ai_gm)
+    except Exception:
+        pass
     # Auto-decide for AI counterparty
     cp = draft.teams[req.to_team]
     if not cp.is_human:

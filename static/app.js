@@ -1319,7 +1319,7 @@ function renderLeagueView(root) {
       el('div', { class: 'actions' },
         el('button', { class: 'btn ghost', onclick: onAdvanceDay }, '推進一天'),
         el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
-        el('button', { class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
+        el('button', { id: 'btn-propose-trade', class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
         el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
         el('button', {
           type: 'button',
@@ -1716,6 +1716,29 @@ function buildTradeCard(trade) {
   if (trade.reasoning && trade.reasoning !== 'human') {
     parts.push(el('div', { class: 'trade-reasoning' }, trade.reasoning));
   }
+  if (trade.proposer_message) {
+    parts.push(
+      el('div', { class: 'trade-proposer-msg' },
+        el('span', { class: 'trade-msg-label' }, '提案者留言：'),
+        el('span', { class: 'trade-msg-text' }, trade.proposer_message),
+      ),
+    );
+  }
+  if (trade.force_executed) {
+    parts.push(el('span', { class: 'trade-force-badge' }, '強制執行'));
+  }
+  if (trade.peer_commentary && trade.peer_commentary.length) {
+    const commentList = el('ul', { class: 'trade-peer-commentary' });
+    for (const c of trade.peer_commentary) {
+      commentList.append(el('li', {}, `${c.team_name}（${modelShortName(c.model)}）：${c.text}`));
+    }
+    parts.push(
+      el('div', { class: 'trade-commentary-section' },
+        el('div', { class: 'trade-commentary-head' }, '其他 GM 看法'),
+        commentList,
+      ),
+    );
+  }
 
   // Veto vote count (for accepted trades)
   if (trade.status === 'accepted') {
@@ -1825,10 +1848,20 @@ async function refreshTradeHistory() {
   const body = $('#trade-history-body');
   if (!body) return;
   body.innerHTML = '<div class="empty-state">載入中...</div>';
-  const payload = await apiSoft('/api/trades/history?limit=20');
+  const payload = await apiSoft('/api/trades/history?limit=50');
   let hist = [];
   if (Array.isArray(payload)) hist = payload;
   else if (payload && Array.isArray(payload.history)) hist = payload.history;
+  // P2: sort by most recent first — use executed_day/proposed_day + week as sort key
+  hist = hist.slice().sort((a, b) => {
+    const weekA = a.proposed_week ?? 0;
+    const weekB = b.proposed_week ?? 0;
+    const dayA  = a.executed_day ?? a.proposed_day ?? 0;
+    const dayB  = b.executed_day ?? b.proposed_day ?? 0;
+    const sortA = weekA * 1000 + dayA;
+    const sortB = weekB * 1000 + dayB;
+    return sortB - sortA;
+  });
   state.tradesHistory = hist;
 
   // Preload involved players.
@@ -1916,6 +1949,32 @@ function buildTradeHistoryDetail(trade) {
   );
   if (trade.reasoning && trade.reasoning !== 'human') {
     detail.append(el('div', { class: 'trade-reasoning hist' }, trade.reasoning));
+  }
+  if (trade.proposer_message) {
+    detail.append(
+      el('div', { class: 'trade-proposer-msg' },
+        el('span', { class: 'trade-msg-label' }, '提案者留言：'),
+        el('span', { class: 'trade-msg-text' }, trade.proposer_message),
+      ),
+    );
+  }
+  if (trade.force_executed) {
+    detail.append(el('span', { class: 'trade-force-badge' }, '強制執行'));
+  }
+  if (trade.peer_commentary && trade.peer_commentary.length) {
+    const commentList = el('ul', { class: 'trade-peer-commentary' });
+    for (const c of trade.peer_commentary) {
+      const short = modelShortName(c.model);
+      commentList.append(
+        el('li', {}, `${c.team_name}（${short}）：${c.text}`),
+      );
+    }
+    detail.append(
+      el('div', { class: 'trade-commentary-section' },
+        el('div', { class: 'trade-commentary-head' }, '其他 GM 看法'),
+        commentList,
+      ),
+    );
   }
   return detail;
 }
@@ -2104,11 +2163,32 @@ function togglePickPlayer(which, id, checked) {
   renderProposeBody();
 }
 
+function modelShortName(modelId) {
+  if (!modelId) return '';
+  if (modelId.includes('claude-haiku')) return 'Claude Haiku';
+  if (modelId.includes('claude-3.5-sonnet') || modelId.includes('claude-3-5-sonnet')) return 'Claude Sonnet';
+  if (modelId.includes('claude')) return 'Claude';
+  if (modelId.includes('gpt-4o-mini')) return 'GPT-4o-mini';
+  if (modelId.includes('gpt-4.1-mini')) return 'GPT-4.1-mini';
+  if (modelId.includes('gpt-4o')) return 'GPT-4o';
+  if (modelId.includes('gemini-flash')) return 'Gemini Flash';
+  if (modelId.includes('gemini')) return 'Gemini';
+  if (modelId.includes('llama')) return 'Llama';
+  if (modelId.includes('mistral')) return 'Mistral';
+  if (modelId.includes('deepseek')) return 'DeepSeek';
+  if (modelId.includes('qwen')) return 'Qwen';
+  if (modelId.includes('grok')) return 'Grok';
+  return modelId.split('/').pop() || modelId;
+}
+
 async function onSubmitProposeTrade() {
   const humanId = state.draft?.human_team_id ?? 0;
   const { counterparty, send, receive } = state.proposeDraft;
   if (counterparty == null) { toast('請選擇交易對象', 'warn'); return; }
   if (!send.size || !receive.size) { toast('每方至少選一名球員', 'warn'); return; }
+
+  const proposerMessage = ($('#trade-message')?.value || '').trim();
+  const force = !!$('#trade-force')?.checked;
 
   try {
     await api('/api/trades/propose', {
@@ -2118,9 +2198,11 @@ async function onSubmitProposeTrade() {
         to_team: counterparty,
         send: Array.from(send),
         receive: Array.from(receive),
+        proposer_message: proposerMessage,
+        force,
       }),
     });
-    toast('交易已發起', 'success');
+    toast(force ? '交易已強制執行' : '交易已發起', 'success');
     $('#trade-propose').close();
     await afterTradeMutation();
   } catch (e) {
@@ -2307,9 +2389,17 @@ function bindGlobalUI() {
   // Log refresh button.
   $('#btn-log-refresh').addEventListener('click', () => refreshLogs());
 
-  // Trade propose modal: submit + cancel.
+  // Trade propose modal: submit + cancel + force checkbox warning.
   const submitBtn = $('#btn-trade-propose-submit');
   if (submitBtn) submitBtn.addEventListener('click', (e) => { e.preventDefault(); onSubmitProposeTrade(); });
+
+  const forceChk = $('#trade-force');
+  const forceWarn = $('#trade-force-warn');
+  if (forceChk && forceWarn) {
+    forceChk.addEventListener('change', () => {
+      forceWarn.hidden = !forceChk.checked;
+    });
+  }
 
   // League settings dialog save button.
   const lsSaveBtn = $('#btn-league-settings-save');

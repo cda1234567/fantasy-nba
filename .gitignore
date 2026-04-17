@@ -12,3 +12,4 @@ __pycache__/
 tests/screenshots/
 tests/run_output.log
 tests/run_report.json
+tests/qa_*_run.log

@@ -5,6 +5,7 @@ import random
 from typing import TYPE_CHECKING, Optional
 
 from .injuries import roll_daily_injuries, roll_preseason_injuries, tick_injuries
+from .llm import DEFAULT_MODEL_ID, OPENROUTER_MODELS
 from .models import GameLog, Matchup, Player, SeasonState
 from .scoring import compute_fppg
 from .trades import TradeManager
@@ -179,6 +180,18 @@ def start_season(
         lineups={},
         ai_calls_today=0,
     )
+    # Assign random LLM models to AI teams (one per team, persisted for the season)
+    use_openrouter = settings.use_openrouter if settings is not None else True
+    model_rng = random.Random(draft.seed if draft.seed is not None else 42)
+    human_team_id = draft.human_team_id
+    for team in draft.teams:
+        if team.is_human:
+            continue
+        if use_openrouter:
+            state.ai_models[team.id] = model_rng.choice(OPENROUTER_MODELS)
+        else:
+            state.ai_models[team.id] = "anthropic/claude-haiku-4.5"
+
     # Preseason injury sweep: ~2% per player, short-term only
     preseason_rng = random.Random(hash((draft.seed, "preseason_injuries")) & 0xFFFFFFFF)
     roll_preseason_injuries(state, draft, preseason_rng)
@@ -232,6 +245,7 @@ def _set_lineups(
 
         if ai_gm and use_ai and season.ai_calls_today < ai_gm.daily_budget:
             roster_players = [draft.players_by_id[pid] for pid in team.roster]
+            team_model = season.ai_models.get(team.id, DEFAULT_MODEL_ID)
             decision = ai_gm.decide_day(
                 team=team,
                 roster_players=roster_players,
@@ -239,6 +253,7 @@ def _set_lineups(
                 standings=season.standings,
                 persona_key=team.gm_persona or "bpa",
                 injured_out=injured_out,
+                model_id=team_model,
             )
             if decision.get("used_api"):
                 season.ai_calls_today += 1
@@ -350,6 +365,12 @@ def _run_trades_daily(
             cp = draft.teams[trade.to_team]
             if cp.is_human:
                 continue
+            # Collect peer commentary before deciding (same exclusion as human path)
+            if not trade.peer_commentary:
+                try:
+                    mgr.collect_peer_commentary_sync(trade, ai_gm)
+                except Exception:
+                    pass
             accept, _ = ai_gm.decide_trade(trade, cp, draft, settings)
             try:
                 mgr.decide(trade.id, cp.id, accept, current_day)
@@ -472,6 +493,12 @@ def advance_day(
 
     if next_day % DAYS_PER_WEEK == 0:
         _resolve_week(draft, season, week, reg_weeks)
+
+    # Trim game_logs to the last 3 weeks to keep the save payload bounded.
+    # _resolve_week() accumulates standings in-place so older logs are not needed.
+    keep_from_week = max(1, week - 2)
+    if len(season.game_logs) > 14 * len(draft.teams) * 10:
+        season.game_logs = [g for g in season.game_logs if g.week >= keep_from_week]
 
     storage.save_season(season.model_dump())
     storage.append_log({

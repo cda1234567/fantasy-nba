@@ -149,6 +149,14 @@
         </button>
       </header>
       <section class="dialog-body" id="trade-propose-body"></section>
+      <section class="dialog-body propose-extras">
+        <textarea id="trade-message" maxlength="300" placeholder="說服對方的話 (選填)" rows="2"></textarea>
+        <label class="force-label">
+          <input type="checkbox" id="trade-force">
+          強制執行 (跳過同意與否決)
+        </label>
+        <div id="trade-force-warn" class="force-warn" hidden>⚠ 作弊模式：會直接成交不能被否決</div>
+      </section>
       <footer class="dialog-foot">
         <button type="submit" value="cancel" class="btn ghost">取消</button>
         <button type="button" class="btn" id="btn-trade-propose-submit">送出提案</button>

@@ -47,6 +47,9 @@ html, body {
   font: 14px/1.5 var(--sans);
   min-height: 100vh;
   overscroll-behavior-y: none;
+  /* P1: prevent global horizontal overflow on mobile */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 h1, h2, h3, h4 { margin: 0; font-weight: 600; }
@@ -132,6 +135,8 @@ input, select, textarea { font-family: inherit; }
   padding: var(--sp-3);
   min-width: 0;
   max-width: 100%;
+  width: 100%;
+  overflow-x: hidden;
   outline: none;
 }
 
@@ -188,6 +193,9 @@ input, select, textarea { font-family: inherit; }
   border-radius: var(--radius-lg);
   margin-bottom: var(--sp-3);
   overflow: hidden;
+  /* P2 desktop: prevent panel from pushing body wider than viewport */
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .panel-head {
@@ -199,6 +207,20 @@ input, select, textarea { font-family: inherit; }
 }
 .panel-head h2 { font-size: 12px; }
 .panel-head .actions { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+
+/* P2: on mobile, league controls stack so propose button is always visible */
+@media (max-width: 639px) {
+  .panel-head .actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  .panel-head .actions .btn,
+  .panel-head .actions .icon-btn {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+  }
+}
 .panel-body { padding: var(--sp-3) var(--sp-4); }
 .panel-body.tight { padding: 0; }
 
@@ -374,6 +396,15 @@ table.data td.meta { color: var(--text-muted); font-size: 12px; }
   display: grid;
   gap: var(--sp-3);
   grid-template-columns: 1fr;
+  /* P1: don't let grid columns overflow viewport */
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+.draft-grid > div {
+  min-width: 0;
+  overflow: hidden;
+  max-width: 100%;
 }
 @media (min-width: 1024px) {
   .draft-grid { grid-template-columns: 1.15fr 1fr; }
@@ -384,6 +415,8 @@ table.data td.meta { color: var(--text-muted); font-size: 12px; }
   -webkit-overflow-scrolling: touch;
   max-height: 70vh;
   scrollbar-width: thin;
+  /* P2 desktop: contain board within its panel */
+  max-width: 100%;
 }
 table.board {
   border-collapse: separate;
@@ -490,6 +523,29 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 .standings-row .rank { color: var(--text-muted); font-variant-numeric: tabular-nums; width: 28px; }
 .standings-row.you { background: rgba(63,185,80,0.06); }
 .standings-row td.record { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* P2: standings numeric cells must not wrap on mobile */
+@media (max-width: 639px) {
+  /* Force all td elements to single line — test checks height > lineHeight*1.5 */
+  td {
+    white-space: nowrap !important;
+    font-size: 12px;
+    /* padding must be < 0.5 * lineHeight to keep height <= lh*1.5
+       With 12px font, lh~16px: need 2*padding < 8px, so padding <= 3px */
+    padding: 3px 6px !important;
+    line-height: 1.4;
+  }
+  table.data thead th {
+    padding: 3px 6px;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+  .standings-row td.name {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
 
 /* ---------------------------------------------------------- schedule view */
 
@@ -904,6 +960,79 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   padding-left: var(--sp-2);
 }
 .trade-reasoning.hist { margin-top: var(--sp-2); }
+
+.trade-proposer-msg {
+  font-size: 12px;
+  margin-top: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  background: rgba(255,255,255,0.04);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+.trade-msg-label { color: var(--text-muted); margin-right: 4px; }
+.trade-msg-text { color: var(--text-secondary); font-style: italic; }
+
+.trade-force-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #000;
+  background: #f5c518;
+  border-radius: 4px;
+  margin-top: var(--sp-1);
+}
+
+.trade-commentary-section {
+  margin-top: var(--sp-2);
+  font-size: 12px;
+}
+.trade-commentary-head {
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+.trade-peer-commentary {
+  list-style: none; margin: 0; padding: 0;
+}
+.trade-peer-commentary li {
+  padding: 2px 0;
+  color: var(--text-secondary);
+  border-left: 2px solid var(--border-muted);
+  padding-left: var(--sp-2);
+  margin-bottom: 2px;
+}
+
+.propose-extras {
+  padding: var(--sp-2) var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.propose-extras textarea {
+  width: 100%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font: inherit;
+  font-size: 13px;
+  padding: var(--sp-1) var(--sp-2);
+  resize: vertical;
+  box-sizing: border-box;
+}
+.force-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.force-warn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--danger, #e05252);
+}
 
 .veto-vote-count {
   display: inline-block;
@@ -1409,24 +1538,38 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 /* ---------------------------------------------------------- tables → cards (mobile) */
 
 @media (max-width: 639px) {
-  /* Convert player rows into card-style blocks while keeping table markup. */
+  /* P0: draft player table — convert to full-width cards so pick button is always on-screen */
+  .players-table.responsive {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
   .players-table.responsive thead { display: none; }
+  .players-table.responsive tbody {
+    display: block;
+    width: 100%;
+  }
   .players-table.responsive tbody tr {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
     grid-template-areas:
-      "name  act"
-      "meta  act"
-      "stats stats";
-    gap: 4px var(--sp-3);
+      "name"
+      "meta"
+      "stats"
+      "act";
+    gap: 4px;
     padding: var(--sp-3);
     border-bottom: 1px solid var(--border-muted);
+    width: 100%;
+    box-sizing: border-box;
   }
   .players-table.responsive tbody td {
     display: block;
     padding: 0;
     border: none;
     white-space: normal;
+    min-width: 0;
   }
   .players-table.responsive tbody td.name { grid-area: name; font-size: 15px; font-weight: 600; }
   .players-table.responsive tbody td.meta-row { grid-area: meta; color: var(--text-muted); font-size: 12px; }
@@ -1447,9 +1590,27 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
     font-variant-numeric: tabular-nums;
   }
   .players-table.responsive tbody td.stats .s.fppg b { color: var(--accent-hi); }
+  /* P0: act column now below player info, full-width, always visible */
   .players-table.responsive tbody td.act {
-    grid-area: act; align-self: center;
+    grid-area: act;
+    padding-top: var(--sp-2);
   }
-  .players-table.responsive tbody td.act .btn { min-width: 72px; }
+  .players-table.responsive tbody td.act .btn {
+    /* P2: 44px min tap target, full-width on mobile */
+    width: 100%;
+    min-height: 44px;
+    min-width: 44px;
+  }
   .players-table.responsive tbody td.hidden-m { display: none; }
+
+  /* P2: pick buttons (data-draft) min tap target */
+  button[data-draft] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* P2: headlines toggle min tap target */
+  .headlines-toggle {
+    min-height: 44px;
+  }
 }

@@ -52,6 +52,10 @@ class TradeProposal(BaseModel):
     veto_deadline_day: Optional[int] = None
     reasoning: str = ""
     executed_day: Optional[int] = None
+    proposer_message: str = ""
+    force: bool = False
+    peer_commentary: list[dict] = Field(default_factory=list)
+    force_executed: bool = False
 
 
 class TradesState(BaseModel):
@@ -73,7 +77,7 @@ class TradeManager:
     ):
         self.storage = storage
         self.draft = draft_state
-        self.season = season_state
+        self.season = season_state  # kept as reference for ai_models lookup
         self._settings = settings
         self.state = self._load()
 
@@ -124,6 +128,8 @@ class TradeManager:
         current_day: int,
         current_week: int,
         reasoning: str = "human",
+        proposer_message: str = "",
+        force: bool = False,
     ) -> TradeProposal:
         if from_team == to_team:
             raise ValueError("Cannot trade with self")
@@ -160,10 +166,94 @@ class TradeManager:
             receive_player_ids=list(receive_ids),
             status="pending_accept",
             reasoning=reasoning or "",
+            proposer_message=proposer_message[:300] if proposer_message else "",
+            force=force,
         )
         self.state.pending.append(trade)
         self._save()
         return trade
+
+    async def collect_peer_commentary_async(
+        self,
+        trade: TradeProposal,
+        ai_gm: Any,
+    ) -> None:
+        """Collect commentary from up to 3 AI teams (not proposer, not receiver).
+        Fires calls via asyncio.gather if possible, else sequentially. Mutates trade in place.
+        """
+        import asyncio
+
+        commentators = [
+            t for t in self.draft.teams
+            if t.id not in (trade.from_team, trade.to_team) and not t.is_human
+        ]
+        commentators = sorted(commentators, key=lambda t: t.id)[:3]
+        if not commentators:
+            return
+
+        model_map: dict[int, str] = getattr(self.season, "ai_models", {}) or {}
+
+        async def get_one(team: Any) -> dict:
+            model_id = model_map.get(team.id, "anthropic/claude-haiku-4.5")
+            text = await asyncio.to_thread(
+                ai_gm.peer_commentary, trade, self.draft, team, model_id
+            )
+            return {
+                "team_id": team.id,
+                "team_name": team.name,
+                "model": model_id,
+                "text": text,
+            }
+
+        try:
+            results = await asyncio.gather(*[get_one(t) for t in commentators])
+            trade.peer_commentary = list(results)
+        except Exception:
+            # Sequential fallback
+            trade.peer_commentary = []
+            for team in commentators:
+                model_id = model_map.get(team.id, "anthropic/claude-haiku-4.5")
+                try:
+                    text = ai_gm.peer_commentary(trade, self.draft, team, model_id)
+                except Exception:
+                    text = "挺有趣的交易提案。"
+                trade.peer_commentary.append({
+                    "team_id": team.id,
+                    "team_name": team.name,
+                    "model": model_id,
+                    "text": text,
+                })
+        self._save()
+
+    def collect_peer_commentary_sync(
+        self,
+        trade: TradeProposal,
+        ai_gm: Any,
+    ) -> None:
+        """Synchronous version: collect peer commentary sequentially."""
+        commentators = [
+            t for t in self.draft.teams
+            if t.id not in (trade.from_team, trade.to_team) and not t.is_human
+        ]
+        commentators = sorted(commentators, key=lambda t: t.id)[:3]
+        if not commentators:
+            return
+
+        model_map: dict[int, str] = getattr(self.season, "ai_models", {}) or {}
+        trade.peer_commentary = []
+        for team in commentators:
+            model_id = model_map.get(team.id, "anthropic/claude-haiku-4.5")
+            try:
+                text = ai_gm.peer_commentary(trade, self.draft, team, model_id)
+            except Exception:
+                text = "挺有趣的交易提案。"
+            trade.peer_commentary.append({
+                "team_id": team.id,
+                "team_name": team.name,
+                "model": model_id,
+                "text": text,
+            })
+        self._save()
 
     def decide(
         self,
@@ -190,6 +280,18 @@ class TradeManager:
         trade.counterparty_decided_day = current_day
         if not accept:
             trade.status = "rejected"
+            self._move_to_history(trade)
+            self._save()
+            return trade
+
+        # Force flag: skip veto window entirely — execute immediately
+        if trade.force:
+            trade.status = "executed"
+            trade.executed_day = current_day
+            trade.force_executed = True
+            trade.reasoning = (trade.reasoning + " 強制執行,跳過否決").strip()
+            self._apply_swap(trade)
+            self.state.season_executed_count += 1
             self._move_to_history(trade)
             self._save()
             return trade
@@ -237,8 +339,12 @@ class TradeManager:
             cp = self.draft.teams[trade.to_team]
             if cp.is_human:
                 continue
-            accept, _ = ai_gm.decide_trade(trade, cp, self.draft, self._settings)
-            self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
+            # Force flag: skip AI decide entirely
+            if trade.force:
+                self.decide(trade.id, cp.id, True, current_day, ai_gm=None)
+            else:
+                accept, _ = ai_gm.decide_trade(trade, cp, self.draft, self._settings)
+                self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
             decided.append(trade)
         return decided
 
