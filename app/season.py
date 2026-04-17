@@ -1,6 +1,7 @@
 """Season simulation engine: schedule, daily/weekly sim, playoffs."""
 from __future__ import annotations
 
+import asyncio
 import random
 from typing import TYPE_CHECKING, Optional
 
@@ -300,6 +301,8 @@ def _set_lineups(
         pid for pid, inj in season.injuries.items() if inj.status == "out"
     }
 
+    # Separate human and AI teams
+    ai_teams = []
     for team in draft.teams:
         if team.is_human:
             override = season.lineup_overrides.get(team.id)
@@ -312,6 +315,11 @@ def _set_lineups(
                 else:
                     # Override no longer fillable — clear it so the UI badge reflects reality
                     # and the user knows they need to set a new lineup.
+                    season.lineup_override_alerts.append({
+                        "team_id": team.id,
+                        "day": season.current_day,
+                        "week": season.current_week,
+                    })
                     season.lineup_overrides.pop(team.id, None)
                     season.lineups[team.id] = default_lineup(
                         team.roster, draft.players_by_id, lineup_sz, injured_out
@@ -320,20 +328,32 @@ def _set_lineups(
                 season.lineups[team.id] = default_lineup(
                     team.roster, draft.players_by_id, lineup_sz, injured_out
                 )
-            continue
-
-        if ai_gm and use_ai and season.ai_calls_today < ai_gm.daily_budget:
-            roster_players = [draft.players_by_id[pid] for pid in team.roster]
-            team_model = season.ai_models.get(team.id, DEFAULT_MODEL_ID)
-            decision = ai_gm.decide_day(
-                team=team,
-                roster_players=roster_players,
-                fa_top_20=fa_top,
-                standings=season.standings,
-                persona_key=team.gm_persona or "bpa",
-                injured_out=injured_out,
-                model_id=team_model,
+        elif ai_gm and use_ai and season.ai_calls_today < ai_gm.daily_budget:
+            ai_teams.append(team)
+        else:
+            season.lineups[team.id] = default_lineup(
+                team.roster, draft.players_by_id, lineup_sz, injured_out
             )
+
+    # Run all AI decisions in parallel (asyncio.gather with to_thread per team)
+    if ai_teams:
+        async def _gather_decisions() -> list[dict]:
+            tasks = [
+                ai_gm.decide_day_async(
+                    team=t,
+                    roster_players=[draft.players_by_id[pid] for pid in t.roster],
+                    fa_top_20=fa_top,
+                    standings=season.standings,
+                    persona_key=t.gm_persona or "bpa",
+                    injured_out=injured_out,
+                    model_id=season.ai_models.get(t.id, DEFAULT_MODEL_ID),
+                )
+                for t in ai_teams
+            ]
+            return list(await asyncio.gather(*tasks))
+
+        decisions = asyncio.run(_gather_decisions())
+        for team, decision in zip(ai_teams, decisions):
             if decision.get("used_api"):
                 season.ai_calls_today += 1
             lineup = decision.get("lineup") or []
@@ -350,10 +370,6 @@ def _set_lineups(
                 "used_api": bool(decision.get("used_api")),
                 "excerpt": (decision.get("excerpt") or "")[:300],
             })
-        else:
-            season.lineups[team.id] = default_lineup(
-                team.roster, draft.players_by_id, lineup_sz, injured_out
-            )
 
 
 def _free_agents_top(draft: "DraftState", limit: int = 20) -> list[Player]:

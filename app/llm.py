@@ -19,7 +19,7 @@ OPENROUTER_MODELS: list[str] = [
 ]
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
-_TIMEOUT = 20.0
+_TIMEOUT = 6.0
 
 
 class LLMError(Exception):
