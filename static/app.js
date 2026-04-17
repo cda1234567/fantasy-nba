@@ -2985,7 +2985,7 @@ function formatLogEntry(e) {
   if (team)       parts.push(team);
   if (e.action)   parts.push(String(e.action));
   if (e.persona)  parts.push(`（${e.persona}）`);
-  if (e.excerpt)  parts.push('— ' + e.excerpt);
+  // excerpt suppressed — raw LLM English text not shown in activity log
   return parts.length ? parts.join(' ') : JSON.stringify(e);
 }
 
