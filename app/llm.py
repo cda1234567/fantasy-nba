@@ -21,6 +21,24 @@ OPENROUTER_MODELS: list[str] = [
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
 _TIMEOUT = 6.0
 
+_httpx_client: "httpx.Client | None" = None
+_anthropic_client = None  # Any
+
+
+def _get_httpx_client() -> "httpx.Client":
+    global _httpx_client
+    if _httpx_client is None or _httpx_client.is_closed:
+        _httpx_client = httpx.Client(timeout=_TIMEOUT)
+    return _httpx_client
+
+
+def _get_anthropic_client(api_key: str):
+    global _anthropic_client
+    if _anthropic_client is None:
+        import anthropic
+        _anthropic_client = anthropic.Anthropic(api_key=api_key, timeout=_TIMEOUT)
+    return _anthropic_client
+
 
 class LLMError(Exception):
     pass
@@ -81,7 +99,7 @@ def _call_anthropic(
 
     api_key = os.getenv("ANTHROPIC_API_KEY")
     try:
-        client = anthropic.Anthropic(api_key=api_key, timeout=_TIMEOUT)
+        client = _get_anthropic_client(api_key)
         resp = client.messages.create(
             model=sdk_model,
             max_tokens=max_tokens,
@@ -141,8 +159,8 @@ def _call_openrouter(
     }
 
     try:
-        with httpx.Client(timeout=_TIMEOUT) as client:
-            resp = client.post(_OPENROUTER_BASE, json=body, headers=headers)
+        client = _get_httpx_client()
+        resp = client.post(_OPENROUTER_BASE, json=body, headers=headers)
         resp.raise_for_status()
         data = resp.json()
         choices = data.get("choices") or []
