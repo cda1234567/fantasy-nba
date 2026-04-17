@@ -77,6 +77,8 @@ const state = {
   leagueSettings: null,         // result of /api/league/settings
   seasonsList: [],              // result of /api/seasons/list
   draftDisplayMode: 'prev_full',// cached from leagueSettings
+  draftAutoTimer: null,         // setTimeout id for auto AI pick
+  draftAutoBusy: false,         // lock to prevent overlapping auto picks
 };
 
 const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup'];
@@ -856,6 +858,41 @@ async function renderDraftView(root) {
   if (showHeadlines && seasonYear) {
     loadHeadlinesBanner(headlinesContainer, seasonYear);
   }
+
+  scheduleDraftAutoAdvance();
+}
+
+// Auto-advance: if it's AI's turn during draft, automatically make the pick
+// after a short delay. Clears cleanly when it's human's turn or draft complete.
+function scheduleDraftAutoAdvance() {
+  if (state.draftAutoTimer) {
+    clearTimeout(state.draftAutoTimer);
+    state.draftAutoTimer = null;
+  }
+  const d = state.draft;
+  if (!d || d.is_complete) return;
+  if (currentRoute() !== 'draft') return;
+  if (d.current_team_id === d.human_team_id) return;
+  if (state.draftAutoBusy) return;
+
+  state.draftAutoTimer = setTimeout(async () => {
+    state.draftAutoTimer = null;
+    if (state.draftAutoBusy) return;
+    const cur = state.draft;
+    if (!cur || cur.is_complete) return;
+    if (currentRoute() !== 'draft') return;
+    if (cur.current_team_id === cur.human_team_id) return;
+    state.draftAutoBusy = true;
+    try {
+      const r = await api('/api/draft/ai-advance', { method: 'POST' });
+      state.draft = r.state;
+      render();
+    } catch (err) {
+      console.warn('auto ai-advance failed', err);
+    } finally {
+      state.draftAutoBusy = false;
+    }
+  }, 1500);
 }
 
 async function loadHeadlinesBanner(container, seasonYear) {
@@ -2317,14 +2354,81 @@ function formatLogEntry(e) {
   if (e.message) return e.message;
   if (e.msg)     return e.msg;
   if (e.text)    return e.text;
-  const team = e.team_id != null ? teamName(e.team_id) || `T${e.team_id}` : null;
+
+  const tn = (id) => (id == null ? null : (teamName(id) || `T${id}`));
+  const pnames = (ids) => (Array.isArray(ids) ? ids.map(id => playerName(id)).filter(Boolean).join('、') : '');
+
+  switch (e.type) {
+    case 'season_start':
+      return `球季開打（${e.num_teams ?? '?'} 隊、${e.weeks ?? '?'} 週）`;
+    case 'season_reset':
+      return '球季已重置';
+    case 'day_advance':
+      return `第 ${e.day} 天（第 ${e.week} 週）比賽結束`;
+    case 'champion': {
+      const champ = tn(e.champion ?? e.team_id);
+      return champ ? `🏆 ${champ} 奪下總冠軍！` : '🏆 賽季結束，冠軍誕生';
+    }
+    case 'ai_decision': {
+      const team = tn(e.team_id);
+      const action = e.action === 'lineup' ? '排出先發' : (e.action || '決策');
+      return team ? `${team} AI ${action}${e.persona ? `（${e.persona}）` : ''}` : `AI ${action}`;
+    }
+    case 'trade_proposed': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      const give = pnames(e.send), get = pnames(e.receive);
+      const who = e.reasoning === 'human' ? '（你）' : '';
+      return `${from}${who} 向 ${to} 提出交易：送出 ${give || '—'}，換回 ${get || '—'}`;
+    }
+    case 'trade_accepted': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      return `${to} 同意了與 ${from} 的交易`;
+    }
+    case 'trade_rejected': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      return `${to} 拒絕了 ${from} 的交易提案`;
+    }
+    case 'trade_executed': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      const give = pnames(e.send), get = pnames(e.receive);
+      return `✅ 交易生效：${from} 送出 ${give || '—'} ⇄ ${to} 送出 ${get || '—'}`;
+    }
+    case 'trade_vetoed': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      return `🚫 ${from} ⇄ ${to} 的交易遭聯盟否決`;
+    }
+    case 'trade_expired': {
+      const from = tn(e.from_team), to = tn(e.to_team);
+      return `${from} ⇄ ${to} 的交易已過期`;
+    }
+    case 'trade_veto_vote': {
+      const voter = tn(e.voter);
+      return `${voter || '某隊'} 投下否決票（已 ${e.total_votes ?? '?'} 票）`;
+    }
+    case 'trade_cancelled': {
+      const from = tn(e.from_team);
+      return `${from || '提案方'} 撤回了交易提案`;
+    }
+  }
+
+  // Fallback with readable field names
+  const team = tn(e.team_id);
   const parts = [];
-  if (e.type)     parts.push(e.type);
+  if (e.type)     parts.push(String(e.type));
   if (team)       parts.push(team);
-  if (e.action)   parts.push(e.action);
-  if (e.persona)  parts.push(`(${e.persona})`);
-  if (e.excerpt)  parts.push('- ' + e.excerpt);
+  if (e.action)   parts.push(String(e.action));
+  if (e.persona)  parts.push(`（${e.persona}）`);
+  if (e.excerpt)  parts.push('— ' + e.excerpt);
   return parts.length ? parts.join(' ') : JSON.stringify(e);
+}
+
+function playerName(id) {
+  if (id == null) return '';
+  const cached = state.playerCache?.get?.(id);
+  if (cached && cached.name) return cached.name;
+  const byId = state.draft?.players_by_id;
+  if (byId && byId[id]?.name) return byId[id].name;
+  return `#${id}`;
 }
 
 // ================================================================ empty state helper
