@@ -685,6 +685,24 @@ def clear_lineup_override(team_id: int):
     return {"ok": True}
 
 
+@app.get("/api/season/lineup-alerts")
+def get_lineup_override_alerts():
+    """Return pending lineup_override_alerts (cleared-override notifications for the UI)."""
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        return {"alerts": []}
+    return {"alerts": state.lineup_override_alerts}
+
+
+@app.delete("/api/season/lineup-alerts")
+def clear_lineup_override_alerts():
+    """Clear the pending lineup_override_alerts list (called by UI after showing toasts)."""
+    state = _require_season()
+    state.lineup_override_alerts = []
+    storage.save_season(state.model_dump())
+    return {"ok": True}
+
+
 @app.get("/api/season/standings")
 def season_standings():
     state = _load_or_init_season()
