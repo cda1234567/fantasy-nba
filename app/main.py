@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.1"
+APP_VERSION = "0.5.2"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -149,7 +149,11 @@ def _load_or_init_season() -> Optional[SeasonState]:
             except Exception:
                 pass
         return state
-    except Exception:
+    except Exception as e:
+        # Don't silently vanish season data — surface the failure so we can debug.
+        import traceback, sys
+        print(f"[season] _load_or_init_season failed: {e!r}", file=sys.stderr)
+        traceback.print_exc()
         return None
 
 
@@ -353,7 +357,7 @@ def get_team(team_id: int):
     healthy = [pid for pid in team.roster if pid not in injured_out]
     slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
     assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
-    bench = [pid for pid in team.roster if pid not in assigned_ids]
+    bench = [pid for pid in team.roster if pid not in assigned_ids and pid not in injured_out]
 
     return {
         "team": team.model_dump(),

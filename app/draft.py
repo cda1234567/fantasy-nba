@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import random
+import unicodedata
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -29,13 +30,70 @@ AI_PERSONA_ORDER = [
 ]
 
 
+_NAME_POS_CACHE: dict[str, str] = {}
+
+
+def _normalize_name(name: str) -> str:
+    """Strip accents and lowercase so 'Jokić' matches 'Jokic'."""
+    nfd = unicodedata.normalize("NFD", name)
+    return "".join(c for c in nfd if unicodedata.category(c) != "Mn").lower().strip()
+
+
+def _get_name_pos_map() -> dict[str, str]:
+    """Lazy-load name→pos map from players.json (curated top-165)."""
+    global _NAME_POS_CACHE
+    if _NAME_POS_CACHE:
+        return _NAME_POS_CACHE
+    try:
+        p = Path(__file__).resolve().parent / "data" / "players.json"
+        raw = json.loads(p.read_text(encoding="utf-8"))
+        _NAME_POS_CACHE = {
+            _normalize_name(r["name"]): r["pos"]
+            for r in raw if r.get("pos")
+        }
+    except Exception:
+        _NAME_POS_CACHE = {"_fail": ""}  # sentinel to avoid re-tries
+    return _NAME_POS_CACHE
+
+
+def _infer_pos_from_stats(p: Player) -> str:
+    """Fallback pos when name lookup misses — heuristic from stats.
+
+    Aims for a reasonable distribution across 5 positions rather than SF-heavy.
+    """
+    reb = p.reb or 0.0
+    ast = p.ast or 0.0
+    blk = p.blk or 0.0
+    # Big men: high blk or high reb
+    if blk >= 1.0 or reb >= 7.5:
+        return "C"
+    # Power forwards: good rebounders with modest playmaking
+    if reb >= 5.5 and ast < 3.5:
+        return "PF"
+    # Point guards: primary playmakers
+    if ast >= 4.5:
+        return "PG"
+    # Shooting guards: secondary creators with guard profile
+    if ast >= 2.5 and reb < 5.0:
+        return "SG"
+    # Forwards: mid-range rebounding
+    if reb >= 4.0:
+        return "SF"
+    # Defaults — split by ast
+    return "SG" if ast >= 2.0 else "SF"
+
+
 def _load_players(path: Path, weights: dict | None = None) -> list[Player]:
     raw = json.loads(path.read_text(encoding="utf-8"))
+    name_pos = _get_name_pos_map()
     players: list[Player] = []
     for row in raw:
         # season files may have prev_fppg; drop it so Player() doesn't choke
         row_clean = {k: v for k, v in row.items() if k != "prev_fppg"}
         p = Player(**row_clean)
+        # Backfill missing pos: prefer curated name map, fallback to stat inference.
+        if not p.pos:
+            p.pos = name_pos.get(_normalize_name(p.name)) or _infer_pos_from_stats(p)
         p.fppg = round(compute_fppg(p, weights), 2)
         players.append(p)
     return players
