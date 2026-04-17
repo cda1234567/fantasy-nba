@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.env.localserver
+.env.server
+/data/
+/data_smoke/
+.omc/
+.DS_Store
+tests/screenshots/
+tests/run_output.log
+tests/run_report.json

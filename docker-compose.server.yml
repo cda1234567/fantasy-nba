@@ -1,0 +1,13 @@
+services:
+  fantasy:
+    image: ghcr.io/cda1234567/fantasy-nba:latest
+    container_name: fantasy-nba
+    ports:
+      - "3410:3410"
+    volumes:
+      - ~/fantasy/data:/app/data
+    env_file:
+      - .env.server
+    restart: unless-stopped
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"

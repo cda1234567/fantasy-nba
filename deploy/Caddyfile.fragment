@@ -1,0 +1,13 @@
+nbafantasy.cda1234567.com {
+    encode gzip zstd
+    basicauth {
+        {$APP_BASIC_AUTH_USER} {$APP_BASIC_AUTH_PASSWORD_HASH}
+    }
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+    reverse_proxy localhost:3410
+}

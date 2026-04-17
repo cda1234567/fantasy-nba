@@ -1,0 +1,11 @@
+services:
+  fantasy:
+    build: .
+    container_name: fantasy-nba-local
+    ports:
+      - "${APP_PORT:-3410}:3410"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env.localserver
+    restart: unless-stopped
