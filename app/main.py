@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -504,6 +504,31 @@ def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest()):
         draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
+
+
+@app.get("/api/season/advance-week/stream")
+def season_advance_week_stream():
+    _require_setup()
+    state = _require_season()
+    settings = _current_settings()
+
+    def event_stream():
+        nonlocal state
+        try:
+            for _ in range(7):
+                if state.champion is not None:
+                    break
+                state = season_advance_day(
+                    draft, state, storage, ai_gm=ai_gm, use_ai=True, settings=settings
+                )
+                yield f"data: {json.dumps({'day': state.current_day, 'week': state.current_week})}\n\n"
+                if state.current_day % 7 == 0:
+                    break
+            yield f"data: {json.dumps({'done': True, 'week': state.current_week})}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.post("/api/season/sim-to-playoffs")

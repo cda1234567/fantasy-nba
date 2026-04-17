@@ -3097,16 +3097,49 @@ async function onAdvanceDay() {
 
 async function onAdvanceWeek() {
   const prevWeek = state.standings?.current_week || state.schedule?.current_week || 1;
-  await mutate(async () => {
-    const r = await api('/api/season/advance-week', { method: 'POST' });
-    await refreshState();
-    refreshLogs();
-    render();
-    const summary = r?.summary || r?.message || '已推進一週';
-    toast(summary, 'success');
+
+  // Show progress indicator
+  const progressId = 'advance-week-progress';
+  let progressEl = document.getElementById(progressId);
+  if (!progressEl) {
+    progressEl = document.createElement('div');
+    progressEl.id = progressId;
+    progressEl.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;padding:10px 20px;border-radius:8px;z-index:9999;font-size:14px;box-shadow:0 4px 12px rgba(0,0,0,0.4)';
+    document.body.appendChild(progressEl);
+  }
+  progressEl.textContent = '推進中... 準備中';
+
+  return new Promise((resolve) => {
+    const es = new EventSource('/api/season/advance-week/stream');
+
+    es.onmessage = async (e) => {
+      const data = JSON.parse(e.data);
+      if (data.error) {
+        es.close();
+        progressEl.remove();
+        toast('推進失敗: ' + data.error, 'error');
+        resolve();
+      } else if (data.done) {
+        es.close();
+        progressEl.remove();
+        await refreshState();
+        refreshLogs();
+        render();
+        toast('已推進一週', 'success');
+        setTimeout(() => onShowWeekRecap(prevWeek), 400);
+        resolve();
+      } else {
+        progressEl.textContent = `推進中... 第 ${data.day % 7 || 7} 天 / 7 天`;
+      }
+    };
+
+    es.onerror = async () => {
+      es.close();
+      progressEl.remove();
+      toast('推進週次時連線中斷', 'error');
+      resolve();
+    };
   });
-  // Auto-show recap for the week we just completed
-  setTimeout(() => onShowWeekRecap(prevWeek), 400);
 }
 
 async function onShowWeekRecap(week) {
