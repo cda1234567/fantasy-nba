@@ -2038,3 +2038,28 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
     font-size: 16px;
   }
 }
+
+/* ── Iter5 E4: z-index layering + mobile polish ─────────────────────────── */
+
+/* Z-index overrides */
+.recap-overlay   { z-index: 1100; }
+.modal-overlay   { z-index: 1050; }
+.toast,
+.toast-container { z-index: 1200; }
+
+/* Universal overlay sizing */
+.recap-dialog,
+.modal-box,
+.activity-ticker {
+  max-width: min(90vw, 720px);
+  padding: 12px;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 480px) {
+  .recap-grid { grid-template-columns: 1fr; }
+  .recap-card { font-size: 13px; padding: 8px; }
+  .modal-box, .recap-dialog { padding: 10px; }
+  .btn-primary, .btn-secondary, .recap-nav-btn { width: 100%; margin-bottom: 4px; }
+  .activity-ticker-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
