@@ -387,29 +387,32 @@ class TradeManager:
                 if not accept and not already_counter:
                     counter_dict = ai_gm.maybe_counter(trade, cp, self.draft, self._settings)
                     if counter_dict is not None:
-                        # Move original to history as "countered"
-                        trade.status = "countered"
-                        self._move_to_history(trade)
-                        self._save()
-                        # Create the counter-offer trade
+                        # Create the counter-offer FIRST; only mark original as countered
+                        # after successful creation to avoid data loss on failure.
+                        # maybe_counter returns IDs from the ORIGINAL trade perspective;
+                        # when AI becomes the proposer, swap the sides.
                         try:
                             counter_trade = self.propose(
                                 from_team=trade.to_team,
                                 to_team=trade.from_team,
-                                send_ids=counter_dict["send_player_ids"],
-                                receive_ids=counter_dict["receive_player_ids"],
+                                send_ids=counter_dict["receive_player_ids"],
+                                receive_ids=counter_dict["send_player_ids"],
                                 current_day=current_day,
                                 current_week=trade.proposed_week,
                                 reasoning=f"還價：{cp.name}",
                             )
                             counter_trade.counter_of = trade.id
+                            # Original trade is now superseded; move to history
+                            trade.status = "countered"
+                            self._move_to_history(trade)
                             self._save()
+                            decided.append(trade)
+                            continue
                         except Exception as exc:
                             import traceback, sys
                             print(f"[trades] counter-offer creation failed: {exc!r}", file=sys.stderr)
                             traceback.print_exc()
-                        decided.append(trade)
-                        continue
+                            # Fall through to normal reject — original trade stays intact
                 self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
             decided.append(trade)
         return decided

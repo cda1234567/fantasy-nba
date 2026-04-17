@@ -310,7 +310,9 @@ def _set_lineups(
                 if len(valid) >= lineup_sz:
                     season.lineups[team.id] = valid[:lineup_sz]
                 else:
-                    # Fall back to default if override no longer has enough valid players
+                    # Override no longer fillable — clear it so the UI badge reflects reality
+                    # and the user knows they need to set a new lineup.
+                    season.lineup_overrides.pop(team.id, None)
                     season.lineups[team.id] = default_lineup(
                         team.roster, draft.players_by_id, lineup_sz, injured_out
                     )

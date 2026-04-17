@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.10"
+APP_VERSION = "0.5.11"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -851,8 +851,11 @@ def season_week_recap(week: int = Query(..., ge=1)):
         t = teams_by_id.get(tid)
         return t.name if t else f"T{tid}"
 
-    # Top 5 single-game performances this week
+    # Top 5 single-game performances this week.
+    # Note: game_logs are trimmed to the last 3 weeks by advance_day, so requesting
+    # an older recap returns empty performers — flag it so the UI can show a notice.
     week_logs = [g for g in state.game_logs if g.week == week and g.played]
+    logs_trimmed = (not week_logs) and (state.current_week - week > 2)
     week_logs_sorted = sorted(week_logs, key=lambda g: g.fp, reverse=True)
     top_performers = []
     for g in week_logs_sorted[:5]:
@@ -919,6 +922,7 @@ def season_week_recap(week: int = Query(..., ge=1)):
         "closest_game": closest_game,
         "human_matchup": human_matchup,
         "human_top_performer": human_top,
+        "logs_trimmed": logs_trimmed,
     }
 
 
