@@ -1614,7 +1614,8 @@ async function _saveLineupOverride(teamId, starters, todayOnly = false) {
     });
     renderTeamBody();
   } catch (e) {
-    alert('儲存失敗：' + e.message);
+    const msg = e.message || '儲存失敗';
+    toast(msg.includes('無法填滿') ? msg : '陣容儲存失敗：' + msg, 'error', 6000);
   }
 }
 

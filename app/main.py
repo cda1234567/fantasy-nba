@@ -662,6 +662,12 @@ def set_lineup_override(req: LineupOverrideRequest):
         if not eligible_for_any:
             raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
 
+    # Feasibility check: ensure all 10 slots can be filled
+    unfilled = check_lineup_feasibility(list(req.starters), draft.players_by_id)
+    if unfilled:
+        slots_str = '/'.join(unfilled)
+        raise HTTPException(400, f'這 10 位球員無法填滿全部先發位置 (缺:{slots_str})')
+
     state.lineup_overrides[human.id] = list(req.starters)
     if req.today_only:
         state.lineup_override_today_only[human.id] = True
