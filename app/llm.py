@@ -10,16 +10,14 @@ DEFAULT_MODEL_ID = "anthropic/claude-haiku-4.5"
 
 OPENROUTER_MODELS: list[str] = [
     "anthropic/claude-haiku-4.5",
-    "anthropic/claude-3.5-sonnet",
     "openai/gpt-4o-mini",
     "openai/gpt-4.1-mini",
     "google/gemini-flash-1.5",
-    "google/gemini-2.0-flash-exp",
+    "google/gemini-2.0-flash-001",
     "meta-llama/llama-3.3-70b-instruct",
     "mistralai/mistral-small-3.1-24b-instruct",
     "deepseek/deepseek-chat",
     "qwen/qwen-2.5-72b-instruct",
-    "x-ai/grok-2-1212",
 ]
 
 _OPENROUTER_BASE = "https://openrouter.ai/api/v1/chat/completions"
