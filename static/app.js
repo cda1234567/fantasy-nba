@@ -2936,6 +2936,7 @@ async function onAdvanceDay() {
 }
 
 async function onAdvanceWeek() {
+  const prevWeek = state.standings?.current_week || state.schedule?.current_week || 1;
   await mutate(async () => {
     const r = await api('/api/season/advance-week', { method: 'POST' });
     await refreshState();
@@ -2944,6 +2945,108 @@ async function onAdvanceWeek() {
     const summary = r?.summary || r?.message || '已推進一週';
     toast(summary, 'success');
   });
+  // Auto-show recap for the week we just completed
+  setTimeout(() => onShowWeekRecap(prevWeek), 400);
+}
+
+async function onShowWeekRecap(week) {
+  if (!week) return;
+  try {
+    const data = await api(`/api/season/week-recap?week=${week}`);
+    renderWeekRecapOverlay(data);
+  } catch (err) {
+    // 404 = week not resolved yet (e.g. first week of playoffs) — silent
+    if (!String(err?.message || err).includes('404')) {
+      toast('讀取週報失敗: ' + (err?.message || err), 'error');
+    }
+  }
+}
+
+function renderWeekRecapOverlay(r) {
+  const existing = document.getElementById('recap-overlay');
+  if (existing) existing.remove();
+
+  const humanId = state.draft?.human_team_id;
+  const closeBtn = el('button', { class: 'btn small ghost', onclick: () => document.getElementById('recap-overlay')?.remove() }, '關閉');
+
+  const matchupList = el('ul', { class: 'recap-matchups' });
+  for (const m of (r.matchups || [])) {
+    const aWin = m.winner === m.team_a;
+    const bWin = m.winner === m.team_b;
+    const human = m.team_a === humanId || m.team_b === humanId;
+    matchupList.append(el('li', { class: human ? 'recap-matchup human-row' : 'recap-matchup' },
+      el('span', { class: aWin ? 'team win' : 'team' }, m.team_a_name),
+      el('span', { class: 'score' }, `${m.score_a.toFixed(1)}`),
+      el('span', { class: 'vs' }, 'vs'),
+      el('span', { class: 'score' }, `${m.score_b.toFixed(1)}`),
+      el('span', { class: bWin ? 'team win' : 'team' }, m.team_b_name),
+    ));
+  }
+
+  const perfList = el('ol', { class: 'recap-top-performers' });
+  for (const p of (r.top_performers || [])) {
+    perfList.append(el('li', {},
+      el('span', { class: 'pname' }, p.player_name),
+      el('span', { class: 'pteam' }, p.team_name),
+      el('span', { class: 'pfp' }, `${p.fp.toFixed(1)} FP`),
+      el('span', { class: 'pline' }, `${p.pts}p / ${p.reb}r / ${p.ast}a`),
+    ));
+  }
+
+  const blowoutCard = r.biggest_blowout
+    ? el('div', { class: 'recap-card' },
+        el('div', { class: 'recap-card-label' }, '💥 最懸殊比賽'),
+        el('div', { class: 'recap-card-body' },
+          `${r.biggest_blowout.winner_name || '平手'} 以 ${r.biggest_blowout.diff.toFixed(1)} 分差擊敗對手`,
+        ))
+    : null;
+
+  const closeCard = r.closest_game
+    ? el('div', { class: 'recap-card' },
+        el('div', { class: 'recap-card-label' }, '⚔️ 最膠著比賽'),
+        el('div', { class: 'recap-card-body' },
+          `${r.closest_game.team_a_name} vs ${r.closest_game.team_b_name}，僅差 ${r.closest_game.diff.toFixed(1)} 分`,
+        ))
+    : null;
+
+  const humanCard = r.human_matchup
+    ? el('div', { class: 'recap-card recap-human' },
+        el('div', { class: 'recap-card-label' },
+          r.human_matchup.winner === humanId ? '✅ 你贏了' :
+          r.human_matchup.winner == null ? '🤝 平手' : '❌ 你輸了'),
+        el('div', { class: 'recap-card-body' },
+          `${r.human_matchup.team_a_name} ${r.human_matchup.score_a.toFixed(1)} — ${r.human_matchup.score_b.toFixed(1)} ${r.human_matchup.team_b_name}`,
+          r.human_top_performer
+            ? el('div', { class: 'recap-human-top' },
+                `本週MVP：${r.human_top_performer.player_name} (${r.human_top_performer.fp.toFixed(1)} FP)`)
+            : null,
+        ))
+    : null;
+
+  const dialog = el('div', { class: 'recap-dialog' },
+    el('div', { class: 'recap-head' },
+      el('h2', {}, `第 ${r.week} 週戰報`),
+      closeBtn,
+    ),
+    el('div', { class: 'recap-grid' },
+      humanCard,
+      blowoutCard,
+      closeCard,
+    ),
+    el('section', { class: 'recap-section' },
+      el('h3', {}, '🔥 本週 Top 5 表現'),
+      perfList,
+    ),
+    el('section', { class: 'recap-section' },
+      el('h3', {}, '📋 所有比賽'),
+      matchupList,
+    ),
+  );
+
+  const overlay = el('div', { class: 'recap-overlay', id: 'recap-overlay', onclick: (e) => {
+    if (e.target.id === 'recap-overlay') e.currentTarget.remove();
+  }}, dialog);
+  document.body.append(overlay);
 }
 
 async function onSimToPlayoffs() {

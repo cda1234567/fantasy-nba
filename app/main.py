@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.5"
+APP_VERSION = "0.5.6"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -75,8 +75,10 @@ _initial_draft = storage.load_draft()
 if _initial_draft:
     try:
         draft.restore(_initial_draft)
-    except Exception:
-        pass
+    except Exception as _exc:
+        import traceback as _tb, sys as _sys
+        print(f"[startup] draft.restore failed: {_exc!r}", file=_sys.stderr)
+        _tb.print_exc()
 
 
 # ---------------------------------------------------------------------------
@@ -121,8 +123,10 @@ def _state_snapshot() -> DraftStateOut:
 def _persist_draft() -> None:
     try:
         storage.save_draft(draft.snapshot())
-    except Exception:
-        pass
+    except Exception as exc:
+        import traceback, sys
+        print(f"[persist] save_draft failed: {exc!r}", file=sys.stderr)
+        traceback.print_exc()
 
 
 def _load_or_init_season() -> Optional[SeasonState]:
@@ -146,8 +150,10 @@ def _load_or_init_season() -> Optional[SeasonState]:
         if remapped:
             try:
                 storage.save_season(state.model_dump())
-            except Exception:
-                pass
+            except Exception as exc:
+                import traceback, sys
+                print(f"[season] save after model remap failed: {exc!r}", file=sys.stderr)
+                traceback.print_exc()
         return state
     except Exception as e:
         # Don't silently vanish season data — surface the failure so we can debug.
@@ -579,12 +585,16 @@ def fa_claim(req: FAClaimRequest):
     # Persist
     try:
         storage.save_draft(draft.snapshot())
-    except Exception:
-        pass
+    except Exception as exc:
+        import traceback, sys
+        print(f"[waiver] save_draft failed: {exc!r}", file=sys.stderr)
+        traceback.print_exc()
     try:
         storage.save_season(state.model_dump())
-    except Exception:
-        pass
+    except Exception as exc:
+        import traceback, sys
+        print(f"[waiver] save_season failed: {exc!r}", file=sys.stderr)
+        traceback.print_exc()
 
     drop_name = draft.players_by_id[req.drop_player_id].name
     add_name = draft.players_by_id[req.add_player_id].name
@@ -751,6 +761,97 @@ def season_reset():
     storage.clear_trades()
     storage.append_log({"type": "season_reset"})
     return {"ok": True}
+
+
+@app.get("/api/season/week-recap")
+def season_week_recap(week: int = Query(..., ge=1)):
+    """Weekly recap: matchup scores, top 5 single-game performances that week,
+    biggest blowout, closest game, human matchup highlight."""
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        raise HTTPException(400, "Season not started")
+
+    week_matchups = [m for m in state.schedule if m.week == week and m.complete]
+    if not week_matchups:
+        raise HTTPException(404, f"Week {week} has no resolved matchups yet")
+
+    players_by_id = {p.id: p for p in draft.players}
+    teams_by_id = {t.id: t for t in draft.teams}
+    human_id = draft.human_team_id
+
+    def _team_name(tid: int) -> str:
+        t = teams_by_id.get(tid)
+        return t.name if t else f"T{tid}"
+
+    # Top 5 single-game performances this week
+    week_logs = [g for g in state.game_logs if g.week == week and g.played]
+    week_logs_sorted = sorted(week_logs, key=lambda g: g.fp, reverse=True)
+    top_performers = []
+    for g in week_logs_sorted[:5]:
+        p = players_by_id.get(g.player_id)
+        top_performers.append({
+            "player_id": g.player_id,
+            "player_name": p.name if p else f"#{g.player_id}",
+            "team_id": g.team_id,
+            "team_name": _team_name(g.team_id),
+            "day": g.day,
+            "fp": round(float(g.fp), 1),
+            "pts": round(float(g.pts), 1),
+            "reb": round(float(g.reb), 1),
+            "ast": round(float(g.ast), 1),
+            "stl": round(float(g.stl), 1),
+            "blk": round(float(g.blk), 1),
+        })
+
+    # Matchups + diff
+    matchups_out = []
+    biggest_blowout = None
+    closest_game = None
+    human_matchup = None
+    for m in week_matchups:
+        diff = abs(float(m.score_a) - float(m.score_b))
+        entry = {
+            "team_a": m.team_a,
+            "team_a_name": _team_name(m.team_a),
+            "team_b": m.team_b,
+            "team_b_name": _team_name(m.team_b),
+            "score_a": round(float(m.score_a), 2),
+            "score_b": round(float(m.score_b), 2),
+            "winner": m.winner,
+            "winner_name": _team_name(m.winner) if m.winner else None,
+            "diff": round(diff, 2),
+        }
+        matchups_out.append(entry)
+        if biggest_blowout is None or diff > biggest_blowout["diff"]:
+            biggest_blowout = entry
+        if closest_game is None or diff < closest_game["diff"]:
+            closest_game = entry
+        if m.team_a == human_id or m.team_b == human_id:
+            human_matchup = entry
+
+    # Human team top scorer this week (if human has a roster)
+    human_top = None
+    if human_id is not None:
+        human_logs = [g for g in week_logs if g.team_id == human_id]
+        if human_logs:
+            g = max(human_logs, key=lambda x: x.fp)
+            p = players_by_id.get(g.player_id)
+            human_top = {
+                "player_id": g.player_id,
+                "player_name": p.name if p else f"#{g.player_id}",
+                "day": g.day,
+                "fp": round(float(g.fp), 1),
+            }
+
+    return {
+        "week": week,
+        "matchups": matchups_out,
+        "top_performers": top_performers,
+        "biggest_blowout": biggest_blowout,
+        "closest_game": closest_game,
+        "human_matchup": human_matchup,
+        "human_top_performer": human_top,
+    }
 
 
 @app.get("/api/season/summary")
@@ -958,8 +1059,10 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                 return
             try:
                 bg_mgr.collect_peer_commentary_sync(bg_trade, ai_gm)
-            except Exception:
-                pass
+            except Exception as exc:
+                import traceback, sys
+                print(f"[finalize] peer_commentary failed: {exc!r}", file=sys.stderr)
+                traceback.print_exc()
             cp = draft.teams[to_team]
             if not cp.is_human:
                 # Re-read state right before AI decision: the human may have
@@ -976,10 +1079,14 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                     return
                 try:
                     bg_mgr2.auto_decide_ai(ai_gm, current_day)
-                except Exception:
-                    pass
-        except Exception:
-            pass
+                except Exception as exc:
+                    import traceback, sys
+                    print(f"[finalize] auto_decide_ai failed: {exc!r}", file=sys.stderr)
+                    traceback.print_exc()
+        except Exception as exc:
+            import traceback, sys
+            print(f"[finalize] outer failure: {exc!r}", file=sys.stderr)
+            traceback.print_exc()
 
     background.add_task(_finalize, trade.id, req.to_team, season.current_day)
     return trade.model_dump()

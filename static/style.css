@@ -1805,3 +1805,53 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
   padding: 12px 16px;
   border-top: 1px solid var(--border-muted);
 }
+
+/* ---------- Weekly recap overlay (v0.5.6) ---------- */
+.recap-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 950; animation: summary-fade 200ms ease-out;
+}
+.recap-dialog {
+  background: var(--panel); color: var(--text);
+  border: 1px solid var(--border); border-radius: 10px;
+  width: min(760px, 94vw); max-height: 88vh; overflow: auto;
+  padding: 18px 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.recap-head {
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border-muted); padding-bottom: 10px; margin-bottom: 14px;
+}
+.recap-head h2 { margin: 0; font-size: 22px; }
+.recap-grid {
+  display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 16px;
+}
+.recap-card {
+  background: var(--panel-alt, #2a2d3a); padding: 10px 12px;
+  border-radius: 8px; border: 1px solid var(--border-muted);
+}
+.recap-card.recap-human { border-color: #f5a623; }
+.recap-card-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.recap-card-body { font-size: 14px; line-height: 1.4; }
+.recap-human-top { margin-top: 6px; font-size: 12px; color: #f5a623; }
+.recap-section { margin-top: 14px; }
+.recap-section h3 { margin: 0 0 8px 0; font-size: 15px; color: var(--muted); }
+.recap-top-performers { list-style: decimal inside; padding: 0; margin: 0; }
+.recap-top-performers li {
+  display: grid; grid-template-columns: 1.6fr 1fr 0.8fr 1.2fr; gap: 8px;
+  padding: 4px 0; border-bottom: 1px dashed var(--border-muted); font-size: 13px;
+}
+.recap-top-performers .pfp { color: #f5a623; font-weight: 600; }
+.recap-top-performers .pline { color: var(--muted); font-size: 12px; }
+.recap-matchups { list-style: none; padding: 0; margin: 0; }
+.recap-matchup {
+  display: grid; grid-template-columns: 1fr 60px 30px 60px 1fr; gap: 6px;
+  align-items: center; padding: 6px 8px; font-size: 13px;
+  border-bottom: 1px dashed var(--border-muted);
+}
+.recap-matchup.human-row { background: rgba(245, 166, 35, 0.1); border-radius: 4px; }
+.recap-matchup .team { font-weight: 500; }
+.recap-matchup .team.win { color: #4caf50; font-weight: 700; }
+.recap-matchup .score { text-align: center; font-family: monospace; }
+.recap-matchup .vs { text-align: center; color: var(--muted); font-size: 11px; }

@@ -446,8 +446,10 @@ def _run_trades_daily(
             if not trade.peer_commentary:
                 try:
                     mgr.collect_peer_commentary_sync(trade, ai_gm)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    import traceback, sys
+                    print(f"[season-daily] peer_commentary failed: {exc!r}", file=sys.stderr)
+                    traceback.print_exc()
             accept, _ = ai_gm.decide_trade(trade, cp, draft, settings)
             try:
                 mgr.decide(trade.id, cp.id, accept, current_day)
@@ -574,8 +576,10 @@ def advance_day(
         try:
             for ev in _detect_milestones(draft, season, week):
                 storage.append_log(ev)
-        except Exception:
-            pass
+        except Exception as exc:
+            import traceback, sys
+            print(f"[milestones] detection failed: {exc!r}", file=sys.stderr)
+            traceback.print_exc()
 
     # Trim game_logs to the last 3 weeks to keep the save payload bounded.
     # _resolve_week() accumulates standings in-place so older logs are not needed.
