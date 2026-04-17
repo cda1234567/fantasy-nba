@@ -48,6 +48,32 @@ def _player_positions(pos: str) -> set[str]:
     return {p.strip().upper() for p in pos.replace(",", "/").split("/") if p.strip()}
 
 
+def check_lineup_feasibility(
+    player_ids: list[int],
+    players_by_id: dict[int, "Player"],
+    slot_order: list[str] = LINEUP_SLOTS,
+) -> list[str]:
+    """Return slot names that could NOT be filled by the given players.
+    Empty list means all slots can be filled (feasible lineup).
+    Uses the same greedy order as assign_slots.
+    """
+    used: set[int] = set()
+    unfilled: list[str] = []
+    valid_ids = [pid for pid in player_ids if pid in players_by_id]
+    for slot_name in slot_order:
+        eligible_pos = SLOT_ELIGIBILITY.get(slot_name, set())
+        candidates = [
+            pid for pid in valid_ids
+            if pid not in used and (_player_positions(players_by_id[pid].pos) & eligible_pos)
+        ]
+        candidates.sort(key=lambda pid: players_by_id[pid].fppg, reverse=True)
+        if candidates:
+            used.add(candidates[0])
+        else:
+            unfilled.append(slot_name)
+    return unfilled
+
+
 def assign_slots(
     player_ids: list[int],
     players_by_id: dict[int, "Player"],
@@ -312,6 +338,10 @@ def _set_lineups(
                 valid = [pid for pid in override if pid in roster_set and pid not in injured_out]
                 if len(valid) >= lineup_sz:
                     season.lineups[team.id] = valid[:lineup_sz]
+                    # One-shot: auto-clear after applying
+                    if season.lineup_override_today_only.get(team.id):
+                        season.lineup_overrides.pop(team.id, None)
+                        season.lineup_override_today_only.pop(team.id, None)
                 else:
                     # Override no longer fillable — clear it so the UI badge reflects reality
                     # and the user knows they need to set a new lineup.
@@ -321,6 +351,7 @@ def _set_lineups(
                         "week": season.current_week,
                     })
                     season.lineup_overrides.pop(team.id, None)
+                    season.lineup_override_today_only.pop(team.id, None)
                     season.lineups[team.id] = default_lineup(
                         team.roster, draft.players_by_id, lineup_sz, injured_out
                     )

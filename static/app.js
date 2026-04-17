@@ -1561,6 +1561,10 @@ function openLineupModal(data) {
         ),
       ),
       el('div', { class: 'modal-foot' },
+        el('label', { class: 'today-only-label', style: 'display:flex;align-items:center;gap:6px;font-size:0.85rem;' },
+          el('input', { type: 'checkbox', id: 'chk-today-only' }),
+          '僅今日鎖定',
+        ),
         el('button', { class: 'btn', id: 'btn-save-lineup' }, '儲存先發'),
         el('button', { class: 'btn ghost', id: 'btn-cancel-lineup' }, '取消'),
       ),
@@ -1596,16 +1600,17 @@ function openLineupModal(data) {
       alert(`請選滿 ${targetCount} 名先發球員（目前 ${selected.size} 人）`);
       return;
     }
+    const todayOnly = !!document.getElementById('chk-today-only')?.checked;
     modal.remove();
-    await _saveLineupOverride(team.id, [...selected]);
+    await _saveLineupOverride(team.id, [...selected], todayOnly);
   });
 }
 
-async function _saveLineupOverride(teamId, starters) {
+async function _saveLineupOverride(teamId, starters, todayOnly = false) {
   try {
     await api('/api/season/lineup', {
       method: 'POST',
-      body: JSON.stringify({ team_id: teamId, starters }),
+      body: JSON.stringify({ team_id: teamId, starters, today_only: todayOnly }),
     });
     renderTeamBody();
   } catch (e) {

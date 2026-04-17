@@ -33,6 +33,7 @@ from .season import (
     REGULAR_WEEKS,
     advance_day as season_advance_day,
     advance_week as season_advance_week,
+    check_lineup_feasibility,
     sim_playoffs as season_sim_playoffs,
     sim_to_playoffs as season_sim_to_playoffs,
     start_season as season_start,

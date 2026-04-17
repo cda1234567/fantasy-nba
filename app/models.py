@@ -163,6 +163,8 @@ class SeasonState(BaseModel):
     human_claims: list[dict] = Field(default_factory=list)
     # Human lineup overrides: team_id -> [player_id x10]
     lineup_overrides: dict[int, list[int]] = Field(default_factory=dict)
+    # One-shot overrides: team_id -> True means auto-clear after next _set_lineups
+    lineup_override_today_only: dict[int, bool] = Field(default_factory=dict)
     # Pending alerts for the UI: cleared-override notifications
     lineup_override_alerts: list[dict] = Field(default_factory=list)
 
