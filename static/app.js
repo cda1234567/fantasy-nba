@@ -211,6 +211,12 @@ async function refreshState() {
   }
   // Refresh activity ticker if panel is visible.
   renderActivityTicker();
+  // Check for cleared lineup-override alerts and toast the user.
+  const alertsPayload = await apiSoft('/api/season/lineup-alerts');
+  if (alertsPayload?.alerts?.length) {
+    toast('你的手動陣容已失效，已恢復自動', 'warn', 5000);
+    apiSoft('/api/season/lineup-alerts', { method: 'DELETE' }).catch(() => {});
+  }
 }
 
 async function refreshLogs() {
@@ -1783,6 +1789,7 @@ function renderLeagueView(root) {
       el('div', { class: 'actions' },
         el('button', { class: 'btn ghost', onclick: onAdvanceDay }, '推進一天'),
         el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
+        el('button', { class: 'btn ghost', onclick: () => { const w = currentWeekNumber() - 1; if (w >= 1) onShowWeekRecap(w); else toast('尚無已完成週次', 'info'); } }, '📅 週報'),
         el('button', { id: 'btn-propose-trade', class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
         el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
         state.standings && state.standings.champion != null

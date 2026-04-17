@@ -1855,6 +1855,22 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
 .recap-matchup .team.win { color: #4caf50; font-weight: 700; }
 .recap-matchup .score { text-align: center; font-family: monospace; }
 .recap-matchup .vs { text-align: center; color: var(--muted); font-size: 11px; }
+.recap-nav { display: flex; align-items: center; gap: 10px; }
+.recap-nav h2 { margin: 0; font-size: 20px; }
+.recap-nav-btn {
+  background: var(--panel-alt, #2a2d3a); color: var(--text);
+  border: 1px solid var(--border-muted); border-radius: 6px;
+  padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap;
+  transition: opacity 0.15s;
+}
+.recap-nav-btn:disabled { opacity: 0.35; cursor: default; }
+.recap-nav-btn:not(:disabled):hover { background: var(--border-muted); }
+.recap-trimmed-notice {
+  font-size: 12px; color: var(--muted); background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border-muted); border-radius: 6px;
+  padding: 6px 12px; margin-bottom: 12px; text-align: center;
+}
+.recap-history-flag { color: var(--muted); }
 
 /* ---------- Activity feed ticker (v0.5.9) ---------- */
 .activity-ticker { margin-top: 16px; }
