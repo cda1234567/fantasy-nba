@@ -60,9 +60,44 @@ const state = {
     counterpartyRoster: [],
     humanRoster: [],
   },
+  // League setup
+  leagueStatus: null,           // result of /api/league/status
+  leagueSettings: null,         // result of /api/league/settings
+  seasonsList: [],              // result of /api/seasons/list
+  draftDisplayMode: 'prev_full',// cached from leagueSettings
 };
 
-const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule'];
+const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup'];
+
+// ---------------------------------------------------------------- defaults
+const DEFAULT_TEAM_NAMES = [
+  '我的隊伍', 'BPA 書呆子', '控制失誤', '巨星搭配飼料',
+  '全能建造者', '年輕上檔', '老將求勝', '反主流',
+];
+
+const DEFAULT_SETTINGS = {
+  league_name: '我的聯盟',
+  season_year: '2025-26',
+  player_team_index: 0,
+  team_names: [...DEFAULT_TEAM_NAMES],
+  randomize_draft_order: false,
+  num_teams: 8,
+  roster_size: 13,
+  starters_per_day: 10,
+  il_slots: 3,
+  scoring_weights: { pts: 1, reb: 1.2, ast: 1.5, stl: 2.5, blk: 2.5, to: -1 },
+  regular_season_weeks: 20,
+  playoff_teams: 6,
+  trade_deadline_week: null,
+  ai_trade_frequency: 'normal',
+  ai_trade_style: 'balanced',
+  veto_threshold: 3,
+  veto_window_days: 2,
+  ai_decision_mode: 'auto',
+  draft_display_mode: 'prev_full',
+  show_offseason_headlines: true,
+  setup_complete: false,
+};
 
 // ---------------------------------------------------------------- api wrapper
 async function api(path, opts = {}) {
@@ -102,7 +137,7 @@ function setConnected(ok) {
   if (!dot || !text) return;
   dot.classList.toggle('ok', ok);
   dot.classList.toggle('bad', !ok);
-  text.textContent = ok ? 'Online' : 'Offline';
+  text.textContent = ok ? '已連線' : '連線中斷';
 }
 
 // ---------------------------------------------------------------- toast
@@ -118,7 +153,7 @@ function toast(message, kind = 'info', ms = 3000) {
 }
 
 // ---------------------------------------------------------------- confirm modal
-function confirmDialog(title, body, okLabel = 'OK') {
+function confirmDialog(title, body, okLabel = '確定') {
   return new Promise((resolve) => {
     const dlg = $('#dlg-confirm');
     $('#confirm-title').textContent = title;
@@ -165,7 +200,7 @@ async function refreshLogs() {
 
 // ---------------------------------------------------------------- router
 function currentRoute() {
-  const hash = (location.hash || '').replace(/^#/, '').trim();
+  const hash = (location.hash || '').replace(/^#\/?/, '').trim();
   return VALID_ROUTES.includes(hash) ? hash : 'draft';
 }
 
@@ -187,6 +222,7 @@ function render() {
   main.innerHTML = '';
 
   switch (route) {
+    case 'setup':    renderSetupView(main);    break;
     case 'draft':    renderDraftView(main);    break;
     case 'teams':    renderTeamsView(main);    break;
     case 'fa':       renderFaView(main);       break;
@@ -221,23 +257,564 @@ function stopLogPolling() {
   state.logPollTimer = null;
 }
 
-// ================================================================ DRAFT VIEW
-function renderDraftView(root) {
-  const d = state.draft;
-  if (!d) {
-    root.append(el('div', { class: 'empty-state' }, 'Loading draft state...'));
+// ================================================================ SETUP VIEW
+
+// In-memory form state for the setup form
+let _setupForm = null;
+
+function makeDefaultSetupForm(existing) {
+  const s = existing || {};
+  return {
+    league_name: s.league_name ?? DEFAULT_SETTINGS.league_name,
+    season_year: s.season_year ?? DEFAULT_SETTINGS.season_year,
+    player_team_index: s.player_team_index ?? DEFAULT_SETTINGS.player_team_index,
+    team_names: s.team_names ? [...s.team_names] : [...DEFAULT_SETTINGS.team_names],
+    randomize_draft_order: s.randomize_draft_order ?? DEFAULT_SETTINGS.randomize_draft_order,
+    roster_size: s.roster_size ?? DEFAULT_SETTINGS.roster_size,
+    starters_per_day: s.starters_per_day ?? DEFAULT_SETTINGS.starters_per_day,
+    il_slots: s.il_slots ?? DEFAULT_SETTINGS.il_slots,
+    scoring_weights: Object.assign({}, DEFAULT_SETTINGS.scoring_weights, s.scoring_weights || {}),
+    regular_season_weeks: s.regular_season_weeks ?? DEFAULT_SETTINGS.regular_season_weeks,
+    trade_deadline_week: s.trade_deadline_week ?? DEFAULT_SETTINGS.trade_deadline_week,
+    ai_trade_frequency: s.ai_trade_frequency ?? DEFAULT_SETTINGS.ai_trade_frequency,
+    ai_trade_style: s.ai_trade_style ?? DEFAULT_SETTINGS.ai_trade_style,
+    veto_threshold: s.veto_threshold ?? DEFAULT_SETTINGS.veto_threshold,
+    veto_window_days: s.veto_window_days ?? DEFAULT_SETTINGS.veto_window_days,
+    ai_decision_mode: s.ai_decision_mode ?? DEFAULT_SETTINGS.ai_decision_mode,
+    draft_display_mode: s.draft_display_mode ?? DEFAULT_SETTINGS.draft_display_mode,
+    show_offseason_headlines: s.show_offseason_headlines ?? DEFAULT_SETTINGS.show_offseason_headlines,
+  };
+}
+
+function renderSetupView(root) {
+  const status = state.leagueStatus;
+  const isLocked = status && status.setup_complete;
+
+  if (!_setupForm) {
+    _setupForm = makeDefaultSetupForm(state.leagueSettings);
+  }
+
+  const form = _setupForm;
+
+  // Build season year dropdown options
+  const seasonOptions = (state.seasonsList.length ? state.seasonsList : [form.season_year])
+    .map((y) => `<option value="${escapeHtml(y)}" ${y === form.season_year ? 'selected' : ''}>${escapeHtml(y)}</option>`)
+    .join('');
+
+  // Player team dropdown (live, built from team_names)
+  function buildPlayerTeamOptions() {
+    return form.team_names.map((name, i) =>
+      `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i}: ${escapeHtml(name)}</option>`
+    ).join('');
+  }
+
+  const wrap = el('div', { class: 'setup-page' });
+
+  // Lock warning
+  if (isLocked) {
+    wrap.append(el('div', { class: 'setup-lock-warn' },
+      '聯盟已開賽，以下設定已鎖定。如需修改請前往聯盟頁面設定面板。',
+    ));
+  }
+
+  const pageTitle = el('h1', { class: 'setup-title' }, '聯盟設定');
+  wrap.append(pageTitle);
+
+  // Helper: section wrapper
+  function section(title, ...children) {
+    return el('div', { class: 'setup-section' },
+      el('div', { class: 'setup-section-title' }, title),
+      ...children,
+    );
+  }
+
+  // Helper: form row
+  function row(label, control, hint) {
+    const r = el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label' }, label),
+      el('div', { class: 'setup-control' }, control),
+    );
+    if (hint) r.append(el('div', { class: 'setup-hint' }, hint));
+    return r;
+  }
+
+  // Helper: radio group
+  function radioGroup(name, options, current, onChange) {
+    const grp = el('div', { class: 'radio-group' });
+    for (const [val, label] of options) {
+      const id = `rg-${name}-${val}`;
+      const inp = el('input', {
+        type: 'radio',
+        name,
+        id,
+        value: String(val),
+        checked: String(val) === String(current) ? true : null,
+        disabled: isLocked ? true : null,
+        onchange: () => onChange(typeof current === 'number' ? Number(val) : val),
+      });
+      const lbl = el('label', { for: id }, String(label));
+      grp.append(el('span', { class: 'radio-item' }, inp, lbl));
+    }
+    return grp;
+  }
+
+  // ---- Section: 聯盟基本
+  const leagueNameInput = el('input', {
+    type: 'text',
+    value: form.league_name,
+    disabled: isLocked ? true : null,
+    id: 'setup-league-name',
+    oninput: (e) => { form.league_name = e.target.value; },
+  });
+
+  const seasonSelect = el('select', {
+    id: 'setup-season-year',
+    disabled: isLocked ? true : null,
+    html: seasonOptions,
+    onchange: (e) => { form.season_year = e.target.value; },
+  });
+
+  const playerTeamSelect = el('select', {
+    id: 'setup-player-team',
+    html: buildPlayerTeamOptions(),
+    onchange: (e) => { form.player_team_index = parseInt(e.target.value, 10); },
+  });
+
+  const randomizeCheck = el('input', {
+    type: 'checkbox',
+    id: 'setup-randomize',
+    checked: form.randomize_draft_order ? true : null,
+    disabled: isLocked ? true : null,
+    onchange: (e) => { form.randomize_draft_order = e.target.checked; },
+  });
+
+  wrap.append(section('聯盟基本',
+    row('聯盟名稱', leagueNameInput),
+    row('賽季年份', seasonSelect),
+    row('我的隊伍', playerTeamSelect),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label', for: 'setup-randomize' }, '隨機選秀順序'),
+      el('div', { class: 'setup-control' }, randomizeCheck),
+    ),
+  ));
+
+  // ---- Section: 隊伍名稱
+  const teamNamesSection = el('div', { class: 'setup-section' },
+    el('div', { class: 'setup-section-title' }, '隊伍名稱'),
+    el('div', { class: 'setup-team-names', id: 'setup-team-names-grid' }),
+  );
+  function renderTeamNameInputs() {
+    const grid = teamNamesSection.querySelector('#setup-team-names-grid');
+    grid.innerHTML = '';
+    form.team_names.forEach((name, i) => {
+      const inp = el('input', {
+        type: 'text',
+        value: name,
+        placeholder: `隊伍 ${i}`,
+        'data-idx': String(i),
+        id: `setup-team-${i}`,
+        oninput: (e) => {
+          form.team_names[i] = e.target.value;
+          // Live-update player_team dropdown
+          const sel = $('#setup-player-team');
+          if (sel) {
+            const opt = sel.options[i];
+            if (opt) opt.textContent = `${i}: ${e.target.value}`;
+          }
+          clearError(`team-name-${i}`);
+        },
+      });
+      const lbl = el('label', { for: `setup-team-${i}`, class: 'team-name-idx' }, String(i));
+      grid.append(el('div', { class: 'team-name-row' }, lbl, inp));
+    });
+  }
+  renderTeamNameInputs();
+  wrap.append(teamNamesSection);
+
+  // ---- Section: 名單
+  wrap.append(section('名單',
+    row('名單人數', radioGroup('roster_size', [[10,'10'],[13,'13'],[15,'15']], form.roster_size, (v) => { form.roster_size = v; })),
+    row('每日先發', radioGroup('starters_per_day', [[8,'8'],[10,'10'],[12,'12']], form.starters_per_day, (v) => { form.starters_per_day = v; })),
+    row('傷兵名單位置', radioGroup('il_slots', [[0,'0'],[1,'1'],[2,'2'],[3,'3 (預設)']], form.il_slots, (v) => { form.il_slots = v; })),
+  ));
+
+  // ---- Section: 計分權重
+  const weights = form.scoring_weights;
+  const weightCats = ['pts', 'reb', 'ast', 'stl', 'blk', 'to'];
+  const weightLabels = { pts: 'PTS', reb: 'REB', ast: 'AST', stl: 'STL', blk: 'BLK', to: 'TO' };
+  const weightRow = el('div', { class: 'weight-grid' });
+  for (const cat of weightCats) {
+    const inp = el('input', {
+      type: 'number',
+      step: '0.1',
+      value: String(weights[cat]),
+      id: `setup-weight-${cat}`,
+      disabled: isLocked ? true : null,
+      oninput: (e) => {
+        weights[cat] = parseFloat(e.target.value);
+        clearError(`weight-${cat}`);
+      },
+    });
+    weightRow.append(
+      el('div', { class: 'weight-item' },
+        el('label', { for: `setup-weight-${cat}`, class: 'weight-label' }, weightLabels[cat]),
+        inp,
+      ),
+    );
+  }
+  wrap.append(section('計分權重', weightRow));
+
+  // ---- Section: 賽程
+  const deadlineOptions = [
+    ['', '無'],
+    ['10', 'W10'],
+    ['11', 'W11'],
+    ['12', 'W12'],
+  ].map(([v, l]) =>
+    `<option value="${v}" ${String(form.trade_deadline_week ?? '') === v ? 'selected' : ''}>${l}</option>`
+  ).join('');
+
+  const deadlineSelect = el('select', {
+    disabled: isLocked ? true : null,
+    html: deadlineOptions,
+    onchange: (e) => {
+      form.trade_deadline_week = e.target.value === '' ? null : parseInt(e.target.value, 10);
+    },
+  });
+
+  wrap.append(section('賽程',
+    row('例行賽週數', radioGroup('regular_season_weeks',
+      [[18,'18'],[19,'19'],[20,'20 (預設)'],[21,'21'],[22,'22']],
+      form.regular_season_weeks,
+      (v) => { form.regular_season_weeks = v; }
+    )),
+    row('交易截止週', deadlineSelect),
+  ));
+
+  // ---- Section: 交易 AI
+  const freqOptions = [
+    ['very_low','極少'],['low','少'],['normal','正常'],['high','多'],['very_high','極多'],
+  ].map(([v,l]) => `<option value="${v}" ${form.ai_trade_frequency === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  const styleOptions = [
+    ['conservative','保守'],['balanced','平衡'],['aggressive','激進'],
+  ].map(([v,l]) => `<option value="${v}" ${form.ai_trade_style === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  wrap.append(section('交易 AI',
+    row('交易頻率', el('select', {
+      html: freqOptions,
+      onchange: (e) => { form.ai_trade_frequency = e.target.value; },
+    })),
+    row('交易風格', el('select', {
+      html: styleOptions,
+      onchange: (e) => { form.ai_trade_style = e.target.value; },
+    })),
+    row('否決門檻（票數）', radioGroup('veto_threshold', [[2,'2'],[3,'3'],[4,'4']], form.veto_threshold, (v) => { form.veto_threshold = v; })),
+    row('否決窗口（天）', radioGroup('veto_window_days', [[1,'1'],[2,'2'],[3,'3']], form.veto_window_days, (v) => { form.veto_window_days = v; })),
+  ));
+
+  // ---- Section: AI 行為
+  const aiModeOptions = [
+    ['auto','自動偵測'],['claude','Claude API'],['heuristic','純啟發式'],
+  ].map(([v,l]) => `<option value="${v}" ${form.ai_decision_mode === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  wrap.append(section('AI 行為',
+    row('AI 決策模式', el('select', {
+      html: aiModeOptions,
+      onchange: (e) => { form.ai_decision_mode = e.target.value; },
+    })),
+  ));
+
+  // ---- Section: 顯示
+  const draftDisplayOptions = [
+    ['prev_full','上季完整（含 FPPG）'],
+    ['prev_no_fppg','上季完整（不含 FPPG）'],
+    ['current_full','本季完整（劇透）'],
+  ].map(([v,l]) => `<option value="${v}" ${form.draft_display_mode === v ? 'selected' : ''}>${l}</option>`).join('');
+
+  const headlinesCheck = el('input', {
+    type: 'checkbox',
+    id: 'setup-headlines',
+    checked: form.show_offseason_headlines ? true : null,
+    onchange: (e) => { form.show_offseason_headlines = e.target.checked; },
+  });
+
+  wrap.append(section('顯示',
+    row('選秀顯示模式', el('select', {
+      html: draftDisplayOptions,
+      onchange: (e) => { form.draft_display_mode = e.target.value; },
+    })),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label', for: 'setup-headlines' }, '顯示休賽期頭條'),
+      el('div', { class: 'setup-control' }, headlinesCheck),
+    ),
+  ));
+
+  // ---- Error container
+  const errContainer = el('div', { class: 'setup-errors', id: 'setup-errors', hidden: true });
+  wrap.append(errContainer);
+
+  // ---- Buttons
+  if (!isLocked) {
+    const btnRow = el('div', { class: 'setup-btn-row' },
+      el('button', { class: 'btn ghost', type: 'button', onclick: () => {
+        _setupForm = makeDefaultSetupForm(null);
+        renderSetupView(root);
+        root.innerHTML = '';
+        renderSetupView(root);
+      }}, '使用預設值'),
+      el('button', { class: 'btn', type: 'button', id: 'btn-setup-submit', onclick: () => onSubmitSetup(root) }, '開始選秀'),
+    );
+    wrap.append(btnRow);
+  } else {
+    wrap.append(
+      el('div', { class: 'setup-btn-row' },
+        el('a', { class: 'btn', href: '#league' }, '前往聯盟'),
+      ),
+    );
+  }
+
+  root.append(wrap);
+}
+
+function clearError(id) {
+  const el2 = document.getElementById(`err-${id}`);
+  if (el2) el2.remove();
+}
+
+function validateSetupForm(form) {
+  const errors = [];
+  for (let i = 0; i < form.team_names.length; i++) {
+    if (!form.team_names[i].trim()) {
+      errors.push(`隊伍 ${i} 名稱不可為空`);
+    }
+  }
+  const w = form.scoring_weights;
+  for (const cat of ['pts', 'reb', 'ast', 'stl', 'blk', 'to']) {
+    if (isNaN(w[cat])) {
+      errors.push(`計分權重「${cat.toUpperCase()}」必須是數字`);
+    }
+  }
+  return errors;
+}
+
+async function onSubmitSetup(root) {
+  const form = _setupForm;
+  const errors = validateSetupForm(form);
+  const errBox = $('#setup-errors');
+  if (errors.length) {
+    if (errBox) {
+      errBox.hidden = false;
+      errBox.innerHTML = errors.map((e) => `<div class="setup-error-item">${escapeHtml(e)}</div>`).join('');
+    }
     return;
   }
+  if (errBox) errBox.hidden = true;
+
+  const btn = $('#btn-setup-submit');
+  if (btn) { btn.disabled = true; btn.textContent = '設定中...'; }
+
+  try {
+    const payload = {
+      league_name: form.league_name,
+      season_year: form.season_year,
+      player_team_index: form.player_team_index,
+      team_names: form.team_names,
+      randomize_draft_order: form.randomize_draft_order,
+      num_teams: 8,
+      roster_size: form.roster_size,
+      starters_per_day: form.starters_per_day,
+      il_slots: form.il_slots,
+      scoring_weights: form.scoring_weights,
+      regular_season_weeks: form.regular_season_weeks,
+      playoff_teams: 6,
+      trade_deadline_week: form.trade_deadline_week,
+      ai_trade_frequency: form.ai_trade_frequency,
+      ai_trade_style: form.ai_trade_style,
+      veto_threshold: form.veto_threshold,
+      veto_window_days: form.veto_window_days,
+      ai_decision_mode: form.ai_decision_mode,
+      draft_display_mode: form.draft_display_mode,
+      show_offseason_headlines: form.show_offseason_headlines,
+    };
+    await api('/api/league/setup', { method: 'POST', body: JSON.stringify(payload) });
+
+    // Reload settings and status, then navigate to draft
+    const [status, settings] = await Promise.all([
+      apiSoft('/api/league/status'),
+      apiSoft('/api/league/settings'),
+    ]);
+    state.leagueStatus = status;
+    state.leagueSettings = settings;
+    if (settings) state.draftDisplayMode = settings.draft_display_mode || 'prev_full';
+    _setupForm = null;
+
+    // Reload draft state
+    await refreshState().catch(() => {});
+
+    toast('聯盟設定完成', 'success');
+    navigate('draft');
+  } catch (e) {
+    toast(e.message || '設定失敗', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '開始選秀'; }
+  }
+}
+
+// ================================================================ IN-SEASON SETTINGS PANEL
+
+async function openLeagueSettings() {
+  const dlg = $('#dlg-league-settings');
+  if (!dlg) return;
+
+  // Fetch fresh settings
+  const settings = await apiSoft('/api/league/settings');
+  if (settings) {
+    state.leagueSettings = settings;
+    state.draftDisplayMode = settings.draft_display_mode || 'prev_full';
+  }
+
+  renderLeagueSettingsDialog(settings || state.leagueSettings || DEFAULT_SETTINGS);
+  try { dlg.showModal(); } catch { /* fallback */ }
+}
+
+function renderLeagueSettingsDialog(s) {
+  const body = $('#dlg-league-settings-body');
+  if (!body) return;
+  body.innerHTML = '';
+
+  // team_names
+  const teamSection = el('div', { class: 'setup-section' },
+    el('div', { class: 'setup-section-title' }, '隊伍名稱'),
+    el('div', { id: 'ls-team-names-grid', class: 'setup-team-names' }),
+  );
+  const grid = teamSection.querySelector('#ls-team-names-grid');
+  const names = s.team_names || [...DEFAULT_TEAM_NAMES];
+  names.forEach((name, i) => {
+    const inp = el('input', { type: 'text', value: name, 'data-idx': String(i), id: `ls-team-${i}` });
+    const lbl = el('label', { for: `ls-team-${i}`, class: 'team-name-idx' }, String(i));
+    grid.append(el('div', { class: 'team-name-row' }, lbl, inp));
+  });
+  body.append(teamSection);
+
+  function mkSelect(id, options, current) {
+    const opts = options.map(([v,l]) =>
+      `<option value="${v}" ${current === v ? 'selected' : ''}>${l}</option>`
+    ).join('');
+    return el('select', { id, html: opts });
+  }
+
+  const freqSel = mkSelect('ls-freq', [
+    ['very_low','極少'],['low','少'],['normal','正常'],['high','多'],['very_high','極多'],
+  ], s.ai_trade_frequency || 'normal');
+
+  const styleSel = mkSelect('ls-style', [
+    ['conservative','保守'],['balanced','平衡'],['aggressive','激進'],
+  ], s.ai_trade_style || 'balanced');
+
+  const modeSel = mkSelect('ls-mode', [
+    ['auto','自動偵測'],['claude','Claude API'],['heuristic','純啟發式'],
+  ], s.ai_decision_mode || 'auto');
+
+  const draftModeSel = mkSelect('ls-draft-mode', [
+    ['prev_full','上季完整（含 FPPG）'],
+    ['prev_no_fppg','上季完整（不含 FPPG）'],
+    ['current_full','本季完整（劇透）'],
+  ], s.draft_display_mode || 'prev_full');
+
+  const hlCheck = el('input', {
+    type: 'checkbox',
+    id: 'ls-headlines',
+    checked: (s.show_offseason_headlines !== false) ? true : null,
+  });
+
+  const settingsBlock = el('div', { class: 'setup-section' },
+    el('div', { class: 'setup-section-title' }, 'AI 與顯示'),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label' }, '交易頻率'),
+      el('div', { class: 'setup-control' }, freqSel),
+    ),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label' }, '交易風格'),
+      el('div', { class: 'setup-control' }, styleSel),
+    ),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label' }, 'AI 決策模式'),
+      el('div', { class: 'setup-control' }, modeSel),
+    ),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label' }, '選秀顯示模式'),
+      el('div', { class: 'setup-control' }, draftModeSel),
+    ),
+    el('div', { class: 'setup-row' },
+      el('label', { class: 'setup-label', for: 'ls-headlines' }, '顯示休賽期頭條'),
+      el('div', { class: 'setup-control' }, hlCheck),
+    ),
+  );
+  body.append(settingsBlock);
+}
+
+async function onSaveLeagueSettings() {
+  const body = $('#dlg-league-settings-body');
+  if (!body) return;
+
+  const names = Array.from(body.querySelectorAll('#ls-team-names-grid input[data-idx]'))
+    .sort((a, b) => parseInt(a.dataset.idx) - parseInt(b.dataset.idx))
+    .map((i) => i.value);
+
+  const freq  = body.querySelector('#ls-freq')?.value;
+  const style = body.querySelector('#ls-style')?.value;
+  const mode  = body.querySelector('#ls-mode')?.value;
+  const dMode = body.querySelector('#ls-draft-mode')?.value;
+  const hl    = body.querySelector('#ls-headlines')?.checked;
+
+  const payload = {};
+  if (names.length) payload.team_names = names;
+  if (freq)  payload.ai_trade_frequency = freq;
+  if (style) payload.ai_trade_style     = style;
+  if (mode)  payload.ai_decision_mode   = mode;
+  if (dMode) payload.draft_display_mode = dMode;
+  if (hl !== undefined) payload.show_offseason_headlines = hl;
+
+  try {
+    await api('/api/league/settings', { method: 'POST', body: JSON.stringify(payload) });
+    const updated = await apiSoft('/api/league/settings');
+    if (updated) {
+      state.leagueSettings = updated;
+      state.draftDisplayMode = updated.draft_display_mode || 'prev_full';
+    }
+    toast('設定已儲存', 'success');
+    $('#dlg-league-settings').close();
+    // Re-render league view to pick up team name changes
+    if (currentRoute() === 'league') render();
+  } catch (e) {
+    toast(e.message || '儲存失敗', 'error');
+  }
+}
+
+// ================================================================ DRAFT VIEW
+async function renderDraftView(root) {
+  const d = state.draft;
+  if (!d) {
+    root.append(el('div', { class: 'empty-state' }, '載入選秀狀態中...'));
+    return;
+  }
+
+  // Fetch display mode setting (best-effort)
+  const displayMode = state.draftDisplayMode || 'prev_full';
+
+  // Offseason headlines (async, shown if enabled)
+  const showHeadlines = state.leagueSettings?.show_offseason_headlines !== false;
+  const seasonYear = state.leagueSettings?.season_year || '';
 
   // Header summary
   const totalPicks = d.num_teams * d.total_rounds;
   const summary = d.is_complete
-    ? `Draft complete — ${totalPicks}/${totalPicks} picks`
-    : `Pick ${d.current_overall} / ${totalPicks} — R${d.current_round}.${d.current_pick_in_round}`;
+    ? `選秀完成 — ${totalPicks}/${totalPicks} 順位`
+    : `順位 ${d.current_overall} / ${totalPicks} — 第${d.current_round}輪第${d.current_pick_in_round}順`;
 
   const clockPanel = buildClockPanel(d);
   const boardPanel = buildBoardPanel(d);
-  const availablePanel = buildAvailablePanel(d);
+  const availablePanel = buildAvailablePanel(d, displayMode);
 
   const grid = el('div', { class: 'draft-grid' },
     el('div', {},
@@ -247,7 +824,7 @@ function renderDraftView(root) {
     el('div', {},
       el('div', { class: 'panel' },
         el('div', { class: 'panel-head' },
-          el('h2', {}, 'Summary'),
+          el('h2', {}, '摘要'),
           el('span', { class: 'pill' }, summary),
         ),
       ),
@@ -255,25 +832,67 @@ function renderDraftView(root) {
     ),
   );
 
-  root.append(grid);
+  // Headlines placeholder container
+  const headlinesContainer = el('div', { id: 'headlines-container' });
+
+  root.append(headlinesContainer, grid);
 
   wireAvailableFilters();
-  renderAvailableTable();
+  renderAvailableTable(displayMode);
+
+  // Load headlines async
+  if (showHeadlines && seasonYear) {
+    loadHeadlinesBanner(headlinesContainer, seasonYear);
+  }
+}
+
+async function loadHeadlinesBanner(container, seasonYear) {
+  const data = await apiSoft(`/api/seasons/${encodeURIComponent(seasonYear)}/headlines`);
+  if (!data || !data.headlines || !data.headlines.length) return;
+
+  const headlines = data.headlines.slice(0, 10);
+  const banner = el('div', { class: 'headlines-banner' });
+  const head = el('button', {
+    type: 'button',
+    class: 'headlines-toggle',
+    'aria-expanded': 'true',
+    onclick: () => {
+      const body = banner.querySelector('.headlines-body');
+      const isOpen = head.getAttribute('aria-expanded') === 'true';
+      head.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+      if (body) body.hidden = isOpen;
+      chevron.textContent = isOpen ? '▸' : '▾';
+    },
+  });
+  const chevron = el('span', { class: 'headlines-chevron' }, '▾');
+  head.append(
+    el('span', { class: 'headlines-heading' }, `${escapeHtml(seasonYear)} 休賽期頭條`),
+    chevron,
+  );
+
+  const body = el('div', { class: 'headlines-body' });
+  const ul = el('ul', { class: 'headlines-list' });
+  for (const h of headlines) {
+    ul.append(el('li', {}, typeof h === 'string' ? h : (h.text || h.headline || JSON.stringify(h))));
+  }
+  body.append(ul);
+  banner.append(head, body);
+  container.append(banner);
 }
 
 function buildClockPanel(d) {
   const panel = el('div', { class: 'panel' });
   const head  = el('div', { class: 'panel-head' },
-    el('h2', {}, 'On the clock'),
+    el('h2', {}, '輪到誰了'),
   );
   const body = el('div', { class: 'clock-card' });
 
   if (d.is_complete) {
     body.append(
-      el('div', { class: 'who' }, 'Draft complete'),
-      el('div', { class: 'sub' }, 'All picks made. Head to the League tab to start the season.'),
+      el('div', { class: 'who' }, '選秀完成'),
+      el('div', { class: 'sub' }, '所有順位已完成。前往聯盟頁面開始賽季。'),
       el('div', { class: 'clock-actions' },
-        el('a', { class: 'btn', href: '#league' }, 'Go to League'),
+        el('a', { class: 'btn', href: '#league' }, '前往聯盟'),
       ),
     );
   } else {
@@ -281,16 +900,16 @@ function buildClockPanel(d) {
     const isYou = team.is_human;
     const persona = team.gm_persona ? state.personas[team.gm_persona] : null;
     const subline = isYou
-      ? 'Pick a player below to make your selection.'
-      : (persona ? persona.desc : 'AI is thinking...');
+      ? '請在下方選擇球員。'
+      : (persona ? persona.desc : 'AI 思考中...');
 
     if (isYou) body.classList.add('you');
     body.append(
-      el('div', { class: 'who' }, isYou ? 'You are on the clock' : `${team.name} on the clock`),
-      el('div', { class: 'sub' }, `Round ${d.current_round}, Pick ${d.current_pick_in_round} (overall #${d.current_overall}). ${subline}`),
+      el('div', { class: 'who' }, isYou ? '輪到你了' : `輪到 ${team.name}`),
+      el('div', { class: 'sub' }, `第 ${d.current_round} 輪，第 ${d.current_pick_in_round} 順（總第 #${d.current_overall}）。${subline}`),
       el('div', { class: 'clock-actions' },
-        el('button', { class: 'btn ghost', disabled: isYou, onclick: onAdvance }, 'Advance AI'),
-        el('button', { class: 'btn', disabled: isYou, onclick: onSimToMe }, 'Sim to Me'),
+        el('button', { class: 'btn ghost', disabled: isYou, onclick: onAdvance }, '推進 AI'),
+        el('button', { class: 'btn', disabled: isYou, onclick: onSimToMe }, '模擬到我'),
       ),
     );
   }
@@ -299,14 +918,20 @@ function buildClockPanel(d) {
   return panel;
 }
 
-function buildAvailablePanel(d) {
+function buildAvailablePanel(d, displayMode) {
+  const modeNote = displayMode === 'prev_full'
+    ? '（顯示上季 FPPG）'
+    : displayMode === 'prev_no_fppg'
+    ? '（隱藏數據模式）'
+    : '（顯示本季數據）';
+
   const panel = el('div', { class: 'panel', id: 'panel-available' });
   panel.append(
     el('div', { class: 'panel-head' },
-      el('h2', {}, 'Available Players'),
+      el('h2', {}, `剩餘球員 ${modeNote}`),
     ),
     el('div', { class: 'panel-body' },
-      buildFilterBar('draftFilter', renderAvailableTable),
+      buildFilterBar('draftFilter', () => renderAvailableTable(displayMode)),
       el('div', { class: 'table-wrap' },
         el('table', { class: 'data players-table responsive', id: 'tbl-available' }),
       ),
@@ -317,7 +942,7 @@ function buildAvailablePanel(d) {
 
 function buildBoardPanel(d) {
   const panel = el('div', { class: 'panel' },
-    el('div', { class: 'panel-head' }, el('h2', {}, 'Snake Board')),
+    el('div', { class: 'panel-head' }, el('h2', {}, '蛇形選秀板')),
     el('div', { class: 'board-wrap' }, buildBoardTable(d)),
   );
   return panel;
@@ -325,7 +950,7 @@ function buildBoardPanel(d) {
 
 function buildBoardTable(d) {
   const tbl = el('table', { class: 'board' });
-  let html = '<thead><tr><th class="rnd">R</th>';
+  let html = '<thead><tr><th class="rnd">輪</th>';
   for (const t of d.teams) {
     const mark = t.is_human ? ' *' : '';
     html += `<th>${escapeHtml(t.name)}${mark}</th>`;
@@ -345,10 +970,10 @@ function buildBoardTable(d) {
       if (cell) {
         html += `<td class="${cls}" title="${escapeHtml(cell.reason || '')}">
           <span class="pname">${escapeHtml(cell.player_name)}</span>
-          <span class="psub">#${cell.overall} (R${cell.round}.${cell.pick_in_round})</span>
+          <span class="psub">#${cell.overall} (第${cell.round}輪.${cell.pick_in_round})</span>
         </td>`;
       } else {
-        html += `<td class="${cls}">${isCurrent ? 'On the clock' : '-'}</td>`;
+        html += `<td class="${cls}">${isCurrent ? '輪到了' : '-'}</td>`;
       }
     }
     html += '</tr>';
@@ -362,13 +987,13 @@ function buildFilterBar(filterKey, onChange) {
   const f = state[filterKey];
   const wrap = el('div', { class: 'filter-bar' },
     el('input', {
-      type: 'search', placeholder: 'Search name / team...', value: f.q,
+      type: 'search', placeholder: '搜尋姓名 / 球隊...', value: f.q,
       oninput: (e) => { f.q = e.target.value; onChange(); },
     }),
     el('select', {
       onchange: (e) => { f.pos = e.target.value; onChange(); },
       html: `
-        <option value="">All positions</option>
+        <option value="">所有位置</option>
         <option value="PG">PG</option>
         <option value="SG">SG</option>
         <option value="SF">SF</option>
@@ -378,15 +1003,15 @@ function buildFilterBar(filterKey, onChange) {
     el('select', {
       onchange: (e) => { f.sort = e.target.value; onChange(); },
       html: `
-        <option value="fppg">Sort: FPPG</option>
+        <option value="fppg">排序：FPPG</option>
         <option value="pts">PTS</option>
         <option value="reb">REB</option>
         <option value="ast">AST</option>
         <option value="stl">STL</option>
         <option value="blk">BLK</option>
         <option value="to">TO</option>
-        <option value="age">Age</option>
-        <option value="name">Name</option>`,
+        <option value="age">年齡</option>
+        <option value="name">姓名</option>`,
     }),
   );
   // Sync select values to current state.
@@ -398,11 +1023,13 @@ function buildFilterBar(filterKey, onChange) {
 
 function wireAvailableFilters() { /* handled by buildFilterBar */ }
 
-async function renderAvailableTable() {
+async function renderAvailableTable(displayMode) {
   const tbl = $('#tbl-available');
   if (!tbl) return;
   const d = state.draft;
   if (!d) return;
+
+  const mode = displayMode || state.draftDisplayMode || 'prev_full';
 
   const params = new URLSearchParams({
     available: 'true',
@@ -416,7 +1043,7 @@ async function renderAvailableTable() {
   try {
     players = await api(`/api/players?${params.toString()}`);
   } catch (e) {
-    tbl.innerHTML = `<tbody><tr><td class="empty-state">Failed to load: ${escapeHtml(e.message)}</td></tr></tbody>`;
+    tbl.innerHTML = `<tbody><tr><td class="empty-state">載入失敗：${escapeHtml(e.message)}</td></tr></tbody>`;
     return;
   }
 
@@ -424,54 +1051,116 @@ async function renderAvailableTable() {
   tbl.innerHTML = renderPlayersTable(players, {
     withDraft: true,
     canDraft,
+    displayMode: mode,
   });
   tbl.querySelectorAll('button[data-draft]').forEach((btn) => {
     btn.addEventListener('click', () => onDraftPlayer(parseInt(btn.dataset.draft, 10)));
   });
 }
 
-function renderPlayersTable(players, { withDraft = false, canDraft = false } = {}) {
-  const head = `<thead><tr>
-    <th>Player</th><th>Pos</th><th>Team</th>
-    <th class="num">Age</th>
-    <th class="num">FPPG</th>
-    <th class="num">PTS</th><th class="num">REB</th>
-    <th class="num">AST</th><th class="num">STL</th>
-    <th class="num">BLK</th><th class="num">TO</th>
-    <th class="num">GP</th>
-    ${withDraft ? '<th></th>' : ''}
-  </tr></thead>`;
+function renderPlayersTable(players, { withDraft = false, canDraft = false, displayMode = 'current_full' } = {}) {
+  const isPrevFull   = displayMode === 'prev_full';
+  const isPrevNoFppg = displayMode === 'prev_no_fppg';
+  // current_full: show everything as before
 
-  if (!players.length) {
-    return head + `<tbody><tr><td colspan="${withDraft ? 13 : 12}" class="empty-state">No players match.</td></tr></tbody>`;
+  let head;
+  if (isPrevNoFppg) {
+    // Hardcore: only name/team/age/position
+    head = `<thead><tr>
+      <th>球員</th><th>位置</th><th>球隊</th>
+      <th class="num">年齡</th>
+      ${withDraft ? '<th></th>' : ''}
+    </tr></thead>`;
+  } else if (isPrevFull) {
+    // Show prev_fppg (labeled 上季FPPG) instead of live stats
+    head = `<thead><tr>
+      <th>球員</th><th>位置</th><th>球隊</th>
+      <th class="num">年齡</th>
+      <th class="num">上季FPPG</th>
+      <th class="num">出賽</th>
+      ${withDraft ? '<th></th>' : ''}
+    </tr></thead>`;
+  } else {
+    // current_full: original columns
+    head = `<thead><tr>
+      <th>球員</th><th>位置</th><th>球隊</th>
+      <th class="num">年齡</th>
+      <th class="num">FPPG</th>
+      <th class="num">PTS</th><th class="num">REB</th>
+      <th class="num">AST</th><th class="num">STL</th>
+      <th class="num">BLK</th><th class="num">TO</th>
+      <th class="num">出賽</th>
+      ${withDraft ? '<th></th>' : ''}
+    </tr></thead>`;
   }
 
-  // Two rows for responsive: desktop uses full cells; mobile collapses via CSS grid-areas.
-  const body = players.map((p) => {
-    const actionCell = withDraft
-      ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>Draft</button></td>`
-      : '';
-    return `<tr>
-      <td class="name">${escapeHtml(p.name)}</td>
-      <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
-      <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · Age ${p.age}</td>
-      <td class="hidden-m num meta">${p.age}</td>
-      <td class="num fppg hidden-m">${fppg(p.fppg)}</td>
-      <td class="stats" colspan="1">
-        <span class="s fppg"><b>${fppg(p.fppg)}</b>FPPG</span>
-        <span class="s"><b>${fmtStat(p.pts)}</b>PTS</span>
-        <span class="s"><b>${fmtStat(p.reb)}</b>REB</span>
-        <span class="s"><b>${fmtStat(p.ast)}</b>AST</span>
-      </td>
-      <td class="num hidden-m">${fmtStat(p.reb)}</td>
-      <td class="num hidden-m">${fmtStat(p.ast)}</td>
-      <td class="num hidden-m">${fmtStat(p.stl)}</td>
-      <td class="num hidden-m">${fmtStat(p.blk)}</td>
-      <td class="num hidden-m">${fmtStat(p.to)}</td>
-      <td class="num meta hidden-m">${p.gp ?? '-'}</td>
-      ${actionCell}
-    </tr>`;
-  }).join('');
+  const colCount = isPrevNoFppg ? (withDraft ? 5 : 4) : isPrevFull ? (withDraft ? 7 : 6) : (withDraft ? 13 : 12);
+
+  if (!players.length) {
+    return head + `<tbody><tr><td colspan="${colCount}" class="empty-state">找不到符合的球員。</td></tr></tbody>`;
+  }
+
+  let body;
+  if (isPrevNoFppg) {
+    body = players.map((p) => {
+      const actionCell = withDraft
+        ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : '';
+      return `<tr>
+        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="num hidden-m meta">${p.age}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('');
+  } else if (isPrevFull) {
+    body = players.map((p) => {
+      const prevFppgVal = p.prev_fppg != null ? p.prev_fppg : p.fppg;
+      const actionCell = withDraft
+        ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : '';
+      return `<tr>
+        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="num hidden-m meta">${p.age}</td>
+        <td class="num fppg hidden-m">${fppg(prevFppgVal)}</td>
+        <td class="stats" colspan="1">
+          <span class="s fppg"><b>${fppg(prevFppgVal)}</b>上季FPPG</span>
+        </td>
+        <td class="num hidden-m">${p.gp ?? '-'}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('');
+  } else {
+    // current_full — original rendering
+    body = players.map((p) => {
+      const actionCell = withDraft
+        ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : '';
+      return `<tr>
+        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="hidden-m num meta">${p.age}</td>
+        <td class="num fppg hidden-m">${fppg(p.fppg)}</td>
+        <td class="stats" colspan="1">
+          <span class="s fppg"><b>${fppg(p.fppg)}</b>FPPG</span>
+          <span class="s"><b>${fmtStat(p.pts)}</b>PTS</span>
+          <span class="s"><b>${fmtStat(p.reb)}</b>REB</span>
+          <span class="s"><b>${fmtStat(p.ast)}</b>AST</span>
+        </td>
+        <td class="num hidden-m">${fmtStat(p.reb)}</td>
+        <td class="num hidden-m">${fmtStat(p.ast)}</td>
+        <td class="num hidden-m">${fmtStat(p.stl)}</td>
+        <td class="num hidden-m">${fmtStat(p.blk)}</td>
+        <td class="num hidden-m">${fmtStat(p.to)}</td>
+        <td class="num meta hidden-m">${p.gp ?? '-'}</td>
+        ${actionCell}
+      </tr>`;
+    }).join('');
+  }
 
   return head + '<tbody>' + body + '</tbody>';
 }
@@ -480,7 +1169,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false } = {
 function renderTeamsView(root) {
   const d = state.draft;
   if (!d) {
-    root.append(el('div', { class: 'empty-state' }, 'Loading...'));
+    root.append(el('div', { class: 'empty-state' }, '載入中...'));
     return;
   }
 
@@ -491,13 +1180,13 @@ function renderTeamsView(root) {
       renderTeamBody();
     },
     html: d.teams.map((t) =>
-      `<option value="${t.id}" ${t.id === state.selectedTeamId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_human ? ' (you)' : ''}</option>`
+      `<option value="${t.id}" ${t.id === state.selectedTeamId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_human ? ' (你)' : ''}</option>`
     ).join(''),
   });
 
   const panel = el('div', { class: 'panel' },
     el('div', { class: 'panel-head' },
-      el('h2', {}, 'Team roster'),
+      el('h2', {}, '球員名單'),
       teamSelect,
     ),
     el('div', { id: 'team-body' }),
@@ -510,13 +1199,13 @@ async function renderTeamBody() {
   const container = $('#team-body');
   if (!container) return;
   const tid = state.selectedTeamId;
-  container.innerHTML = '<div class="empty-state">Loading...</div>';
+  container.innerHTML = '<div class="empty-state">載入中...</div>';
 
   let data;
   try {
     data = await api(`/api/teams/${tid}`);
   } catch (e) {
-    container.innerHTML = `<div class="empty-state"><h3>Error</h3><p>${escapeHtml(e.message)}</p></div>`;
+    container.innerHTML = `<div class="empty-state"><h3>錯誤</h3><p>${escapeHtml(e.message)}</p></div>`;
     return;
   }
   const { team, players, totals, persona_desc } = data;
@@ -525,12 +1214,12 @@ async function renderTeamBody() {
     <div class="team-summary">
       <div class="name-row">
         <span class="tname">${escapeHtml(team.name)}</span>
-        ${team.is_human ? '<span class="pill success">You</span>' : ''}
-        ${team.gm_persona ? `<span class="tmeta">Persona: ${escapeHtml(team.gm_persona)}</span>` : ''}
+        ${team.is_human ? '<span class="pill success">你</span>' : ''}
+        ${team.gm_persona ? `<span class="tmeta">風格：${escapeHtml(team.gm_persona)}</span>` : ''}
       </div>
       ${persona_desc ? `<div class="persona">${escapeHtml(persona_desc)}</div>` : ''}
       <div class="totals">
-        <span class="stat">FPPG Total <b>${fppg(totals.fppg)}</b></span>
+        <span class="stat">FPPG 總計 <b>${fppg(totals.fppg)}</b></span>
         <span class="stat">PTS <b>${fmtStat(totals.pts)}</b></span>
         <span class="stat">REB <b>${fmtStat(totals.reb)}</b></span>
         <span class="stat">AST <b>${fmtStat(totals.ast)}</b></span>
@@ -540,7 +1229,7 @@ async function renderTeamBody() {
       </div>
     </div>
     ${players.length === 0
-      ? `<div class="empty-state"><p>No players drafted yet.</p></div>`
+      ? `<div class="empty-state"><p>尚未選入任何球員。</p></div>`
       : `<div class="table-wrap"><table class="data players-table responsive">${renderPlayersTable(players)}</table></div>`}
   `;
   container.innerHTML = html;
@@ -550,7 +1239,7 @@ async function renderTeamBody() {
 function renderFaView(root) {
   root.append(
     el('div', { class: 'panel' },
-      el('div', { class: 'panel-head' }, el('h2', {}, 'Free Agents')),
+      el('div', { class: 'panel-head' }, el('h2', {}, '自由球員')),
       el('div', { class: 'panel-body' },
         buildFilterBar('faFilter', renderFaTable),
         el('div', { class: 'table-wrap' },
@@ -577,7 +1266,7 @@ async function renderFaTable() {
   try {
     players = await api(`/api/players?${params.toString()}`);
   } catch (e) {
-    tbl.innerHTML = `<tbody><tr><td class="empty-state">Failed to load: ${escapeHtml(e.message)}</td></tr></tbody>`;
+    tbl.innerHTML = `<tbody><tr><td class="empty-state">載入失敗：${escapeHtml(e.message)}</td></tr></tbody>`;
     return;
   }
   tbl.innerHTML = renderPlayersTable(players);
@@ -586,14 +1275,14 @@ async function renderFaTable() {
 // ================================================================ LEAGUE VIEW
 function renderLeagueView(root) {
   const d = state.draft;
-  if (!d) { root.append(el('div', { class: 'empty-state' }, 'Loading...')); return; }
+  if (!d) { root.append(el('div', { class: 'empty-state' }, '載入中...')); return; }
 
   if (!d.is_complete) {
     root.append(
       emptyState(
-        'Draft not complete',
-        `You are on pick ${d.current_overall} of ${d.num_teams * d.total_rounds}. Finish the draft before starting the season.`,
-        el('a', { class: 'btn', href: '#draft' }, 'Go to Draft'),
+        '選秀尚未完成',
+        `目前在第 ${d.current_overall} / ${d.num_teams * d.total_rounds} 順位。請先完成選秀再開始賽季。`,
+        el('a', { class: 'btn', href: '#draft' }, '前往選秀'),
       ),
     );
     return;
@@ -603,12 +1292,20 @@ function renderLeagueView(root) {
     root.append(
       el('div', { class: 'panel' },
         el('div', { class: 'panel-head' },
-          el('h2', {}, 'Season'),
+          el('h2', {}, '賽季'),
+          // Gear icon for settings
+          el('button', {
+            type: 'button',
+            class: 'icon-btn league-settings-btn',
+            'aria-label': '聯盟設定',
+            title: '聯盟設定',
+            onclick: openLeagueSettings,
+          }, '⚙'),
         ),
         emptyState(
-          'Season not started',
-          'Commit your draft to build a 14-week schedule. AI teams run on heuristics or Claude (if API key configured).',
-          el('button', { class: 'btn', onclick: onSeasonStart }, 'Start Season'),
+          '賽季尚未開始',
+          '確認選秀後將建立 14 週賽程。AI 隊伍使用啟發式策略或 Claude（需設定 API 金鑰）。',
+          el('button', { class: 'btn', onclick: onSeasonStart }, '開始賽季'),
         ),
       ),
     );
@@ -618,23 +1315,30 @@ function renderLeagueView(root) {
   // Standings + controls + matchups.
   const controls = el('div', { class: 'panel' },
     el('div', { class: 'panel-head' },
-      el('h2', {}, 'Controls'),
+      el('h2', {}, '操作'),
       el('div', { class: 'actions' },
-        el('button', { class: 'btn ghost', onclick: onAdvanceDay }, 'Advance 1 Day'),
-        el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, 'Advance Week'),
-        el('button', { class: 'btn ghost', onclick: openProposeTradeDialog }, 'Propose Trade'),
-        el('button', { class: 'btn', onclick: onSimToPlayoffs }, 'Sim to Playoffs'),
+        el('button', { class: 'btn ghost', onclick: onAdvanceDay }, '推進一天'),
+        el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
+        el('button', { class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
+        el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
+        el('button', {
+          type: 'button',
+          class: 'icon-btn league-settings-btn',
+          'aria-label': '聯盟設定',
+          title: '聯盟設定',
+          onclick: openLeagueSettings,
+        }, '⚙'),
       ),
     ),
   );
 
   const tradesPanel = el('div', { class: 'panel', id: 'panel-trades' },
     el('div', { class: 'panel-head' },
-      el('h2', {}, 'Pending Trades'),
+      el('h2', {}, '待處理交易'),
       el('div', { id: 'trade-quota-badge', class: 'trade-quota-wrap' }),
     ),
     el('div', { class: 'panel-body', id: 'trade-pending-body' },
-      el('div', { class: 'empty-state' }, 'Loading trades...'),
+      el('div', { class: 'empty-state' }, '載入交易中...'),
     ),
   );
 
@@ -645,7 +1349,7 @@ function renderLeagueView(root) {
       'aria-expanded': state.tradeHistoryOpen ? 'true' : 'false',
       onclick: onToggleTradeHistory,
     },
-      el('h2', {}, 'Recent Trade Activity'),
+      el('h2', {}, '近期交易紀錄'),
       el('span', { class: 'chevron', id: 'trade-history-chevron' }, state.tradeHistoryOpen ? '▾' : '▸'),
     ),
     el('div', {
@@ -669,24 +1373,24 @@ function renderLeagueView(root) {
 
 function buildStandingsPanel() {
   const panel = el('div', { class: 'panel' },
-    el('div', { class: 'panel-head' }, el('h2', {}, 'Standings')),
+    el('div', { class: 'panel-head' }, el('h2', {}, '戰績')),
     el('div', { class: 'table-wrap' }),
   );
   const wrap = panel.querySelector('.table-wrap');
 
   const rows = Array.isArray(state.standings) ? state.standings : (state.standings?.standings || []);
   if (!rows.length) {
-    wrap.append(el('div', { class: 'empty-state' }, 'No standings yet.'));
+    wrap.append(el('div', { class: 'empty-state' }, '尚無戰績。'));
     return panel;
   }
 
   const tbl = el('table', { class: 'data' });
   tbl.innerHTML = `
     <thead><tr>
-      <th>#</th><th>Team</th>
-      <th class="num">W-L</th>
-      <th class="num">PF</th>
-      <th class="num">PA</th>
+      <th>#</th><th>隊伍</th>
+      <th class="num">勝-敗</th>
+      <th class="num">得分</th>
+      <th class="num">失分</th>
     </tr></thead>
     <tbody>${rows.map((r, i) => {
       const isYou = r.is_human || r.human || r.team_id === state.draft?.human_team_id;
@@ -696,7 +1400,7 @@ function buildStandingsPanel() {
       const pa     = r.pa ?? r.points_against ?? 0;
       return `<tr class="standings-row ${isYou ? 'you' : ''}">
         <td class="rank">${r.rank ?? (i + 1)}</td>
-        <td class="name">${escapeHtml(r.name || r.team_name || `Team ${r.team_id}`)}</td>
+        <td class="name">${escapeHtml(r.name || r.team_name || `隊伍 ${r.team_id}`)}</td>
         <td class="num record">${wins}-${losses}</td>
         <td class="num">${fmtStat(pf)}</td>
         <td class="num">${fmtStat(pa)}</td>
@@ -712,7 +1416,7 @@ function buildCurrentMatchupsPanel() {
   const week = currentWeekNumber();
   panel.append(
     el('div', { class: 'panel-head' },
-      el('h2', {}, `Week ${week} Matchups`),
+      el('h2', {}, `第 ${week} 週對戰`),
     ),
   );
   const body = el('div', { class: 'panel-body tight' });
@@ -720,7 +1424,7 @@ function buildCurrentMatchupsPanel() {
 
   const matchups = matchupsForWeek(week);
   if (!matchups.length) {
-    body.append(el('div', { class: 'empty-state' }, 'No matchups for this week yet.'));
+    body.append(el('div', { class: 'empty-state' }, '本週尚無對戰資料。'));
     return panel;
   }
 
@@ -774,12 +1478,12 @@ function buildMatchupCard(m) {
   const week     = m.week ?? m.number;
   return el('div', { class: `matchup-card ${winner ? 'winner-' + winner : ''}`, onclick: () => openMatchupDialog(week, m) },
     el('div', { class: 'side left' },
-      el('span', { class: 'tm' }, teamName(teamA) || `Team ${teamA}`),
+      el('span', { class: 'tm' }, teamName(teamA) || `隊伍 ${teamA}`),
       el('span', { class: 'sc' }, played ? fmtStat(scoreA) : '-'),
     ),
     el('span', { class: 'vs' }, 'VS'),
     el('div', { class: 'side right' },
-      el('span', { class: 'tm' }, teamName(teamB) || `Team ${teamB}`),
+      el('span', { class: 'tm' }, teamName(teamB) || `隊伍 ${teamB}`),
       el('span', { class: 'sc' }, played ? fmtStat(scoreB) : '-'),
     ),
   );
@@ -793,17 +1497,17 @@ function teamName(tid) {
 // ================================================================ SCHEDULE
 function renderScheduleView(root) {
   const d = state.draft;
-  if (!d) { root.append(el('div', { class: 'empty-state' }, 'Loading...')); return; }
+  if (!d) { root.append(el('div', { class: 'empty-state' }, '載入中...')); return; }
 
   const byWeek = groupedByWeek();
   if (byWeek.size === 0) {
     root.append(
       el('div', { class: 'panel' },
-        el('div', { class: 'panel-head' }, el('h2', {}, 'Schedule')),
+        el('div', { class: 'panel-head' }, el('h2', {}, '賽程')),
         emptyState(
-          'Season not started',
-          'The schedule will be generated when the season begins.',
-          el('a', { class: 'btn', href: '#league' }, 'Go to League'),
+          '賽季尚未開始',
+          '賽程將在賽季開始後生成。',
+          el('a', { class: 'btn', href: '#league' }, '前往聯盟'),
         ),
       ),
     );
@@ -826,16 +1530,16 @@ function renderScheduleView(root) {
     if (isPlayoff) classes.push('playoff');
 
     const cell = el('button', { class: classes.join(' '), type: 'button', onclick: () => openWeekDialog(wkNum, matchups, isPlayoff) },
-      el('span', { class: 'wk-num' }, isPlayoff ? `Playoffs W${wkNum}` : `Week ${wkNum}`),
-      el('span', { class: 'wk-title' }, played ? 'Final' : isCurrent ? 'Current' : 'Upcoming'),
-      el('span', { class: 'wk-sub' }, `${matchups.length} matchup${matchups.length === 1 ? '' : 's'}`),
+      el('span', { class: 'wk-num' }, isPlayoff ? `季後賽 W${wkNum}` : `第 ${wkNum} 週`),
+      el('span', { class: 'wk-title' }, played ? '已結束' : isCurrent ? '進行中' : '未開始'),
+      el('span', { class: 'wk-sub' }, `${matchups.length} 場對戰`),
     );
     grid.append(cell);
   }
 
   root.append(
     el('div', { class: 'panel' },
-      el('div', { class: 'panel-head' }, el('h2', {}, 'Schedule')),
+      el('div', { class: 'panel-head' }, el('h2', {}, '賽程')),
       el('div', { class: 'panel-body' }, grid),
     ),
   );
@@ -843,11 +1547,11 @@ function renderScheduleView(root) {
 
 function openWeekDialog(weekNum, matchups, isPlayoff) {
   const dlg = $('#dlg-matchup');
-  $('#matchup-title').textContent = (isPlayoff ? 'Playoffs ' : '') + `Week ${weekNum}`;
+  $('#matchup-title').textContent = (isPlayoff ? '季後賽 ' : '') + `第 ${weekNum} 週`;
   const body = $('#matchup-body');
   body.innerHTML = '';
   if (!matchups.length) {
-    body.append(el('div', { class: 'empty-state' }, 'No matchups.'));
+    body.append(el('div', { class: 'empty-state' }, '本週無對戰。'));
   } else {
     for (const m of matchups) {
       body.append(buildMatchupDetail(m));
@@ -858,9 +1562,9 @@ function openWeekDialog(weekNum, matchups, isPlayoff) {
 
 function openMatchupDialog(week, m) {
   const dlg = $('#dlg-matchup');
-  const a = teamName(m.team_a ?? m.home_team_id) || 'Home';
-  const b = teamName(m.team_b ?? m.away_team_id) || 'Away';
-  $('#matchup-title').textContent = `Week ${week} — ${a} vs ${b}`;
+  const a = teamName(m.team_a ?? m.home_team_id) || '主場';
+  const b = teamName(m.team_b ?? m.away_team_id) || '客場';
+  $('#matchup-title').textContent = `第 ${week} 週 — ${a} vs ${b}`;
   const body = $('#matchup-body');
   body.innerHTML = '';
   body.append(buildMatchupDetail(m));
@@ -875,17 +1579,17 @@ function buildMatchupDetail(m) {
   const played = m.complete || m.played || m.final || (scoreA != null && scoreB != null);
   const winnerId = m.winner;
 
-  const nameA = teamName(teamA) || `Team ${teamA}`;
-  const nameB = teamName(teamB) || `Team ${teamB}`;
+  const nameA = teamName(teamA) || `隊伍 ${teamA}`;
+  const nameB = teamName(teamB) || `隊伍 ${teamB}`;
 
   const wrap = el('div', { class: 'matchup-detail' });
   wrap.innerHTML = `
     <div class="matchup-side">
-      <div class="tname">${escapeHtml(nameA)}${played && winnerId === teamA ? ' <span class="pill success">W</span>' : ''}</div>
+      <div class="tname">${escapeHtml(nameA)}${played && winnerId === teamA ? ' <span class="pill success">勝</span>' : ''}</div>
       <div class="score">${played ? fmtStat(scoreA) : '-'}</div>
     </div>
     <div class="matchup-side">
-      <div class="tname">${escapeHtml(nameB)}${played && winnerId === teamB ? ' <span class="pill success">W</span>' : ''}</div>
+      <div class="tname">${escapeHtml(nameB)}${played && winnerId === teamB ? ' <span class="pill success">勝</span>' : ''}</div>
       <div class="score">${played ? fmtStat(scoreB) : '-'}</div>
     </div>
   `;
@@ -950,17 +1654,17 @@ function renderTradeQuota(wrap) {
   else if (behind >= 1) cls = 'warn';
   wrap.innerHTML = `
     <span class="trade-quota-badge ${cls}">
-      Trades this season: <b>${q.executed}</b> / ${q.target}
-      ${behind > 0 ? ` · ${behind} behind` : ' · on pace'}
+      本季交易數：<b>${q.executed}</b> / ${q.target}
+      ${behind > 0 ? ` · 落後 ${behind}` : ' · 進度 OK'}
     </span>
-    ${pendingCount ? `<span class="pill warn">${pendingCount} pending</span>` : ''}
+    ${pendingCount ? `<span class="pill warn">${pendingCount} 待處理</span>` : ''}
   `;
 }
 
 function renderPendingTrades(body) {
   body.innerHTML = '';
   if (!state.tradesPending.length) {
-    body.append(el('div', { class: 'empty-state' }, 'No pending trades'));
+    body.append(el('div', { class: 'empty-state' }, '沒有待處理交易'));
     return;
   }
   for (const t of state.tradesPending) {
@@ -971,8 +1675,8 @@ function renderPendingTrades(body) {
 function buildTradeCard(trade) {
   const card = el('div', { class: `trade-card status-${trade.status}` });
 
-  const fromName = teamName(trade.from_team) || `Team ${trade.from_team}`;
-  const toName   = teamName(trade.to_team)   || `Team ${trade.to_team}`;
+  const fromName = teamName(trade.from_team) || `隊伍 ${trade.from_team}`;
+  const toName   = teamName(trade.to_team)   || `隊伍 ${trade.to_team}`;
 
   const sendPlayers = (trade.send_player_ids || []).map((id) => state.playerCache.get(id)).filter(Boolean);
   const recvPlayers = (trade.receive_player_ids || []).map((id) => state.playerCache.get(id)).filter(Boolean);
@@ -995,15 +1699,15 @@ function buildTradeCard(trade) {
   );
 
   // Player columns
-  const sides = el('div', { class: 'trade-sides' },
-    buildTradeSide(`${fromName} sends`, sendPlayers, sendSum),
-    buildTradeSide(`${toName} sends`, recvPlayers, recvSum),
+  const sides = el('l', { class: 'trade-sides' },
+    buildTradeSide(`${fromName} 送出`, sendPlayers, sendSum),
+    buildTradeSide(`${toName} 送出`, recvPlayers, recvSum),
   );
 
   // Balance
   const balance = el('div', { class: 'trade-balance' },
     el('span', {}, `Σ ${fppg(sendSum)} FPPG`),
-    el('span', { class: `trade-ratio-badge ${ratioCls}` }, `ratio ${ratio.toFixed(2)}x`),
+    el('span', { class: `trade-ratio-badge ${ratioCls}` }, `比值 ${ratio.toFixed(2)}x`),
     el('span', {}, `Σ ${fppg(recvSum)} FPPG`),
   );
 
@@ -1016,7 +1720,7 @@ function buildTradeCard(trade) {
   // Veto vote count (for accepted trades)
   if (trade.status === 'accepted') {
     const votes = (trade.veto_votes || []).length;
-    parts.push(el('div', { class: 'veto-vote-count' }, `Veto votes: ${votes} / 3`));
+    parts.push(el('div', { class: 'veto-vote-count' }, `否決票：${votes} / 3`));
   }
 
   // Action buttons
@@ -1028,10 +1732,18 @@ function buildTradeCard(trade) {
 }
 
 function buildTradeStatusBadge(trade) {
-  const label = trade.status.replace(/_/g, ' ');
+  const statusMap = {
+    'pending_accept': '等待回應',
+    'accepted': '已接受（否決期）',
+    'vetoed': '已否決',
+    'executed': '已完成',
+    'rejected': '已拒絕',
+    'expired': '已過期',
+  };
+  const label = statusMap[trade.status] || trade.status.replace(/_/g, ' ');
   if (trade.status === 'accepted' && trade.veto_deadline_day != null) {
     return el('span', { class: `trade-status trade-status-${trade.status}` },
-      `accepted · veto window closes day ${trade.veto_deadline_day}`);
+      `已接受（否決期） · 否決截止日 ${trade.veto_deadline_day}`);
   }
   return el('span', { class: `trade-status trade-status-${trade.status}` }, label);
 }
@@ -1042,7 +1754,7 @@ function buildTradeSide(title, players, sum) {
   );
   const list = el('ul', { class: 'trade-player-list' });
   if (!players.length) {
-    list.append(el('li', { class: 'empty' }, '(none)'));
+    list.append(el('li', { class: 'empty' }, '（無）'));
   } else {
     for (const p of players) {
       list.append(el('li', {},
@@ -1063,14 +1775,14 @@ function buildTradeActions(trade) {
 
   if (status === 'pending_accept' && trade.to_team === humanId) {
     actions.append(
-      el('button', { class: 'btn small', onclick: () => onAcceptTrade(trade.id) }, 'Accept'),
-      el('button', { class: 'btn small ghost', onclick: () => onRejectTrade(trade.id) }, 'Reject'),
+      el('button', { class: 'btn small', onclick: () => onAcceptTrade(trade.id) }, '接受'),
+      el('button', { class: 'btn small ghost', onclick: () => onRejectTrade(trade.id) }, '拒絕'),
     );
     return actions;
   }
   if (status === 'pending_accept' && trade.from_team === humanId) {
     actions.append(
-      el('button', { class: 'btn small ghost', onclick: () => onCancelTrade(trade.id) }, 'Cancel'),
+      el('button', { class: 'btn small ghost', onclick: () => onCancelTrade(trade.id) }, '取消'),
     );
     return actions;
   }
@@ -1079,7 +1791,7 @@ function buildTradeActions(trade) {
       && trade.to_team !== humanId
       && !(trade.veto_votes || []).includes(humanId)) {
     actions.append(
-      el('button', { class: 'btn small danger', onclick: () => onVetoTrade(trade.id) }, 'Cast Veto'),
+      el('button', { class: 'btn small danger', onclick: () => onVetoTrade(trade.id) }, '投下否決票'),
     );
     return actions;
   }
@@ -1112,7 +1824,7 @@ async function onToggleTradeHistory() {
 async function refreshTradeHistory() {
   const body = $('#trade-history-body');
   if (!body) return;
-  body.innerHTML = '<div class="empty-state">Loading...</div>';
+  body.innerHTML = '<div class="empty-state">載入中...</div>';
   const payload = await apiSoft('/api/trades/history?limit=20');
   let hist = [];
   if (Array.isArray(payload)) hist = payload;
@@ -1133,7 +1845,7 @@ async function refreshTradeHistory() {
 function renderTradeHistoryBody(body) {
   body.innerHTML = '';
   if (!state.tradesHistory.length) {
-    body.append(el('div', { class: 'empty-state' }, 'No trade history yet.'));
+    body.append(el('div', { class: 'empty-state' }, '尚無交易紀錄。'));
     return;
   }
   const list = el('ul', { class: 'trade-history-list' });
@@ -1152,12 +1864,22 @@ function buildTradeHistoryRow(trade) {
   const nRecv    = (trade.receive_player_ids || []).length;
   const expanded = state.expandedHistory.has(trade.id);
 
+  const statusMap = {
+    'pending_accept': '等待回應',
+    'accepted': '已接受（否決期）',
+    'vetoed': '已否決',
+    'executed': '已完成',
+    'rejected': '已拒絕',
+    'expired': '已過期',
+  };
+  const statusLabel = statusMap[trade.status] || trade.status;
+
   const row = el('li', { class: 'trade-hist-row' });
   const header = el('button', { type: 'button', class: 'trade-hist-head', onclick: () => onToggleHistRow(trade.id) },
     el('span', { class: 'wk' }, `W${week} D${day}`),
     el('span', { class: 'teams' }, `${fromName} → ${toName}`),
-    el('span', { class: 'counts' }, `${nSend}→${nRecv} players`),
-    el('span', { class: `trade-status trade-status-${trade.status}` }, trade.status),
+    el('span', { class: 'counts' }, `${nSend}→${nRecv} 名球員`),
+    el('span', { class: `trade-status trade-status-${trade.status}` }, statusLabel),
     el('span', { class: 'chevron' }, expanded ? '▾' : '▸'),
   );
   row.append(header);
@@ -1184,11 +1906,11 @@ function buildTradeHistoryDetail(trade) {
   for (const p of recvPlayers) ul2.append(el('li', {}, `${p.name} (${fppg(p.fppg)})`));
   detail.append(
     el('div', { class: 'trade-hist-col' },
-      el('div', { class: 'trade-hist-col-head' }, `${teamName(trade.from_team) || 'From'} sent`),
+      el('div', { class: 'trade-hist-col-head' }, `${teamName(trade.from_team) || '送出方'} 送出`),
       ul1,
     ),
     el('div', { class: 'trade-hist-col' },
-      el('div', { class: 'trade-hist-col-head' }, `${teamName(trade.to_team) || 'To'} sent`),
+      el('div', { class: 'trade-hist-col-head' }, `${teamName(trade.to_team) || '接收方'} 送出`),
       ul2,
     ),
   );
@@ -1203,24 +1925,24 @@ async function onAcceptTrade(id) {
   await mutate(async () => {
     await api(`/api/trades/${id}/accept`, { method: 'POST' });
     await afterTradeMutation();
-  }, 'Trade accepted');
+  }, '交易已接受');
 }
 async function onRejectTrade(id) {
   await mutate(async () => {
     await api(`/api/trades/${id}/reject`, { method: 'POST' });
     await afterTradeMutation();
-  }, 'Trade rejected');
+  }, '交易已拒絕');
 }
 async function onCancelTrade(id) {
-  const ok = await confirmDialog('Cancel trade?', 'Withdraw your proposal. This cannot be undone.', 'Cancel');
+  const ok = await confirmDialog('取消交易？', '撤回你的提案，此操作無法復原。', '取消');
   if (!ok) return;
   await mutate(async () => {
     await api(`/api/trades/${id}/cancel`, { method: 'POST' });
     await afterTradeMutation();
-  }, 'Trade cancelled');
+  }, '交易已取消');
 }
 async function onVetoTrade(id) {
-  const ok = await confirmDialog('Cast veto?', 'Your team will vote to veto this trade. 3 vetoes cancels it.', 'Veto');
+  const ok = await confirmDialog('投下否決票？', '你的隊伍將投票否決此交易。累計 3 票後交易取消。', '否決');
   if (!ok) return;
   await mutate(async () => {
     const humanId = state.draft?.human_team_id ?? 0;
@@ -1229,7 +1951,7 @@ async function onVetoTrade(id) {
       body: JSON.stringify({ team_id: humanId }),
     });
     await afterTradeMutation();
-  }, 'Veto cast');
+  }, '否決票已投出');
 }
 
 async function afterTradeMutation() {
@@ -1290,7 +2012,7 @@ function renderProposeBody() {
   const humanId = state.draft?.human_team_id ?? 0;
 
   // Counterparty dropdown
-  const options = [el('option', { value: '' }, '— pick a team —')];
+  const options = [el('option', { value: '' }, '— 選擇對象隊伍 —')];
   for (const t of (state.draft?.teams || [])) {
     if (t.id === humanId) continue;
     options.push(el('option', { value: String(t.id) }, t.name));
@@ -1300,20 +2022,20 @@ function renderProposeBody() {
 
   body.append(
     el('div', { class: 'propose-row' },
-      el('label', { for: 'cp-select' }, 'Counterparty'),
+      el('label', { for: 'cp-select' }, '交易對象'),
       select,
     ),
   );
 
   if (state.proposeDraft.counterparty == null) {
-    body.append(el('div', { class: 'empty-state' }, 'Pick a team to see rosters.'));
+    body.append(el('div', { class: 'empty-state' }, '選擇隊伍後顯示名單。'));
     return;
   }
 
   // Side-by-side rosters
   const sides = el('div', { class: 'propose-sides' },
-    buildProposeSide('Send (your roster)', state.proposeDraft.humanRoster, state.proposeDraft.send, 'send'),
-    buildProposeSide('Receive (their roster)', state.proposeDraft.counterpartyRoster, state.proposeDraft.receive, 'receive'),
+    buildProposeSide('送出（你的名單）', state.proposeDraft.humanRoster, state.proposeDraft.send, 'send'),
+    buildProposeSide('收到（對方名單）', state.proposeDraft.counterpartyRoster, state.proposeDraft.receive, 'receive'),
   );
   body.append(sides);
 
@@ -1333,9 +2055,9 @@ function renderProposeBody() {
 
   body.append(
     el('div', { class: 'propose-balance' },
-      el('span', {}, `Send Σ ${fppg(sendSum)}`),
-      ratio ? el('span', { class: `trade-ratio-badge ${ratioCls}` }, `ratio ${ratio.toFixed(2)}x`) : el('span', {}, '—'),
-      el('span', {}, `Receive Σ ${fppg(recvSum)}`),
+      el('span', {}, `送出 Σ ${fppg(sendSum)}`),
+      ratio ? el('span', { class: `trade-ratio-badge ${ratioCls}` }, `比值 ${ratio.toFixed(2)}x`) : el('span', {}, '—'),
+      el('span', {}, `收到 Σ ${fppg(recvSum)}`),
     ),
   );
 }
@@ -1361,7 +2083,7 @@ function buildProposeSide(title, players, selectedSet, which) {
     list.append(li);
   }
   if (!players.length) {
-    list.append(el('li', { class: 'empty' }, '(no players)'));
+    list.append(el('li', { class: 'empty' }, '（無球員）'));
   }
   wrap.append(list);
   return wrap;
@@ -1371,7 +2093,7 @@ function togglePickPlayer(which, id, checked) {
   const set = state.proposeDraft[which];
   if (checked) {
     if (set.size >= 3) {
-      toast('Max 3 players per side', 'warn');
+      toast('每方最多 3 名球員', 'warn');
       renderProposeBody();
       return;
     }
@@ -1385,8 +2107,8 @@ function togglePickPlayer(which, id, checked) {
 async function onSubmitProposeTrade() {
   const humanId = state.draft?.human_team_id ?? 0;
   const { counterparty, send, receive } = state.proposeDraft;
-  if (counterparty == null) { toast('Pick a counterparty', 'warn'); return; }
-  if (!send.size || !receive.size) { toast('Pick at least one player on each side', 'warn'); return; }
+  if (counterparty == null) { toast('請選擇交易對象', 'warn'); return; }
+  if (!send.size || !receive.size) { toast('每方至少選一名球員', 'warn'); return; }
 
   try {
     await api('/api/trades/propose', {
@@ -1398,11 +2120,11 @@ async function onSubmitProposeTrade() {
         receive: Array.from(receive),
       }),
     });
-    toast('Trade proposed', 'success');
+    toast('交易已發起', 'success');
     $('#trade-propose').close();
     await afterTradeMutation();
   } catch (e) {
-    toast(e.message || 'Proposal failed', 'error');
+    toast(e.message || '提案失敗', 'error');
   }
 }
 
@@ -1411,7 +2133,7 @@ function renderLogAside() {
   const list = $('#log-list');
   if (!list) return;
   if (!state.logs.length) {
-    list.innerHTML = `<li class="empty">No activity yet.</li>`;
+    list.innerHTML = `<li class="empty">尚無活動記錄。</li>`;
     return;
   }
   // Newest first; backend appends in order so reverse.
@@ -1454,7 +2176,7 @@ async function mutate(fn, okLabel) {
     if (okLabel) toast(okLabel, 'success');
     return result;
   } catch (e) {
-    toast(e.message || 'Request failed', 'error');
+    toast(e.message || '請求失敗', 'error');
     throw e;
   }
 }
@@ -1484,12 +2206,12 @@ async function onDraftPlayer(playerId) {
     state.draft = r.state;
     render();
   } catch (e) {
-    toast(e.message || 'Pick failed', 'error');
+    toast(e.message || '選秀失敗', 'error');
   }
 }
 
 async function onResetDraft() {
-  const ok = await confirmDialog('Reset draft?', 'All picks will be cleared. This cannot be undone.', 'Reset');
+  const ok = await confirmDialog('重置選秀？', '所有選秀順位將被清除，此操作無法復原。', '重置');
   if (!ok) return;
   await mutate(async () => {
     const r = await api('/api/draft/reset', {
@@ -1499,17 +2221,17 @@ async function onResetDraft() {
     state.draft = r;
     navigate('draft');
     render();
-  }, 'Draft reset');
+  }, '選秀已重置');
 }
 
 async function onResetSeason() {
-  const ok = await confirmDialog('Reset season?', 'All season results and schedules will be cleared. Draft is preserved.', 'Reset');
+  const ok = await confirmDialog('重置賽季？', '所有賽季結果與賽程將被清除，選秀資料保留。', '重置');
   if (!ok) return;
   await mutate(async () => {
     await api('/api/season/reset', { method: 'POST' });
     await refreshState();
     render();
-  }, 'Season reset');
+  }, '賽季已重置');
 }
 
 async function onSeasonStart() {
@@ -1517,7 +2239,7 @@ async function onSeasonStart() {
     await api('/api/season/start', { method: 'POST' });
     await refreshState();
     render();
-  }, 'Season started');
+  }, '賽季已開始');
 }
 
 async function onAdvanceDay() {
@@ -1526,7 +2248,7 @@ async function onAdvanceDay() {
     await refreshState();
     refreshLogs();
     render();
-    const summary = r?.summary || r?.message || 'Day advanced';
+    const summary = r?.summary || r?.message || '已推進一天';
     toast(summary, 'success');
   });
 }
@@ -1537,31 +2259,31 @@ async function onAdvanceWeek() {
     await refreshState();
     refreshLogs();
     render();
-    const summary = r?.summary || r?.message || 'Week advanced';
+    const summary = r?.summary || r?.message || '已推進一週';
     toast(summary, 'success');
   });
 }
 
 async function onSimToPlayoffs() {
-  const ok = await confirmDialog('Sim to Playoffs?', 'Run through all remaining regular-season weeks. This may take a moment.', 'Run');
+  const ok = await confirmDialog('模擬到季後賽？', '執行所有剩餘例行賽週次，可能需要一點時間。', '執行');
   if (!ok) return;
   await mutate(async () => {
     await api('/api/season/sim-to-playoffs', { method: 'POST' });
     await refreshState();
     refreshLogs();
     render();
-  }, 'Regular season simulated');
+  }, '例行賽模擬完成');
 }
 
 async function onSimPlayoffs() {
-  const ok = await confirmDialog('Sim playoff bracket?', 'Top 4 seeds play semis + final (weeks 15-16).', 'Run');
+  const ok = await confirmDialog('模擬季後賽淘汰賽？', '前 4 強進行準決賽 + 決賽（第 15–16 週）。', '執行');
   if (!ok) return;
   await mutate(async () => {
     await api('/api/season/sim-playoffs', { method: 'POST' });
     await refreshState();
     refreshLogs();
     render();
-  }, 'Playoffs simulated');
+  }, '季後賽模擬完成');
 }
 
 // ================================================================ wiring
@@ -1588,6 +2310,10 @@ function bindGlobalUI() {
   // Trade propose modal: submit + cancel.
   const submitBtn = $('#btn-trade-propose-submit');
   if (submitBtn) submitBtn.addEventListener('click', (e) => { e.preventDefault(); onSubmitProposeTrade(); });
+
+  // League settings dialog save button.
+  const lsSaveBtn = $('#btn-league-settings-save');
+  if (lsSaveBtn) lsSaveBtn.addEventListener('click', onSaveLeagueSettings);
 }
 
 async function init() {
@@ -1597,11 +2323,35 @@ async function init() {
   } catch {
     state.personas = {};
   }
+
+  // Load league status + settings + seasons list (best-effort)
+  const [leagueStatus, leagueSettings, seasonsList] = await Promise.all([
+    apiSoft('/api/league/status'),
+    apiSoft('/api/league/settings'),
+    apiSoft('/api/seasons/list'),
+  ]);
+  state.leagueStatus   = leagueStatus;
+  state.leagueSettings = leagueSettings;
+  state.seasonsList    = seasonsList?.seasons || [];
+  if (leagueSettings) {
+    state.draftDisplayMode = leagueSettings.draft_display_mode || 'prev_full';
+  }
+
+  // If setup not complete, redirect to #setup regardless of current hash
+  if (leagueStatus && !leagueStatus.setup_complete) {
+    _setupForm = makeDefaultSetupForm(leagueSettings);
+    if (currentRoute() !== 'setup') {
+      location.hash = 'setup';
+      // hashchange will trigger render()
+      return;
+    }
+  }
+
   try {
     await refreshState();
   } catch (e) {
-    toast(`Failed to load state: ${e.message}`, 'error', 6000);
-    return;
+    toast(`載入狀態失敗：${e.message}`, 'error', 6000);
+    // Still render (setup page doesn't need draft state)
   }
   render();
 }

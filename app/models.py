@@ -1,8 +1,53 @@
 """Pydantic models for the draft simulator."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 from pydantic import BaseModel, Field
+
+
+DEFAULT_TEAM_NAMES = [
+    "我的隊伍",
+    "BPA Nerd",
+    "Punt TO",
+    "Stars & Scrubs",
+    "Balanced Builder",
+    "Youth Upside",
+    "Vet Win-Now",
+    "Contrarian",
+]
+
+
+class LeagueSettings(BaseModel):
+    league_name: str = "我的聯盟"
+    season_year: str = "2025-26"
+    player_team_index: int = 0
+    team_names: list[str] = Field(default_factory=lambda: list(DEFAULT_TEAM_NAMES))
+    randomize_draft_order: bool = False
+    num_teams: int = 8
+    roster_size: int = 13
+    starters_per_day: int = 10
+    il_slots: int = 3
+    scoring_weights: dict[str, float] = Field(
+        default_factory=lambda: {
+            "pts": 1.0,
+            "reb": 1.2,
+            "ast": 1.5,
+            "stl": 2.5,
+            "blk": 2.5,
+            "to": -1.0,
+        }
+    )
+    regular_season_weeks: int = 20
+    playoff_teams: int = 6
+    trade_deadline_week: Optional[int] = None
+    ai_trade_frequency: str = "normal"
+    ai_trade_style: str = "balanced"
+    veto_threshold: int = 3
+    veto_window_days: int = 2
+    ai_decision_mode: str = "auto"
+    draft_display_mode: str = "prev_full"
+    show_offseason_headlines: bool = True
+    setup_complete: bool = False
 
 
 class Player(BaseModel):
@@ -107,6 +152,18 @@ class SeasonState(BaseModel):
     lineups: dict[int, list[int]] = Field(default_factory=dict)
     # Per-team daily API call counter (resets each new sim-day)
     ai_calls_today: int = 0
+    # Injury tracking: player_id -> current Injury (only non-healthy entries)
+    injuries: dict[int, Injury] = Field(default_factory=dict)
+    # All historical injuries including healed ones
+    injury_history: list[Injury] = Field(default_factory=list)
+
+
+class Injury(BaseModel):
+    player_id: int
+    status: Literal["healthy", "day_to_day", "out"]
+    return_in_days: int = 0
+    note: str = ""
+    diagnosed_day: int = 0
 
 
 class StartSeasonRequest(BaseModel):

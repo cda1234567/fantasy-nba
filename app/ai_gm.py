@@ -37,6 +37,7 @@ Persona strategy: {persona_desc}
 
 You will receive a JSON payload with your roster (season averages + last-3-game fppg if available),
 the top 20 free agents by FPPG, current standings, and your team record.
+Players currently injured are listed in `injured_players` — do NOT include them in the lineup.
 
 Return STRICTLY a single JSON object matching this schema and nothing else:
 {{
@@ -48,6 +49,7 @@ Return STRICTLY a single JSON object matching this schema and nothing else:
 
 Constraints:
 - lineup MUST contain exactly 10 ids that are on YOUR roster
+- lineup MUST NOT include any player_id from injured_players
 - Prefer starters that match your persona philosophy
 - Only propose a waiver_claim if the add clearly upgrades the drop
 - Only propose a trade_offer if it meaningfully helps your team
@@ -80,20 +82,25 @@ class AIGM:
         fa_top_20: list[Player],
         standings: dict[int, dict[str, float]],
         persona_key: str,
+        injured_out: set[int] | None = None,
     ) -> dict[str, Any]:
         """Return {"lineup", "waiver_claim", "trade_offer", "used_api", "excerpt"}."""
+        injured_out = injured_out or set()
         if not self.enabled:
-            return self._heuristic(team, roster_players)
+            return self._heuristic(team, roster_players, injured_out)
 
         try:
-            result = self._call_api(team, roster_players, fa_top_20, standings, persona_key)
+            result = self._call_api(team, roster_players, fa_top_20, standings, persona_key, injured_out)
             if result is None:
-                return self._heuristic(team, roster_players)
-            # Validate lineup
+                return self._heuristic(team, roster_players, injured_out)
+            # Validate lineup: must be on roster and not injured
             roster_ids = {p.id for p in roster_players}
-            lineup = [pid for pid in result.get("lineup", []) if pid in roster_ids]
+            lineup = [
+                pid for pid in result.get("lineup", [])
+                if pid in roster_ids and pid not in injured_out
+            ]
             if len(lineup) < LINEUP_SIZE:
-                fallback = self._heuristic(team, roster_players)
+                fallback = self._heuristic(team, roster_players, injured_out)
                 lineup = fallback["lineup"]
             return {
                 "lineup": lineup[:LINEUP_SIZE],
@@ -103,13 +110,20 @@ class AIGM:
                 "excerpt": (result.get("reasoning") or "")[:300],
             }
         except Exception as e:
-            fallback = self._heuristic(team, roster_players)
+            fallback = self._heuristic(team, roster_players, injured_out)
             fallback["excerpt"] = f"fallback after error: {type(e).__name__}"
             return fallback
 
     # ------------------------------------------------------------- internals
-    def _heuristic(self, team: Team, roster_players: list[Player]) -> dict[str, Any]:
-        ordered = sorted(roster_players, key=lambda p: p.fppg, reverse=True)
+    def _heuristic(
+        self,
+        team: Team,
+        roster_players: list[Player],
+        injured_out: set[int] | None = None,
+    ) -> dict[str, Any]:
+        injured_out = injured_out or set()
+        eligible = [p for p in roster_players if p.id not in injured_out]
+        ordered = sorted(eligible, key=lambda p: p.fppg, reverse=True)
         lineup = [p.id for p in ordered[:LINEUP_SIZE]]
         return {
             "lineup": lineup,
@@ -126,8 +140,10 @@ class AIGM:
         fa_top_20: list[Player],
         standings: dict[int, dict[str, float]],
         persona_key: str,
+        injured_out: set[int] | None = None,
     ) -> Optional[dict[str, Any]]:
         assert self._client is not None
+        injured_out = injured_out or set()
         persona_meta = GM_PERSONAS.get(persona_key, GM_PERSONAS["bpa"])
         system_text = SYSTEM_PROMPT_TEMPLATE.format(
             persona_name=persona_meta["name"],
@@ -149,6 +165,7 @@ class AIGM:
                 for p in fa_top_20
             ],
             "standings": {str(k): v for k, v in standings.items()},
+            "injured_players": sorted(injured_out),
         }
         user_text = (
             "Make your daily decision for the payload below.\n\n"
@@ -320,6 +337,54 @@ class AIGM:
             "reasoning": reasoning,
         }
 
+    def decide_trade(
+        self,
+        trade: Any,
+        receiver_team: Team,
+        draft_state: "DraftState",
+        settings: Any = None,
+    ) -> tuple[bool, str]:
+        """Decide whether receiver_team should accept the trade.
+
+        Uses multi-factor fairness penalty:
+            penalty = |1 - side_a_fppg / side_b_fppg|
+        Thresholds by ai_trade_style (from settings):
+            conservative: accept if penalty <= 0.05
+            balanced:      accept if penalty <= 0.10
+            aggressive:    accept if penalty <= 0.18
+        If the receiver benefits (incoming > outgoing), bias toward accept.
+        Falls back to ai_trade_style="balanced" when settings not provided.
+        """
+        persona = receiver_team.gm_persona or "bpa"
+        style = "balanced"
+        if settings is not None:
+            style = getattr(settings, "ai_trade_style", "balanced")
+
+        thresholds = {"conservative": 0.05, "balanced": 0.10, "aggressive": 0.18}
+        threshold = thresholds.get(style, 0.10)
+
+        # From receiver's perspective: they give away receive_player_ids, get send_player_ids
+        cp_give_fp = _side_fppg(list(trade.receive_player_ids), draft_state)
+        cp_get_fp = _side_fppg(list(trade.send_player_ids), draft_state)
+
+        if cp_give_fp <= 0.01:
+            return True, "counterparty gives nothing of value"
+
+        penalty = abs(1.0 - cp_give_fp / max(cp_get_fp, 0.01))
+        receiver_benefits = cp_get_fp > cp_give_fp
+
+        if receiver_benefits:
+            # Lenient: accept if penalty up to threshold * 1.5
+            accept = penalty <= threshold * 1.5
+        else:
+            accept = penalty <= threshold
+
+        reasoning = (
+            f"{persona}: give={cp_give_fp:.1f} get={cp_get_fp:.1f} "
+            f"penalty={penalty:.3f} threshold={threshold} -> {'accept' if accept else 'reject'}"
+        )
+        return accept, reasoning
+
     def decide_on_proposal_heuristic(
         self,
         trade: Any,
@@ -329,21 +394,85 @@ class AIGM:
         """Accept iff receive_fppg / send_fppg >= threshold.
 
         Base threshold 0.92; balanced persona stricter at 0.95.
+        Kept for backward compatibility; new code should call decide_trade().
         """
         persona = team.gm_persona or "bpa"
         threshold = 0.95 if persona == "balanced" else 0.92
 
-        # For the counterparty, "send" means what leaves their roster
-        # (= trade.receive_player_ids from proposer's POV) and "receive" means
-        # what comes in (= trade.send_player_ids).
         cp_send_ids = list(trade.receive_player_ids)
         cp_recv_ids = list(trade.send_player_ids)
 
         send_fp = _side_fppg(cp_send_ids, draft_state)
         recv_fp = _side_fppg(cp_recv_ids, draft_state)
         if send_fp <= 0.01:
-            return True  # giving nothing of value, accept
+            return True
         return (recv_fp / send_fp) >= threshold
+
+    def vote_veto_multi_factor(
+        self,
+        trade: Any,
+        draft_state: "DraftState",
+        voter_persona_key: str,
+        settings: Any = None,
+    ) -> bool:
+        """Multi-factor veto vote. Returns True if voter casts veto.
+
+        penalty = 0.50*fppg_ratio_penalty + 0.25*star_asymmetry
+                + 0.15*depth_penalty + 0.10*need_alignment
+
+        Thresholds by persona:
+            balanced:                0.12 (strict)
+            contrarian / vet / vet:  0.18 (lenient)
+            others:                  0.15
+        """
+        persona = voter_persona_key
+
+        side_a_fp = _side_fppg(trade.send_player_ids, draft_state)
+        side_b_fp = _side_fppg(trade.receive_player_ids, draft_state)
+
+        # fppg_ratio_penalty
+        denom = max(side_b_fp, 0.01)
+        fppg_ratio_penalty = abs(1.0 - side_a_fp / denom)
+
+        # star_asymmetry
+        max_a = max(
+            (draft_state.players_by_id[pid].fppg for pid in trade.send_player_ids
+             if pid in draft_state.players_by_id),
+            default=0.0,
+        )
+        max_b = max(
+            (draft_state.players_by_id[pid].fppg for pid in trade.receive_player_ids
+             if pid in draft_state.players_by_id),
+            default=0.0,
+        )
+        star_denom = max(max_b, 0.01)
+        star_asymmetry = min(abs(max_a / star_denom - 1.0), 0.5)
+
+        # depth_penalty
+        depth_penalty = min(
+            abs(len(trade.send_player_ids) - len(trade.receive_player_ids)) * 0.05,
+            0.3,
+        )
+
+        # need_alignment (placeholder)
+        need_alignment = 0.0
+
+        penalty = (
+            0.50 * fppg_ratio_penalty
+            + 0.25 * star_asymmetry
+            + 0.15 * depth_penalty
+            + 0.10 * need_alignment
+        )
+
+        # Per-persona threshold
+        if persona in ("balanced",):
+            threshold = 0.12
+        elif persona in ("contrarian", "vet"):
+            threshold = 0.18
+        else:
+            threshold = 0.15
+
+        return penalty > threshold
 
     def vote_veto_heuristic(
         self,

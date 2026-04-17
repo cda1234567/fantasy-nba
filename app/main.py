@@ -1,9 +1,10 @@
 """FastAPI entry point: static file mount + draft & season APIs."""
 from __future__ import annotations
 
+import json
 import os
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse
@@ -21,6 +22,7 @@ from .draft import DraftState, NUM_TEAMS, ROSTER_SIZE
 from .models import (
     AdvanceRequest,
     DraftStateOut,
+    LeagueSettings,
     PickRequest,
     ResetRequest,
     SeasonState,
@@ -35,6 +37,7 @@ from .season import (
     sim_to_playoffs as season_sim_to_playoffs,
     start_season as season_start,
 )
+from .injuries_route import router as injuries_router
 from .storage import Storage, resolve_data_dir
 from .trades import TradeManager
 
@@ -42,17 +45,29 @@ from .trades import TradeManager
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
+SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.2.0"
+APP_VERSION = "0.3.0"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 
 app = FastAPI(title="Fantasy NBA Draft Sim", version=APP_VERSION)
+app.include_router(injuries_router)
 
 storage = Storage(DATA_DIR, league_id=LEAGUE_ID)
+
+# ---------------------------------------------------------------------------
+# Startup: respect saved league settings if setup_complete=True
+# ---------------------------------------------------------------------------
 import time as _time
-draft = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF)
+
+_saved_settings = storage.load_league_settings()
+if _saved_settings.setup_complete:
+    draft = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF, settings=_saved_settings)
+else:
+    draft = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF)
+
 ai_gm = AIGM(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 # Restore draft from disk if present
@@ -61,7 +76,6 @@ if _initial_draft:
     try:
         draft.restore(_initial_draft)
     except Exception:
-        # Corrupt snapshot: keep fresh state
         pass
 
 
@@ -79,21 +93,28 @@ def index() -> FileResponse:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+def _current_settings() -> LeagueSettings:
+    return storage.load_league_settings()
+
+
 def _state_snapshot() -> DraftStateOut:
+    settings = _current_settings()
+    num_teams = draft._num_teams
+    roster_size = draft._roster_size
     rnd, pos, team_id = draft.current_pointers()
     return DraftStateOut(
         teams=draft.teams,
         picks=draft.picks,
         board=draft.board(),
-        current_overall=draft.current_overall if not draft.is_complete else NUM_TEAMS * ROSTER_SIZE + 1,
+        current_overall=draft.current_overall if not draft.is_complete else num_teams * roster_size + 1,
         current_round=rnd,
         current_pick_in_round=pos,
         current_team_id=team_id,
         is_complete=draft.is_complete,
         available_count=len(draft.available_players()),
-        total_rounds=ROSTER_SIZE,
-        num_teams=NUM_TEAMS,
-        human_team_id=0,
+        total_rounds=roster_size,
+        num_teams=num_teams,
+        human_team_id=draft.human_team_id,
     )
 
 
@@ -110,9 +131,9 @@ def _load_or_init_season() -> Optional[SeasonState]:
         return None
     try:
         state = SeasonState(**raw)
-        # Pydantic re-serializes dict keys as strings; normalize back to ints
         state.standings = {int(k): v for k, v in state.standings.items()}
         state.lineups = {int(k): v for k, v in state.lineups.items()}
+        state.injuries = {int(k): v for k, v in state.injuries.items()}
         return state
     except Exception:
         return None
@@ -123,6 +144,13 @@ def _require_season() -> SeasonState:
     if state is None or not state.started:
         raise HTTPException(400, "Season has not started")
     return state
+
+
+def _require_setup() -> None:
+    """Raise 409 if league is not yet configured."""
+    settings = _current_settings()
+    if not settings.setup_complete:
+        raise HTTPException(409, "League not yet configured — complete setup first")
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +164,128 @@ def health():
         "league_id": LEAGUE_ID,
         "data_dir": str(DATA_DIR),
         "ai_enabled": ai_gm.enabled,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Seasons list
+# ---------------------------------------------------------------------------
+@app.get("/api/seasons/list")
+def seasons_list():
+    if not SEASONS_DIR.exists():
+        return {"seasons": []}
+    names = sorted(
+        p.stem for p in SEASONS_DIR.glob("*.json")
+    )
+    return {"seasons": names}
+
+
+# ---------------------------------------------------------------------------
+# Offseason headlines
+# ---------------------------------------------------------------------------
+OFFSEASON_DIR = BASE_DIR / "data" / "offseason"
+
+
+@app.get("/api/seasons/{year}/headlines")
+def season_headlines(year: str):
+    path = OFFSEASON_DIR / f"{year}.json"
+    if not path.exists():
+        raise HTTPException(404, "no headlines for this season")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# League settings & setup
+# ---------------------------------------------------------------------------
+
+# Fields that may be changed mid-season (after setup_complete=True)
+_MID_SEASON_ALLOWED = {
+    "team_names",
+    "ai_trade_frequency",
+    "ai_trade_style",
+    "ai_decision_mode",
+    "draft_display_mode",
+    "show_offseason_headlines",
+}
+
+_VALID_ROSTER_SIZES = {10, 13, 15}
+_VALID_STARTERS = {8, 10, 12}
+_VALID_REG_WEEKS = set(range(18, 23))
+
+
+@app.get("/api/league/settings")
+def get_league_settings():
+    return _current_settings().model_dump()
+
+
+@app.post("/api/league/settings")
+def patch_league_settings(body: dict[str, Any]):
+    settings = _current_settings()
+    if settings.setup_complete:
+        forbidden = set(body.keys()) - _MID_SEASON_ALLOWED
+        if forbidden:
+            raise HTTPException(
+                400,
+                f"Cannot change {sorted(forbidden)} after league setup is complete",
+            )
+    updated = settings.model_copy(update=body)
+    storage.save_league_settings(updated)
+    return updated.model_dump()
+
+
+@app.post("/api/league/setup")
+def league_setup(body: LeagueSettings):
+    """Validate and save full settings; reset draft to the chosen season."""
+    errors: list[str] = []
+
+    if body.num_teams != 8:
+        errors.append("num_teams must be 8")
+    if not (0 <= body.player_team_index < body.num_teams):
+        errors.append(f"player_team_index must be 0..{body.num_teams - 1}")
+    if len(body.team_names) != body.num_teams:
+        errors.append(f"team_names must have {body.num_teams} entries")
+    season_file = SEASONS_DIR / f"{body.season_year}.json"
+    if not season_file.exists():
+        errors.append(f"season_year '{body.season_year}' not found in seasons data")
+    if body.roster_size not in _VALID_ROSTER_SIZES:
+        errors.append(f"roster_size must be one of {sorted(_VALID_ROSTER_SIZES)}")
+    if body.starters_per_day not in _VALID_STARTERS:
+        errors.append(f"starters_per_day must be one of {sorted(_VALID_STARTERS)}")
+    if not (0 <= body.il_slots <= 3):
+        errors.append("il_slots must be 0..3")
+    if body.regular_season_weeks not in _VALID_REG_WEEKS:
+        errors.append(f"regular_season_weeks must be 18..22")
+
+    if errors:
+        raise HTTPException(400, {"errors": errors})
+
+    # Mark complete and persist
+    body.setup_complete = True
+    storage.save_league_settings(body)
+
+    # Re-initialize draft with new settings
+    draft.reset(
+        randomize_order=body.randomize_draft_order,
+        seed=int(_time.time() * 1000) & 0xFFFFFFFF,
+        settings=body,
+    )
+    _persist_draft()
+    storage.clear_season()
+    storage.clear_trades()
+
+    return _state_snapshot().model_dump()
+
+
+@app.get("/api/league/status")
+def league_status():
+    settings = _current_settings()
+    return {
+        "setup_complete": settings.setup_complete,
+        "league_name": settings.league_name,
+        "season_year": settings.season_year,
+        "num_teams": settings.num_teams,
+        "roster_size": settings.roster_size,
+        "regular_season_weeks": settings.regular_season_weeks,
     }
 
 
@@ -167,14 +317,14 @@ def list_players(
     if pos:
         pool = [p for p in pool if p.pos.upper() == pos.upper()]
 
-    reverse = sort != "name" and sort != "to"  # ascending for name and TO
+    reverse = sort != "name" and sort != "to"
     pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
     return [p.model_dump() for p in pool[:limit]]
 
 
 @app.get("/api/teams/{team_id}")
 def get_team(team_id: int):
-    if team_id < 0 or team_id >= NUM_TEAMS:
+    if team_id < 0 or team_id >= draft._num_teams:
         raise HTTPException(404, "Unknown team_id")
     team = draft.teams[team_id]
     players = [draft.players_by_id[pid].model_dump() for pid in team.roster]
@@ -188,6 +338,7 @@ def get_team(team_id: int):
 
 @app.post("/api/draft/pick")
 def human_pick(req: PickRequest):
+    _require_setup()
     try:
         pick = draft.human_pick(req.player_id)
     except ValueError as e:
@@ -198,10 +349,11 @@ def human_pick(req: PickRequest):
 
 @app.post("/api/draft/ai-advance")
 def ai_advance():
+    _require_setup()
     if draft.is_complete:
         return {"pick": None, "state": _state_snapshot().model_dump()}
     _, _, team_id = draft.current_pointers()
-    if team_id == 0:
+    if team_id == draft.human_team_id:
         raise HTTPException(400, "It's the human's turn")
     pick = draft.ai_pick()
     _persist_draft()
@@ -213,6 +365,7 @@ def ai_advance():
 
 @app.post("/api/draft/sim-to-me")
 def sim_to_me():
+    _require_setup()
     made = draft.sim_to_human()
     _persist_draft()
     return {
@@ -221,12 +374,27 @@ def sim_to_me():
     }
 
 
+class ResetRequestV2(BaseModel):
+    randomize_order: bool = False
+    seed: Optional[int] = None
+    season_year: Optional[str] = None  # override season for this reset
+
+
 @app.post("/api/draft/reset")
-def reset_draft(req: ResetRequest = ResetRequest()):
+def reset_draft(req: ResetRequestV2 = ResetRequestV2()):
     seed = req.seed if req.seed is not None else (int(_time.time() * 1000) & 0xFFFFFFFF)
-    draft.reset(randomize_order=req.randomize_order, seed=seed)
+    settings = _current_settings()
+    if req.season_year is not None:
+        season_file = SEASONS_DIR / f"{req.season_year}.json"
+        if not season_file.exists():
+            raise HTTPException(400, f"season_year '{req.season_year}' not found")
+        settings = settings.model_copy(update={"season_year": req.season_year})
+    draft.reset(
+        randomize_order=req.randomize_order,
+        seed=seed,
+        settings=settings if settings.setup_complete or req.season_year else None,
+    )
     _persist_draft()
-    # Clearing a draft also invalidates the season and trade state
     storage.clear_season()
     storage.clear_trades()
     return _state_snapshot()
@@ -237,43 +405,63 @@ def reset_draft(req: ResetRequest = ResetRequest()):
 # ---------------------------------------------------------------------------
 @app.post("/api/season/start")
 def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
+    _require_setup()
     if not draft.is_complete:
         raise HTTPException(400, "Draft is not complete")
-    state = season_start(draft, storage)
+    settings = _current_settings()
+    state = season_start(draft, storage, settings=settings)
     return state.model_dump()
 
 
 @app.post("/api/season/advance-day")
 def season_advance_day_endpoint(req: AdvanceRequest = AdvanceRequest()):
+    _require_setup()
     state = _require_season()
-    state = season_advance_day(draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai)
+    settings = _current_settings()
+    state = season_advance_day(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
     return state.model_dump()
 
 
 @app.post("/api/season/advance-week")
 def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest()):
+    _require_setup()
     state = _require_season()
-    state = season_advance_week(draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai)
+    settings = _current_settings()
+    state = season_advance_week(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
     return state.model_dump()
 
 
 @app.post("/api/season/sim-to-playoffs")
 def season_sim_to_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
+    _require_setup()
     state = _require_season()
-    state = season_sim_to_playoffs(draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai)
+    settings = _current_settings()
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
     return state.model_dump()
 
 
 @app.post("/api/season/sim-playoffs")
 def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
+    _require_setup()
     state = _require_season()
-    state = season_sim_playoffs(draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai)
+    settings = _current_settings()
+    state = season_sim_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
     return state.model_dump()
 
 
 @app.get("/api/season/standings")
 def season_standings():
     state = _require_season()
+    settings = _current_settings()
+    reg_weeks = settings.regular_season_weeks if settings.setup_complete else REGULAR_WEEKS
     rows = []
     for team in draft.teams:
         s = state.standings.get(team.id, {"w": 0, "l": 0, "pf": 0, "pa": 0})
@@ -288,14 +476,14 @@ def season_standings():
             "pa": round(float(s.get("pa", 0.0)), 2),
         })
     rows.sort(key=lambda r: (r["w"], r["pf"]), reverse=True)
-    mgr = TradeManager(storage, draft, state)
+    mgr = TradeManager(storage, draft, state, settings=settings if settings.setup_complete else None)
     return {
         "standings": rows,
         "current_week": state.current_week,
         "current_day": state.current_day,
         "is_playoffs": state.is_playoffs,
         "champion": state.champion,
-        "regular_weeks": REGULAR_WEEKS,
+        "regular_weeks": reg_weeks,
         "trade_quota": mgr.quota_info(state.current_week),
         "pending_count": len(mgr.pending()),
     }
@@ -335,7 +523,11 @@ def season_reset():
 def _trade_manager() -> TradeManager:
     """Build a fresh TradeManager using current draft + season state."""
     season = _load_or_init_season() or SeasonState()
-    return TradeManager(storage, draft, season)
+    settings = _current_settings()
+    return TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
 
 
 class TradeProposeRequest(BaseModel):
@@ -353,7 +545,7 @@ class TradeVetoRequest(BaseModel):
 def trades_pending():
     mgr = _trade_manager()
     pending = [t.model_dump() for t in mgr.pending()]
-    attention = mgr.require_human_attention(human_team_id=0)
+    attention = mgr.require_human_attention(human_team_id=draft.human_team_id)
     return {"pending": pending, "require_human_attention": attention}
 
 
@@ -365,10 +557,14 @@ def trades_history(limit: int = Query(50, ge=1, le=500)):
 
 @app.post("/api/trades/propose")
 def trades_propose(req: TradeProposeRequest):
-    if req.from_team != 0:
-        raise HTTPException(400, "Only the human (team 0) may propose via this endpoint")
+    if req.from_team != draft.human_team_id:
+        raise HTTPException(400, "Only the human team may propose via this endpoint")
     season = _require_season()
-    mgr = TradeManager(storage, draft, season)
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
     try:
         trade = mgr.propose(
             from_team=req.from_team,
@@ -381,6 +577,10 @@ def trades_propose(req: TradeProposeRequest):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+    # Auto-decide for AI counterparty
+    cp = draft.teams[req.to_team]
+    if not cp.is_human:
+        mgr.auto_decide_ai(ai_gm, season.current_day)
     storage.append_log({
         "type": "trade_proposed",
         "trade_id": trade.id,
@@ -398,14 +598,18 @@ def trades_propose(req: TradeProposeRequest):
 @app.post("/api/trades/{trade_id}/accept")
 def trades_accept(trade_id: str):
     season = _require_season()
-    mgr = TradeManager(storage, draft, season)
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")
-    # Only the counterparty may accept; the human hitting this endpoint must
-    # be the counterparty (to_team=0 for human-targeted trades).
     try:
-        result = mgr.decide(trade_id, trade.to_team, True, season.current_day)
+        result = mgr.decide(
+            trade_id, trade.to_team, True, season.current_day, ai_gm=ai_gm
+        )
     except ValueError as e:
         raise HTTPException(400, str(e))
     storage.append_log({
@@ -422,7 +626,11 @@ def trades_accept(trade_id: str):
 @app.post("/api/trades/{trade_id}/reject")
 def trades_reject(trade_id: str):
     season = _require_season()
-    mgr = TradeManager(storage, draft, season)
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")
@@ -444,7 +652,11 @@ def trades_reject(trade_id: str):
 @app.post("/api/trades/{trade_id}/veto")
 def trades_veto(trade_id: str, req: TradeVetoRequest):
     season = _require_season()
-    mgr = TradeManager(storage, draft, season)
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
     try:
         result = mgr.veto(trade_id, req.team_id)
     except ValueError as e:
@@ -462,7 +674,11 @@ def trades_veto(trade_id: str, req: TradeVetoRequest):
 @app.post("/api/trades/{trade_id}/cancel")
 def trades_cancel(trade_id: str):
     season = _require_season()
-    mgr = TradeManager(storage, draft, season)
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")

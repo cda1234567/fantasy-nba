@@ -1,54 +1,54 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="zh-TW" data-theme="dark">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#0d1117" />
-  <title>Fantasy NBA</title>
+  <title>NBA Fantasy 模擬器</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
   <header class="app-header" role="banner">
-    <button class="icon-btn hamburger" id="btn-menu" aria-label="Open settings" aria-haspopup="dialog" aria-controls="dlg-settings">
+    <button class="icon-btn hamburger" id="btn-menu" aria-label="開啟設定" aria-haspopup="dialog" aria-controls="dlg-settings">
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
-    <h1 class="app-title">Fantasy NBA</h1>
+    <h1 class="app-title">NBA Fantasy 模擬器</h1>
     <div class="header-status">
       <span class="conn-dot" id="conn-dot" aria-hidden="true"></span>
-      <span class="conn-text" id="conn-text">Connecting</span>
+      <span class="conn-text" id="conn-text">連線中</span>
     </div>
   </header>
 
   <div class="layout">
-    <nav class="side-nav" id="side-nav" role="navigation" aria-label="Primary">
+    <nav class="side-nav" id="side-nav" role="navigation" aria-label="主選單">
       <a class="nav-item" href="#draft" data-route="draft">
         <span class="nav-icon" aria-hidden="true">D</span>
-        <span class="nav-label">Draft</span>
+        <span class="nav-label">選秀</span>
       </a>
       <a class="nav-item" href="#teams" data-route="teams">
         <span class="nav-icon" aria-hidden="true">T</span>
-        <span class="nav-label">Teams</span>
+        <span class="nav-label">隊伍</span>
       </a>
       <a class="nav-item" href="#fa" data-route="fa">
         <span class="nav-icon" aria-hidden="true">F</span>
-        <span class="nav-label">Free Agents</span>
+        <span class="nav-label">自由球員</span>
       </a>
       <a class="nav-item" href="#league" data-route="league">
         <span class="nav-icon" aria-hidden="true">L</span>
-        <span class="nav-label">League</span>
+        <span class="nav-label">聯盟</span>
       </a>
       <a class="nav-item" href="#schedule" data-route="schedule">
         <span class="nav-icon" aria-hidden="true">S</span>
-        <span class="nav-label">Schedule</span>
+        <span class="nav-label">賽程</span>
       </a>
     </nav>
 
     <main class="main-view" id="main-view" role="main" tabindex="-1"></main>
 
-    <aside class="log-aside" id="log-aside" aria-label="Activity log">
+    <aside class="log-aside" id="log-aside" aria-label="活動記錄">
       <div class="log-head">
-        <h2>Activity</h2>
-        <button class="icon-btn" id="btn-log-refresh" aria-label="Refresh activity log" type="button">
+        <h2>活動</h2>
+        <button class="icon-btn" id="btn-log-refresh" aria-label="重新整理活動記錄" type="button">
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5L13 3v4h-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
@@ -56,83 +56,83 @@
     </aside>
   </div>
 
-  <nav class="bottom-tabs" id="bottom-tabs" role="navigation" aria-label="Primary mobile">
-    <a class="tab-btn" href="#draft" data-route="draft"><span class="tab-ic">D</span><span class="tab-lbl">Draft</span></a>
-    <a class="tab-btn" href="#teams" data-route="teams"><span class="tab-ic">T</span><span class="tab-lbl">Teams</span></a>
-    <a class="tab-btn" href="#fa" data-route="fa"><span class="tab-ic">F</span><span class="tab-lbl">FA</span></a>
-    <a class="tab-btn" href="#league" data-route="league"><span class="tab-ic">L</span><span class="tab-lbl">League</span></a>
-    <a class="tab-btn" href="#schedule" data-route="schedule"><span class="tab-ic">S</span><span class="tab-lbl">Sched</span></a>
+  <nav class="bottom-tabs" id="bottom-tabs" role="navigation" aria-label="主選單（手機）">
+    <a class="tab-btn" href="#draft" data-route="draft"><span class="tab-ic">D</span><span class="tab-lbl">選秀</span></a>
+    <a class="tab-btn" href="#teams" data-route="teams"><span class="tab-ic">T</span><span class="tab-lbl">隊伍</span></a>
+    <a class="tab-btn" href="#fa" data-route="fa"><span class="tab-ic">F</span><span class="tab-lbl">自由</span></a>
+    <a class="tab-btn" href="#league" data-route="league"><span class="tab-ic">L</span><span class="tab-lbl">聯盟</span></a>
+    <a class="tab-btn" href="#schedule" data-route="schedule"><span class="tab-ic">S</span><span class="tab-lbl">賽程</span></a>
   </nav>
 
-  <dialog id="dlg-settings" class="dialog settings-dialog" aria-label="Settings">
+  <dialog id="dlg-settings" class="dialog settings-dialog" aria-label="設定">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
-        <h2>Settings</h2>
-        <button type="submit" value="close" class="icon-btn" aria-label="Close">
+        <h2>設定</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </header>
       <section class="dialog-body">
         <div class="setting-row">
           <div>
-            <div class="setting-label">Start Season</div>
-            <div class="setting-sub">Commit draft and build 14-week schedule.</div>
+            <div class="setting-label">開始賽季</div>
+            <div class="setting-sub">確認選秀並建立 14 週賽程。</div>
           </div>
-          <button type="button" class="btn" id="btn-season-start">Start</button>
+          <button type="button" class="btn" id="btn-season-start">開始</button>
         </div>
         <div class="setting-row">
           <div>
-            <div class="setting-label">Sim to Playoffs</div>
-            <div class="setting-sub">Advance through regular season (weeks 1-14).</div>
+            <div class="setting-label">模擬到季後賽</div>
+            <div class="setting-sub">快進例行賽（第 1–14 週）。</div>
           </div>
-          <button type="button" class="btn ghost" id="btn-sim-playoffs">Sim</button>
+          <button type="button" class="btn ghost" id="btn-sim-playoffs">模擬</button>
         </div>
         <div class="setting-row">
           <div>
-            <div class="setting-label">Sim Playoffs</div>
-            <div class="setting-sub">Run bracket (weeks 15-16).</div>
+            <div class="setting-label">模擬季後賽</div>
+            <div class="setting-sub">執行淘汰賽（第 15–16 週）。</div>
           </div>
-          <button type="button" class="btn ghost" id="btn-sim-playoffs-bracket">Run</button>
+          <button type="button" class="btn ghost" id="btn-sim-playoffs-bracket">執行</button>
         </div>
         <div class="setting-divider"></div>
         <div class="setting-row">
           <div>
-            <div class="setting-label">Reset Draft</div>
-            <div class="setting-sub danger">Clear all picks and start over.</div>
+            <div class="setting-label">重置選秀</div>
+            <div class="setting-sub danger">清除所有順位並重新開始。</div>
           </div>
-          <button type="button" class="btn danger" id="btn-reset-draft">Reset</button>
+          <button type="button" class="btn danger" id="btn-reset-draft">重置</button>
         </div>
         <div class="setting-row">
           <div>
-            <div class="setting-label">Reset Season</div>
-            <div class="setting-sub danger">Clear season state only.</div>
+            <div class="setting-label">重置賽季</div>
+            <div class="setting-sub danger">僅清除賽季資料。</div>
           </div>
-          <button type="button" class="btn danger" id="btn-reset-season">Reset</button>
+          <button type="button" class="btn danger" id="btn-reset-season">重置</button>
         </div>
       </section>
     </form>
   </dialog>
 
-  <dialog id="dlg-confirm" class="dialog confirm-dialog" aria-label="Confirm">
+  <dialog id="dlg-confirm" class="dialog confirm-dialog" aria-label="確認">
     <form method="dialog" class="dialog-inner small">
       <header class="dialog-head">
-        <h2 id="confirm-title">Confirm</h2>
+        <h2 id="confirm-title">確認</h2>
       </header>
       <section class="dialog-body">
         <p id="confirm-body" class="confirm-body"></p>
       </section>
       <footer class="dialog-foot">
-        <button type="submit" value="cancel" class="btn ghost">Cancel</button>
-        <button type="submit" value="ok" class="btn danger" id="confirm-ok">OK</button>
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="submit" value="ok" class="btn danger" id="confirm-ok">確定</button>
       </footer>
     </form>
   </dialog>
 
-  <dialog id="dlg-matchup" class="dialog matchup-dialog" aria-label="Matchup detail">
+  <dialog id="dlg-matchup" class="dialog matchup-dialog" aria-label="對戰詳情">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
-        <h2 id="matchup-title">Matchup</h2>
-        <button type="submit" value="close" class="icon-btn" aria-label="Close">
+        <h2 id="matchup-title">對戰</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </header>
@@ -140,18 +140,34 @@
     </form>
   </dialog>
 
-  <dialog id="trade-propose" class="dialog trade-propose-dialog" aria-label="Propose trade">
+  <dialog id="trade-propose" class="dialog trade-propose-dialog" aria-label="發起交易">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
-        <h2>Propose Trade</h2>
-        <button type="submit" value="close" class="icon-btn" aria-label="Close">
+        <h2>發起交易</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
           <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
       </header>
       <section class="dialog-body" id="trade-propose-body"></section>
       <footer class="dialog-foot">
-        <button type="submit" value="cancel" class="btn ghost">Cancel</button>
-        <button type="button" class="btn" id="btn-trade-propose-submit">Submit Proposal</button>
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-trade-propose-submit">送出提案</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-league-settings" class="dialog league-settings-dialog" aria-label="聯盟設定">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2>聯盟設定（賽季中可調整）</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body" id="dlg-league-settings-body"></section>
+      <footer class="dialog-foot">
+        <button type="submit" value="close" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-league-settings-save">儲存設定</button>
       </footer>
     </form>
   </dialog>

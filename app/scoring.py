@@ -19,14 +19,15 @@ SCORING_WEIGHTS = {
 }
 
 
-def compute_fppg(p: Player) -> float:
+def compute_fppg(p: Player, weights: dict | None = None) -> float:
+    w = weights if weights is not None else SCORING_WEIGHTS
     return (
-        p.pts * SCORING_WEIGHTS["pts"]
-        + p.reb * SCORING_WEIGHTS["reb"]
-        + p.ast * SCORING_WEIGHTS["ast"]
-        + p.stl * SCORING_WEIGHTS["stl"]
-        + p.blk * SCORING_WEIGHTS["blk"]
-        + p.to * SCORING_WEIGHTS["to"]
+        p.pts * w.get("pts", SCORING_WEIGHTS["pts"])
+        + p.reb * w.get("reb", SCORING_WEIGHTS["reb"])
+        + p.ast * w.get("ast", SCORING_WEIGHTS["ast"])
+        + p.stl * w.get("stl", SCORING_WEIGHTS["stl"])
+        + p.blk * w.get("blk", SCORING_WEIGHTS["blk"])
+        + p.to * w.get("to", SCORING_WEIGHTS["to"])
     )
 
 
@@ -70,32 +71,34 @@ GM_PERSONAS: dict[str, dict] = {
 
 
 def _bpa_score(p: Player, ctx: dict) -> float:
-    return p.fppg
+    return ctx.get("eval_fppg", p.fppg)
 
 
 def _punt_to_score(p: Player, ctx: dict) -> float:
     # Extra -2.5 per TO on top of the base -1.0 already in fppg.
-    return p.fppg - (p.to * 2.5)
+    return ctx.get("eval_fppg", p.fppg) - (p.to * 2.5)
 
 
 def _stars_scrubs_score(p: Player, ctx: dict) -> float:
     rnd = ctx["round"]
     rank = ctx["fppg_rank"].get(p.id, 999)
+    eval_fppg = ctx.get("eval_fppg", p.fppg)
     if rnd <= 3:
         # Only want elite (top 20). Heavy penalty otherwise.
         if rank <= 20:
-            return p.fppg + 10.0
-        return p.fppg - 50.0
+            return eval_fppg + 10.0
+        return eval_fppg - 50.0
     # Mid-late: love young high-variance
     bonus = 0.0
     if p.age <= 24:
         bonus += 5.0
     if p.mpg >= 28 and p.age <= 23:
         bonus += 4.0
-    return p.fppg + bonus
+    return eval_fppg + bonus
 
 
 def _balanced_score(p: Player, ctx: dict) -> float:
+    eval_fppg = ctx.get("eval_fppg", p.fppg)
     # Penalize any zero / near-zero category; reward filling all six.
     cats = [p.pts, p.reb, p.ast, p.stl, p.blk]
     penalty = 0.0
@@ -107,10 +110,11 @@ def _balanced_score(p: Player, ctx: dict) -> float:
     if p.pts >= 12 and p.reb >= 4 and p.ast >= 3 and p.stl >= 0.8 and p.blk >= 0.4:
         bonus += 6.0
     # Mild TO penalty on top of fppg
-    return p.fppg + bonus - penalty - (p.to * 0.5)
+    return eval_fppg + bonus - penalty - (p.to * 0.5)
 
 
 def _youth_score(p: Player, ctx: dict) -> float:
+    eval_fppg = ctx.get("eval_fppg", p.fppg)
     bonus = 0.0
     if p.age <= 22:
         bonus += 8.0
@@ -121,10 +125,11 @@ def _youth_score(p: Player, ctx: dict) -> float:
     # Reach on upside = overweight young players with high MPG
     if p.age <= 24 and p.mpg >= 30:
         bonus += 3.0
-    return p.fppg + bonus
+    return eval_fppg + bonus
 
 
 def _vet_score(p: Player, ctx: dict) -> float:
+    eval_fppg = ctx.get("eval_fppg", p.fppg)
     bonus = 0.0
     if p.age >= 27:
         bonus += 5.0
@@ -135,10 +140,11 @@ def _vet_score(p: Player, ctx: dict) -> float:
         bonus += 2.0
     if p.mpg >= 30:
         bonus += 1.5
-    return p.fppg + bonus
+    return eval_fppg + bonus
 
 
 def _contrarian_score(p: Player, ctx: dict) -> float:
+    eval_fppg = ctx.get("eval_fppg", p.fppg)
     rank = ctx["fppg_rank"].get(p.id, 999)
     # Fade consensus: reach 5-10 slots "later" = penalize the very top a bit,
     # prefer players a bit below the top available.
@@ -159,7 +165,7 @@ def _contrarian_score(p: Player, ctx: dict) -> float:
     # Slight penalty for generic scorers
     if p.pts >= 20 and p.stl < 0.9 and p.blk < 0.5:
         slot_bonus -= 2.0
-    return p.fppg + slot_bonus
+    return eval_fppg + slot_bonus
 
 
 GM_SCORERS: dict[str, Callable[[Player, dict], float]] = {

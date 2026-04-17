@@ -1126,6 +1126,286 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   .trade-propose-dialog .dialog-body { flex: 1; }
 }
 
+/* ---------------------------------------------------------- setup page */
+
+.setup-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding-bottom: var(--sp-6);
+}
+
+.setup-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.setup-lock-warn {
+  background: rgba(248,81,73,0.10);
+  border: 1px solid rgba(248,81,73,0.35);
+  border-radius: var(--radius);
+  color: var(--danger);
+  font-size: 13px;
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+
+.setup-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--sp-3);
+  overflow: hidden;
+}
+
+.setup-section-title {
+  padding: var(--sp-3) var(--sp-4);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-muted);
+  background: var(--bg-elevated);
+}
+
+.setup-row {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: var(--sp-3);
+  align-items: start;
+  padding: var(--sp-3) var(--sp-4);
+  border-bottom: 1px solid var(--border-muted);
+}
+.setup-row:last-child { border-bottom: none; }
+
+.setup-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  padding-top: 9px;
+}
+
+.setup-control {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.setup-hint {
+  grid-column: 1 / -1;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 0 var(--sp-4) var(--sp-2);
+}
+
+/* Radio groups */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding-top: 4px;
+}
+
+.radio-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.radio-item input[type="radio"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  min-height: 0;
+  cursor: pointer;
+}
+
+.radio-item label {
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Scoring weights grid */
+.weight-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+}
+
+.weight-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.weight-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.weight-item input[type="number"] {
+  width: 100%;
+  text-align: center;
+}
+
+/* Team names grid */
+.setup-team-names {
+  padding: var(--sp-3) var(--sp-4);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-2);
+}
+
+.team-name-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.team-name-idx {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+/* Setup error */
+.setup-errors {
+  background: rgba(248,81,73,0.10);
+  border: 1px solid rgba(248,81,73,0.35);
+  border-radius: var(--radius);
+  padding: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-3);
+}
+
+.setup-error-item {
+  color: var(--danger);
+  font-size: 13px;
+  padding: 2px 0;
+}
+.setup-error-item::before { content: '✕ '; }
+
+/* Setup button row */
+.setup-btn-row {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: flex-end;
+  padding: var(--sp-4) 0;
+  flex-wrap: wrap;
+}
+
+/* Gear button in league header */
+.league-settings-btn {
+  font-size: 16px;
+  color: var(--text-muted);
+  min-width: 36px;
+  min-height: 36px;
+}
+.league-settings-btn:hover { color: var(--text); }
+
+/* League settings dialog */
+.league-settings-dialog .dialog-inner {
+  min-width: 320px;
+  max-width: 640px;
+  width: min(640px, 96vw);
+  max-height: 85vh;
+}
+.league-settings-dialog .dialog-body {
+  overflow-y: auto;
+  padding: var(--sp-3) var(--sp-4);
+}
+
+/* ---------------------------------------------------------- offseason headlines */
+
+.headlines-banner {
+  background: rgba(88,166,255,0.06);
+  border: 1px solid rgba(88,166,255,0.20);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--sp-3);
+  overflow: hidden;
+}
+
+.headlines-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-4);
+  background: transparent;
+  border: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background var(--tr);
+}
+.headlines-toggle:hover { background: rgba(88,166,255,0.06); }
+
+.headlines-heading {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.headlines-chevron {
+  color: var(--accent);
+  font-size: 13px;
+}
+
+.headlines-body {
+  padding: 0 var(--sp-4) var(--sp-3);
+}
+
+.headlines-list {
+  list-style: disc;
+  margin: 0;
+  padding-left: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+
+.headlines-list li {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------- mobile setup overrides */
+
+@media (max-width: 639px) {
+  .setup-row {
+    grid-template-columns: 1fr;
+    gap: var(--sp-1);
+  }
+  .setup-label { padding-top: 0; font-size: 12px; color: var(--text-muted); }
+  .weight-grid { grid-template-columns: repeat(3, 1fr); gap: var(--sp-2); }
+  .setup-team-names { grid-template-columns: 1fr; }
+  .setup-btn-row { flex-direction: column; }
+  .setup-btn-row .btn { width: 100%; justify-content: center; }
+}
+
 /* ---------------------------------------------------------- tables → cards (mobile) */
 
 @media (max-width: 639px) {

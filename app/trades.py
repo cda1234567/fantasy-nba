@@ -1,15 +1,17 @@
 """Trade workflow: propose → accept/reject → veto window → execute.
 
-Yahoo-style veto: any 3 non-party managers voting veto during the review
+Yahoo-style veto: any N non-party managers voting veto during the review
 window cancels an accepted trade. Persisted via Storage.load_trades()/save_trades().
 
 Lifecycle:
-    1. propose()  -> status "pending_accept" (2-day decide window)
-    2. decide(accept=True)  -> status "accepted" (2-day veto window)
+    1. propose()  -> status "pending_accept"
+    2. decide(accept=True)  -> status "accepted" (veto window opens)
+       - AI veto votes collected immediately on accept
+       - If votes >= veto_threshold, status -> "vetoed" immediately
+       - Otherwise veto_deadline_day = current_day + veto_window_days
     3. decide(accept=False) -> status "rejected" (final)
-    4. During veto window, veto() records votes; 3+ non-party votes -> "vetoed"
-    5. daily_tick() resolves expired propose-windows, expired veto-windows,
-       and finalizes execute/veto.
+    4. During veto window, veto() records votes; threshold+ non-party -> "vetoed"
+    5. daily_tick() resolves expired veto-windows -> execute/veto
 """
 from __future__ import annotations
 
@@ -20,7 +22,7 @@ from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
     from .draft import DraftState
-    from .models import SeasonState
+    from .models import LeagueSettings, SeasonState
     from .storage import Storage
 
 
@@ -28,9 +30,9 @@ TradeStatus = Literal[
     "pending_accept", "accepted", "rejected", "vetoed", "executed", "expired"
 ]
 
-PROPOSE_WINDOW_DAYS = 2   # counterparty must decide within this many days
-VETO_WINDOW_DAYS = 2      # review window after acceptance
-VETO_THRESHOLD = 3        # non-party votes needed to kill an accepted trade
+# Defaults; overridden by LeagueSettings when passed in
+VETO_WINDOW_DAYS = 2
+VETO_THRESHOLD = 3
 
 
 # ---------------------------------------------------------------------------
@@ -67,11 +69,22 @@ class TradeManager:
         storage: "Storage",
         draft_state: "DraftState",
         season_state: "SeasonState",
+        settings: Optional["LeagueSettings"] = None,
     ):
         self.storage = storage
         self.draft = draft_state
         self.season = season_state
+        self._settings = settings
         self.state = self._load()
+
+    # -------------------------------------------------------------- settings
+    @property
+    def _veto_threshold(self) -> int:
+        return self._settings.veto_threshold if self._settings is not None else VETO_THRESHOLD
+
+    @property
+    def _veto_window_days(self) -> int:
+        return self._settings.veto_window_days if self._settings is not None else VETO_WINDOW_DAYS
 
     # -------------------------------------------------------------- persistence
     def _load(self) -> TradesState:
@@ -98,7 +111,6 @@ class TradeManager:
 
     def _move_to_history(self, trade: TradeProposal) -> None:
         self.state.pending = [t for t in self.state.pending if t.id != trade.id]
-        # Replace in history if already there; else append.
         self.state.history = [t for t in self.state.history if t.id != trade.id]
         self.state.history.append(trade)
 
@@ -118,7 +130,6 @@ class TradeManager:
         if not send_ids or not receive_ids:
             raise ValueError("Both sides must include at least one player")
 
-        # Validate ownership
         sender = self.draft.teams[from_team]
         receiver = self.draft.teams[to_team]
         sender_roster = set(sender.roster)
@@ -130,7 +141,6 @@ class TradeManager:
             if pid not in receiver_roster:
                 raise ValueError(f"Player {pid} not on counterparty roster")
 
-        # Don't allow duplicate pending trades between same pair with same players
         for existing in self.state.pending:
             if (
                 existing.from_team == from_team
@@ -161,7 +171,14 @@ class TradeManager:
         counterparty_id: int,
         accept: bool,
         current_day: int,
+        ai_gm: Optional[Any] = None,
     ) -> TradeProposal:
+        """Accept or reject a pending_accept trade.
+
+        When accepted and ai_gm is provided, immediately collect AI veto votes
+        from all non-party AI teams. If votes >= threshold the trade is vetoed
+        immediately; otherwise the veto window opens.
+        """
         trade = self._find(trade_id)
         if trade is None:
             raise ValueError("Unknown trade_id")
@@ -171,14 +188,59 @@ class TradeManager:
             raise ValueError("Only the counterparty can accept or reject")
 
         trade.counterparty_decided_day = current_day
-        if accept:
-            trade.status = "accepted"
-            trade.veto_deadline_day = current_day + VETO_WINDOW_DAYS
-        else:
+        if not accept:
             trade.status = "rejected"
             self._move_to_history(trade)
+            self._save()
+            return trade
+
+        # Accepted — collect immediate AI veto votes if ai_gm available
+        trade.status = "accepted"
+        trade.veto_deadline_day = current_day + self._veto_window_days
+
+        if ai_gm is not None:
+            for voter in self.draft.teams:
+                if voter.is_human:
+                    continue
+                if voter.id in (trade.from_team, trade.to_team):
+                    continue
+                if voter.id in trade.veto_votes:
+                    continue
+                if ai_gm.vote_veto_multi_factor(
+                    trade, self.draft, voter.gm_persona or "bpa", self._settings
+                ):
+                    trade.veto_votes.append(voter.id)
+
+            # Immediate veto if threshold already met
+            if len(trade.veto_votes) >= self._veto_threshold:
+                trade.status = "vetoed"
+                self._move_to_history(trade)
+                self._save()
+                return trade
+
         self._save()
         return trade
+
+    def auto_decide_ai(
+        self,
+        ai_gm: Any,
+        current_day: int,
+    ) -> list[TradeProposal]:
+        """Iterate pending trades where to_team is AI and status=pending_accept.
+        Call ai_gm.decide_trade and set status accordingly.
+        Returns list of decided trades.
+        """
+        decided: list[TradeProposal] = []
+        for trade in list(self.state.pending):
+            if trade.status != "pending_accept":
+                continue
+            cp = self.draft.teams[trade.to_team]
+            if cp.is_human:
+                continue
+            accept, _ = ai_gm.decide_trade(trade, cp, self.draft, self._settings)
+            self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
+            decided.append(trade)
+        return decided
 
     def veto(self, trade_id: str, voter_team_id: int) -> TradeProposal:
         trade = self._find(trade_id)
@@ -191,6 +253,10 @@ class TradeManager:
         if voter_team_id in trade.veto_votes:
             return trade  # idempotent
         trade.veto_votes.append(voter_team_id)
+        # Immediately veto if threshold met
+        if len(trade.veto_votes) >= self._veto_threshold:
+            trade.status = "vetoed"
+            self._move_to_history(trade)
         self._save()
         return trade
 
@@ -209,29 +275,22 @@ class TradeManager:
 
     # ----------------------------------------------------------------- daily
     def daily_tick(self, current_day: int, current_week: int) -> list[TradeProposal]:
-        """Resolve pending/accepted trades whose windows have closed.
-
-        Returns a list of trades whose status flipped this tick (for logging).
+        """Resolve accepted trades whose veto windows have closed.
+        pending_accept trades for AI counterparties should be decided via
+        auto_decide_ai before this is called; human counterparties have no
+        auto-expire (they see the trade in require_human_attention).
+        Returns list of trades whose status flipped this tick (for logging).
         """
         resolved: list[TradeProposal] = []
 
-        # Iterate over a snapshot because we mutate self.state.pending.
         for trade in list(self.state.pending):
-            # Expire pending_accept past 2-day window (from proposed day, inclusive)
-            if trade.status == "pending_accept":
-                if current_day >= trade.proposed_day + PROPOSE_WINDOW_DAYS:
-                    trade.status = "expired"
-                    self._move_to_history(trade)
-                    resolved.append(trade)
-                continue
-
             # Resolve accepted trades past veto deadline
             if trade.status == "accepted":
                 if (
                     trade.veto_deadline_day is not None
                     and current_day >= trade.veto_deadline_day
                 ):
-                    if len(trade.veto_votes) >= VETO_THRESHOLD:
+                    if len(trade.veto_votes) >= self._veto_threshold:
                         trade.status = "vetoed"
                     else:
                         trade.status = "executed"
@@ -253,15 +312,12 @@ class TradeManager:
         send_set = set(trade.send_player_ids)
         recv_set = set(trade.receive_player_ids)
 
-        # Remove sent players from sender; add received players to sender.
         sender.roster = [pid for pid in sender.roster if pid not in send_set]
         sender.roster.extend(trade.receive_player_ids)
 
-        # Remove received-from players from receiver; add received-by-receiver.
         receiver.roster = [pid for pid in receiver.roster if pid not in recv_set]
         receiver.roster.extend(trade.send_player_ids)
 
-        # Persist the draft snapshot so the new rosters survive a restart.
         try:
             self.storage.save_draft(self.draft.snapshot())
         except Exception:
@@ -270,7 +326,13 @@ class TradeManager:
     # ------------------------------------------------------------------ info
     def quota_info(self, current_week: int) -> dict:
         import math
-        target = max(0, math.ceil(current_week * 10 / 14))
+        from .season import REGULAR_WEEKS as _DEFAULT_REG
+        reg_weeks = (
+            self._settings.regular_season_weeks
+            if self._settings is not None
+            else _DEFAULT_REG
+        )
+        target = max(0, math.ceil(current_week * 10 / reg_weeks))
         executed = int(self.state.season_executed_count)
         behind = max(0, target - executed)
         return {"executed": executed, "target": target, "behind": behind}

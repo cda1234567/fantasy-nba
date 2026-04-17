@@ -4,10 +4,13 @@ from __future__ import annotations
 import json
 import random
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from .models import Player, Pick, Team
+from .models import Injury, Player, Pick, SeasonState, Team
 from .scoring import compute_fppg, GM_PERSONAS, GM_SCORERS
+
+if TYPE_CHECKING:
+    from .models import LeagueSettings
 
 
 NUM_TEAMS = 8
@@ -26,14 +29,31 @@ AI_PERSONA_ORDER = [
 ]
 
 
-def _load_players(path: Path) -> list[Player]:
+def _load_players(path: Path, weights: dict | None = None) -> list[Player]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     players: list[Player] = []
     for row in raw:
-        p = Player(**row)
-        p.fppg = round(compute_fppg(p), 2)
+        # season files may have prev_fppg; drop it so Player() doesn't choke
+        row_clean = {k: v for k, v in row.items() if k != "prev_fppg"}
+        p = Player(**row_clean)
+        p.fppg = round(compute_fppg(p, weights), 2)
         players.append(p)
     return players
+
+
+def _load_prev_fppg(path: Path) -> dict[int, float]:
+    """Return {player_id: prev_fppg} from the season JSON. Missing/null -> 0.0."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    result: dict[int, float] = {}
+    for row in raw:
+        pid = row.get("id")
+        pf = row.get("prev_fppg")
+        if pid is not None and pf is not None:
+            result[int(pid)] = float(pf)
+    return result
 
 
 def snake_team_for_pick(overall_pick: int, num_teams: int = NUM_TEAMS) -> tuple[int, int, int]:
@@ -49,64 +69,134 @@ def snake_team_for_pick(overall_pick: int, num_teams: int = NUM_TEAMS) -> tuple[
 
 
 class DraftState:
-    def __init__(self, players_file: Path, seed: int = 42):
+    def __init__(
+        self,
+        players_file: Path,
+        seed: int = 42,
+        settings: Optional["LeagueSettings"] = None,
+    ):
         self.players_file = players_file
         self.seed = seed
-        self.players: list[Player] = _load_players(players_file)
+        self._settings = settings
+
+        # Resolve the actual players file: if settings has a season_year,
+        # look for the season JSON; fall back to the given players_file.
+        effective_file = self._resolve_players_file(players_file, settings)
+        weights = settings.scoring_weights if settings is not None else None
+        self.players: list[Player] = _load_players(effective_file, weights)
         self.players_by_id: dict[int, Player] = {p.id: p for p in self.players}
         self._fppg_rank: dict[int, int] = {}
         self._recompute_fppg_rank()
+        # prev_fppg_map: used by AI draft scorers when not in current_full mode
+        self._prev_fppg_map: dict[int, float] = _load_prev_fppg(effective_file)
+        # Optional reference to preseason SeasonState (for injury penalties at draft time)
+        self._preseason_state: Optional[SeasonState] = None
         self.teams: list[Team] = []
         self.picks: list[Pick] = []
         self.drafted_ids: set[int] = set()
         self.rng = random.Random(seed)
         self.reset(randomize_order=False, seed=seed)
 
+    # -------------------------------------------------------------- helpers
+    @staticmethod
+    def _resolve_players_file(
+        default_file: Path, settings: Optional["LeagueSettings"]
+    ) -> Path:
+        if settings is None:
+            return default_file
+        seasons_dir = default_file.parent / "seasons"
+        candidate = seasons_dir / f"{settings.season_year}.json"
+        if candidate.exists():
+            return candidate
+        return default_file
+
     # ------------------------------------------------------------------ state
     def _recompute_fppg_rank(self) -> None:
         ordered = sorted(self.players, key=lambda p: p.fppg, reverse=True)
         self._fppg_rank = {p.id: i + 1 for i, p in enumerate(ordered)}
 
-    def reset(self, randomize_order: bool = False, seed: Optional[int] = None) -> None:
+    def reset(
+        self,
+        randomize_order: bool = False,
+        seed: Optional[int] = None,
+        settings: Optional["LeagueSettings"] = None,
+    ) -> None:
+        if settings is not None:
+            self._settings = settings
+            # Reload players if the season or weights changed
+            effective_file = self._resolve_players_file(self.players_file, settings)
+            self.players = _load_players(effective_file, settings.scoring_weights)
+            self.players_by_id = {p.id: p for p in self.players}
+            self._recompute_fppg_rank()
+            self._prev_fppg_map = _load_prev_fppg(effective_file)
+
+        s = self._settings
+        num_teams = s.num_teams if s is not None else NUM_TEAMS
+        roster_size = s.roster_size if s is not None else ROSTER_SIZE
+        human_idx = s.player_team_index if s is not None else 0
+        team_names = s.team_names if s is not None else None
+        do_randomize = randomize_order or (s.randomize_draft_order if s is not None else False)
+
         if seed is not None:
             self.seed = seed
         self.rng = random.Random(self.seed)
         self.picks = []
         self.drafted_ids = set()
 
-        personas = list(AI_PERSONA_ORDER)
-        if randomize_order:
-            self.rng.shuffle(personas)
+        # Cache resolved sizes so properties don't need to re-read settings
+        self._num_teams = num_teams
+        self._roster_size = roster_size
+        self._human_team_id = human_idx
 
-        # Team 0 is always the human.
-        self.teams = [
-            Team(id=0, name="You", is_human=True, gm_persona=None, roster=[])
-        ]
-        for i, persona in enumerate(personas, start=1):
-            self.teams.append(
-                Team(
-                    id=i,
-                    name=f"{GM_PERSONAS[persona]['name']} (T{i+1})",
-                    is_human=False,
-                    gm_persona=persona,
-                    roster=[],
+        personas = list(AI_PERSONA_ORDER)
+        if do_randomize:
+            self.rng.shuffle(personas)
+        # Loop/truncate personas for non-8 team counts
+        ai_personas: list[str] = []
+        for i in range(num_teams - 1):
+            ai_personas.append(personas[i % len(personas)])
+
+        self.teams = []
+        ai_cursor = 0
+        for i in range(num_teams):
+            if i == human_idx:
+                name = team_names[i] if (team_names and i < len(team_names)) else "You"
+                self.teams.append(
+                    Team(id=i, name=name, is_human=True, gm_persona=None, roster=[])
                 )
-            )
+            else:
+                persona = ai_personas[ai_cursor]
+                ai_cursor += 1
+                if team_names and i < len(team_names):
+                    name = team_names[i]
+                else:
+                    name = f"{GM_PERSONAS[persona]['name']} (T{i+1})"
+                self.teams.append(
+                    Team(id=i, name=name, is_human=False, gm_persona=persona, roster=[])
+                )
 
     # --------------------------------------------------------------- pointers
+    @property
+    def _total_picks(self) -> int:
+        return self._num_teams * self._roster_size
+
     @property
     def current_overall(self) -> int:
         return len(self.picks) + 1
 
     @property
     def is_complete(self) -> bool:
-        return len(self.picks) >= TOTAL_PICKS
+        return len(self.picks) >= self._total_picks
+
+    @property
+    def human_team_id(self) -> int:
+        return self._human_team_id
 
     def current_pointers(self) -> tuple[int, int, Optional[int]]:
-        """(round, pick_in_round, team_id) for the next pick, or (14, 0, None) if done."""
+        """(round, pick_in_round, team_id) for the next pick, or (roster_size+1, 0, None) if done."""
         if self.is_complete:
-            return ROSTER_SIZE + 1, 0, None
-        rnd, pos, team_id = snake_team_for_pick(self.current_overall, NUM_TEAMS)
+            return self._roster_size + 1, 0, None
+        rnd, pos, team_id = snake_team_for_pick(self.current_overall, self._num_teams)
         return rnd, pos, team_id
 
     # ----------------------------------------------------------------- picks
@@ -141,7 +231,7 @@ class DraftState:
 
     def human_pick(self, player_id: int) -> Pick:
         _, _, team_id = self.current_pointers()
-        if team_id != 0:
+        if team_id != self._human_team_id:
             raise ValueError("It is not the human's turn")
         return self.make_pick(player_id, reason=None)
 
@@ -161,6 +251,17 @@ class DraftState:
         if not available:
             return None
 
+        # Determine display mode for AI fppg source
+        draft_display_mode = (
+            self._settings.draft_display_mode if self._settings else "prev_full"
+        )
+        use_current_fppg = draft_display_mode == "current_full"
+
+        # Preseason injury map for draft-time penalty
+        preseason_injuries: dict = (
+            self._preseason_state.injuries if self._preseason_state else {}
+        )
+
         ctx = {
             "round": rnd,
             "pick_overall": self.current_overall,
@@ -173,7 +274,32 @@ class DraftState:
         # Score every available player; tiebreak with seeded random jitter.
         scored = []
         for p in available:
+            # Set eval_fppg: current if display_mode==current_full, else prev_fppg
+            if use_current_fppg:
+                ctx["eval_fppg"] = p.fppg
+            else:
+                ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, 0.0)
+
             s = scorer(p, ctx)
+
+            # --- AI judgment adjustments ---
+            # Age regression
+            if p.age >= 33:
+                s -= 2 * (p.age - 32)
+            # Durability bonus/penalty
+            if p.gp >= 70:
+                s += 2.0
+            elif p.gp < 50:
+                s -= 4.0
+            # Preseason injury penalty
+            inj = preseason_injuries.get(p.id)
+            if inj is not None and getattr(inj, "status", None) != "healthy":
+                from .injuries import injury_score_penalty
+                s += injury_score_penalty(p.id, self._preseason_state)
+            # Breakout bonus for youth persona
+            if persona == "youth" and p.age <= 23 and p.mpg >= 28 and ctx["eval_fppg"] >= 30:
+                s += 4.0
+
             jitter = self.rng.uniform(-0.05, 0.05)
             scored.append((s + jitter, p))
         scored.sort(key=lambda t: t[0], reverse=True)
@@ -186,14 +312,16 @@ class DraftState:
         )
         return self.make_pick(best_player.id, reason=reason)
 
-    def sim_to_human(self, max_iters: int = TOTAL_PICKS + 1) -> list[Pick]:
+    def sim_to_human(self, max_iters: int | None = None) -> list[Pick]:
         """Run AI picks until it's the human's turn or draft is complete."""
+        if max_iters is None:
+            max_iters = self._total_picks + 1
         made: list[Pick] = []
         for _ in range(max_iters):
             if self.is_complete:
                 break
             _, _, team_id = self.current_pointers()
-            if team_id == 0:
+            if team_id == self._human_team_id:
                 break
             p = self.ai_pick()
             if p is None:
@@ -206,7 +334,7 @@ class DraftState:
         """Return a rounds x teams grid. Cell[r][t] = pick made by team t in round r+1,
         respecting snake order visually (col = team_id)."""
         grid: list[list[Optional[Pick]]] = [
-            [None for _ in range(NUM_TEAMS)] for _ in range(ROSTER_SIZE)
+            [None for _ in range(self._num_teams)] for _ in range(self._roster_size)
         ]
         for pick in self.picks:
             grid[pick.round - 1][pick.team_id] = pick
@@ -242,5 +370,14 @@ class DraftState:
         self.teams = [Team(**t) for t in data.get("teams", [])]
         self.picks = [Pick(**p) for p in data.get("picks", [])]
         self.drafted_ids = {p.player_id for p in self.picks}
+        # Sync cached size values from restored teams
+        self._num_teams = len(self.teams) if self.teams else NUM_TEAMS
+        self._roster_size = (
+            self._settings.roster_size if self._settings else ROSTER_SIZE
+        )
+        self._human_team_id = next(
+            (t.id for t in self.teams if t.is_human),
+            self._settings.player_team_index if self._settings else 0,
+        )
         # Ensure each team's roster matches the picks made
         # (snapshot persists roster lists directly; they're the source of truth)

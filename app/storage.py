@@ -130,6 +130,24 @@ class Storage:
     def save_settings(self, state: dict) -> None:
         self._atomic_write(self.settings_path, state)
 
+    # --------------------------------------------------------- league settings
+    @property
+    def league_settings_path(self) -> Path:
+        return self.league_dir / "league_settings.json"
+
+    def load_league_settings(self) -> "LeagueSettings":
+        from .models import LeagueSettings
+        data = self._safe_read(self.league_settings_path)
+        if isinstance(data, dict):
+            try:
+                return LeagueSettings(**data)
+            except Exception:
+                pass
+        return LeagueSettings()
+
+    def save_league_settings(self, settings: "LeagueSettings") -> None:
+        self._atomic_write(self.league_settings_path, settings.model_dump())
+
     # ------------------------------------------------------------------- log
     def append_log(self, event: dict) -> None:
         if "ts" not in event:

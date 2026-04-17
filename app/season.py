@@ -4,6 +4,7 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING, Optional
 
+from .injuries import roll_daily_injuries, roll_preseason_injuries, tick_injuries
 from .models import GameLog, Matchup, Player, SeasonState
 from .scoring import compute_fppg
 from .trades import TradeManager
@@ -12,23 +13,27 @@ if TYPE_CHECKING:
     from .draft import DraftState
     from .storage import Storage
     from .ai_gm import AIGM
+    from .models import LeagueSettings
     from .trades import TradeProposal
 
 
 DAYS_PER_WEEK = 7
-REGULAR_WEEKS = 14
-PLAYOFF_WEEKS = 2          # week 15 semis, week 16 final
+REGULAR_WEEKS = 20          # default; overridden by LeagueSettings
+PLAYOFF_WEEKS = 3           # 6-team bracket: round1 + semis + finals
 TOTAL_WEEKS = REGULAR_WEEKS + PLAYOFF_WEEKS
-LINEUP_SIZE = 10           # 10 starters out of 13
+LINEUP_SIZE = 10            # default starters; overridden by settings
 
 
 # ---------------------------------------------------------------------------
 # Schedule
 # ---------------------------------------------------------------------------
-def build_schedule(num_teams: int = 8, weeks: int = REGULAR_WEEKS) -> list[Matchup]:
-    """Round-robin: `num_teams` teams over `weeks` weeks. Uses the circle method.
-
-    With 8 teams a full round-robin is 7 weeks; we double it for 14 weeks.
+def build_schedule(
+    num_teams: int = 8,
+    regular_season_weeks: int = REGULAR_WEEKS,
+    playoff_teams: int = 6,
+) -> list[Matchup]:
+    """Round-robin: `num_teams` teams over `regular_season_weeks` regular weeks.
+    Uses the circle method.  Playoff matchups are appended in sim_playoffs().
     """
     if num_teams % 2:
         raise ValueError("num_teams must be even")
@@ -36,7 +41,6 @@ def build_schedule(num_teams: int = 8, weeks: int = REGULAR_WEEKS) -> list[Match
     teams = list(range(num_teams))
     rounds: list[list[tuple[int, int]]] = []
     n = num_teams
-    # Circle method
     arr = teams[:]
     for _ in range(n - 1):
         pairs: list[tuple[int, int]] = []
@@ -44,13 +48,11 @@ def build_schedule(num_teams: int = 8, weeks: int = REGULAR_WEEKS) -> list[Match
             a, b = arr[i], arr[n - 1 - i]
             pairs.append((a, b))
         rounds.append(pairs)
-        # Rotate: fix arr[0], rotate the rest
         arr = [arr[0]] + [arr[-1]] + arr[1:-1]
 
     schedule: list[Matchup] = []
-    for week in range(1, weeks + 1):
+    for week in range(1, regular_season_weeks + 1):
         base = rounds[(week - 1) % len(rounds)]
-        # Alternate home/away in second half for variety
         flip = (week - 1) // len(rounds) % 2 == 1
         for a, b in base:
             ta, tb = (b, a) if flip else (a, b)
@@ -68,11 +70,21 @@ def init_standings(num_teams: int) -> dict[int, dict[str, float]]:
 # ---------------------------------------------------------------------------
 # Lineup
 # ---------------------------------------------------------------------------
-def default_lineup(roster_ids: list[int], players_by_id: dict[int, Player]) -> list[int]:
-    """Heuristic starters: top-N by FPPG."""
-    roster = [players_by_id[pid] for pid in roster_ids if pid in players_by_id]
+def default_lineup(
+    roster_ids: list[int],
+    players_by_id: dict[int, Player],
+    lineup_size: int = LINEUP_SIZE,
+    injured_out: set[int] | None = None,
+) -> list[int]:
+    """Heuristic starters: top-N by FPPG, skipping players who are 'out'."""
+    injured_out = injured_out or set()
+    roster = [
+        players_by_id[pid]
+        for pid in roster_ids
+        if pid in players_by_id and pid not in injured_out
+    ]
     roster.sort(key=lambda p: p.fppg, reverse=True)
-    return [p.id for p in roster[:LINEUP_SIZE]]
+    return [p.id for p in roster[:lineup_size]]
 
 
 # ---------------------------------------------------------------------------
@@ -84,8 +96,16 @@ def _sample_game(
     day: int,
     week: int,
     team_id: int,
+    weights: dict | None = None,
+    injured: bool = False,
 ) -> GameLog:
     """Sample one game for one player. Non-playing (DNP) returns zeros."""
+    if injured:
+        return GameLog(
+            day=day, week=week, player_id=player.id, team_id=team_id,
+            played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
+        )
+
     play_prob = 0.9 if player.fppg > 0 else 0.5
     played = rng.random() < play_prob
 
@@ -95,13 +115,11 @@ def _sample_game(
             played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
         )
 
-    # Sample fantasy points around the player's season average
     std = max(1.0, 0.35 * player.fppg)
     sampled_fp = rng.gauss(player.fppg, std)
     sampled_fp = max(0.0, sampled_fp)
     ratio = sampled_fp / player.fppg if player.fppg > 0 else 1.0
 
-    # Scale the component stats proportionally
     pts = max(0.0, player.pts * ratio)
     reb = max(0.0, player.reb * ratio)
     ast = max(0.0, player.ast * ratio)
@@ -109,13 +127,12 @@ def _sample_game(
     blk = max(0.0, player.blk * ratio)
     to_v = max(0.0, player.to * ratio)
 
-    # Recompute fp from the scaled line so the scoring weights line up exactly
     dummy = Player(
         id=player.id, name=player.name, team=player.team, pos=player.pos,
         age=player.age, gp=player.gp, mpg=player.mpg,
         pts=pts, reb=reb, ast=ast, stl=stl, blk=blk, to=to_v, fppg=0.0,
     )
-    fp = round(compute_fppg(dummy), 2)
+    fp = round(compute_fppg(dummy, weights), 2)
 
     return GameLog(
         day=day, week=week, player_id=player.id, team_id=team_id,
@@ -126,10 +143,30 @@ def _sample_game(
 
 
 # ---------------------------------------------------------------------------
+# Settings helpers
+# ---------------------------------------------------------------------------
+def _regular_weeks(settings: Optional["LeagueSettings"]) -> int:
+    return settings.regular_season_weeks if settings is not None else REGULAR_WEEKS
+
+
+def _lineup_size(settings: Optional["LeagueSettings"]) -> int:
+    return settings.starters_per_day if settings is not None else LINEUP_SIZE
+
+
+def _scoring_weights(settings: Optional["LeagueSettings"]) -> dict | None:
+    return settings.scoring_weights if settings is not None else None
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
-def start_season(draft: "DraftState", storage: "Storage") -> SeasonState:
-    schedule = build_schedule(len(draft.teams), REGULAR_WEEKS)
+def start_season(
+    draft: "DraftState",
+    storage: "Storage",
+    settings: Optional["LeagueSettings"] = None,
+) -> SeasonState:
+    reg_weeks = _regular_weeks(settings)
+    schedule = build_schedule(len(draft.teams), reg_weeks)
     state = SeasonState(
         started=True,
         current_day=0,
@@ -142,11 +179,15 @@ def start_season(draft: "DraftState", storage: "Storage") -> SeasonState:
         lineups={},
         ai_calls_today=0,
     )
+    # Preseason injury sweep: ~2% per player, short-term only
+    preseason_rng = random.Random(hash((draft.seed, "preseason_injuries")) & 0xFFFFFFFF)
+    roll_preseason_injuries(state, draft, preseason_rng)
+
     storage.save_season(state.model_dump())
     storage.append_log({
         "type": "season_start",
         "num_teams": len(draft.teams),
-        "weeks": REGULAR_WEEKS,
+        "weeks": reg_weeks,
     })
     return state
 
@@ -169,17 +210,24 @@ def _set_lineups(
     storage: "Storage",
     ai_gm: Optional["AIGM"],
     use_ai: bool,
+    settings: Optional["LeagueSettings"] = None,
 ) -> None:
     """Populate season.lineups for the current day, using AI when available."""
+    lineup_sz = _lineup_size(settings)
     season.lineups = {}
-    # Reset per-day AI counter
     season.ai_calls_today = 0
     fa_top = _free_agents_top(draft, limit=20)
 
+    # Build the set of players with status="out" for lineup filtering
+    injured_out: set[int] = {
+        pid for pid, inj in season.injuries.items() if inj.status == "out"
+    }
+
     for team in draft.teams:
         if team.is_human:
-            # Human team: always heuristic (UI can override later via endpoint)
-            season.lineups[team.id] = default_lineup(team.roster, draft.players_by_id)
+            season.lineups[team.id] = default_lineup(
+                team.roster, draft.players_by_id, lineup_sz, injured_out
+            )
             continue
 
         if ai_gm and use_ai and season.ai_calls_today < ai_gm.daily_budget:
@@ -190,16 +238,16 @@ def _set_lineups(
                 fa_top_20=fa_top,
                 standings=season.standings,
                 persona_key=team.gm_persona or "bpa",
+                injured_out=injured_out,
             )
             if decision.get("used_api"):
                 season.ai_calls_today += 1
             lineup = decision.get("lineup") or []
-            # Validate lineup: must be 10 ids from roster
             roster_set = set(team.roster)
-            lineup = [pid for pid in lineup if pid in roster_set]
-            if len(lineup) < LINEUP_SIZE:
-                lineup = default_lineup(team.roster, draft.players_by_id)
-            season.lineups[team.id] = lineup[:LINEUP_SIZE]
+            lineup = [pid for pid in lineup if pid in roster_set and pid not in injured_out]
+            if len(lineup) < lineup_sz:
+                lineup = default_lineup(team.roster, draft.players_by_id, lineup_sz, injured_out)
+            season.lineups[team.id] = lineup[:lineup_sz]
             storage.append_log({
                 "type": "ai_decision",
                 "team_id": team.id,
@@ -209,7 +257,9 @@ def _set_lineups(
                 "excerpt": (decision.get("excerpt") or "")[:300],
             })
         else:
-            season.lineups[team.id] = default_lineup(team.roster, draft.players_by_id)
+            season.lineups[team.id] = default_lineup(
+                team.roster, draft.players_by_id, lineup_sz, injured_out
+            )
 
 
 def _free_agents_top(draft: "DraftState", limit: int = 20) -> list[Player]:
@@ -228,11 +278,13 @@ def _run_trades_daily(
     ai_gm: Optional["AIGM"],
     current_day: int,
     current_week: int,
+    settings: Optional["LeagueSettings"] = None,
 ) -> None:
     """Process trade lifecycle: resolve expired/veto windows, then let AI
     propose / decide / vote on open trades.
     """
-    mgr = TradeManager(storage, draft, season)
+    reg_weeks = _regular_weeks(settings)
+    mgr = TradeManager(storage, draft, season, settings=settings)
 
     # 1. Resolve pending trades whose windows have closed.
     resolved = mgr.daily_tick(current_day, current_week)
@@ -243,16 +295,14 @@ def _run_trades_daily(
     if ai_gm is not None:
         quota = mgr.quota_info(current_week)
         behind = int(quota.get("behind", 0))
-        # Force-propose in the final 2 regular weeks if we're under 8 executed
         force_final = (
-            current_week >= REGULAR_WEEKS - 1
+            current_week >= reg_weeks - 1
             and int(quota.get("executed", 0)) < 10
         )
 
         for team in draft.teams:
             if team.is_human:
                 continue
-            # Max one active proposal per team at a time to avoid spam
             has_pending_from = any(
                 p.from_team == team.id and p.status in ("pending_accept", "accepted")
                 for p in mgr.pending()
@@ -300,7 +350,7 @@ def _run_trades_daily(
             cp = draft.teams[trade.to_team]
             if cp.is_human:
                 continue
-            accept = ai_gm.decide_on_proposal_heuristic(trade, cp, draft)
+            accept, _ = ai_gm.decide_trade(trade, cp, draft, settings)
             try:
                 mgr.decide(trade.id, cp.id, accept, current_day)
                 storage.append_log({
@@ -326,7 +376,7 @@ def _run_trades_daily(
                     continue
                 if voter.id in trade.veto_votes:
                     continue
-                if ai_gm.vote_veto_heuristic(trade, voter, draft):
+                if ai_gm.vote_veto_multi_factor(trade, draft, voter.gm_persona or "bpa", settings):
                     try:
                         mgr.veto(trade.id, voter.id)
                         storage.append_log({
@@ -346,7 +396,6 @@ def _log_trade_event(
     current_day: int,
     current_week: int,
 ) -> None:
-    # Map resolved statuses to event types
     mapping = {
         "executed": "trade_executed",
         "vetoed": "trade_vetoed",
@@ -375,6 +424,7 @@ def advance_day(
     storage: "Storage",
     ai_gm: Optional["AIGM"] = None,
     use_ai: bool = True,
+    settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
     """Advance one sim day. Every team plays (7 game days per week)."""
     if not season.started:
@@ -382,40 +432,46 @@ def advance_day(
     if season.champion is not None:
         return season
 
-    # Determine next day / week
+    reg_weeks = _regular_weeks(settings)
+    weights = _scoring_weights(settings)
+
     next_day = season.current_day + 1
     week = _week_for_day(next_day)
 
-    # Safety: don't roll past the regular season via advance_day
-    if week > REGULAR_WEEKS:
+    if week > reg_weeks:
         return season
 
-    # --- Trade lifecycle hook (BEFORE stat sim) -----------------------------
-    _run_trades_daily(draft, season, storage, ai_gm, next_day, week)
+    _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
 
-    # Decide lineups for the day
+    # Heal players whose return_in_days hits 0
+    tick_injuries(season, next_day)
+
     rng = random.Random(hash((draft.seed, next_day)) & 0xFFFFFFFF)
-    _set_lineups(draft, season, storage, ai_gm, use_ai)
+    _set_lineups(draft, season, storage, ai_gm, use_ai, settings)
 
-    # Sample each starter's game and add to logs
+    # Roll new injuries for starters (after lineups are set)
+    roll_daily_injuries(season, draft, rng, next_day)
+
+    lineup_sz = _lineup_size(settings)
     day_fp_by_team: dict[int, float] = {t.id: 0.0 for t in draft.teams}
     for team in draft.teams:
-        starters = season.lineups.get(team.id, default_lineup(team.roster, draft.players_by_id))
+        starters = season.lineups.get(
+            team.id, default_lineup(team.roster, draft.players_by_id, lineup_sz)
+        )
         for pid in starters:
             player = draft.players_by_id.get(pid)
             if player is None:
                 continue
-            log = _sample_game(rng, player, next_day, week, team.id)
+            is_injured = pid in season.injuries and season.injuries[pid].status == "out"
+            log = _sample_game(rng, player, next_day, week, team.id, weights, injured=is_injured)
             season.game_logs.append(log)
             day_fp_by_team[team.id] += log.fp
 
-    # Update current_day / week
     season.current_day = next_day
     season.current_week = week
 
-    # If this was the last day of the week, resolve the matchups
     if next_day % DAYS_PER_WEEK == 0:
-        _resolve_week(draft, season, week)
+        _resolve_week(draft, season, week, reg_weeks)
 
     storage.save_season(season.model_dump())
     storage.append_log({
@@ -427,7 +483,12 @@ def advance_day(
     return season
 
 
-def _resolve_week(draft: "DraftState", season: SeasonState, week: int) -> None:
+def _resolve_week(
+    draft: "DraftState",
+    season: SeasonState,
+    week: int,
+    regular_weeks: int = REGULAR_WEEKS,
+) -> None:
     """Sum per-team fantasy points across the 7-day week for each matchup, set W/L."""
     week_logs = [g for g in season.game_logs if g.week == week]
     team_totals: dict[int, float] = {t.id: 0.0 for t in draft.teams}
@@ -447,10 +508,9 @@ def _resolve_week(draft: "DraftState", season: SeasonState, week: int) -> None:
         elif b > a:
             m.winner = m.team_b
         else:
-            m.winner = None  # tie
+            m.winner = None
 
-        # Update standings (regular season only)
-        if week <= REGULAR_WEEKS:
+        if week <= regular_weeks:
             sa = season.standings.setdefault(m.team_a, {"w": 0, "l": 0, "pf": 0, "pa": 0})
             sb = season.standings.setdefault(m.team_b, {"w": 0, "l": 0, "pf": 0, "pa": 0})
             sa["pf"] += a
@@ -471,11 +531,12 @@ def advance_week(
     storage: "Storage",
     ai_gm: Optional["AIGM"] = None,
     use_ai: bool = True,
+    settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
     for _ in range(DAYS_PER_WEEK):
         if season.champion is not None:
             break
-        advance_day(draft, season, storage, ai_gm, use_ai)
+        advance_day(draft, season, storage, ai_gm, use_ai, settings)
     return season
 
 
@@ -485,22 +546,25 @@ def sim_to_playoffs(
     storage: "Storage",
     ai_gm: Optional["AIGM"] = None,
     use_ai: bool = True,
+    settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
+    reg_weeks = _regular_weeks(settings)
     guard = 0
-    while season.current_week < REGULAR_WEEKS or season.current_day % DAYS_PER_WEEK != 0:
+    while season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
         if season.champion is not None:
             break
-        advance_day(draft, season, storage, ai_gm, use_ai)
+        advance_day(draft, season, storage, ai_gm, use_ai, settings)
         guard += 1
-        if guard > REGULAR_WEEKS * DAYS_PER_WEEK + 2:
+        if guard > reg_weeks * DAYS_PER_WEEK + 2:
             break
     return season
 
 
 # ---------------------------------------------------------------------------
-# Playoffs
+# Playoffs — 6-team bracket: top-2 bye, Round1 (seeds 3v6, 4v5),
+#            Semis (seed1 v low-winner, seed2 v high-winner), Finals
 # ---------------------------------------------------------------------------
-def _top_seeds(season: SeasonState, n: int = 4) -> list[int]:
+def _top_seeds(season: SeasonState, n: int = 6) -> list[int]:
     rows = sorted(
         season.standings.items(),
         key=lambda kv: (kv[1].get("w", 0), kv[1].get("pf", 0)),
@@ -517,36 +581,43 @@ def _sim_playoff_week(
     week: int,
     ai_gm: Optional["AIGM"],
     use_ai: bool,
+    settings: Optional["LeagueSettings"] = None,
 ) -> list[int]:
     """Create matchups, run 7 days, resolve, return winner ids in order."""
+    lineup_sz = _lineup_size(settings)
+    weights = _scoring_weights(settings)
+
     for a, b in pairings:
         season.schedule.append(Matchup(week=week, team_a=a, team_b=b))
 
-    # Advance 7 days within this playoff week; skip weekly advance() because
-    # its day mapping is tied to REGULAR_WEEKS. Do it manually.
     for _ in range(DAYS_PER_WEEK):
         next_day = season.current_day + 1
         rng = random.Random(hash((draft.seed, next_day, "po")) & 0xFFFFFFFF)
-        _set_lineups(draft, season, storage, ai_gm, use_ai)
+        tick_injuries(season, next_day)
+        _set_lineups(draft, season, storage, ai_gm, use_ai, settings)
+        roll_daily_injuries(season, draft, rng, next_day)
 
-        # Only active playoff teams generate logs (to keep logs focused)
         active = {tid for pair in pairings for tid in pair}
         for team in draft.teams:
             if team.id not in active:
                 continue
-            starters = season.lineups.get(team.id, default_lineup(team.roster, draft.players_by_id))
+            starters = season.lineups.get(
+                team.id, default_lineup(team.roster, draft.players_by_id, lineup_sz)
+            )
             for pid in starters:
                 player = draft.players_by_id.get(pid)
                 if player is None:
                     continue
-                log = _sample_game(rng, player, next_day, week, team.id)
+                is_injured = pid in season.injuries and season.injuries[pid].status == "out"
+                log = _sample_game(rng, player, next_day, week, team.id, weights, injured=is_injured)
                 season.game_logs.append(log)
 
         season.current_day = next_day
         season.current_week = week
         storage.save_season(season.model_dump())
 
-    _resolve_week(draft, season, week)
+    reg_weeks = _regular_weeks(settings)
+    _resolve_week(draft, season, week, reg_weeks)
     winners: list[int] = []
     for a, b in pairings:
         for m in season.schedule:
@@ -562,32 +633,65 @@ def sim_playoffs(
     storage: "Storage",
     ai_gm: Optional["AIGM"] = None,
     use_ai: bool = True,
+    settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
     if season.champion is not None:
         return season
-    # Ensure regular season finished
-    if season.current_week < REGULAR_WEEKS or season.current_day % DAYS_PER_WEEK != 0:
-        sim_to_playoffs(draft, season, storage, ai_gm, use_ai)
+
+    reg_weeks = _regular_weeks(settings)
+
+    if season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
+        sim_to_playoffs(draft, season, storage, ai_gm, use_ai, settings)
 
     season.is_playoffs = True
-    seeds = _top_seeds(season, 4)
-    if len(seeds) < 4:
-        return season
+    seeds = _top_seeds(season, 6)
+    if len(seeds) < 6:
+        # Fallback: fewer than 6 teams with standings — use whatever we have
+        if len(seeds) < 4:
+            return season
+        # Run old 4-team bracket
+        semis = [(seeds[0], seeds[3]), (seeds[1], seeds[2])]
+        winners = _sim_playoff_week(
+            draft, season, storage, semis, reg_weeks + 1, ai_gm, use_ai, settings
+        )
+        if len(winners) < 2:
+            return season
+        final_pair = [(winners[0], winners[1])]
+        final_winners = _sim_playoff_week(
+            draft, season, storage, final_pair, reg_weeks + 2, ai_gm, use_ai, settings
+        )
+        if final_winners:
+            season.champion = final_winners[0]
+    else:
+        # 6-team bracket
+        # Round 1 (reg+1): seed3 v seed6, seed4 v seed5 (seed1, seed2 have bye)
+        seed1, seed2, seed3, seed4, seed5, seed6 = (
+            seeds[0], seeds[1], seeds[2], seeds[3], seeds[4], seeds[5]
+        )
+        r1_pairings = [(seed3, seed6), (seed4, seed5)]
+        r1_winners = _sim_playoff_week(
+            draft, season, storage, r1_pairings, reg_weeks + 1, ai_gm, use_ai, settings
+        )
+        if len(r1_winners) < 2:
+            return season
 
-    # Semis (week 15): 1v4, 2v3
-    semis = [(seeds[0], seeds[3]), (seeds[1], seeds[2])]
-    winners = _sim_playoff_week(draft, season, storage, semis, REGULAR_WEEKS + 1, ai_gm, use_ai)
+        # Round 2 (reg+2): seed1 v low-winner (winner of 4v5), seed2 v high-winner (winner of 3v6)
+        low_winner = r1_winners[1]   # winner of seed4 v seed5
+        high_winner = r1_winners[0]  # winner of seed3 v seed6
+        r2_pairings = [(seed1, low_winner), (seed2, high_winner)]
+        r2_winners = _sim_playoff_week(
+            draft, season, storage, r2_pairings, reg_weeks + 2, ai_gm, use_ai, settings
+        )
+        if len(r2_winners) < 2:
+            return season
 
-    if len(winners) < 2:
-        return season
-
-    # Final (week 16)
-    final_pair = [(winners[0], winners[1])]
-    final_winners = _sim_playoff_week(
-        draft, season, storage, final_pair, REGULAR_WEEKS + 2, ai_gm, use_ai
-    )
-    if final_winners:
-        season.champion = final_winners[0]
+        # Finals (reg+3)
+        final_pair = [(r2_winners[0], r2_winners[1])]
+        final_winners = _sim_playoff_week(
+            draft, season, storage, final_pair, reg_weeks + 3, ai_gm, use_ai, settings
+        )
+        if final_winners:
+            season.champion = final_winners[0]
 
     storage.save_season(season.model_dump())
     storage.append_log({

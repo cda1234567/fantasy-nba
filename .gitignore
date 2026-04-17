@@ -6,6 +6,7 @@ __pycache__/
 .env.server
 /data/
 /data_smoke/
+/data_smoke_settings/
 .omc/
 .DS_Store
 tests/screenshots/
