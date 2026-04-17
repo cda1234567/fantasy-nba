@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.4.2"
+APP_VERSION = "0.5.0"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -493,6 +493,96 @@ def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
         draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
+
+
+class FAClaimRequest(BaseModel):
+    drop_player_id: int
+    add_player_id: int
+
+
+HUMAN_DAILY_CLAIM_LIMIT = 3
+
+
+@app.get("/api/fa/claim-status")
+def fa_claim_status():
+    """Return how many claims the human team has used today and the limit."""
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        return {"used_today": 0, "limit": HUMAN_DAILY_CLAIM_LIMIT, "day": 0, "remaining": HUMAN_DAILY_CLAIM_LIMIT}
+    today = state.current_day
+    used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
+    return {
+        "used_today": used,
+        "limit": HUMAN_DAILY_CLAIM_LIMIT,
+        "day": today,
+        "remaining": max(0, HUMAN_DAILY_CLAIM_LIMIT - used),
+    }
+
+
+@app.post("/api/fa/claim")
+def fa_claim(req: FAClaimRequest):
+    state = _require_season()
+    # Find the human team
+    human = next((t for t in draft.teams if t.is_human), None)
+    if human is None:
+        raise HTTPException(400, "此聯盟沒有玩家隊伍")
+
+    # Validate drop
+    if req.drop_player_id not in human.roster:
+        raise HTTPException(400, "釋出的球員不在你的陣容中")
+    # Validate add: must exist and not on any roster
+    if req.add_player_id not in draft.players_by_id:
+        raise HTTPException(400, "找不到此球員")
+    on_any_roster = {pid for t in draft.teams for pid in t.roster}
+    if req.add_player_id in on_any_roster:
+        raise HTTPException(400, "此球員已被其他隊伍簽走")
+
+    # Daily limit
+    today = state.current_day
+    used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
+    if used >= HUMAN_DAILY_CLAIM_LIMIT:
+        raise HTTPException(400, f"今日已用完 {HUMAN_DAILY_CLAIM_LIMIT} 次自由球員簽約配額")
+
+    # Execute swap
+    human.roster = [p for p in human.roster if p != req.drop_player_id]
+    human.roster.append(req.add_player_id)
+
+    import time as _t
+    state.human_claims.append({
+        "day": today,
+        "drop": req.drop_player_id,
+        "add": req.add_player_id,
+        "ts": int(_t.time()),
+    })
+
+    # Persist
+    try:
+        storage.save_draft(draft.snapshot())
+    except Exception:
+        pass
+    try:
+        storage.save_season(state.model_dump())
+    except Exception:
+        pass
+
+    drop_name = draft.players_by_id[req.drop_player_id].name
+    add_name = draft.players_by_id[req.add_player_id].name
+    storage.append_log({
+        "type": "fa_claim",
+        "team_id": human.id,
+        "drop": req.drop_player_id,
+        "add": req.add_player_id,
+        "drop_name": drop_name,
+        "add_name": add_name,
+        "day": today,
+    })
+
+    return {
+        "ok": True,
+        "drop": drop_name,
+        "add": add_name,
+        "remaining": HUMAN_DAILY_CLAIM_LIMIT - (used + 1),
+    }
 
 
 @app.get("/api/season/standings")

@@ -159,6 +159,8 @@ class SeasonState(BaseModel):
     injury_history: list[Injury] = Field(default_factory=list)
     # team_id -> model_id assigned at season start
     ai_models: dict[int, str] = Field(default_factory=dict)
+    # Human free-agent pickups: [{day, drop, add, ts}]
+    human_claims: list[dict] = Field(default_factory=list)
 
 
 class Injury(BaseModel):

@@ -1130,9 +1130,10 @@ async function renderAvailableTable(displayMode) {
   });
 }
 
-function renderPlayersTable(players, { withDraft = false, canDraft = false, displayMode = 'current_full' } = {}) {
+function renderPlayersTable(players, { withDraft = false, canDraft = false, withSign = false, displayMode = 'current_full' } = {}) {
   const isPrevFull   = displayMode === 'prev_full';
   const isPrevNoFppg = displayMode === 'prev_no_fppg';
+  const showAction   = withDraft || withSign;
   // current_full: show everything as before
 
   let head;
@@ -1145,7 +1146,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
       <th class="num">AST</th><th class="num">STL</th>
       <th class="num">BLK</th><th class="num">TO</th>
       <th class="num">出賽</th>
-      ${withDraft ? '<th></th>' : ''}
+      ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   } else if (isPrevFull) {
     // Show prev_fppg (labeled 上季FPPG) instead of live stats
@@ -1154,7 +1155,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
       <th class="num">年齡</th>
       <th class="num">上季FPPG</th>
       <th class="num">出賽</th>
-      ${withDraft ? '<th></th>' : ''}
+      ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   } else {
     // current_full: original columns
@@ -1166,11 +1167,11 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
       <th class="num">AST</th><th class="num">STL</th>
       <th class="num">BLK</th><th class="num">TO</th>
       <th class="num">出賽</th>
-      ${withDraft ? '<th></th>' : ''}
+      ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   }
 
-  const colCount = isPrevNoFppg ? (withDraft ? 12 : 11) : isPrevFull ? (withDraft ? 7 : 6) : (withDraft ? 13 : 12);
+  const colCount = isPrevNoFppg ? (showAction ? 12 : 11) : isPrevFull ? (showAction ? 7 : 6) : (showAction ? 13 : 12);
 
   if (!players.length) {
     return head + `<tbody><tr><td colspan="${colCount}" class="empty-state">找不到符合的球員。</td></tr></tbody>`;
@@ -1181,6 +1182,8 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
     body = players.map((p) => {
       const actionCell = withDraft
         ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : withSign
+        ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
         <td class="name">${escapeHtml(p.name)}</td>
@@ -1206,6 +1209,8 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
       const prevFppgVal = p.prev_fppg != null ? p.prev_fppg : p.fppg;
       const actionCell = withDraft
         ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : withSign
+        ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
         <td class="name">${escapeHtml(p.name)}</td>
@@ -1225,6 +1230,8 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, disp
     body = players.map((p) => {
       const actionCell = withDraft
         ? `<td class="act"><button class="btn small" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`
+        : withSign
+        ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
         <td class="name">${escapeHtml(p.name)}</td>
@@ -1347,10 +1354,14 @@ async function renderTeamBody() {
 }
 
 // ================================================================ FREE AGENTS
-function renderFaView(root) {
+async function renderFaView(root) {
+  const quotaBox = el('div', { class: 'fa-quota-box', id: 'fa-quota-box' }, '簽約配額載入中...');
   root.append(
     el('div', { class: 'panel' },
-      el('div', { class: 'panel-head' }, el('h2', {}, '自由球員')),
+      el('div', { class: 'panel-head' },
+        el('h2', {}, '自由球員'),
+        quotaBox,
+      ),
       el('div', { class: 'panel-body' },
         buildFilterBar('faFilter', renderFaTable),
         el('div', { class: 'table-wrap' },
@@ -1359,7 +1370,24 @@ function renderFaView(root) {
       ),
     ),
   );
+  refreshFaQuota();
   renderFaTable();
+}
+
+async function refreshFaQuota() {
+  const box = $('#fa-quota-box');
+  if (!box) return;
+  try {
+    const q = await api('/api/fa/claim-status');
+    const used = q.used_today ?? 0;
+    const limit = q.limit ?? 3;
+    const remaining = q.remaining ?? (limit - used);
+    box.innerHTML = `<span class="fa-quota-label">今日可簽約：<strong>${remaining} / ${limit}</strong></span>`;
+    box.dataset.remaining = String(remaining);
+  } catch {
+    box.innerHTML = '<span class="muted">賽季尚未開始,無法簽約</span>';
+    box.dataset.remaining = '0';
+  }
 }
 
 async function renderFaTable() {
@@ -1380,7 +1408,75 @@ async function renderFaTable() {
     tbl.innerHTML = `<tbody><tr><td class="empty-state">載入失敗：${escapeHtml(e.message)}</td></tr></tbody>`;
     return;
   }
-  tbl.innerHTML = renderPlayersTable(players);
+  // Cache for drop-select later
+  for (const p of players) state.playerCache.set(p.id, p);
+  tbl.innerHTML = renderPlayersTable(players, { withSign: true });
+  // Wire sign buttons
+  tbl.querySelectorAll('button.btn-sign').forEach((btn) => {
+    btn.addEventListener('click', () => onOpenSignDialog(Number(btn.dataset.playerId)));
+  });
+}
+
+async function onOpenSignDialog(addPlayerId) {
+  // Need a fresh roster snapshot
+  const humanId = state.draft?.human_team_id ?? 0;
+  let teamData;
+  try {
+    teamData = await api(`/api/teams/${humanId}`);
+  } catch (e) {
+    toast('無法載入你的陣容', 'error');
+    return;
+  }
+  const addPlayer = state.playerCache.get(addPlayerId);
+  if (!addPlayer) { toast('找不到此球員', 'error'); return; }
+
+  const roster = teamData.players || [];
+  if (!roster.length) { toast('陣容是空的,無法交換', 'error'); return; }
+
+  const rows = roster
+    .slice()
+    .sort((a, b) => (a.fppg || 0) - (b.fppg || 0))
+    .map((p) => `<label class="drop-row"><input type="radio" name="drop-pid" value="${p.id}"> <span class="pn">${escapeHtml(p.name)}</span> <span class="ppos">${escapeHtml(p.pos || '')}</span> <span class="pfp muted">FPPG ${(p.fppg ?? 0).toFixed(1)}</span></label>`)
+    .join('');
+
+  const body = `
+    <div class="sign-dialog-body">
+      <div class="sign-add">簽入：<strong>${escapeHtml(addPlayer.name)}</strong> <span class="muted">${escapeHtml(addPlayer.pos || '')} · FPPG ${(addPlayer.fppg ?? 0).toFixed(1)}</span></div>
+      <div class="sign-hint">選擇一名要釋出的球員：</div>
+      <div class="sign-drop-list">${rows}</div>
+    </div>
+  `;
+  const dropId = await pickDropDialog(body);
+  if (dropId == null) return;
+
+  await mutate(async () => {
+    const r = await api('/api/fa/claim', {
+      method: 'POST',
+      body: JSON.stringify({ add_player_id: addPlayerId, drop_player_id: dropId }),
+    });
+    toast(`✅ 簽入 ${r.add},釋出 ${r.drop}（今日剩餘 ${r.remaining}）`, 'success');
+    await refreshState();
+    await refreshFaQuota();
+    await renderFaTable();
+  });
+}
+
+function pickDropDialog(bodyHtml) {
+  return new Promise((resolve) => {
+    const dlg = $('#dlg-confirm');
+    $('#confirm-title').textContent = '簽約自由球員';
+    $('#confirm-body').innerHTML = bodyHtml;
+    const okBtn = $('#confirm-ok');
+    okBtn.textContent = '確認簽約';
+    const handler = () => {
+      dlg.removeEventListener('close', handler);
+      if (dlg.returnValue !== 'ok') { resolve(null); return; }
+      const picked = dlg.querySelector('input[name="drop-pid"]:checked');
+      resolve(picked ? Number(picked.value) : null);
+    };
+    dlg.addEventListener('close', handler);
+    try { dlg.showModal(); } catch { resolve(null); }
+  });
 }
 
 // ================================================================ LEAGUE VIEW
@@ -2431,6 +2527,33 @@ function formatLogEntry(e) {
     case 'trade_cancelled': {
       const from = tn(e.from_team);
       return `${from || '提案方'} 撤回了交易提案`;
+    }
+    case 'fa_claim': {
+      const team = tn(e.team_id);
+      const dropName = e.drop_name || playerName(e.drop);
+      const addName = e.add_name || playerName(e.add);
+      return `${team || '你'} 釋出 ${dropName},簽入自由球員 ${addName}`;
+    }
+    case 'milestone_blowout': {
+      const w = tn(e.winner), l = tn(e.loser);
+      return `💥 大屠殺！${w} 以 ${e.diff} 分血洗 ${l}`;
+    }
+    case 'milestone_nailbiter': {
+      const w = tn(e.winner);
+      const a = tn(e.team_a), b = tn(e.team_b);
+      return `⚡ 最後一刻！${w} 僅 ${e.diff} 分擊敗 ${w === a ? b : a}`;
+    }
+    case 'milestone_win_streak': {
+      const t = tn(e.team_id);
+      return `🔥 ${t} 三連勝!`;
+    }
+    case 'milestone_lose_streak': {
+      const t = tn(e.team_id);
+      return `💀 ${t} 陷入三連敗`;
+    }
+    case 'milestone_top_performer': {
+      const team = tn(e.team_id);
+      return `🌟 ${e.player_name} 單場爆發 ${e.fp} FP（${team}）`;
     }
   }
 

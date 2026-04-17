@@ -300,14 +300,52 @@ class DraftState:
             if persona == "youth" and p.age <= 23 and p.mpg >= 28 and ctx["eval_fppg"] >= 30:
                 s += 4.0
 
-            jitter = self.rng.uniform(-0.05, 0.05)
+            # Modest jitter so close picks can swap; large enough to feel human
+            jitter = self.rng.uniform(-1.5, 1.5)
             scored.append((s + jitter, p))
         scored.sort(key=lambda t: t[0], reverse=True)
+
+        # Persona-driven reach: in rounds 2-6, each AI has a chance to bypass
+        # the top-scored player and "reach" for someone lower on the board who
+        # fits their narrative. This adds unpredictability and storylines.
+        reach_prob = {
+            "stars_scrubs": 0.20,   # most reachy — chasing upside
+            "contrarian":   0.22,   # loves picking what others ignore
+            "youth":        0.18,   # reaches for young breakouts
+            "vet":          0.10,   # mostly plays it safe
+            "balanced":     0.08,
+            "defensive":    0.12,
+            "bpa":          0.05,
+        }.get(persona, 0.10)
+
         best_score, best_player = scored[0]
+        reached = False
+        if 2 <= rnd <= 6 and len(scored) >= 3 and self.rng.random() < reach_prob:
+            # Pick from top 2-5 based on persona tilt
+            pool_size = 4 if persona in ("stars_scrubs", "contrarian") else 3
+            pool = scored[1:1 + pool_size]
+            # Persona-specific preference among the reach pool
+            def reach_key(item):
+                _, pl = item
+                bonus = 0.0
+                if persona == "youth" and pl.age <= 23:
+                    bonus += 5.0
+                if persona == "stars_scrubs" and pl.fppg >= 40:
+                    bonus += 5.0
+                if persona == "contrarian":
+                    # Contrarian likes defensive specialists (STL+BLK)
+                    bonus += (pl.stl + pl.blk) * 2.0
+                if persona == "defensive":
+                    bonus += (pl.stl + pl.blk) * 1.5
+                return bonus + self.rng.uniform(-0.5, 0.5)
+            pool.sort(key=reach_key, reverse=True)
+            best_score, best_player = pool[0]
+            reached = True
 
         persona_label = GM_PERSONAS[persona]["name"]
+        reach_note = " (reach)" if reached else ""
         reason = (
-            f"{persona_label}: selected {best_player.name} "
+            f"{persona_label}{reach_note}: selected {best_player.name} "
             f"(FPPG {best_player.fppg}, age {best_player.age}, score {best_score:.1f})"
         )
         return self.make_pick(best_player.id, reason=reason)

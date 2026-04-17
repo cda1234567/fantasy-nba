@@ -557,6 +557,12 @@ def advance_day(
 
     if next_day % DAYS_PER_WEEK == 0:
         _resolve_week(draft, season, week, reg_weeks)
+        # Detect and log milestone events (streaks, blowouts, top performers)
+        try:
+            for ev in _detect_milestones(draft, season, week):
+                storage.append_log(ev)
+        except Exception:
+            pass
 
     # Trim game_logs to the last 3 weeks to keep the save payload bounded.
     # _resolve_week() accumulates standings in-place so older logs are not needed.
@@ -614,6 +620,93 @@ def _resolve_week(
             elif m.winner == m.team_b:
                 sb["w"] += 1
                 sa["l"] += 1
+
+
+def _detect_milestones(
+    draft: "DraftState",
+    season: SeasonState,
+    week: int,
+) -> list[dict]:
+    """Scan the latest resolved week for highlight moments: blowouts, nail-biters,
+    streaks, season-high FP. Returns a list of storage log entries to append."""
+    events: list[dict] = []
+    team_name = {t.id: t.name for t in draft.teams}
+
+    # 1. Blowouts & nail-biters this week
+    for m in season.schedule:
+        if m.week != week or not m.complete:
+            continue
+        if m.score_a is None or m.score_b is None:
+            continue
+        diff = abs(float(m.score_a) - float(m.score_b))
+        if diff >= 80:
+            winner = m.team_a if m.winner == m.team_a else m.team_b
+            loser = m.team_b if winner == m.team_a else m.team_a
+            events.append({
+                "type": "milestone_blowout",
+                "winner": winner,
+                "loser": loser,
+                "diff": round(diff, 1),
+                "week": week,
+            })
+        elif diff <= 3 and m.winner is not None:
+            events.append({
+                "type": "milestone_nailbiter",
+                "team_a": m.team_a,
+                "team_b": m.team_b,
+                "winner": m.winner,
+                "diff": round(diff, 1),
+                "week": week,
+            })
+
+    # 2. Winning/losing streaks (3+): scan each team's last 4 matchups
+    for t in draft.teams:
+        recent = sorted(
+            [m for m in season.schedule
+             if m.complete and m.winner is not None
+             and (m.team_a == t.id or m.team_b == t.id)
+             and m.week <= week],
+            key=lambda m: m.week,
+            reverse=True,
+        )[:4]
+        if len(recent) < 3:
+            continue
+        # Check if last 3 all won / all lost
+        last_three = recent[:3]
+        wins = [1 if m.winner == t.id else 0 for m in last_three]
+        if all(w == 1 for w in wins):
+            # Check if this is a new streak (week N streak, so only log once per team-week)
+            events.append({
+                "type": "milestone_win_streak",
+                "team_id": t.id,
+                "streak": 3,
+                "week": week,
+            })
+        elif all(w == 0 for w in wins):
+            events.append({
+                "type": "milestone_lose_streak",
+                "team_id": t.id,
+                "streak": 3,
+                "week": week,
+            })
+
+    # 3. Week's top performer (single best FP from a starter)
+    week_logs = [g for g in season.game_logs if g.week == week]
+    if week_logs:
+        top = max(week_logs, key=lambda g: g.fp)
+        if top.fp >= 55:
+            player = draft.players_by_id.get(top.player_id)
+            if player:
+                events.append({
+                    "type": "milestone_top_performer",
+                    "player_id": top.player_id,
+                    "player_name": player.name,
+                    "team_id": top.team_id,
+                    "fp": round(top.fp, 1),
+                    "week": week,
+                })
+
+    return events
 
 
 def advance_week(
