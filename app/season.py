@@ -423,9 +423,10 @@ def _run_trades_daily(
     current_day: int,
     current_week: int,
     settings: Optional["LeagueSettings"] = None,
-) -> None:
+) -> bool:
     """Process trade lifecycle: resolve expired/veto windows, then let AI
     propose / decide / vote on open trades.
+    Returns True if any trade was executed (season state changed).
     """
     reg_weeks = _regular_weeks(settings)
     mgr = TradeManager(storage, draft, season, settings=settings)
@@ -434,6 +435,7 @@ def _run_trades_daily(
     resolved = mgr.daily_tick(current_day, current_week)
     for t in resolved:
         _log_trade_event(storage, t, current_day, current_week)
+    trade_executed = any(t.status == "executed" for t in resolved)
 
     # 2. Let each AI team attempt a heuristic proposal
     if ai_gm is not None:
@@ -555,6 +557,8 @@ def _run_trades_daily(
                     except ValueError:
                         continue
 
+    return trade_executed
+
 
 def _log_trade_event(
     storage: "Storage",
@@ -612,9 +616,10 @@ def advance_day(
             storage.append_log({"type": "regular_season_end", "week": reg_weeks})
         return season
 
-    _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
 
     # Heal players whose return_in_days hits 0
+    injuries_before = len(season.injuries)
     tick_injuries(season, next_day)
 
     rng = random.Random(hash((draft.seed, next_day)) & 0xFFFFFFFF)
@@ -622,6 +627,8 @@ def advance_day(
 
     # Roll new injuries for starters (after lineups are set)
     roll_daily_injuries(season, draft, rng, next_day)
+    if len(season.injuries) != injuries_before:
+        _dirty = True
 
     lineup_sz = _lineup_size(settings)
     day_fp_by_team: dict[int, float] = {t.id: 0.0 for t in draft.teams}
@@ -658,7 +665,8 @@ def advance_day(
     if len(season.game_logs) > 14 * len(draft.teams) * 10:
         season.game_logs = [g for g in season.game_logs if g.week >= keep_from_week]
 
-    storage.save_season(season.model_dump())
+    if _dirty or next_day % DAYS_PER_WEEK == 0:
+        storage.save_season(season.model_dump())
     storage.append_log({
         "type": "day_advance",
         "day": next_day,
@@ -865,9 +873,11 @@ def _sim_playoff_week(
     for _ in range(DAYS_PER_WEEK):
         next_day = season.current_day + 1
         rng = random.Random(hash((draft.seed, next_day, "po")) & 0xFFFFFFFF)
+        injuries_before = len(season.injuries)
         tick_injuries(season, next_day)
         _set_lineups(draft, season, storage, ai_gm, use_ai, settings)
         roll_daily_injuries(season, draft, rng, next_day)
+        _dirty = len(season.injuries) != injuries_before
 
         active = {tid for pair in pairings for tid in pair}
         for team in draft.teams:
@@ -886,7 +896,8 @@ def _sim_playoff_week(
 
         season.current_day = next_day
         season.current_week = week
-        storage.save_season(season.model_dump())
+        if _dirty or next_day % DAYS_PER_WEEK == 0:
+            storage.save_season(season.model_dump())
 
     reg_weeks = _regular_weeks(settings)
     _resolve_week(draft, season, week, reg_weeks)
