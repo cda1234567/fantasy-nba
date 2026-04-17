@@ -9,7 +9,14 @@ import httpx
 DEFAULT_MODEL_ID = "anthropic/claude-haiku-4.5"
 
 OPENROUTER_MODELS: list[str] = [
+    # Premium tier (higher quality, higher cost)
+    "anthropic/claude-sonnet-4.5",
+    "openai/gpt-4o",
+    # Mid tier (slight premium over the cheap pool)
     "anthropic/claude-haiku-4.5",
+    "google/gemini-2.5-flash",
+    "x-ai/grok-4-fast",
+    # Cheap baseline tier
     "openai/gpt-4o-mini",
     "google/gemini-2.0-flash-001",
     "meta-llama/llama-3.3-70b-instruct",

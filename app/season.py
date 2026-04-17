@@ -272,17 +272,20 @@ def start_season(
         lineups={},
         ai_calls_today=0,
     )
-    # Assign random LLM models to AI teams (one per team, persisted for the season)
+    # Assign LLM models to AI teams — sample without replacement so every AI GM
+    # gets a distinct model when the pool is large enough, avoiding the case
+    # where most teams land on the same cheap model by RNG luck.
     use_openrouter = settings.use_openrouter if settings is not None else True
     model_rng = random.Random(draft.seed if draft.seed is not None else 42)
-    human_team_id = draft.human_team_id
-    for team in draft.teams:
-        if team.is_human:
-            continue
-        if use_openrouter:
-            state.ai_models[team.id] = model_rng.choice(OPENROUTER_MODELS)
-        else:
-            state.ai_models[team.id] = "anthropic/claude-haiku-4.5"
+    ai_team_ids = [t.id for t in draft.teams if not t.is_human]
+    if use_openrouter:
+        pool = list(OPENROUTER_MODELS)
+        model_rng.shuffle(pool)
+        for idx, tid in enumerate(ai_team_ids):
+            state.ai_models[tid] = pool[idx % len(pool)]
+    else:
+        for tid in ai_team_ids:
+            state.ai_models[tid] = "anthropic/claude-haiku-4.5"
 
     # Preseason injury sweep: ~2% per player, short-term only
     preseason_rng = random.Random(hash((draft.seed, "preseason_injuries")) & 0xFFFFFFFF)
