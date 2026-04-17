@@ -2493,7 +2493,15 @@ function buildTradeHistoryRow(trade) {
     }
   }
 
-  const row = el('li', { class: 'trade-hist-row', 'data-trade-id': trade.id });
+  // Determine counter-pair group id for visual connector.
+  const pairId = trade.counter_of
+    ? trade.counter_of
+    : (trade.status === 'countered' ? trade.id : null);
+  const rowAttrs = { class: 'trade-hist-row', 'data-trade-id': trade.id };
+  if (pairId) rowAttrs['data-counter-pair'] = pairId;
+  if (trade.counter_of) rowAttrs['data-is-counter'] = '1';
+
+  const row = el('li', rowAttrs);
   const header = el('button', { type: 'button', class: 'trade-hist-head', onclick: () => onToggleHistRow(trade.id) },
     el('span', { class: 'wk' }, `W${week} D${day}`),
     el('span', { class: 'teams' }, `${fromName} → ${toName}`),
@@ -2512,7 +2520,21 @@ function onToggleHistRow(id) {
   if (state.expandedHistory.has(id)) state.expandedHistory.delete(id);
   else state.expandedHistory.add(id);
   const body = $('#trade-history-body');
-  if (body) renderTradeHistoryBody(body);
+  if (body) { renderTradeHistoryBody(body); applyCounterPairHighlights(body); }
+}
+
+function applyCounterPairHighlights(body) {
+  // Remove previous highlights.
+  body.querySelectorAll('.trade-pair-highlight').forEach((el) => el.classList.remove('trade-pair-highlight'));
+  // For each expanded row that has a counter-pair, highlight the partner row.
+  body.querySelectorAll('.trade-hist-row[data-counter-pair]').forEach((row) => {
+    const pairId = row.dataset.counterPair;
+    const tradeId = row.dataset.tradeId;
+    const isExpanded = state.expandedHistory.has(tradeId);
+    // Find partner: a row with the same pair-id that is NOT this row.
+    const partner = body.querySelector(`.trade-hist-row[data-counter-pair="${pairId}"]:not([data-trade-id="${tradeId}"])`);
+    if (isExpanded && partner) partner.classList.add('trade-pair-highlight');
+  });
 }
 
 function buildTradeHistoryDetail(trade) {

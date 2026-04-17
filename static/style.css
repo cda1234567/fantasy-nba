@@ -674,7 +674,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   position: fixed;
   left: 50%; bottom: calc(var(--tabbar-h) + 16px);
   transform: translateX(-50%);
-  z-index: 200;
+  z-index: 1200;
   display: flex; flex-direction: column; gap: var(--sp-2);
   pointer-events: none;
   max-width: 92vw;
@@ -1137,6 +1137,35 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 .trade-hist-players li {
   padding: 2px 0;
   color: var(--text);
+}
+
+/* Counter-pair visual connector */
+.trade-hist-row[data-counter-pair] {
+  position: relative;
+}
+/* Counter row: left accent border + indent glyph */
+.trade-hist-row[data-is-counter] > .trade-hist-head {
+  border-left: 3px solid var(--accent);
+  padding-left: calc(var(--sp-3) - 3px);
+}
+.trade-hist-row[data-is-counter] > .trade-hist-head::before {
+  content: '↑';
+  font-size: 11px;
+  color: var(--accent);
+  margin-right: var(--sp-1);
+  line-height: 1;
+  flex-shrink: 0;
+}
+/* Original (countered) row: subtle left border */
+.trade-hist-row[data-counter-pair]:not([data-is-counter]) > .trade-hist-head {
+  border-left: 3px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  padding-left: calc(var(--sp-3) - 3px);
+}
+/* Partner row highlight when sibling is expanded */
+.trade-hist-row.trade-pair-highlight {
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  outline: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  outline-offset: -1px;
 }
 
 /* Propose trade dialog */
@@ -1704,7 +1733,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.78);
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
+  z-index: 1050;
   padding: 16px;
   overflow-y: auto;
   animation: summary-fade 0.3s ease-out;
@@ -1773,7 +1802,7 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
 
 /* ================================================================ MODAL */
 .modal-overlay {
-  position: fixed; inset: 0; z-index: 1000;
+  position: fixed; inset: 0; z-index: 1050;
   background: rgba(0,0,0,0.65);
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
@@ -1810,7 +1839,7 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
 .recap-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.75);
   display: flex; align-items: center; justify-content: center;
-  z-index: 950; animation: summary-fade 200ms ease-out;
+  z-index: 1100; animation: summary-fade 200ms ease-out;
 }
 .recap-dialog {
   background: var(--panel); color: var(--text);
@@ -1924,4 +1953,88 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
   font-size: 12px;
   color: #90caf9;
   margin-bottom: 6px;
+}
+
+/* ================================================================ MOBILE POLISH (v0.5.13) */
+
+/* Constrain overlay dialogs on all screen sizes */
+.recap-dialog,
+.modal-box,
+.trade-card,
+.activity-ticker {
+  max-width: min(90vw, 720px);
+}
+
+/* Activity ticker overflow guard */
+.activity-ticker-body {
+  overflow-x: hidden;
+}
+.activity-summary {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 480px) {
+  /* Overlay dialogs: full-width padding */
+  .recap-dialog {
+    padding: 12px;
+    width: 92vw;
+    max-width: 92vw;
+  }
+  .modal-box {
+    padding: 0;
+    max-width: 92vw;
+  }
+  .modal-body,
+  .modal-head,
+  .modal-foot {
+    padding: 10px 12px;
+  }
+  .trade-card {
+    padding: 10px 12px;
+    max-width: 92vw;
+  }
+  .activity-ticker {
+    max-width: 92vw;
+  }
+
+  /* Recap grid: single column on mobile */
+  .recap-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Recap card: smaller text */
+  .recap-card {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+  .recap-card-title {
+    font-size: 11px;
+  }
+
+  /* Action buttons: full-width on mobile */
+  .summary-actions,
+  .recap-actions,
+  .modal-foot {
+    flex-direction: column;
+  }
+  .summary-actions .btn,
+  .recap-actions .btn,
+  .modal-foot .btn,
+  .summary-actions button,
+  .recap-actions button,
+  .modal-foot button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Recap nav: wrap gracefully */
+  .recap-nav {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .recap-nav h2 {
+    font-size: 16px;
+  }
 }

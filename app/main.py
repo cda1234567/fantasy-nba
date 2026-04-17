@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.12"
+APP_VERSION = "0.5.13"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -139,6 +139,7 @@ def _load_or_init_season() -> Optional[SeasonState]:
         state.lineups = {int(k): v for k, v in state.lineups.items()}
         state.injuries = {int(k): v for k, v in state.injuries.items()}
         state.lineup_overrides = {int(k): v for k, v in state.lineup_overrides.items()}
+        state.lineup_override_today_only = {int(k): v for k, v in state.lineup_override_today_only.items()}
         # Sanitize obsolete model IDs (e.g. retired gemini-flash-1.5 endpoint)
         from .llm import OPENROUTER_MODELS, DEFAULT_MODEL_ID
         valid = set(OPENROUTER_MODELS)
@@ -620,11 +621,12 @@ def fa_claim(req: FAClaimRequest):
 class LineupOverrideRequest(BaseModel):
     team_id: int
     starters: list[int]  # exactly 10 player_ids
+    today_only: bool = False  # if True, auto-clear after the next sim day
 
 
 @app.post("/api/season/lineup")
 def set_lineup_override(req: LineupOverrideRequest):
-    """Human user manually sets their 10 starters. Persists until cleared."""
+    """Human user manually sets their 10 starters. Persists until cleared (or one-shot if today_only)."""
     state = _require_season()
     human = next((t for t in draft.teams if t.is_human), None)
     if human is None:
@@ -660,13 +662,18 @@ def set_lineup_override(req: LineupOverrideRequest):
             raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
 
     state.lineup_overrides[human.id] = list(req.starters)
+    if req.today_only:
+        state.lineup_override_today_only[human.id] = True
+    else:
+        state.lineup_override_today_only.pop(human.id, None)
     storage.save_season(state.model_dump())
     storage.append_log({
         "type": "lineup_override_set",
         "team_id": human.id,
         "starters": req.starters,
+        "today_only": req.today_only,
     })
-    return {"ok": True, "starters": req.starters}
+    return {"ok": True, "starters": req.starters, "today_only": req.today_only}
 
 
 @app.delete("/api/season/lineup/{team_id}")
@@ -680,6 +687,7 @@ def clear_lineup_override(team_id: int):
         raise HTTPException(403, "只能修改自己的陣容")
 
     state.lineup_overrides.pop(human.id, None)
+    state.lineup_override_today_only.pop(human.id, None)
     storage.save_season(state.model_dump())
     storage.append_log({"type": "lineup_override_cleared", "team_id": human.id})
     return {"ok": True}
