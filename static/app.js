@@ -79,6 +79,7 @@ const state = {
   draftDisplayMode: 'prev_full',// cached from leagueSettings
   draftAutoTimer: null,         // setTimeout id for auto AI pick
   draftAutoBusy: false,         // lock to prevent overlapping auto picks
+  leagueSubTab: 'matchup',      // Yahoo-style sub-tab: matchup | standings | management | activity
 };
 
 const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup'];
@@ -1766,7 +1767,6 @@ function renderLeagueView(root) {
       el('div', { class: 'panel' },
         el('div', { class: 'panel-head' },
           el('h2', {}, '賽季'),
-          // Gear icon for settings
           el('button', {
             type: 'button',
             class: 'icon-btn league-settings-btn',
@@ -1777,7 +1777,7 @@ function renderLeagueView(root) {
         ),
         emptyState(
           '賽季尚未開始',
-          '確認選秀後將建立 14 週賽程。AI 隊伍使用啟發式策略或 Claude（需設定 API 金鑰）。',
+          '確認選秀後將建立例行賽 + 季後賽。AI 隊伍使用啟發式策略或 Claude（需設定 API 金鑰）。',
           el('button', { class: 'btn', onclick: onSeasonStart }, '開始賽季'),
         ),
       ),
@@ -1785,20 +1785,78 @@ function renderLeagueView(root) {
     return;
   }
 
-  // Calendar strip — today + current-week visualisation.
-  const calendarPanel = buildCalendarPanel(state.standings);
+  // Yahoo-style structure: hero banner + control bar + sub-tabs + sub-content.
+  root.append(buildLeagueHero());
+  root.append(buildLeagueControlBar());
+  root.append(buildLeagueSubTabs());
 
-  // Standings + controls + matchups.
-  const controls = el('div', { class: 'panel' },
+  const sub = el('div', { class: 'league-subcontent' });
+  root.append(sub);
+  renderLeagueSubContent(sub);
+}
+
+function buildLeagueHero() {
+  const st = state.standings || {};
+  const settings = state.leagueSettings || DEFAULT_SETTINGS;
+  const leagueName = settings.league_name || '我的聯盟';
+  const seasonYear = settings.season_year || '';
+  const currentWeek = st.current_week || 1;
+  const regWeeks = st.regular_weeks || settings.regular_season_weeks || 20;
+  const isPlayoffs = !!st.is_playoffs;
+  const champion = st.champion;
+
+  // Find user standing
+  const rows = Array.isArray(st.standings) ? st.standings : [];
+  const humanId = state.draft?.human_team_id;
+  const userIdx = rows.findIndex((r) => r.is_human || r.team_id === humanId);
+  const userRow = userIdx >= 0 ? rows[userIdx] : null;
+
+  const phaseLabel = champion != null
+    ? '🏆 賽季結束'
+    : isPlayoffs
+      ? `季後賽 · 第 ${currentWeek} 週`
+      : `例行賽 · 第 ${currentWeek} / ${regWeeks} 週`;
+
+  const userBlock = userRow
+    ? el('div', { class: 'hero-user' },
+        el('span', { class: 'hero-user-label' }, '你的排名'),
+        el('span', { class: `hero-user-rank rank-${userIdx + 1}` }, `#${userIdx + 1}`),
+        el('span', { class: 'hero-user-record' }, `${userRow.w ?? 0}-${userRow.l ?? 0}`),
+      )
+    : null;
+
+  return el('div', { class: 'league-hero' },
+    el('div', { class: 'hero-main' },
+      el('div', { class: 'hero-title-wrap' },
+        el('div', { class: 'hero-league-name' }, leagueName),
+        el('div', { class: 'hero-sub' },
+          seasonYear ? el('span', { class: 'hero-year' }, seasonYear) : null,
+          el('span', { class: 'hero-phase' }, phaseLabel),
+        ),
+      ),
+      userBlock,
+    ),
+  );
+}
+
+function buildLeagueControlBar() {
+  const pendingCount = state.standings?.pending_count ?? 0;
+  const champion = state.standings?.champion;
+  return el('div', { class: 'panel league-controls' },
     el('div', { class: 'panel-head' },
-      el('h2', {}, '操作'),
       el('div', { class: 'actions' },
         el('button', { class: 'btn ghost', onclick: onAdvanceDay }, '推進一天'),
         el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
         el('button', { class: 'btn ghost', onclick: () => { const w = currentWeekNumber() - 1; if (w >= 1) onShowWeekRecap(w); else toast('尚無已完成週次', 'info'); } }, '📅 週報'),
-        el('button', { id: 'btn-propose-trade', class: 'btn ghost', onclick: openProposeTradeDialog }, '發起交易'),
+        el('button', {
+          id: 'btn-propose-trade',
+          class: 'btn ghost',
+          onclick: openProposeTradeDialog,
+        }, pendingCount
+          ? ['發起交易', el('span', { class: 'btn-badge' }, String(pendingCount))]
+          : '發起交易'),
         el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
-        state.standings && state.standings.champion != null
+        champion != null
           ? el('button', { class: 'btn primary', onclick: onShowSummary }, '🏆 賽季總結')
           : null,
         el('button', {
@@ -1811,7 +1869,80 @@ function renderLeagueView(root) {
       ),
     ),
   );
+}
 
+function buildLeagueSubTabs() {
+  const pendingCount = state.standings?.pending_count ?? 0;
+  const active = state.leagueSubTab || 'matchup';
+  const tabs = [
+    { id: 'matchup',    label: '對戰', badge: pendingCount > 0 ? pendingCount : null },
+    { id: 'standings',  label: '戰績' },
+    { id: 'management', label: '聯盟' },
+    { id: 'activity',   label: '動態' },
+  ];
+  const wrap = el('div', { class: 'league-tabs', role: 'tablist' });
+  for (const t of tabs) {
+    const btn = el('button', {
+      type: 'button',
+      class: `league-tab ${active === t.id ? 'active' : ''}`,
+      role: 'tab',
+      'aria-selected': active === t.id ? 'true' : 'false',
+      onclick: () => { state.leagueSubTab = t.id; render(); },
+    },
+      el('span', { class: 'lt-label' }, t.label),
+      t.badge ? el('span', { class: 'lt-badge' }, String(t.badge)) : null,
+    );
+    wrap.append(btn);
+  }
+  return wrap;
+}
+
+function renderLeagueSubContent(container) {
+  const tab = state.leagueSubTab || 'matchup';
+  switch (tab) {
+    case 'matchup':    renderMatchupSubtab(container); break;
+    case 'standings':  renderStandingsSubtab(container); break;
+    case 'management': renderManagementSubtab(container); break;
+    case 'activity':   renderActivitySubtab(container); break;
+    default:           renderMatchupSubtab(container);
+  }
+}
+
+// -------- Sub-tab: 對戰 --------
+function renderMatchupSubtab(container) {
+  container.append(buildCalendarPanel(state.standings));
+
+  const week = currentWeekNumber();
+  const allMatchups = matchupsForWeek(week);
+  const humanId = state.draft?.human_team_id;
+  const userMatchup = allMatchups.find(
+    (m) => (m.team_a ?? m.home_team_id) === humanId
+        || (m.team_b ?? m.away_team_id) === humanId,
+  );
+  const otherMatchups = allMatchups.filter((m) => m !== userMatchup);
+
+  if (userMatchup) {
+    container.append(buildHeroMatchupCard(userMatchup, week, humanId));
+  }
+
+  if (otherMatchups.length) {
+    const scoreboard = el('div', { class: 'panel' },
+      el('div', { class: 'panel-head' }, el('h2', {}, '同週其他對戰')),
+      el('div', { class: 'panel-body tight' }),
+    );
+    const body = scoreboard.querySelector('.panel-body');
+    for (const m of otherMatchups) body.append(buildMatchupCard(m));
+    container.append(scoreboard);
+  } else if (!userMatchup) {
+    container.append(
+      el('div', { class: 'panel' },
+        el('div', { class: 'panel-head' }, el('h2', {}, `第 ${week} 週對戰`)),
+        el('div', { class: 'panel-body' }, el('div', { class: 'empty-state' }, '本週尚無對戰資料。')),
+      ),
+    );
+  }
+
+  // Pending trades (high-visibility on matchup tab)
   const tradesPanel = el('div', { class: 'panel', id: 'panel-trades' },
     el('div', { class: 'panel-head' },
       el('h2', {}, '待處理交易'),
@@ -1821,6 +1952,79 @@ function renderLeagueView(root) {
       el('div', { class: 'empty-state' }, '載入交易中...'),
     ),
   );
+  container.append(tradesPanel);
+  refreshTrades();
+}
+
+function buildHeroMatchupCard(m, week, humanId) {
+  const teamA = m.team_a ?? m.home_team_id;
+  const teamB = m.team_b ?? m.away_team_id;
+  const scoreA = m.score_a ?? m.home_score ?? m.home_points;
+  const scoreB = m.score_b ?? m.away_score ?? m.away_points;
+  const played = m.complete || m.played || m.final || (scoreA != null && scoreB != null);
+  const winnerId = m.winner;
+
+  const isAUser = teamA === humanId;
+  const userTid = isAUser ? teamA : teamB;
+  const oppTid = isAUser ? teamB : teamA;
+  const userScore = isAUser ? scoreA : scoreB;
+  const oppScore = isAUser ? scoreB : scoreA;
+  const userName = teamName(userTid) || `隊伍 ${userTid}`;
+  const oppName = teamName(oppTid) || `隊伍 ${oppTid}`;
+
+  let statusLabel;
+  let statusClass = 'upcoming';
+  if (played) {
+    if (winnerId === userTid) { statusLabel = '勝'; statusClass = 'won'; }
+    else if (winnerId === oppTid) { statusLabel = '敗'; statusClass = 'lost'; }
+    else { statusLabel = '平'; statusClass = 'tie'; }
+  } else {
+    statusLabel = '本週進行中';
+  }
+
+  return el('div', { class: `panel hero-matchup-panel status-${statusClass}`, onclick: () => openMatchupDialog(week, m) },
+    el('div', { class: 'hero-matchup-head' },
+      el('span', { class: 'hmh-label' }, `第 ${week} 週 你的對戰`),
+      el('span', { class: `hmh-status status-${statusClass}` }, statusLabel),
+    ),
+    el('div', { class: 'hero-matchup-body' },
+      el('div', { class: 'hm-side user' },
+        el('div', { class: 'hm-tag' }, '你'),
+        el('div', { class: 'hm-name' }, userName),
+        el('div', { class: 'hm-score' }, played ? fmtStat(userScore) : '—'),
+      ),
+      el('div', { class: 'hm-vs' }, 'VS'),
+      el('div', { class: 'hm-side opp' },
+        el('div', { class: 'hm-tag' }, '對手'),
+        el('div', { class: 'hm-name' }, oppName),
+        el('div', { class: 'hm-score' }, played ? fmtStat(oppScore) : '—'),
+      ),
+    ),
+  );
+}
+
+// -------- Sub-tab: 戰績 --------
+function renderStandingsSubtab(container) {
+  container.append(buildEnhancedStandingsPanel());
+}
+
+// -------- Sub-tab: 聯盟 (Management) --------
+function renderManagementSubtab(container) {
+  container.append(buildLeagueInfoPanel());
+  container.append(buildMilestonesPanel());
+  container.append(buildTeamsOverviewPanel());
+  container.append(buildTradeSettingsPanel());
+}
+
+// -------- Sub-tab: 動態 --------
+function renderActivitySubtab(container) {
+  const activityPanel = el('div', { class: 'panel activity-ticker', id: 'panel-activity' },
+    el('div', { class: 'panel-head' }, el('h2', {}, '📋 動態消息')),
+    el('div', { class: 'activity-ticker-body', id: 'activity-ticker-body' },
+      el('div', { class: 'empty-state' }, '載入中...'),
+    ),
+  );
+  container.append(activityPanel);
 
   const historyPanel = el('div', { class: 'panel', id: 'panel-trade-history' },
     el('button', {
@@ -1838,25 +2042,307 @@ function renderLeagueView(root) {
       hidden: !state.tradeHistoryOpen,
     }),
   );
+  container.append(historyPanel);
 
-  const grid = el('div', { class: 'league-grid' },
-    buildStandingsPanel(),
-    buildCurrentMatchupsPanel(),
-  );
-
-  const activityPanel = el('div', { class: 'panel activity-ticker', id: 'panel-activity' },
-    el('div', { class: 'panel-head' }, el('h2', {}, '📋 動態消息')),
-    el('div', { class: 'activity-ticker-body', id: 'activity-ticker-body' },
-      el('div', { class: 'empty-state' }, '載入中...'),
-    ),
-  );
-
-  root.append(calendarPanel, controls, tradesPanel, historyPanel, grid, activityPanel);
-
-  // Kick off trade data fetch + render.
-  refreshTrades();
-  if (state.tradeHistoryOpen) refreshTradeHistory();
   renderActivityTicker();
+  if (state.tradeHistoryOpen) refreshTradeHistory();
+}
+
+// -------- Streak / last-5 computation (client-side) --------
+function computeTeamRecords() {
+  const out = new Map();
+  const tids = (state.draft?.teams || []).map((t) => t.id);
+  for (const tid of tids) out.set(tid, { results: [], streak: null, last5: { w: 0, l: 0 } });
+
+  const games = scheduleList()
+    .filter((m) => (m.complete || m.played || m.final) && m.winner != null)
+    .sort((a, b) => (a.week ?? 0) - (b.week ?? 0));
+
+  for (const m of games) {
+    const tA = m.team_a ?? m.home_team_id;
+    const tB = m.team_b ?? m.away_team_id;
+    const wkA = m.winner === tA;
+    const wkB = m.winner === tB;
+    if (out.has(tA)) out.get(tA).results.push(wkA ? 'W' : 'L');
+    if (out.has(tB)) out.get(tB).results.push(wkB ? 'W' : 'L');
+  }
+
+  for (const [, rec] of out) {
+    const r = rec.results;
+    if (r.length) {
+      const last = r[r.length - 1];
+      let count = 0;
+      for (let i = r.length - 1; i >= 0 && r[i] === last; i--) count++;
+      rec.streak = `${last}${count}`;
+    }
+    const tail = r.slice(-5);
+    rec.last5 = { w: tail.filter((x) => x === 'W').length, l: tail.filter((x) => x === 'L').length };
+  }
+  return out;
+}
+
+// -------- Enhanced Yahoo-style standings --------
+function buildEnhancedStandingsPanel() {
+  const settings = state.leagueSettings || DEFAULT_SETTINGS;
+  const playoffTeams = settings.playoff_teams || 6;
+  const panel = el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' }, el('h2', {}, '戰績排名')),
+    el('div', { class: 'table-wrap' }),
+  );
+  const wrap = panel.querySelector('.table-wrap');
+
+  const rows = Array.isArray(state.standings) ? state.standings : (state.standings?.standings || []);
+  if (!rows.length) {
+    wrap.append(el('div', { class: 'empty-state' }, '尚無戰績。'));
+    return panel;
+  }
+
+  const records = computeTeamRecords();
+  const leader = rows[0];
+  const leaderDiff = (r) => {
+    const lw = leader.w ?? 0; const ll = leader.l ?? 0;
+    const rw = r.w ?? 0; const rl = r.l ?? 0;
+    const gb = ((lw - rw) + (rl - ll)) / 2;
+    return gb;
+  };
+
+  const tbl = el('table', { class: 'data standings-enhanced' });
+  const humanId = state.draft?.human_team_id;
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>#</th><th>隊伍</th>
+      <th class="num">勝-敗</th>
+      <th class="num">勝率</th>
+      <th class="num">GB</th>
+      <th>連勝</th>
+      <th>近5</th>
+      <th class="num">得分</th>
+      <th class="num">失分</th>
+    </tr></thead>
+    <tbody>${rows.map((r, i) => {
+      const isYou = r.is_human || r.team_id === humanId;
+      const w = r.w ?? 0;
+      const l = r.l ?? 0;
+      const pct = (w + l) > 0 ? (w / (w + l)).toFixed(3).replace(/^0\./, '.') : '—';
+      const gb = i === 0 ? '—' : leaderDiff(r).toFixed(1);
+      const rec = records.get(r.team_id);
+      let streakHtml = '—';
+      if (rec?.streak) {
+        const kind = rec.streak.startsWith('W') ? 'win' : 'lose';
+        streakHtml = `<span class="streak-badge ${kind}">${rec.streak}</span>`;
+      }
+      const last5 = rec ? `${rec.last5.w}-${rec.last5.l}` : '—';
+      const rank = r.rank ?? (i + 1);
+      const rankCls = rank <= 3 ? `rank-pill top-${rank}` : 'rank-pill';
+      const rowCls = ['standings-row'];
+      if (isYou) rowCls.push('you');
+      if (i + 1 === playoffTeams) rowCls.push('playoff-cutoff');
+      return `<tr class="${rowCls.join(' ')}">
+        <td><span class="${rankCls}">${rank}</span></td>
+        <td class="name">${escapeHtml(r.name || `隊伍 ${r.team_id}`)}${isYou ? ' <span class="you-tag">YOU</span>' : ''}</td>
+        <td class="num record">${w}-${l}</td>
+        <td class="num">${pct}</td>
+        <td class="num">${gb}</td>
+        <td>${streakHtml}</td>
+        <td class="num">${last5}</td>
+        <td class="num">${fmtStat(r.pf ?? 0)}</td>
+        <td class="num">${fmtStat(r.pa ?? 0)}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  `;
+  wrap.append(tbl);
+
+  // Playoff line explanation
+  wrap.append(el('div', { class: 'playoff-legend' },
+    el('span', { class: 'po-dot' }),
+    el('span', {}, `前 ${playoffTeams} 名晉級季後賽`),
+  ));
+
+  return panel;
+}
+
+// -------- League info panel --------
+function buildLeagueInfoPanel() {
+  const s = state.leagueSettings || DEFAULT_SETTINGS;
+  const infoPairs = [
+    ['聯盟名稱',  s.league_name || '我的聯盟'],
+    ['賽季年度',  s.season_year || '—'],
+    ['隊伍數',    `${s.num_teams || 8}`],
+    ['名單人數',  `${s.roster_size || 13}`],
+    ['每日先發',  `${s.starters_per_day || 10}`],
+    ['傷兵名額',  `${s.il_slots ?? 3}`],
+    ['例行賽',    `${s.regular_season_weeks || 20} 週`],
+    ['季後賽隊伍', `${s.playoff_teams || 6}`],
+  ];
+
+  const grid = el('div', { class: 'info-grid' });
+  for (const [label, value] of infoPairs) {
+    grid.append(el('div', { class: 'info-item' },
+      el('div', { class: 'info-label' }, label),
+      el('div', { class: 'info-value' }, value),
+    ));
+  }
+
+  return el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' },
+      el('h2', {}, '聯盟資訊'),
+      el('button', {
+        type: 'button',
+        class: 'icon-btn league-settings-btn',
+        'aria-label': '聯盟設定',
+        title: '編輯設定',
+        onclick: openLeagueSettings,
+      }, '⚙'),
+    ),
+    el('div', { class: 'panel-body' }, grid),
+  );
+}
+
+// -------- Milestones panel --------
+function buildMilestonesPanel() {
+  const s = state.leagueSettings || DEFAULT_SETTINGS;
+  const st = state.standings || {};
+  const currentWeek = st.current_week || 1;
+  const regWeeks = st.regular_weeks || s.regular_season_weeks || 20;
+  const tradeDeadline = s.trade_deadline_week || Math.max(1, regWeeks - 3);
+  const playoffStart = regWeeks + 1;
+  const finalWeek = regWeeks + 2;
+
+  const weeksToDeadline = tradeDeadline - currentWeek;
+  const weeksToPlayoff = playoffStart - currentWeek;
+
+  const items = [
+    {
+      icon: '🎯',
+      label: '交易截止週',
+      value: `第 ${tradeDeadline} 週`,
+      sub: st.is_playoffs ? '已截止' : weeksToDeadline > 0 ? `還有 ${weeksToDeadline} 週` : weeksToDeadline === 0 ? '本週截止！' : '已截止',
+      status: !st.is_playoffs && weeksToDeadline >= 0 && weeksToDeadline <= 3 ? 'warn' : (weeksToDeadline < 0 || st.is_playoffs ? 'past' : 'normal'),
+    },
+    {
+      icon: '🏁',
+      label: '例行賽結束',
+      value: `第 ${regWeeks} 週`,
+      sub: currentWeek > regWeeks ? '已結束' : `還有 ${regWeeks - currentWeek + 1} 週`,
+      status: currentWeek > regWeeks ? 'past' : 'normal',
+    },
+    {
+      icon: '🏆',
+      label: '季後賽開始',
+      value: `第 ${playoffStart} 週`,
+      sub: st.is_playoffs ? '進行中' : weeksToPlayoff > 0 ? `還有 ${weeksToPlayoff} 週` : '',
+      status: st.is_playoffs ? 'active' : 'normal',
+    },
+    {
+      icon: '👑',
+      label: '冠軍週',
+      value: `第 ${finalWeek} 週`,
+      sub: st.champion != null ? `冠軍：${teamName(st.champion) || `隊伍 ${st.champion}`}` : '',
+      status: st.champion != null ? 'active' : 'normal',
+    },
+  ];
+
+  const grid = el('div', { class: 'milestones-grid' });
+  for (const it of items) {
+    grid.append(el('div', { class: `milestone-card status-${it.status}` },
+      el('div', { class: 'ms-icon' }, it.icon),
+      el('div', { class: 'ms-body' },
+        el('div', { class: 'ms-label' }, it.label),
+        el('div', { class: 'ms-value' }, it.value),
+        it.sub ? el('div', { class: 'ms-sub' }, it.sub) : null,
+      ),
+    ));
+  }
+
+  return el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' }, el('h2', {}, '賽季里程碑')),
+    el('div', { class: 'panel-body' }, grid),
+  );
+}
+
+// -------- Teams overview panel --------
+function buildTeamsOverviewPanel() {
+  const teams = state.draft?.teams || [];
+  const rows = Array.isArray(state.standings) ? state.standings : (state.standings?.standings || []);
+  const rankMap = new Map(rows.map((r, i) => [r.team_id, { rank: i + 1, w: r.w ?? 0, l: r.l ?? 0 }]));
+  const settings = state.leagueSettings || DEFAULT_SETTINGS;
+  const playoffTeams = settings.playoff_teams || 6;
+  const personas = state.personas || {};
+
+  const tbl = el('table', { class: 'data mgmt-teams' });
+  const body = teams.map((t) => {
+    const r = rankMap.get(t.id) || { rank: '—', w: 0, l: 0 };
+    const gmType = t.is_human ? '<span class="gm-tag human">你</span>' : '<span class="gm-tag ai">AI</span>';
+    const personaKey = t.gm_persona;
+    const personaName = personas[personaKey]?.name || personaKey || '—';
+    const inPlayoff = r.rank !== '—' && r.rank <= playoffTeams;
+    const rosterCount = (t.roster || []).length;
+    const statusBadge = inPlayoff
+      ? '<span class="status-badge po">季後賽</span>'
+      : '<span class="status-badge out">淘汰</span>';
+    return `<tr class="${t.is_human ? 'you' : ''}">
+      <td class="num">#${r.rank}</td>
+      <td class="name">${escapeHtml(t.name)}</td>
+      <td>${gmType}</td>
+      <td class="persona">${escapeHtml(t.is_human ? '—' : personaName)}</td>
+      <td class="num">${r.w}-${r.l}</td>
+      <td class="num">${rosterCount}</td>
+      <td>${statusBadge}</td>
+    </tr>`;
+  }).join('');
+  tbl.innerHTML = `
+    <thead><tr>
+      <th>排名</th><th>隊伍</th><th>GM</th><th>風格</th>
+      <th class="num">戰績</th><th class="num">名單</th><th>晉級</th>
+    </tr></thead>
+    <tbody>${body}</tbody>
+  `;
+
+  return el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' }, el('h2', {}, '隊伍總覽')),
+    el('div', { class: 'table-wrap' }, tbl),
+  );
+}
+
+// -------- Trade settings panel --------
+function buildTradeSettingsPanel() {
+  const s = state.leagueSettings || DEFAULT_SETTINGS;
+  const st = state.standings || {};
+  const quota = st.trade_quota || { executed: 0, target: 0, behind: 0 };
+
+  const FREQ_LABELS = { very_low: '極少', low: '少', normal: '正常', high: '多', very_high: '極多' };
+  const STYLE_LABELS = { conservative: '保守', balanced: '平衡', aggressive: '激進' };
+  const MODE_LABELS = { auto: '自動偵測', claude: 'Claude API', heuristic: '純啟發式' };
+
+  const pairs = [
+    ['已完成交易',      `${quota.executed || 0} 筆`],
+    ['本季目標',        `${quota.target || 0} 筆`],
+    ['AI 交易頻率',     FREQ_LABELS[s.ai_trade_frequency] || s.ai_trade_frequency || '正常'],
+    ['AI 交易風格',     STYLE_LABELS[s.ai_trade_style] || s.ai_trade_style || '平衡'],
+    ['AI 決策模式',     MODE_LABELS[s.ai_decision_mode] || s.ai_decision_mode || '自動'],
+    ['否決門檻',        `${s.veto_threshold ?? 3} 票`],
+    ['否決窗口',        `${s.veto_window_days ?? 2} 天`],
+  ];
+
+  const grid = el('div', { class: 'info-grid' });
+  for (const [label, value] of pairs) {
+    grid.append(el('div', { class: 'info-item' },
+      el('div', { class: 'info-label' }, label),
+      el('div', { class: 'info-value' }, value),
+    ));
+  }
+
+  return el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' },
+      el('h2', {}, '交易設定'),
+      el('button', {
+        type: 'button',
+        class: 'btn ghost small',
+        onclick: openLeagueSettings,
+      }, '調整'),
+    ),
+    el('div', { class: 'panel-body' }, grid),
+  );
 }
 
 async function renderActivityTicker() {
@@ -1888,69 +2374,6 @@ async function renderActivityTicker() {
   } catch (_) {
     // silently ignore if season not started
   }
-}
-
-function buildStandingsPanel() {
-  const panel = el('div', { class: 'panel' },
-    el('div', { class: 'panel-head' }, el('h2', {}, '戰績')),
-    el('div', { class: 'table-wrap' }),
-  );
-  const wrap = panel.querySelector('.table-wrap');
-
-  const rows = Array.isArray(state.standings) ? state.standings : (state.standings?.standings || []);
-  if (!rows.length) {
-    wrap.append(el('div', { class: 'empty-state' }, '尚無戰績。'));
-    return panel;
-  }
-
-  const tbl = el('table', { class: 'data' });
-  tbl.innerHTML = `
-    <thead><tr>
-      <th>#</th><th>隊伍</th>
-      <th class="num">勝-敗</th>
-      <th class="num">得分</th>
-      <th class="num">失分</th>
-    </tr></thead>
-    <tbody>${rows.map((r, i) => {
-      const isYou = r.is_human || r.human || r.team_id === state.draft?.human_team_id;
-      const wins   = r.w ?? r.wins ?? 0;
-      const losses = r.l ?? r.losses ?? 0;
-      const pf     = r.pf ?? r.points_for ?? 0;
-      const pa     = r.pa ?? r.points_against ?? 0;
-      return `<tr class="standings-row ${isYou ? 'you' : ''}">
-        <td class="rank">${r.rank ?? (i + 1)}</td>
-        <td class="name">${escapeHtml(r.name || r.team_name || `隊伍 ${r.team_id}`)}</td>
-        <td class="num record">${wins}-${losses}</td>
-        <td class="num">${fmtStat(pf)}</td>
-        <td class="num">${fmtStat(pa)}</td>
-      </tr>`;
-    }).join('')}</tbody>
-  `;
-  wrap.append(tbl);
-  return panel;
-}
-
-function buildCurrentMatchupsPanel() {
-  const panel = el('div', { class: 'panel' });
-  const week = currentWeekNumber();
-  panel.append(
-    el('div', { class: 'panel-head' },
-      el('h2', {}, `第 ${week} 週對戰`),
-    ),
-  );
-  const body = el('div', { class: 'panel-body tight' });
-  panel.append(body);
-
-  const matchups = matchupsForWeek(week);
-  if (!matchups.length) {
-    body.append(el('div', { class: 'empty-state' }, '本週尚無對戰資料。'));
-    return panel;
-  }
-
-  for (const m of matchups) {
-    body.append(buildMatchupCard(m));
-  }
-  return panel;
 }
 
 function currentWeekNumber() {
