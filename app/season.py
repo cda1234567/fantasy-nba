@@ -602,6 +602,11 @@ def advance_day(
     week = _week_for_day(next_day)
 
     if week > reg_weeks:
+        # Regular season complete — flip playoffs flag so UI can react
+        if not season.is_playoffs and season.champion is None:
+            season.is_playoffs = True
+            storage.save_season(season.model_dump())
+            storage.append_log({"type": "regular_season_end", "week": reg_weeks})
         return season
 
     _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)

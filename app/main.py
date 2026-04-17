@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -48,7 +48,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.13"
+APP_VERSION = "0.5.14"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -89,8 +89,11 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 @app.get("/", include_in_schema=False)
-def index() -> FileResponse:
-    return FileResponse(str(STATIC_DIR / "index.html"))
+def index():
+    html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
+    html = html.replace('/static/app.js', f'/static/app.js?v={APP_VERSION}')
+    html = html.replace('/static/style.css', f'/static/style.css?v={APP_VERSION}')
+    return HTMLResponse(html)
 
 
 # ---------------------------------------------------------------------------
@@ -637,8 +640,8 @@ def set_lineup_override(req: LineupOverrideRequest):
 
     from .season import SLOT_ELIGIBILITY, _player_positions, LINEUP_SIZE
     lineup_sz = LINEUP_SIZE
-    settings = storage.load_settings()
-    if settings:
+    settings = storage.load_league_settings()
+    if settings is not None:
         lineup_sz = settings.starters_per_day
 
     if len(req.starters) != lineup_sz:
