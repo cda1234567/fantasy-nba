@@ -135,6 +135,10 @@ class TradeManager:
             raise ValueError("Cannot trade with self")
         if not send_ids or not receive_ids:
             raise ValueError("Both sides must include at least one player")
+        # Enforce trade deadline if configured
+        deadline = getattr(self._settings, "trade_deadline_week", None) if self._settings is not None else None
+        if deadline is not None and current_week > int(deadline):
+            raise ValueError(f"交易截止日已過（第 {deadline} 週），無法提交新交易")
 
         sender = self.draft.teams[from_team]
         receiver = self.draft.teams[to_team]
@@ -380,11 +384,14 @@ class TradeManager:
         return trade
 
     # ----------------------------------------------------------------- daily
+    # Pending human-counterparty trades auto-expire after this many sim days.
+    PENDING_ACCEPT_TTL_DAYS: int = 7
+
     def daily_tick(self, current_day: int, current_week: int) -> list[TradeProposal]:
-        """Resolve accepted trades whose veto windows have closed.
-        pending_accept trades for AI counterparties should be decided via
-        auto_decide_ai before this is called; human counterparties have no
-        auto-expire (they see the trade in require_human_attention).
+        """Resolve accepted trades whose veto windows have closed. Also auto-
+        expire pending_accept trades targeting a human counterparty once they
+        have sat unread for more than PENDING_ACCEPT_TTL_DAYS sim days — so a
+        neglected offer doesn't linger forever.
         Returns list of trades whose status flipped this tick (for logging).
         """
         resolved: list[TradeProposal] = []
@@ -403,6 +410,13 @@ class TradeManager:
                         trade.executed_day = current_day
                         self._apply_swap(trade)
                         self.state.season_executed_count += 1
+                    self._move_to_history(trade)
+                    resolved.append(trade)
+            # Auto-expire pending_accept trades that have sat too long
+            elif trade.status == "pending_accept":
+                age = current_day - int(trade.proposed_day or current_day)
+                if age >= self.PENDING_ACCEPT_TTL_DAYS:
+                    trade.status = "expired"
                     self._move_to_history(trade)
                     resolved.append(trade)
 
@@ -426,8 +440,13 @@ class TradeManager:
 
         try:
             self.storage.save_draft(self.draft.snapshot())
-        except Exception:
-            pass
+        except Exception as e:
+            # Roster mutation already happened in-memory; surface this so
+            # we know the on-disk state may diverge. Without logging, a silent
+            # failure leaves the league in a split-brain state after restart.
+            import sys, traceback
+            print(f"[trades] save_draft failed after trade swap: {e!r}", file=sys.stderr)
+            traceback.print_exc()
 
     # ------------------------------------------------------------------ info
     def quota_info(self, current_week: int) -> dict:

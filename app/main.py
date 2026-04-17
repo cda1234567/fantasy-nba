@@ -47,7 +47,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.2"
+APP_VERSION = "0.5.3"
 
 LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
@@ -869,7 +869,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                 settings=settings if settings.setup_complete else None,
             )
             bg_trade = bg_mgr._find(trade_id)
-            if bg_trade is None:
+            if bg_trade is None or bg_trade.status != "pending_accept":
                 return
             try:
                 bg_mgr.collect_peer_commentary_sync(bg_trade, ai_gm)
@@ -877,8 +877,20 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                 pass
             cp = draft.teams[to_team]
             if not cp.is_human:
+                # Re-read state right before AI decision: the human may have
+                # cancelled while we were collecting peer commentary.
+                fresh2 = _load_or_init_season()
+                if fresh2 is None:
+                    return
+                bg_mgr2 = TradeManager(
+                    storage, draft, fresh2,
+                    settings=settings if settings.setup_complete else None,
+                )
+                bg_trade2 = bg_mgr2._find(trade_id)
+                if bg_trade2 is None or bg_trade2.status != "pending_accept":
+                    return
                 try:
-                    bg_mgr.auto_decide_ai(ai_gm, current_day)
+                    bg_mgr2.auto_decide_ai(ai_gm, current_day)
                 except Exception:
                     pass
         except Exception:
