@@ -1875,3 +1875,37 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
 .activity-row:last-child { border-bottom: none; }
 .activity-emoji { flex-shrink: 0; font-size: 15px; }
 .activity-summary { color: var(--text); }
+
+/* ---------- Counter-offer UX (v0.5.12) ---------- */
+.trade-counter-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  background: rgba(33, 150, 243, 0.12);
+  border-left: 3px solid #2196f3;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: #90caf9;
+}
+.trade-counter-orig-link {
+  background: none;
+  border: 1px solid #2196f3;
+  border-radius: 4px;
+  color: #64b5f6;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.trade-counter-orig-link:hover { background: rgba(33, 150, 243, 0.2); }
+.trade-hist-counter-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #90caf9;
+  margin-bottom: 6px;
+}

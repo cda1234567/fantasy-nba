@@ -2134,6 +2134,16 @@ async function refreshTrades() {
     requireAttention = Array.isArray(pending.require_human_attention)
       ? pending.require_human_attention : [];
   }
+  // Detect newly arrived counter-offers directed at the human and toast.
+  const humanId = state.draft?.human_team_id ?? 0;
+  const prevIds = new Set((state.tradesPending || []).map((t) => t.id));
+  for (const t of list) {
+    if (t.counter_of != null && t.to_team === humanId && !prevIds.has(t.id)) {
+      const fromName = teamName(t.from_team) || `隊伍 ${t.from_team}`;
+      toast(`AI 還價：${fromName}`, 'info', 6000);
+    }
+  }
+
   state.tradesPending = list;
   state.tradesRequireAttention = requireAttention;
 
@@ -2245,8 +2255,23 @@ function buildTradeCard(trade) {
     el('span', {}, `Σ ${fppg(recvSum)} FPPG`),
   );
 
+  // Counter-offer banner
+  const parts = [];
+  if (trade.counter_of != null) {
+    const origShort = String(trade.counter_of).slice(0, 8);
+    const banner = el('div', { class: 'trade-counter-banner' },
+      el('span', {}, '📩 這是對你原始提議的還價 — 原始提議已作廢'),
+      el('button', {
+        type: 'button',
+        class: 'trade-counter-orig-link',
+        onclick: () => scrollToHistoryTrade(trade.counter_of),
+      }, `查看原提議 #${origShort}`),
+    );
+    parts.push(banner);
+  }
+  parts.push(head, sides, balance);
+
   // Reasoning (if present + not just "human")
-  const parts = [head, sides, balance];
   if (trade.reasoning && trade.reasoning !== 'human') {
     parts.push(el('div', { class: 'trade-reasoning' }, trade.reasoning));
   }
@@ -2447,12 +2472,26 @@ function buildTradeHistoryRow(trade) {
   };
   const statusLabel = statusMap[trade.status] || trade.status;
 
-  const row = el('li', { class: 'trade-hist-row' });
+  // Build counter linkage suffix for status label in history row.
+  let histStatusLabel = statusLabel;
+  if (trade.counter_of) {
+    const origShort = String(trade.counter_of).slice(0, 8);
+    histStatusLabel = `↩ 還價自 #${origShort}`;
+  } else if (trade.status === 'countered') {
+    // Find the counter trade in history to get its id.
+    const counterTrade = state.tradesHistory.find((t) => t.counter_of === trade.id);
+    if (counterTrade) {
+      const counterShort = String(counterTrade.id).slice(0, 8);
+      histStatusLabel = `${statusLabel} → 已被還價 #${counterShort}`;
+    }
+  }
+
+  const row = el('li', { class: 'trade-hist-row', 'data-trade-id': trade.id });
   const header = el('button', { type: 'button', class: 'trade-hist-head', onclick: () => onToggleHistRow(trade.id) },
     el('span', { class: 'wk' }, `W${week} D${day}`),
     el('span', { class: 'teams' }, `${fromName} → ${toName}`),
     el('span', { class: 'counts' }, `${nSend}→${nRecv} 名球員`),
-    el('span', { class: `trade-status trade-status-${trade.status}` }, statusLabel),
+    el('span', { class: `trade-status trade-status-${trade.status}` }, histStatusLabel),
     el('span', { class: 'chevron' }, expanded ? '▾' : '▸'),
   );
   row.append(header);
@@ -2487,6 +2526,36 @@ function buildTradeHistoryDetail(trade) {
       ul2,
     ),
   );
+  // Counter-offer linkage in detail.
+  if (trade.counter_of) {
+    const origShort = String(trade.counter_of).slice(0, 8);
+    detail.append(
+      el('div', { class: 'trade-hist-counter-link' },
+        el('span', {}, `↩ 還價自 #${origShort}`),
+        el('button', {
+          type: 'button',
+          class: 'trade-counter-orig-link',
+          onclick: () => scrollToHistoryTrade(trade.counter_of),
+        }, '查看原提議'),
+      ),
+    );
+  } else if (trade.status === 'countered') {
+    const counterTrade = state.tradesHistory.find((t) => t.counter_of === trade.id);
+    if (counterTrade) {
+      const counterShort = String(counterTrade.id).slice(0, 8);
+      detail.append(
+        el('div', { class: 'trade-hist-counter-link' },
+          el('span', {}, `→ 已被還價 #${counterShort}`),
+          el('button', {
+            type: 'button',
+            class: 'trade-counter-orig-link',
+            onclick: () => scrollToHistoryTrade(counterTrade.id),
+          }, '查看還價'),
+        ),
+      );
+    }
+  }
+
   if (trade.reasoning && trade.reasoning !== 'human') {
     detail.append(el('div', { class: 'trade-reasoning hist' }, trade.reasoning));
   }
@@ -2517,6 +2586,21 @@ function buildTradeHistoryDetail(trade) {
     );
   }
   return detail;
+}
+
+// Scroll to (and expand) a trade in the history panel by id.
+async function scrollToHistoryTrade(id) {
+  // Open history panel if closed.
+  if (!state.tradeHistoryOpen) {
+    await onToggleTradeHistory();
+  }
+  // Ensure the target row is expanded.
+  state.expandedHistory.add(id);
+  const body = $('#trade-history-body');
+  if (body) renderTradeHistoryBody(body);
+  // Scroll the row into view.
+  const row = document.querySelector(`[data-trade-id="${id}"]`);
+  if (row) row.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // Trade action handlers
@@ -2994,7 +3078,8 @@ async function onShowWeekRecap(week) {
   if (!week) return;
   try {
     const data = await api(`/api/season/week-recap?week=${week}`);
-    renderWeekRecapOverlay(data);
+    const currentWeek = currentWeekNumber();
+    renderWeekRecapOverlay(data, week, currentWeek);
   } catch (err) {
     // 404 = week not resolved yet (e.g. first week of playoffs) — silent
     if (!String(err?.message || err).includes('404')) {
@@ -3003,12 +3088,31 @@ async function onShowWeekRecap(week) {
   }
 }
 
-function renderWeekRecapOverlay(r) {
+function renderWeekRecapOverlay(r, browsingWeek, currentWeek) {
   const existing = document.getElementById('recap-overlay');
   if (existing) existing.remove();
 
+  const week = r.week ?? browsingWeek ?? 1;
+  const maxWeek = (currentWeek ?? currentWeekNumber()) - 1;
+  const isHistory = week < (currentWeek ?? currentWeekNumber());
+
   const humanId = state.draft?.human_team_id;
   const closeBtn = el('button', { class: 'btn small ghost', onclick: () => document.getElementById('recap-overlay')?.remove() }, '關閉');
+
+  const prevBtn = el('button', {
+    class: 'recap-nav-btn',
+    disabled: week <= 1,
+    onclick: () => { document.getElementById('recap-overlay')?.remove(); onShowWeekRecap(week - 1); },
+  }, '◀ 上週');
+  const nextBtn = el('button', {
+    class: 'recap-nav-btn',
+    disabled: week >= maxWeek,
+    onclick: () => { document.getElementById('recap-overlay')?.remove(); onShowWeekRecap(week + 1); },
+  }, '下週 ▶');
+
+  const trimmedNotice = r.logs_trimmed
+    ? el('div', { class: 'recap-trimmed-notice' }, '舊週資料已清理，僅保留比分與對戰記錄')
+    : null;
 
   const matchupList = el('ul', { class: 'recap-matchups' });
   for (const m of (r.matchups || [])) {
@@ -3064,11 +3168,17 @@ function renderWeekRecapOverlay(r) {
         ))
     : null;
 
+  const titleText = `第 ${week} 週戰報` + (isHistory ? ' (歷史)' : '');
+  const titleEl = isHistory
+    ? el('h2', {}, el('span', { class: 'recap-history-flag' }, titleText))
+    : el('h2', {}, titleText);
+
   const dialog = el('div', { class: 'recap-dialog' },
     el('div', { class: 'recap-head' },
-      el('h2', {}, `第 ${r.week} 週戰報`),
+      el('div', { class: 'recap-nav' }, prevBtn, titleEl, nextBtn),
       closeBtn,
     ),
+    trimmedNotice,
     el('div', { class: 'recap-grid' },
       humanCard,
       blowoutCard,
