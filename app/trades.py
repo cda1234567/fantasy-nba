@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 TradeStatus = Literal[
-    "pending_accept", "accepted", "rejected", "vetoed", "executed", "expired"
+    "pending_accept", "accepted", "rejected", "vetoed", "executed", "expired", "countered"
 ]
 
 # Defaults; overridden by LeagueSettings when passed in
@@ -56,6 +56,7 @@ class TradeProposal(BaseModel):
     force: bool = False
     peer_commentary: list[dict] = Field(default_factory=list)
     force_executed: bool = False
+    counter_of: Optional[str] = None
 
 
 class TradesState(BaseModel):
@@ -334,6 +335,7 @@ class TradeManager:
     ) -> list[TradeProposal]:
         """Iterate pending trades where to_team is AI and status=pending_accept.
         Call ai_gm.decide_trade and set status accordingly.
+        If rejected, give the AI a 30% chance to counter-propose instead.
         Returns list of decided trades.
         """
         decided: list[TradeProposal] = []
@@ -347,7 +349,35 @@ class TradeManager:
             if trade.force:
                 self.decide(trade.id, cp.id, True, current_day, ai_gm=None)
             else:
+                # Skip counter-offer chains: only allow one counter per original
+                already_counter = trade.counter_of is not None
                 accept, _ = ai_gm.decide_trade(trade, cp, self.draft, self._settings)
+                if not accept and not already_counter:
+                    counter_dict = ai_gm.maybe_counter(trade, cp, self.draft, self._settings)
+                    if counter_dict is not None:
+                        # Move original to history as "countered"
+                        trade.status = "countered"
+                        self._move_to_history(trade)
+                        self._save()
+                        # Create the counter-offer trade
+                        try:
+                            counter_trade = self.propose(
+                                from_team=trade.to_team,
+                                to_team=trade.from_team,
+                                send_ids=counter_dict["send_player_ids"],
+                                receive_ids=counter_dict["receive_player_ids"],
+                                current_day=current_day,
+                                current_week=trade.proposed_week,
+                                reasoning=f"還價：{cp.name}",
+                            )
+                            counter_trade.counter_of = trade.id
+                            self._save()
+                        except Exception as exc:
+                            import traceback, sys
+                            print(f"[trades] counter-offer creation failed: {exc!r}", file=sys.stderr)
+                            traceback.print_exc()
+                        decided.append(trade)
+                        continue
                 self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
             decided.append(trade)
         return decided

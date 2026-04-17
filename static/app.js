@@ -2255,8 +2255,13 @@ function buildTradeStatusBadge(trade) {
     'executed': '已完成',
     'rejected': '已拒絕',
     'expired': '已過期',
+    'countered': '已還價',
   };
   const label = statusMap[trade.status] || trade.status.replace(/_/g, ' ');
+  if (trade.counter_of) {
+    return el('span', { class: `trade-status trade-status-${trade.status}` },
+      `↩ 還價 · ${label}`);
+  }
   if (trade.status === 'accepted' && trade.veto_deadline_day != null) {
     return el('span', { class: `trade-status trade-status-${trade.status}` },
       `已接受（否決期） · 否決截止日 ${trade.veto_deadline_day}`);
@@ -2397,6 +2402,7 @@ function buildTradeHistoryRow(trade) {
     'executed': '已完成',
     'rejected': '已拒絕',
     'expired': '已過期',
+    'countered': '已還價',
   };
   const statusLabel = statusMap[trade.status] || trade.status;
 
