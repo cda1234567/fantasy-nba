@@ -1,0 +1,92 @@
+{
+  "pending": [],
+  "history": [
+    {
+      "id": "262b68de0fbe44b98e2e395c5aaf0dfe",
+      "proposed_week": 1,
+      "proposed_day": 4,
+      "from_team": 4,
+      "to_team": 2,
+      "send_player_ids": [
+        1629627
+      ],
+      "receive_player_ids": [
+        1628970
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 4,
+      "veto_votes": [],
+      "veto_deadline_day": 6,
+      "reasoning": "Balanced Builder: swap Zion Williamson (34.4) for Miles Bridges (30.0)",
+      "executed_day": 6,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "d298585798a44360b83e6a1916c03362",
+      "proposed_week": 2,
+      "proposed_day": 12,
+      "from_team": 5,
+      "to_team": 3,
+      "send_player_ids": [
+        1641718
+      ],
+      "receive_player_ids": [
+        1630163
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 12,
+      "veto_votes": [],
+      "veto_deadline_day": 14,
+      "reasoning": "Youth Upside: swap Keyonte George (37.6) for LaMelo Ball (37.5)",
+      "executed_day": 14,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "qwen/qwen-2.5-72b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 2
+}

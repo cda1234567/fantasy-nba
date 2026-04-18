@@ -1,0 +1,153 @@
+{
+  "ts": 1776518434.0469253,
+  "state_summary": {
+    "draft_complete": true,
+    "picks": 104,
+    "standings_teams": 8,
+    "season_is_complete": false,
+    "champion": null
+  },
+  "initial_ui": {
+    "visible_views": [],
+    "ctas": [
+      {
+        "tag": "BUTTON",
+        "text": "聯盟\nQA Test League",
+        "id": "btn-league-switch",
+        "classes": "lsw-btn",
+        "disabled": false
+      },
+      {
+        "tag": "A",
+        "text": "🏁 前往聯盟",
+        "id": "",
+        "classes": "btn primary",
+        "disabled": null
+      }
+    ],
+    "nav": []
+  },
+  "league_view_buttons": [
+    {
+      "text": "聯盟\nQA Test League",
+      "id": "btn-league-switch",
+      "disabled": false,
+      "classes": "lsw-btn"
+    },
+    {
+      "text": "‹",
+      "id": "",
+      "disabled": false,
+      "classes": "hh-nav prev"
+    },
+    {
+      "text": "›",
+      "id": "",
+      "disabled": false,
+      "classes": "hh-nav next"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    },
+    {
+      "text": "選秀",
+      "id": "",
+      "disabled": true,
+      "classes": "btn small"
+    }
+  ],
+  "events": []
+}

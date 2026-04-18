@@ -1,0 +1,40 @@
+{
+  "league_name": "chaos1",
+  "season_year": "2025-26",
+  "player_team_index": 0,
+  "team_names": [
+    "我的隊伍",
+    "BPA Nerd",
+    "Punt TO",
+    "Stars & Scrubs",
+    "Balanced Builder",
+    "Youth Upside",
+    "Vet Win-Now",
+    "Contrarian"
+  ],
+  "randomize_draft_order": false,
+  "num_teams": 8,
+  "roster_size": 13,
+  "starters_per_day": 10,
+  "il_slots": 3,
+  "scoring_weights": {
+    "pts": 1.0,
+    "reb": 1.2,
+    "ast": 1.5,
+    "stl": 2.5,
+    "blk": 2.5,
+    "to": -1.0
+  },
+  "regular_season_weeks": 20,
+  "playoff_teams": 6,
+  "trade_deadline_week": null,
+  "ai_trade_frequency": "normal",
+  "ai_trade_style": "balanced",
+  "veto_threshold": 3,
+  "veto_window_days": 2,
+  "ai_decision_mode": "auto",
+  "draft_display_mode": "prev_full",
+  "show_offseason_headlines": true,
+  "setup_complete": true,
+  "use_openrouter": true
+}

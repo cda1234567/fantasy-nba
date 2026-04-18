@@ -1,0 +1,51 @@
+INFO:     Started server process [28304]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3509 (Press CTRL+C to quit)
+INFO:     127.0.0.1:60296 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56179 - "POST /api/leagues/list HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:56181 - "GET /api/leagues/create HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:56183 - "DELETE /api/trades/propose HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:56184 - "PUT /api/league/settings HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:56185 - "PATCH /api/season/start HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:49280 - "GET /api/season/lineup HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:63768 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58895 - "GET /api/etc/passwd HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58896 - "GET /api/seasons/../../etc/passwd HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58898 - "GET /api/teams/../../etc/passwd HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58900 - "GET /api/seasons/../etc/passwd HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49331 - "POST /api/leagues/create HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:49332 - "POST /api/leagues/create HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:49334 - "POST /api/leagues/create HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:49336 - "POST /api/season/start HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:49337 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:49343 - "POST /api/leagues/create HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:49344 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:58668 - "OPTIONS /api/health HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:58670 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53193 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:53194 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:59269 - "POST /api/leagues/create HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:59273 - "POST /api/leagues/create HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:59276 - "POST /api/season/start HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:59289 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:55923 - "POST /api/trades/propose HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:56825 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56826 - "GET /api/league/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57320 - "GET /api/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56624 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56625 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56172 - "GET /api/teams/0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56173 - "GET /api/teams/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52033 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52032 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:63227 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:50064 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50065 - "GET /api/teams/0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50068 - "GET /api/teams/1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50069 - "GET /api/league/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49344 - "POST /api/trades/propose HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49343 - "POST /api/trades/propose HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63602 - "GET /api/trades/pending HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56753 - "OPTIONS /api/health HTTP/1.1" 405 Method Not Allowed
+INFO:     127.0.0.1:60772 - "GET /api/health HTTP/1.1" 200 OK

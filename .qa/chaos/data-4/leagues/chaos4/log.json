@@ -1,0 +1,546 @@
+[
+  {
+    "ts": 1776520651.651649,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776520659.4629476,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776520663.6931155,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.7022283,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.7112389,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.7231834,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.7334113,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.7443862,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.756421,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.771307,
+    "type": "day_advance",
+    "day": 1,
+    "week": 1,
+    "fp_by_team": {
+      "0": 426.86,
+      "1": 298.87,
+      "2": 416.85,
+      "3": 317.23,
+      "4": 424.47,
+      "5": 328.86,
+      "6": 271.23,
+      "7": 368.78
+    }
+  },
+  {
+    "ts": 1776520663.9304402,
+    "type": "trade_proposed",
+    "trade_id": "4793aabca8594846ba859f9b9a8ccac4",
+    "from_team": 5,
+    "to_team": 1,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      1629627
+    ],
+    "day": 2,
+    "week": 1,
+    "reasoning": "Youth Upside: swap Jalen Duren (37.2) for Zion Williamson (34.4)"
+  },
+  {
+    "ts": 1776520663.9460013,
+    "type": "trade_accepted",
+    "trade_id": "4793aabca8594846ba859f9b9a8ccac4",
+    "from_team": 5,
+    "to_team": 1,
+    "day": 2,
+    "week": 1
+  },
+  {
+    "ts": 1776520663.9601152,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.972968,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.9831412,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520663.993781,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.0067286,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.0165133,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.02756,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.0437777,
+    "type": "day_advance",
+    "day": 2,
+    "week": 1,
+    "fp_by_team": {
+      "0": 420.76,
+      "1": 314.37,
+      "2": 356.82,
+      "3": 354.34,
+      "4": 368.47,
+      "5": 322.01,
+      "6": 185.07,
+      "7": 322.11
+    }
+  },
+  {
+    "ts": 1776520664.204309,
+    "type": "trade_proposed",
+    "trade_id": "83f48eaeb59c4117aafe503a37422ce8",
+    "from_team": 4,
+    "to_team": 1,
+    "send": [
+      1628401
+    ],
+    "receive": [
+      1629627
+    ],
+    "day": 3,
+    "week": 1,
+    "reasoning": "Balanced Builder: swap Derrick White (34.2) for Zion Williamson (34.4)"
+  },
+  {
+    "ts": 1776520664.216499,
+    "type": "trade_accepted",
+    "trade_id": "83f48eaeb59c4117aafe503a37422ce8",
+    "from_team": 4,
+    "to_team": 1,
+    "day": 3,
+    "week": 1
+  },
+  {
+    "ts": 1776520664.231456,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.2443879,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.2566667,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.2674322,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.2804756,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.2943065,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.3049405,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.322754,
+    "type": "day_advance",
+    "day": 3,
+    "week": 1,
+    "fp_by_team": {
+      "0": 354.71,
+      "1": 357.96,
+      "2": 278.08,
+      "3": 264.87,
+      "4": 296.64,
+      "5": 400.06,
+      "6": 215.81,
+      "7": 343.45
+    }
+  },
+  {
+    "ts": 1776520664.479851,
+    "type": "trade_executed",
+    "trade_id": "4793aabca8594846ba859f9b9a8ccac4",
+    "from_team": 5,
+    "to_team": 1,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      1629627
+    ],
+    "veto_votes": [],
+    "day": 4,
+    "week": 1
+  },
+  {
+    "ts": 1776520664.4921157,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5061753,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.517857,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5286627,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5401037,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5520415,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5635388,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.5851028,
+    "type": "day_advance",
+    "day": 4,
+    "week": 1,
+    "fp_by_team": {
+      "0": 438.97,
+      "1": 357.8,
+      "2": 313.98,
+      "3": 278.11,
+      "4": 281.09,
+      "5": 287.36,
+      "6": 268.89,
+      "7": 253.38
+    }
+  },
+  {
+    "ts": 1776520664.7824183,
+    "type": "trade_expired",
+    "trade_id": "83f48eaeb59c4117aafe503a37422ce8",
+    "from_team": 4,
+    "to_team": 1,
+    "send": [
+      1628401
+    ],
+    "receive": [
+      1629627
+    ],
+    "veto_votes": [],
+    "day": 5,
+    "week": 1
+  },
+  {
+    "ts": 1776520664.797319,
+    "type": "trade_proposed",
+    "trade_id": "00458506d79d40d695f528f7a010820b",
+    "from_team": 5,
+    "to_team": 4,
+    "send": [
+      1642851
+    ],
+    "receive": [
+      1628401
+    ],
+    "day": 5,
+    "week": 1,
+    "reasoning": "Youth Upside: swap Kon Knueppel (30.2) for Derrick White (34.2)"
+  },
+  {
+    "ts": 1776520664.8147023,
+    "type": "trade_rejected",
+    "trade_id": "00458506d79d40d695f528f7a010820b",
+    "from_team": 5,
+    "to_team": 4,
+    "day": 5,
+    "week": 1
+  },
+  {
+    "ts": 1776520664.8302276,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.8454263,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.8590584,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.8726466,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.8857634,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.900537,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.9099123,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520664.9302332,
+    "type": "day_advance",
+    "day": 5,
+    "week": 1,
+    "fp_by_team": {
+      "0": 384.09,
+      "1": 299.09,
+      "2": 249.8,
+      "3": 358.75,
+      "4": 349.95,
+      "5": 330.02,
+      "6": 338.65,
+      "7": 355.93
+    }
+  },
+  {
+    "ts": 1776520684.8326495,
+    "type": "fa_claim",
+    "team_id": 0,
+    "drop": 203999,
+    "add": 1642270,
+    "drop_name": "Nikola Jokić",
+    "add_name": "Donovan Clingan",
+    "day": 5
+  },
+  {
+    "ts": 1776520684.8810651,
+    "type": "fa_claim",
+    "team_id": 0,
+    "drop": 1630552,
+    "add": 1629660,
+    "drop_name": "Jalen Johnson",
+    "add_name": "Ty Jerome",
+    "day": 5
+  },
+  {
+    "ts": 1776520684.9232512,
+    "type": "fa_claim",
+    "team_id": 0,
+    "drop": 202695,
+    "add": 1631157,
+    "drop_name": "Kawhi Leonard",
+    "add_name": "Ryan Rollins",
+    "day": 5
+  }
+]

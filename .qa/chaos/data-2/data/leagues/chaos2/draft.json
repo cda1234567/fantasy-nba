@@ -1,0 +1,62 @@
+{
+  "seed": 2699047414,
+  "teams": [
+    {
+      "id": 0,
+      "name": "You",
+      "is_human": true,
+      "gm_persona": null,
+      "roster": []
+    },
+    {
+      "id": 1,
+      "name": "BPA Nerd (T2)",
+      "is_human": false,
+      "gm_persona": "bpa",
+      "roster": []
+    },
+    {
+      "id": 2,
+      "name": "Punt TO (T3)",
+      "is_human": false,
+      "gm_persona": "punt_to",
+      "roster": []
+    },
+    {
+      "id": 3,
+      "name": "Stars & Scrubs (T4)",
+      "is_human": false,
+      "gm_persona": "stars_scrubs",
+      "roster": []
+    },
+    {
+      "id": 4,
+      "name": "Balanced Builder (T5)",
+      "is_human": false,
+      "gm_persona": "balanced",
+      "roster": []
+    },
+    {
+      "id": 5,
+      "name": "Youth Upside (T6)",
+      "is_human": false,
+      "gm_persona": "youth",
+      "roster": []
+    },
+    {
+      "id": 6,
+      "name": "Vet Win-Now (T7)",
+      "is_human": false,
+      "gm_persona": "vet",
+      "roster": []
+    },
+    {
+      "id": 7,
+      "name": "Contrarian (T8)",
+      "is_human": false,
+      "gm_persona": "contrarian",
+      "roster": []
+    }
+  ],
+  "picks": []
+}

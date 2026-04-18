@@ -1,0 +1,940 @@
+{
+  "pending": [],
+  "history": [
+    {
+      "id": "5c71ac75b9d3416cbde110db9766d697",
+      "proposed_week": 1,
+      "proposed_day": 7,
+      "from_team": 1,
+      "to_team": 4,
+      "send_player_ids": [
+        1630217
+      ],
+      "receive_player_ids": [
+        1630567
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 7,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "BPA Nerd: swap Desmond Bane (36.1) for Scottie Barnes (40.4)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "9fffeca4d3e0425087167e792d3b586e",
+      "proposed_week": 2,
+      "proposed_day": 9,
+      "from_team": 4,
+      "to_team": 3,
+      "send_player_ids": [
+        202681
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 9,
+      "veto_votes": [],
+      "veto_deadline_day": 11,
+      "reasoning": "Balanced Builder: swap Kyrie Irving (39.7) for Jaren Jackson Jr. (36.6)",
+      "executed_day": 11,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e12dfd6ebda34016a30ce1f33fa726aa",
+      "proposed_week": 2,
+      "proposed_day": 10,
+      "from_team": 3,
+      "to_team": 5,
+      "send_player_ids": [
+        1631101
+      ],
+      "receive_player_ids": [
+        1631105
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 10,
+      "veto_votes": [],
+      "veto_deadline_day": 12,
+      "reasoning": "Stars & Scrubs: swap Shaedon Sharpe (28.8) for Jalen Duren (31.0)",
+      "executed_day": 12,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "25ceff429f2b44f38448801dd407ff0f",
+      "proposed_week": 3,
+      "proposed_day": 16,
+      "from_team": 2,
+      "to_team": 4,
+      "send_player_ids": [
+        201942
+      ],
+      "receive_player_ids": [
+        1631114
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 16,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Punt TO: swap DeMar DeRozan (35.1) for Jalen Williams (39.2)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "febfa5f632d44a8bb4ab4125ea436722",
+      "proposed_week": 3,
+      "proposed_day": 16,
+      "from_team": 2,
+      "to_team": 4,
+      "send_player_ids": [
+        201942
+      ],
+      "receive_player_ids": [
+        1631114
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 16,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Punt TO: swap DeMar DeRozan (35.1) for Jalen Williams (39.2)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "47f2dda1f6f746cb9ce8b3e13ed2c59c",
+      "proposed_week": 3,
+      "proposed_day": 16,
+      "from_team": 2,
+      "to_team": 4,
+      "send_player_ids": [
+        201942
+      ],
+      "receive_player_ids": [
+        1631114
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 16,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Punt TO: swap DeMar DeRozan (35.1) for Jalen Williams (39.2)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "190993c347b048d79651ae87a9880686",
+      "proposed_week": 3,
+      "proposed_day": 17,
+      "from_team": 7,
+      "to_team": 1,
+      "send_player_ids": [
+        1629639
+      ],
+      "receive_player_ids": [
+        203897
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 17,
+      "veto_votes": [],
+      "veto_deadline_day": 19,
+      "reasoning": "Contrarian: swap Tyler Herro (38.5) for Zach LaVine (34.5)",
+      "executed_day": 19,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "55dd0ee8ac8d46d8bf237e347fdc2111",
+      "proposed_week": 2,
+      "proposed_day": 13,
+      "from_team": 5,
+      "to_team": 0,
+      "send_player_ids": [
+        1630581
+      ],
+      "receive_player_ids": [
+        1627826
+      ],
+      "status": "expired",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Josh Giddey (36.7) for Ivica Zubac (38.9)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "b4f46c305fac47b0b6b7e2cd2e779ae0",
+      "proposed_week": 2,
+      "proposed_day": 14,
+      "from_team": 6,
+      "to_team": 0,
+      "send_player_ids": [
+        1630559
+      ],
+      "receive_player_ids": [
+        201939
+      ],
+      "status": "expired",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Vet Win-Now: swap Austin Reaves (35.4) for Stephen Curry (39.6)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "d88c17d6d39b4ae996bc18ce222cbdde",
+      "proposed_week": 3,
+      "proposed_day": 21,
+      "from_team": 7,
+      "to_team": 1,
+      "send_player_ids": [
+        1629636
+      ],
+      "receive_player_ids": [
+        1630217
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 21,
+      "veto_votes": [],
+      "veto_deadline_day": 23,
+      "reasoning": "Contrarian: swap Darius Garland (34.9) for Desmond Bane (36.1)",
+      "executed_day": 23,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "b94c709e5f7148fdb436bd189c9879c8",
+      "proposed_week": 4,
+      "proposed_day": 24,
+      "from_team": 7,
+      "to_team": 0,
+      "send_player_ids": [
+        203897
+      ],
+      "receive_player_ids": [
+        1627742
+      ],
+      "status": "expired",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Contrarian: swap Zach LaVine (34.5) for Brandon Ingram (36.7)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "995b20b0202c44bdb952a8d18f5023e7",
+      "proposed_week": 6,
+      "proposed_day": 40,
+      "from_team": 7,
+      "to_team": 5,
+      "send_player_ids": [
+        202710
+      ],
+      "receive_player_ids": [
+        1630560
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 40,
+      "veto_votes": [],
+      "veto_deadline_day": 42,
+      "reasoning": "Contrarian: swap Jimmy Butler III (35.0) for Cam Thomas (32.9)",
+      "executed_day": 42,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "16ac628feb064df4984d3d690b0ebd1a",
+      "proposed_week": 7,
+      "proposed_day": 47,
+      "from_team": 6,
+      "to_team": 3,
+      "send_player_ids": [
+        203497
+      ],
+      "receive_player_ids": [
+        1631105
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 47,
+      "veto_votes": [],
+      "veto_deadline_day": 49,
+      "reasoning": "Vet Win-Now: swap Rudy Gobert (32.1) for Jalen Duren (31.0)",
+      "executed_day": 49,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e3cfac0cc7964025b8300d02ba6fcf1c",
+      "proposed_week": 8,
+      "proposed_day": 50,
+      "from_team": 6,
+      "to_team": 2,
+      "send_player_ids": [
+        1630559
+      ],
+      "receive_player_ids": [
+        1628386
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 50,
+      "veto_votes": [],
+      "veto_deadline_day": 52,
+      "reasoning": "Vet Win-Now: swap Austin Reaves (35.4) for Jarrett Allen (31.3)",
+      "executed_day": 52,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "67505c216c0d4419b60aece0ec4c0baf",
+      "proposed_week": 8,
+      "proposed_day": 51,
+      "from_team": 3,
+      "to_team": 2,
+      "send_player_ids": [
+        202681
+      ],
+      "receive_player_ids": [
+        201942
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 51,
+      "veto_votes": [
+        4
+      ],
+      "veto_deadline_day": 53,
+      "reasoning": "Stars & Scrubs: swap Kyrie Irving (39.7) for DeMar DeRozan (35.1)",
+      "executed_day": 53,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "36f88ac58f1b4a15924e272d3d429370",
+      "proposed_week": 8,
+      "proposed_day": 52,
+      "from_team": 6,
+      "to_team": 4,
+      "send_player_ids": [
+        1627750
+      ],
+      "receive_player_ids": [
+        1630530
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 52,
+      "veto_votes": [],
+      "veto_deadline_day": 54,
+      "reasoning": "Vet Win-Now: swap Jamal Murray (37.7) for Trey Murphy III (35.2)",
+      "executed_day": 54,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "2eb1e3402bed4d0abd416242f499195c",
+      "proposed_week": 12,
+      "proposed_day": 82,
+      "from_team": 5,
+      "to_team": 4,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 82,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Deni Avdija (32.6) for Jaren Jackson Jr. (36.6)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "0c7bef960d304bba9ee94321c5966eac",
+      "proposed_week": 12,
+      "proposed_day": 82,
+      "from_team": 5,
+      "to_team": 4,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 82,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Deni Avdija (32.6) for Jaren Jackson Jr. (36.6)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "250391830eb44ab586cb07124020431f",
+      "proposed_week": 12,
+      "proposed_day": 82,
+      "from_team": 5,
+      "to_team": 4,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 82,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Deni Avdija (32.6) for Jaren Jackson Jr. (36.6)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "45ae0fc6b08c4385b03b132b1c4ae181",
+      "proposed_week": 13,
+      "proposed_day": 89,
+      "from_team": 4,
+      "to_team": 7,
+      "send_player_ids": [
+        1630567
+      ],
+      "receive_player_ids": [
+        1627749
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 89,
+      "veto_votes": [],
+      "veto_deadline_day": 91,
+      "reasoning": "Balanced Builder: swap Scottie Barnes (40.4) for Dejounte Murray (39.0)",
+      "executed_day": 91,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "11d2c835c8184df79dad655b45675aed",
+      "proposed_week": 14,
+      "proposed_day": 98,
+      "from_team": 6,
+      "to_team": 4,
+      "send_player_ids": [
+        1628389
+      ],
+      "receive_player_ids": [
+        1627750
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 98,
+      "veto_votes": [],
+      "veto_deadline_day": 100,
+      "reasoning": "Vet Win-Now: swap Bam Adebayo (39.0) for Jamal Murray (37.7)",
+      "executed_day": 100,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "6cf6c40400584634be2f0f258eb461dd",
+      "proposed_week": 15,
+      "proposed_day": 100,
+      "from_team": 1,
+      "to_team": 6,
+      "send_player_ids": [
+        1628970
+      ],
+      "receive_player_ids": [
+        1627750
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 100,
+      "veto_votes": [],
+      "veto_deadline_day": 102,
+      "reasoning": "BPA Nerd: swap Miles Bridges (36.5) for Jamal Murray (37.7)",
+      "executed_day": 102,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "15c557463598460d8f00d6099fd85488",
+      "proposed_week": 15,
+      "proposed_day": 100,
+      "from_team": 5,
+      "to_team": 6,
+      "send_player_ids": [
+        202710
+      ],
+      "receive_player_ids": [
+        1631105
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 100,
+      "veto_votes": [],
+      "veto_deadline_day": 102,
+      "reasoning": "Youth Upside: swap Jimmy Butler III (35.0) for Jalen Duren (31.0)",
+      "executed_day": 102,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 13
+}

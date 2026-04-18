@@ -1,0 +1,4462 @@
+[
+  {
+    "ts": 1776521048.394116,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.4238605,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.4370522,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.450472,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.4662237,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.4933012,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.5176995,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.5286741,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.557159,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.5801716,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.6039662,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.617338,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.649319,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.671302,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.6832747,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.6984165,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.7138286,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.726978,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.74148,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.7575936,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.774174,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.7888753,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.8061876,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.8211105,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.8344197,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.8496745,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.8650699,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.87878,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.893375,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.9084504,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.9235885,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.938766,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.951982,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.9672532,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.980918,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521048.9943209,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0110323,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0241036,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0394425,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0552366,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0715442,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0851855,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.0999317,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1137724,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1293294,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1458385,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1630142,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1784585,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.1949666,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.2123575,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.2288222,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.244092,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.260147,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.2765212,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.2940497,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3079803,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3229358,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3367443,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3509247,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3667562,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3841202,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.3984776,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.4117804,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.4276567,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.4440415,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.4616232,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.4786716,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.497219,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.511665,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.5281606,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.544526,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.5594397,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.5748656,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.586842,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.6024778,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.6162863,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.6322212,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.6491635,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.6651258,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.682133,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.701129,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.7155037,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.73105,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.7471735,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.760909,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.7779572,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.7929916,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.8091073,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.82563,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.837124,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.8500276,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.8635619,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.8782442,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.8928497,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.9063482,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.920705,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.9355817,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.9518917,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.9668844,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.982148,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521049.9957423,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.00924,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.0264986,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.0414507,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.0569437,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.0687068,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.0817251,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.099253,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1144476,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1290398,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1440778,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1610067,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1781194,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.1966307,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.2104347,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.2278056,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.240951,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.2568345,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.271907,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.2857509,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.2991335,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.3131707,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.3286426,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.3452804,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.376674,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.3855896,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4010823,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4144564,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4302099,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4456797,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4611952,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4771607,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.4913971,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.5077171,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.5260983,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.5445895,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.560895,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.5866928,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6000068,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6157203,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6309142,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6588848,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6702707,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6831503,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.6992927,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.727468,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.7481542,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.759272,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.787281,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.8169608,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.8391714,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.8507028,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.8777614,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9011097,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9134958,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9259887,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.941174,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9566114,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9737015,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521050.9879735,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.0028682,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.016712,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.0299199,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.044863,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.0607238,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.0787523,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.09553,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.1122422,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.1276898,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.144414,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.16257,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.1785815,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.1925251,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2074358,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2249746,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2396188,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2564664,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2732918,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.2888064,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.3009083,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.3126814,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.328955,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.3437147,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.3572574,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.371884,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.3893285,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.4086068,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.4247098,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.4404368,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.4563725,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.4790804,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.494528,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5109942,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5254471,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5409257,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5547621,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5659769,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5795734,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.5947466,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.609888,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.625951,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.6413367,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.65627,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.668822,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.6861122,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7004871,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.718071,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7335305,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7480817,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7629478,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7794015,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.7966902,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.8122005,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.8273542,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.8425152,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.8597455,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.876377,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.8897035,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.9070427,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.9227526,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.9386985,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.954549,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.9704006,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521051.9861124,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0002942,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0127645,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0306563,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.043705,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0606415,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0781934,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.0939465,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.11135,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.126572,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.1428971,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.1604106,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.1776338,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.1916335,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.2059433,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.220314,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.2336056,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.2471254,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.2628021,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.27519,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.2890432,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3016343,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3148735,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3280988,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3435915,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3597531,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.375615,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.3923564,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.4111247,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.4282484,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.4449027,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.458727,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.474851,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.4882364,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5062747,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5219417,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5341196,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5472507,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5634472,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5802352,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.5938087,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6278543,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6352875,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6479166,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6623423,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6785483,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.6970732,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.7108088,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.7276282,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.7437418,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.757293,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.7737887,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.7898688,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.8074558,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.8389895,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.84963,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.86437,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.879465,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.909536,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.9194417,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.931458,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.9440603,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.9757767,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521052.9991534,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.0113325,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.0398455,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.0623133,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.087839,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.0989237,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.1264846,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.1483104,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.15895,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.1732416,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.1879413,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.2011988,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.2141738,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.2298357,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.2441971,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.258471,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.2750292,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.29161,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3073173,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3225102,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3373547,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3528855,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.367214,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3825517,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.3973904,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.4122143,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.4294226,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.4425483,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.4598737,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.4750602,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.490251,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.505997,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.5174608,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.5330405,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.5495443,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.565208,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.581625,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.5981789,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6113312,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6290486,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6469855,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6622088,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6768565,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.6933978,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.7092044,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.725376,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.738154,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.7516093,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.7772233,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.7886271,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.802302,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.816706,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.8288665,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.844468,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.860229,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.875783,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.8885999,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.901081,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.9129128,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.9301202,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.9470677,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.9779887,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521053.9909573,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.0077844,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.023512,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.0542898,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.064518,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.0792582,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.092626,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.122036,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.1467533,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.1594284,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.1885974,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.2111213,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.2347717,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.2471094,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.2819574,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3071756,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3190312,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3327184,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3462338,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3603928,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.3772178,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.394174,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.411538,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.4279659,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.4421635,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.4567087,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.4700208,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.484898,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.5017037,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.5166867,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.5313737,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.548035,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.5641537,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.5797167,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.596295,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.6078238,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.6229687,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.63836,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.650051,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.6643455,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.6792645,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.697457,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.7140527,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.7303383,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.746062,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.7624297,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.7793229,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.7946486,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.81005,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.828205,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.8445635,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.8581958,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.8737478,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.8885467,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.903983,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.9195144,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.935879,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.9496732,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.9659564,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.980281,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521054.9962423,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.012992,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.0236723,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.039889,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.055977,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.071844,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.0879874,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1031704,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1200073,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1372757,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1526062,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1645348,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.179106,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.1972642,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.2121985,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.2279515,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.243409,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.2630324,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.2822928,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.2975538,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.3138523,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.3315103,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.348848,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.3647866,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.379996,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.3973236,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.4136088,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.4302447,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.4477067,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.4623241,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.482093,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5000234,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5128558,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5286808,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5444357,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5623584,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.577783,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.5946696,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6101792,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6267617,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6420195,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6546574,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6706457,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6838605,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.6979086,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.7140617,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.7299495,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.746565,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.7636206,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.7798378,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.796178,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.8125103,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.8264513,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.8421247,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.85834,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.8741853,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.889722,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9051993,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9186223,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9359808,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9518642,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9690983,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9823139,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521055.9963555,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.0113049,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.028085,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.074104,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.0742233,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.0883503,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.1048899,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.119376,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.1353984,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.150643,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.1665282,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.1825445,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.1963425,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.2547472,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.2691715,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.3097825,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.3128502,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.3285058,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.3447158,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.3857603,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.3860755,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.402843,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776521056.4440475,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.4763362,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.5472858,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.5723703,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.5976548,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.6696403,
+    "type": "champion",
+    "team_id": 0
+  },
+  {
+    "ts": 1776521056.6976757,
+    "type": "champion",
+    "team_id": 0
+  }
+]

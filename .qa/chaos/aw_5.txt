@@ -1,0 +1,12 @@
+data: {"day": 3, "week": 1}
+
+data: {"day": 4, "week": 1}
+
+data: {"day": 5, "week": 1}
+
+data: {"day": 6, "week": 1}
+
+data: {"day": 7, "week": 1}
+
+data: {"done": true, "week": 1}
+

@@ -1,0 +1,65 @@
+INFO:     Started server process [20380]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3419 (Press CTRL+C to quit)
+INFO:     127.0.0.1:55808 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55811 - "POST /api/leagues/create HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:55845 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58096 - "POST /api/league/setup HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58125 - "GET /api/players?limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58126 - "POST /api/draft/pick HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58193 - "GET /api/players?limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58218 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63911 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63914 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63916 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63919 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63922 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63925 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63928 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63931 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63933 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63935 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63938 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63939 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63941 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63943 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63945 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63948 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63950 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63952 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63955 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63957 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63959 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63960 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63964 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63969 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63972 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63975 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63976 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63977 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63980 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63981 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63984 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63986 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63988 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63989 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63992 - "GET /api/players?available=true&limit=1 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63993 - "POST /api/draft/pick HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63995 - "POST /api/draft/sim-to-me HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64026 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64027 - "GET /api/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64036 - "POST /api/season/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64037 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64094 - "POST /api/season/sim-to-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57463 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59900 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59910 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59929 - "POST /api/season/reset HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59933 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59970 - "GET /api/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60039 - "POST /api/season/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59114 - "GET /api/state HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59116 - "POST /api/draft/reset HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59128 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59129 - "GET /api/state HTTP/1.1" 200 OK

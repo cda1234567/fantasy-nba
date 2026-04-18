@@ -1,0 +1,1268 @@
+INFO:     Started server process [15440]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3420 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59153 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59154 - "GET /api/league/status HTTP/1.1" 200 OK
+[season] _load_or_init_season failed: ConfigError('field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\main.py", line 263, in _load_or_init_season
+    state = SeasonState(**raw)
+  File "pydantic/main.py", line 362, in pydantic.main.BaseModel.__init__
+  File "pydantic/main.py", line 1097, in pydantic.main.validate_model
+    v_, errors_ = field.validate(value, values, loc=field.alias, cls=cls_)
+  File "pydantic/fields.py", line 857, in pydantic.fields.ModelField.validate
+pydantic.errors.ConfigError: field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().
+INFO:     127.0.0.1:59166 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59180 - "GET /api/state HTTP/1.1" 200 OK
+[season] _load_or_init_season failed: ConfigError('field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\main.py", line 263, in _load_or_init_season
+    state = SeasonState(**raw)
+  File "pydantic/main.py", line 362, in pydantic.main.BaseModel.__init__
+    values, fields_set, validation_error = validate_model(__pydantic_self__.__class__, data)
+  File "pydantic/main.py", line 1097, in pydantic.main.validate_model
+    v_, errors_ = field.validate(value, values, loc=field.alias, cls=cls_)
+  File "pydantic/fields.py", line 857, in pydantic.fields.ModelField.validate
+pydantic.errors.ConfigError: field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().
+INFO:     127.0.0.1:59182 - "POST /api/season/start HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 118, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 104, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 428, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 674, in season_start_endpoint
+    state = season_start(draft, storage, settings=settings)
+  File "D:\claude\fantasy nba\app\season.py", line 294, in start_season
+    roll_preseason_injuries(state, draft, preseason_rng)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\injuries.py", line 129, in roll_preseason_injuries
+    season.injury_history.append(inj.model_copy())
+                                 ^^^^^^^^^^^^^^
+AttributeError: 'Injury' object has no attribute 'model_copy'
+[season] _load_or_init_season failed: ConfigError('field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\main.py", line 263, in _load_or_init_season
+    state = SeasonState(**raw)
+  File "pydantic/main.py", line 362, in pydantic.main.BaseModel.__init__
+    values, fields_set, validation_error = validate_model(__pydantic_self__.__class__, data)
+  File "pydantic/main.py", line 1097, in pydantic.main.validate_model
+    v_, errors_ = field.validate(value, values, loc=field.alias, cls=cls_)
+  File "pydantic/fields.py", line 857, in pydantic.fields.ModelField.validate
+pydantic.errors.ConfigError: field "injuries" not yet prepared so type is still a ForwardRef, you might need to call SeasonState.update_forward_refs().
+INFO:     127.0.0.1:59194 - "POST /api/season/start HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 118, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 104, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 428, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 674, in season_start_endpoint
+    state = season_start(draft, storage, settings=settings)
+  File "D:\claude\fantasy nba\app\season.py", line 294, in start_season
+    roll_preseason_injuries(state, draft, preseason_rng)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\injuries.py", line 129, in roll_preseason_injuries
+    season.injury_history.append(inj.model_copy())
+                                 ^^^^^^^^^^^^^^
+AttributeError: 'Injury' object has no attribute 'model_copy'
+INFO:     127.0.0.1:60898 - "POST /api/season/start HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 118, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 104, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 428, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 674, in season_start_endpoint
+    state = season_start(draft, storage, settings=settings)
+  File "D:\claude\fantasy nba\app\season.py", line 294, in start_season
+    roll_preseason_injuries(state, draft, preseason_rng)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\injuries.py", line 129, in roll_preseason_injuries
+    season.injury_history.append(inj.model_copy())
+                                 ^^^^^^^^^^^^^^
+AttributeError: 'Injury' object has no attribute 'model_copy'
+INFO:     127.0.0.1:60906 - "POST /api/season/start HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 416, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_utils.py", line 85, in collapse_excgroups
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 118, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 104, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 428, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\fastapi\routing.py", line 316, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 2502, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 986, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 674, in season_start_endpoint
+    state = season_start(draft, storage, settings=settings)
+  File "D:\claude\fantasy nba\app\season.py", line 294, in start_season
+    roll_preseason_injuries(state, draft, preseason_rng)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\injuries.py", line 129, in roll_preseason_injuries
+    season.injury_history.append(inj.model_copy())
+                                 ^^^^^^^^^^^^^^
+AttributeError: 'Injury' object has no attribute 'model_copy'
+INFO:     Started server process [21984]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3420 (Press CTRL+C to quit)
+INFO:     127.0.0.1:56592 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56593 - "GET /api/league/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56595 - "POST /api/season/start HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56601 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56602 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56603 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56604 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56605 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56606 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56607 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56608 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56609 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56610 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56611 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56613 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56614 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56615 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56616 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56617 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56618 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56619 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56620 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56621 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56622 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56623 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51114 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51115 - "GET /api/season/advance-week/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51116 - "GET /api/season/advance-week/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51117 - "GET /api/season/advance-week/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51118 - "GET /api/season/advance-week/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51119 - "GET /api/season/advance-week/stream HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51121 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51126 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 531, in _run_trades_daily
+    mgr.decide(trade.id, cp.id, accept, current_day)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 334, in decide
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.3981131ba86647cd8018320da85aafa8.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51132 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 486, in _run_trades_daily
+    trade = mgr.propose(
+        from_team=team.id,
+    ...<5 lines>...
+        reasoning=str(proposal.get("reasoning", ""))[:300],
+    )
+  File "D:\claude\fantasy nba\app\trades.py", line 213, in propose
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.549f5a2f5f054ec48e84c307a64d8d6b.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+[season-daily] peer_commentary failed: PermissionError(13, '存取被拒。')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\season.py", line 520, in _run_trades_daily
+    mgr.collect_peer_commentary_sync(trade, ai_gm)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 306, in collect_peer_commentary_sync
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.7fcdb40ceb374f298a9b46b66df640d9.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+[season-daily] peer_commentary failed: PermissionError(13, '存取被拒。')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\season.py", line 520, in _run_trades_daily
+    mgr.collect_peer_commentary_sync(trade, ai_gm)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 306, in collect_peer_commentary_sync
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.c57e95c5ec2f428f822baf512f216532.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+[season-daily] peer_commentary failed: PermissionError(13, '存取被拒。')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\season.py", line 520, in _run_trades_daily
+    mgr.collect_peer_commentary_sync(trade, ai_gm)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 306, in collect_peer_commentary_sync
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.7bcbc7eb69034b33a586dbbc68e3b33f.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51131 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 486, in _run_trades_daily
+    trade = mgr.propose(
+        from_team=team.id,
+    ...<5 lines>...
+        reasoning=str(proposal.get("reasoning", ""))[:300],
+    )
+  File "D:\claude\fantasy nba\app\trades.py", line 213, in propose
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.81d6e61319ab4a3a9a305efc34e01fcc.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51130 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 531, in _run_trades_daily
+    mgr.decide(trade.id, cp.id, accept, current_day)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 334, in decide
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.908669703eb94b44902cf45205b3e5dd.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51122 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 531, in _run_trades_daily
+    mgr.decide(trade.id, cp.id, accept, current_day)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 334, in decide
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.f68f35813af04e028f01f134bfc9d48d.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+[season-daily] peer_commentary failed: PermissionError(13, '存取被拒。')
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\app\season.py", line 520, in _run_trades_daily
+    mgr.collect_peer_commentary_sync(trade, ai_gm)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\trades.py", line 306, in collect_peer_commentary_sync
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.db7e5583d20b4174a0be45b0a3b1c342.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51123 - "POST /api/season/sim-to-playoffs HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude\fantasy nba\app\main.py", line 730, in season_sim_to_playoffs_endpoint
+    state = season_sim_to_playoffs(
+        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+    )
+  File "D:\claude\fantasy nba\app\season.py", line 846, in sim_to_playoffs
+    advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\season.py", line 627, in advance_day
+    _dirty = _run_trades_daily(draft, season, storage, ai_gm, next_day, week, settings)
+  File "D:\claude\fantasy nba\app\season.py", line 486, in _run_trades_daily
+    trade = mgr.propose(
+        from_team=team.id,
+    ...<5 lines>...
+        reasoning=str(proposal.get("reasoning", ""))[:300],
+    )
+  File "D:\claude\fantasy nba\app\trades.py", line 213, in propose
+    self._save()
+    ~~~~~~~~~~^^
+  File "D:\claude\fantasy nba\app\trades.py", line 132, in _save
+    self.storage.save_trades(self.state.model_dump())
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 121, in save_trades
+    self._atomic_write(self.trades_path, state)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json.21984.e4006299bfec4dd197e8413e2ac204b7.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\chaos\\data-10\\leagues\\chaos10\\trades.json'
+INFO:     127.0.0.1:51125 - "POST /api/season/sim-to-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51129 - "POST /api/season/sim-to-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51128 - "POST /api/season/sim-to-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51127 - "POST /api/season/sim-to-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53877 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63775 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63776 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63777 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63778 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63779 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63780 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63781 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63782 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63784 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63783 - "POST /api/season/sim-playoffs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55356 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62060 - "GET /api/season/standings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52546 - "GET /api/teams/0 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52547 - "GET /api/players?available=true&limit=5 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52548 - "GET /api/fa/claim-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52593 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52594 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52595 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52596 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52598 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52597 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52599 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52601 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52600 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52602 - "POST /api/fa/claim HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52603 - "GET /api/trades/pending HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52604 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52605 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52606 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52607 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52608 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52609 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52611 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52614 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52613 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52615 - "POST /api/trades/propose HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58256 - "GET /api/trades/pending HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56338 - "GET /api/trades/pending HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56339 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56340 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56341 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56342 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56344 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56343 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56345 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56346 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56347 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:56348 - "POST /api/trades/propose HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:63680 - "POST /api/trades/fake-id/accept HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63681 - "POST /api/trades/fake-id/accept HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63682 - "POST /api/trades/fake-id/accept HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63683 - "POST /api/trades/fake-id/accept HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63684 - "POST /api/trades/fake-id/accept HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63685 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63687 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63686 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63690 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63689 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63688 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51850 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51852 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51851 - "POST /api/season/advance-day HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51853 - "POST /api/season/advance-day HTTP/1.1" 200 OK

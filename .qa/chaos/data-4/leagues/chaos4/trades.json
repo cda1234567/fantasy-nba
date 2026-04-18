@@ -1,0 +1,135 @@
+{
+  "pending": [],
+  "history": [
+    {
+      "id": "4793aabca8594846ba859f9b9a8ccac4",
+      "proposed_week": 1,
+      "proposed_day": 2,
+      "from_team": 5,
+      "to_team": 1,
+      "send_player_ids": [
+        1631105
+      ],
+      "receive_player_ids": [
+        1629627
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 2,
+      "veto_votes": [],
+      "veto_deadline_day": 4,
+      "reasoning": "Youth Upside: swap Jalen Duren (37.2) for Zion Williamson (34.4)",
+      "executed_day": 4,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "google/gemini-2.5-flash",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "83f48eaeb59c4117aafe503a37422ce8",
+      "proposed_week": 1,
+      "proposed_day": 3,
+      "from_team": 4,
+      "to_team": 1,
+      "send_player_ids": [
+        1628401
+      ],
+      "receive_player_ids": [
+        1629627
+      ],
+      "status": "expired",
+      "counterparty_decided_day": 3,
+      "veto_votes": [],
+      "veto_deadline_day": 5,
+      "reasoning": "Balanced Builder: swap Derrick White (34.2) for Zion Williamson (34.4) [自動撤銷：球員已不在隊伍名單中 [1629627]]",
+      "executed_day": 5,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "google/gemini-2.5-flash",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "00458506d79d40d695f528f7a010820b",
+      "proposed_week": 1,
+      "proposed_day": 5,
+      "from_team": 5,
+      "to_team": 4,
+      "send_player_ids": [
+        1642851
+      ],
+      "receive_player_ids": [
+        1628401
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 5,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Kon Knueppel (30.2) for Derrick White (34.2)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "google/gemini-2.5-flash",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 1
+}

@@ -54,7 +54,7 @@ const state = {
   schedule: null,
   logs: [],
   draftFilter: { q: '', pos: '', sort: 'fppg' },
-  faFilter: { q: '', pos: '', sort: 'fppg' },
+  faFilter: { q: '', pos: '', sort: 'fppg', excludeInjured: true },
   connected: false,
   logPollTimer: null,
   // Wave E — trades
@@ -159,12 +159,23 @@ function setConnected(ok) {
 function toast(message, kind = 'info', ms = 3000) {
   const stack = $('#toast-stack');
   if (!stack) return;
-  const node = el('div', { class: `toast ${kind}`, role: 'status' }, message);
+  // Errors/warnings need assertive announcement; extend display time so
+  // screen-reader users and quick-glancing humans both have time to read.
+  const isUrgent = (kind === 'error' || kind === 'warn');
+  const role = isUrgent ? 'alert' : 'status';
+  const ariaLive = isUrgent ? 'assertive' : 'polite';
+  const effectiveMs = ms === 3000 && isUrgent ? 6000 : ms;
+  const node = el('div', {
+    class: `toast ${kind}`,
+    role,
+    'aria-live': ariaLive,
+    'aria-atomic': 'true',
+  }, message);
   stack.append(node);
   setTimeout(() => {
     node.classList.add('fade');
     setTimeout(() => node.remove(), 220);
-  }, ms);
+  }, effectiveMs);
 }
 
 // ---------------------------------------------------------------- confirm modal
@@ -1254,6 +1265,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
   const isPrevFull   = displayMode === 'prev_full';
   const isPrevNoFppg = displayMode === 'prev_no_fppg';
   const showAction   = withDraft || withSign;
+  const pInj = (p) => (injuries ? injuries[p.id] : null) || p.injury || null;
   // current_full: show everything as before
 
   let head;
@@ -1306,7 +1318,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
+        <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
@@ -1333,7 +1345,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
+        <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
@@ -1354,7 +1366,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
+        <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="hidden-m num meta">${p.age}</td>
@@ -1737,6 +1749,19 @@ async function renderFaView(root) {
       ),
       el('div', { class: 'panel-body' },
         buildFilterBar('faFilter', renderFaTable),
+        el('div', { class: 'fa-toggles' },
+          el('label', { class: 'fa-toggle-item' },
+            el('input', {
+              type: 'checkbox',
+              checked: state.faFilter.excludeInjured ? true : null,
+              onchange: (e) => {
+                state.faFilter.excludeInjured = !!e.target.checked;
+                renderFaTable();
+              },
+            }),
+            el('span', {}, '隱藏傷兵（OUT/DTD）'),
+          ),
+        ),
         el('div', { class: 'table-wrap' },
           el('table', { class: 'data players-table responsive', id: 'tbl-fa' }),
         ),
@@ -1773,6 +1798,8 @@ async function renderFaTable() {
   });
   if (state.faFilter.q)   params.set('q', state.faFilter.q);
   if (state.faFilter.pos) params.set('pos', state.faFilter.pos);
+  // Default to hiding injured FAs so typical pickup search stays clean.
+  if (state.faFilter.excludeInjured) params.set('exclude_injured', 'true');
 
   let players;
   try {
@@ -2799,12 +2826,26 @@ async function renderActivityTicker() {
       milestone_lose_streak: '📉', milestone_top_performer: '🌟',
       injury_new: '🏥', injury_return: '💪', champion: '🏆',
     };
+    const currentDay = state.standings?.current_day || 0;
     body.innerHTML = '';
     for (const item of items) {
       const emoji = EMOJI[item.type] || '•';
+      const w = item.week;
+      const d = item.day;
+      let relText = '';
+      if (typeof d === 'number' && currentDay) {
+        const diff = currentDay - d;
+        if (diff <= 0) relText = '剛剛';
+        else if (diff === 1) relText = '昨天';
+        else if (diff < 7) relText = `${diff} 天前`;
+        else relText = `${Math.floor(diff / 7)} 週前`;
+      } else if (w) {
+        relText = `W${w}`;
+      }
       const row = el('div', { class: 'activity-row' },
-        el('span', { class: 'activity-emoji' }, emoji),
+        el('span', { class: 'activity-emoji', 'aria-hidden': 'true' }, emoji),
         el('span', { class: 'activity-summary' }, item.summary),
+        relText ? el('span', { class: 'activity-time', title: w ? `W${w} D${d ?? '-'}` : '' }, relText) : null,
       );
       body.append(row);
     }

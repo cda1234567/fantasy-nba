@@ -1,0 +1,1111 @@
+{
+  "seed": 2702975152,
+  "teams": [
+    {
+      "id": 0,
+      "name": "HumanTeam",
+      "is_human": true,
+      "gm_persona": null,
+      "roster": [
+        203999,
+        1630178,
+        1630552,
+        202695,
+        1627759,
+        1630166,
+        201142,
+        1628374,
+        201939,
+        1629645,
+        1629008,
+        202710,
+        1642264
+      ]
+    },
+    {
+      "id": 1,
+      "name": "AITeam1",
+      "is_human": false,
+      "gm_persona": "bpa",
+      "roster": [
+        203507,
+        1630578,
+        1630163,
+        1628404,
+        1627783,
+        1629028,
+        1629632,
+        1629661,
+        1630700,
+        1631096,
+        1641708,
+        1629627,
+        1628386
+      ]
+    },
+    {
+      "id": 2,
+      "name": "AITeam2",
+      "is_human": false,
+      "gm_persona": "punt_to",
+      "roster": [
+        1641705,
+        203076,
+        1628389,
+        1629628,
+        1631109,
+        1630180,
+        1630193,
+        1629014,
+        1626162,
+        1630559,
+        1642845,
+        1628368,
+        1641706
+      ]
+    },
+    {
+      "id": 3,
+      "name": "AITeam3",
+      "is_human": false,
+      "gm_persona": "stars_scrubs",
+      "roster": [
+        1628983,
+        1630595,
+        1630162,
+        203954,
+        1631105,
+        1631095,
+        1641764,
+        1631106,
+        1631097,
+        1630168,
+        1630591,
+        203944,
+        1627749
+      ]
+    },
+    {
+      "id": 4,
+      "name": "AITeam4",
+      "is_human": false,
+      "gm_persona": "balanced",
+      "roster": [
+        1629029,
+        1630567,
+        1628401,
+        1631117,
+        2544,
+        1626167,
+        1629675,
+        203468,
+        204001,
+        203497,
+        201942,
+        1627734,
+        1631101
+      ]
+    },
+    {
+      "id": 5,
+      "name": "AITeam5",
+      "is_human": false,
+      "gm_persona": "youth",
+      "roster": [
+        1631094,
+        1642843,
+        1630581,
+        1642851,
+        1642882,
+        1642852,
+        1642847,
+        1631113,
+        1642907,
+        1629027,
+        1629630,
+        1641718,
+        1629639
+      ]
+    },
+    {
+      "id": 6,
+      "name": "AITeam6",
+      "is_human": false,
+      "gm_persona": "vet",
+      "roster": [
+        1626157,
+        1628973,
+        1626164,
+        1628381,
+        1628970,
+        1628969,
+        203952,
+        203897,
+        1629023,
+        1630532,
+        1627742,
+        1631114,
+        1630217
+      ]
+    },
+    {
+      "id": 7,
+      "name": "AITeam7",
+      "is_human": false,
+      "gm_persona": "contrarian",
+      "roster": [
+        1628369,
+        1628378,
+        1627750,
+        1630530,
+        201935,
+        1627826,
+        1628384,
+        1628991,
+        1628370,
+        1642259,
+        1626181,
+        202696,
+        1630596
+      ]
+    }
+  ],
+  "picks": [
+    {
+      "overall": 1,
+      "round": 1,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 203999,
+      "player_name": "Nikola Jokić",
+      "reason": null
+    },
+    {
+      "overall": 2,
+      "round": 1,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 203507,
+      "player_name": "Giannis Antetokounmpo",
+      "reason": "BPA Nerd: selected Giannis Antetokounmpo (FPPG 48.26, age 31, score 53.5)"
+    },
+    {
+      "overall": 3,
+      "round": 1,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1641705,
+      "player_name": "Victor Wembanyama",
+      "reason": "Punt TO: selected Victor Wembanyama (FPPG 51.3, age 22, score 50.4)"
+    },
+    {
+      "overall": 4,
+      "round": 1,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1628983,
+      "player_name": "Shai Gilgeous-Alexander",
+      "reason": "Stars & Scrubs: selected Shai Gilgeous-Alexander (FPPG 49.46, age 27, score 66.7)"
+    },
+    {
+      "overall": 5,
+      "round": 1,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1629029,
+      "player_name": "Luka Dončić",
+      "reason": "Balanced Builder: selected Luka Dončić (FPPG 56.44, age 27, score 58.6)"
+    },
+    {
+      "overall": 6,
+      "round": 1,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1631094,
+      "player_name": "Paolo Banchero",
+      "reason": "Youth Upside: selected Paolo Banchero (FPPG 40.23, age 23, score 59.4)"
+    },
+    {
+      "overall": 7,
+      "round": 1,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 1626157,
+      "player_name": "Karl-Anthony Towns",
+      "reason": "Vet Win-Now: selected Karl-Anthony Towns (FPPG 39.88, age 30, score 58.1)"
+    },
+    {
+      "overall": 8,
+      "round": 1,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1628369,
+      "player_name": "Jayson Tatum",
+      "reason": "Contrarian: selected Jayson Tatum (FPPG 43.35, age 28, score 51.8)"
+    },
+    {
+      "overall": 9,
+      "round": 2,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 1628378,
+      "player_name": "Donovan Mitchell",
+      "reason": "Contrarian: selected Donovan Mitchell (FPPG 43.55, age 29, score 51.1)"
+    },
+    {
+      "overall": 10,
+      "round": 2,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1628973,
+      "player_name": "Jalen Brunson",
+      "reason": "Vet Win-Now: selected Jalen Brunson (FPPG 40.01, age 29, score 54.9)"
+    },
+    {
+      "overall": 11,
+      "round": 2,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1642843,
+      "player_name": "Cooper Flagg",
+      "reason": "Youth Upside: selected Cooper Flagg (FPPG 38.74, age 19, score 59.8)"
+    },
+    {
+      "overall": 12,
+      "round": 2,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 1629627,
+      "player_name": "Zion Williamson",
+      "reason": "Balanced Builder: selected Zion Williamson (FPPG 34.39, age 25, score 51.6)"
+    },
+    {
+      "overall": 13,
+      "round": 2,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 1630595,
+      "player_name": "Cade Cunningham",
+      "reason": "Stars & Scrubs: selected Cade Cunningham (FPPG 47.15, age 24, score 58.4)"
+    },
+    {
+      "overall": 14,
+      "round": 2,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 203076,
+      "player_name": "Anthony Davis",
+      "reason": "Punt TO: selected Anthony Davis (FPPG 42.82, age 33, score 41.9)"
+    },
+    {
+      "overall": 15,
+      "round": 2,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 1630578,
+      "player_name": "Alperen Sengun",
+      "reason": "BPA Nerd: selected Alperen Sengun (FPPG 42.93, age 23, score 44.5)"
+    },
+    {
+      "overall": 16,
+      "round": 2,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 1630178,
+      "player_name": "Tyrese Maxey",
+      "reason": null
+    },
+    {
+      "overall": 17,
+      "round": 3,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 1630552,
+      "player_name": "Jalen Johnson",
+      "reason": null
+    },
+    {
+      "overall": 18,
+      "round": 3,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 1630163,
+      "player_name": "LaMelo Ball",
+      "reason": "BPA Nerd: selected LaMelo Ball (FPPG 37.46, age 24, score 43.6)"
+    },
+    {
+      "overall": 19,
+      "round": 3,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1628389,
+      "player_name": "Bam Adebayo",
+      "reason": "Punt TO (reach): selected Bam Adebayo (FPPG 40.05, age 28, score 38.2)"
+    },
+    {
+      "overall": 20,
+      "round": 3,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1630162,
+      "player_name": "Anthony Edwards",
+      "reason": "Stars & Scrubs: selected Anthony Edwards (FPPG 42.95, age 24, score 54.2)"
+    },
+    {
+      "overall": 21,
+      "round": 3,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1630567,
+      "player_name": "Scottie Barnes",
+      "reason": "Balanced Builder: selected Scottie Barnes (FPPG 40.6, age 24, score 51.3)"
+    },
+    {
+      "overall": 22,
+      "round": 3,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1630581,
+      "player_name": "Josh Giddey",
+      "reason": "Youth Upside: selected Josh Giddey (FPPG 40.76, age 23, score 52.2)"
+    },
+    {
+      "overall": 23,
+      "round": 3,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 1628368,
+      "player_name": "De'Aaron Fox",
+      "reason": "Vet Win-Now: selected De'Aaron Fox (FPPG 33.91, age 28, score 53.0)"
+    },
+    {
+      "overall": 24,
+      "round": 3,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1627750,
+      "player_name": "Jamal Murray",
+      "reason": "Contrarian: selected Jamal Murray (FPPG 42.28, age 29, score 47.7)"
+    },
+    {
+      "overall": 25,
+      "round": 4,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 1627734,
+      "player_name": "Domantas Sabonis",
+      "reason": "Contrarian: selected Domantas Sabonis (FPPG 35.68, age 29, score 44.7)"
+    },
+    {
+      "overall": 26,
+      "round": 4,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1626164,
+      "player_name": "Devin Booker",
+      "reason": "Vet Win-Now: selected Devin Booker (FPPG 39.43, age 29, score 51.4)"
+    },
+    {
+      "overall": 27,
+      "round": 4,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1630700,
+      "player_name": "Dyson Daniels",
+      "reason": "Youth Upside: selected Dyson Daniels (FPPG 33.11, age 23, score 51.6)"
+    },
+    {
+      "overall": 28,
+      "round": 4,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 1630217,
+      "player_name": "Desmond Bane",
+      "reason": "Balanced Builder: selected Desmond Bane (FPPG 32.92, age 27, score 45.9)"
+    },
+    {
+      "overall": 29,
+      "round": 4,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 1641708,
+      "player_name": "Amen Thompson",
+      "reason": "Stars & Scrubs: selected Amen Thompson (FPPG 38.46, age 23, score 46.5)"
+    },
+    {
+      "overall": 30,
+      "round": 4,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 1629027,
+      "player_name": "Trae Young",
+      "reason": "Punt TO: selected Trae Young (FPPG 32.2, age 27, score 37.8)"
+    },
+    {
+      "overall": 31,
+      "round": 4,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 1627742,
+      "player_name": "Brandon Ingram",
+      "reason": "BPA Nerd: selected Brandon Ingram (FPPG 35.12, age 28, score 39.7)"
+    },
+    {
+      "overall": 32,
+      "round": 4,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 202695,
+      "player_name": "Kawhi Leonard",
+      "reason": null
+    },
+    {
+      "overall": 33,
+      "round": 5,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 1627759,
+      "player_name": "Jaylen Brown",
+      "reason": null
+    },
+    {
+      "overall": 34,
+      "round": 5,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 1630596,
+      "player_name": "Evan Mobley",
+      "reason": "BPA Nerd: selected Evan Mobley (FPPG 38.5, age 24, score 39.2)"
+    },
+    {
+      "overall": 35,
+      "round": 5,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1629628,
+      "player_name": "RJ Barrett",
+      "reason": "Punt TO: selected RJ Barrett (FPPG 31.41, age 25, score 36.7)"
+    },
+    {
+      "overall": 36,
+      "round": 5,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1641706,
+      "player_name": "Brandon Miller",
+      "reason": "Stars & Scrubs: selected Brandon Miller (FPPG 32.78, age 23, score 46.7)"
+    },
+    {
+      "overall": 37,
+      "round": 5,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1628401,
+      "player_name": "Derrick White",
+      "reason": "Balanced Builder: selected Derrick White (FPPG 34.18, age 31, score 41.8)"
+    },
+    {
+      "overall": 38,
+      "round": 5,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1642851,
+      "player_name": "Kon Knueppel",
+      "reason": "Youth Upside: selected Kon Knueppel (FPPG 30.21, age 20, score 49.6)"
+    },
+    {
+      "overall": 39,
+      "round": 5,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 1628381,
+      "player_name": "John Collins",
+      "reason": "Vet Win-Now (reach): selected John Collins (FPPG 24.06, age 28, score 45.3)"
+    },
+    {
+      "overall": 40,
+      "round": 5,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1630530,
+      "player_name": "Trey Murphy III",
+      "reason": "Contrarian (reach): selected Trey Murphy III (FPPG 36.99, age 25, score 41.0)"
+    },
+    {
+      "overall": 41,
+      "round": 6,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 201935,
+      "player_name": "James Harden",
+      "reason": "Contrarian: selected James Harden (FPPG 41.61, age 36, score 43.3)"
+    },
+    {
+      "overall": 42,
+      "round": 6,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1628970,
+      "player_name": "Miles Bridges",
+      "reason": "Vet Win-Now: selected Miles Bridges (FPPG 29.96, age 28, score 49.6)"
+    },
+    {
+      "overall": 43,
+      "round": 6,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1642845,
+      "player_name": "VJ Edgecombe",
+      "reason": "Youth Upside: selected VJ Edgecombe (FPPG 31.97, age 20, score 50.6)"
+    },
+    {
+      "overall": 44,
+      "round": 6,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 1630168,
+      "player_name": "Onyeka Okongwu",
+      "reason": "Balanced Builder: selected Onyeka Okongwu (FPPG 32.77, age 25, score 39.8)"
+    },
+    {
+      "overall": 45,
+      "round": 6,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 203954,
+      "player_name": "Joel Embiid",
+      "reason": "Stars & Scrubs (reach): selected Joel Embiid (FPPG 43.59, age 32, score 40.3)"
+    },
+    {
+      "overall": 46,
+      "round": 6,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 1630532,
+      "player_name": "Franz Wagner",
+      "reason": "Punt TO: selected Franz Wagner (FPPG 33.09, age 24, score 34.9)"
+    },
+    {
+      "overall": 47,
+      "round": 6,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 1628404,
+      "player_name": "Josh Hart",
+      "reason": "BPA Nerd: selected Josh Hart (FPPG 29.68, age 31, score 37.3)"
+    },
+    {
+      "overall": 48,
+      "round": 6,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 1630166,
+      "player_name": "Deni Avdija",
+      "reason": null
+    },
+    {
+      "overall": 49,
+      "round": 7,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 201142,
+      "player_name": "Kevin Durant",
+      "reason": null
+    },
+    {
+      "overall": 50,
+      "round": 7,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 1627783,
+      "player_name": "Pascal Siakam",
+      "reason": "BPA Nerd: selected Pascal Siakam (FPPG 39.17, age 32, score 35.6)"
+    },
+    {
+      "overall": 51,
+      "round": 7,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1631109,
+      "player_name": "Mark Williams",
+      "reason": "Punt TO: selected Mark Williams (FPPG 26.2, age 24, score 33.1)"
+    },
+    {
+      "overall": 52,
+      "round": 7,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1631105,
+      "player_name": "Jalen Duren",
+      "reason": "Stars & Scrubs: selected Jalen Duren (FPPG 37.2, age 22, score 42.8)"
+    },
+    {
+      "overall": 53,
+      "round": 7,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1631117,
+      "player_name": "Walker Kessler",
+      "reason": "Balanced Builder: selected Walker Kessler (FPPG 36.66, age 24, score 35.4)"
+    },
+    {
+      "overall": 54,
+      "round": 7,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1631096,
+      "player_name": "Chet Holmgren",
+      "reason": "Youth Upside: selected Chet Holmgren (FPPG 34.98, age 23, score 45.4)"
+    },
+    {
+      "overall": 55,
+      "round": 7,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 203944,
+      "player_name": "Julius Randle",
+      "reason": "Vet Win-Now: selected Julius Randle (FPPG 37.19, age 31, score 43.8)"
+    },
+    {
+      "overall": 56,
+      "round": 7,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1627749,
+      "player_name": "Dejounte Murray",
+      "reason": "Contrarian: selected Dejounte Murray (FPPG 33.88, age 29, score 38.5)"
+    },
+    {
+      "overall": 57,
+      "round": 8,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 1627826,
+      "player_name": "Ivica Zubac",
+      "reason": "Contrarian: selected Ivica Zubac (FPPG 31.32, age 29, score 36.9)"
+    },
+    {
+      "overall": 58,
+      "round": 8,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1630559,
+      "player_name": "Austin Reaves",
+      "reason": "Vet Win-Now: selected Austin Reaves (FPPG 37.94, age 27, score 42.8)"
+    },
+    {
+      "overall": 59,
+      "round": 8,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1641718,
+      "player_name": "Keyonte George",
+      "reason": "Youth Upside: selected Keyonte George (FPPG 37.59, age 22, score 41.4)"
+    },
+    {
+      "overall": 60,
+      "round": 8,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 2544,
+      "player_name": "LeBron James",
+      "reason": "Balanced Builder: selected LeBron James (FPPG 40.52, age 41, score 34.2)"
+    },
+    {
+      "overall": 61,
+      "round": 8,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 1631095,
+      "player_name": "Jabari Smith Jr.",
+      "reason": "Stars & Scrubs: selected Jabari Smith Jr. (FPPG 29.53, age 22, score 39.1)"
+    },
+    {
+      "overall": 62,
+      "round": 8,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 1631114,
+      "player_name": "Jalen Williams",
+      "reason": "Punt TO: selected Jalen Williams (FPPG 32.72, age 25, score 32.7)"
+    },
+    {
+      "overall": 63,
+      "round": 8,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 1629028,
+      "player_name": "Deandre Ayton",
+      "reason": "BPA Nerd: selected Deandre Ayton (FPPG 26.1, age 27, score 34.8)"
+    },
+    {
+      "overall": 64,
+      "round": 8,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 1628374,
+      "player_name": "Lauri Markkanen",
+      "reason": null
+    },
+    {
+      "overall": 65,
+      "round": 9,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 201939,
+      "player_name": "Stephen Curry",
+      "reason": null
+    },
+    {
+      "overall": 66,
+      "round": 9,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 1629639,
+      "player_name": "Tyler Herro",
+      "reason": "BPA Nerd: selected Tyler Herro (FPPG 33.26, age 26, score 35.9)"
+    },
+    {
+      "overall": 67,
+      "round": 9,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1630180,
+      "player_name": "Saddiq Bey",
+      "reason": "Punt TO: selected Saddiq Bey (FPPG 29.77, age 27, score 30.5)"
+    },
+    {
+      "overall": 68,
+      "round": 9,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1631101,
+      "player_name": "Shaedon Sharpe",
+      "reason": "Stars & Scrubs: selected Shaedon Sharpe (FPPG 30.71, age 22, score 37.7)"
+    },
+    {
+      "overall": 69,
+      "round": 9,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1626167,
+      "player_name": "Myles Turner",
+      "reason": "Balanced Builder: selected Myles Turner (FPPG 25.06, age 30, score 33.1)"
+    },
+    {
+      "overall": 70,
+      "round": 9,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1642882,
+      "player_name": "Julian Reese",
+      "reason": "Youth Upside: selected Julian Reese (FPPG 29.6, age 22, score 38.2)"
+    },
+    {
+      "overall": 71,
+      "round": 9,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 203497,
+      "player_name": "Rudy Gobert",
+      "reason": "Vet Win-Now: selected Rudy Gobert (FPPG 31.85, age 33, score 42.4)"
+    },
+    {
+      "overall": 72,
+      "round": 9,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1628384,
+      "player_name": "OG Anunoby",
+      "reason": "Contrarian: selected OG Anunoby (FPPG 30.19, age 28, score 36.3)"
+    },
+    {
+      "overall": 73,
+      "round": 10,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 1628991,
+      "player_name": "Jaren Jackson Jr.",
+      "reason": "Contrarian: selected Jaren Jackson Jr. (FPPG 33.29, age 26, score 34.3)"
+    },
+    {
+      "overall": 74,
+      "round": 10,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1628969,
+      "player_name": "Mikal Bridges",
+      "reason": "Vet Win-Now: selected Mikal Bridges (FPPG 28.76, age 29, score 40.6)"
+    },
+    {
+      "overall": 75,
+      "round": 10,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1642852,
+      "player_name": "Derik Queen",
+      "reason": "Youth Upside: selected Derik Queen (FPPG 28.22, age 21, score 38.4)"
+    },
+    {
+      "overall": 76,
+      "round": 10,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 1629675,
+      "player_name": "Naz Reid",
+      "reason": "Balanced Builder: selected Naz Reid (FPPG 27.74, age 26, score 29.6)"
+    },
+    {
+      "overall": 77,
+      "round": 10,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 1629630,
+      "player_name": "Ja Morant",
+      "reason": "Stars & Scrubs: selected Ja Morant (FPPG 35.26, age 26, score 36.0)"
+    },
+    {
+      "overall": 78,
+      "round": 10,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 1630193,
+      "player_name": "Immanuel Quickley",
+      "reason": "Punt TO: selected Immanuel Quickley (FPPG 32.05, age 26, score 30.3)"
+    },
+    {
+      "overall": 79,
+      "round": 10,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 202696,
+      "player_name": "Nikola Vučević",
+      "reason": "BPA Nerd: selected Nikola Vučević (FPPG 31.83, age 35, score 33.4)"
+    },
+    {
+      "overall": 80,
+      "round": 10,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 1629645,
+      "player_name": "Kevin Porter Jr.",
+      "reason": null
+    },
+    {
+      "overall": 81,
+      "round": 11,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 1629008,
+      "player_name": "Michael Porter Jr.",
+      "reason": null
+    },
+    {
+      "overall": 82,
+      "round": 11,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 1629632,
+      "player_name": "Coby White",
+      "reason": "BPA Nerd: selected Coby White (FPPG 26.38, age 26, score 33.2)"
+    },
+    {
+      "overall": 83,
+      "round": 11,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 201942,
+      "player_name": "DeMar DeRozan",
+      "reason": "Punt TO: selected DeMar DeRozan (FPPG 30.08, age 36, score 28.6)"
+    },
+    {
+      "overall": 84,
+      "round": 11,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1641764,
+      "player_name": "Brandin Podziemski",
+      "reason": "Stars & Scrubs: selected Brandin Podziemski (FPPG 27.12, age 23, score 34.7)"
+    },
+    {
+      "overall": 85,
+      "round": 11,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 203468,
+      "player_name": "CJ McCollum",
+      "reason": "Balanced Builder: selected CJ McCollum (FPPG 29.96, age 34, score 30.5)"
+    },
+    {
+      "overall": 86,
+      "round": 11,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1642847,
+      "player_name": "Jeremiah Fears",
+      "reason": "Youth Upside: selected Jeremiah Fears (FPPG 25.64, age 19, score 36.7)"
+    },
+    {
+      "overall": 87,
+      "round": 11,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 203952,
+      "player_name": "Andrew Wiggins",
+      "reason": "Vet Win-Now: selected Andrew Wiggins (FPPG 28.96, age 31, score 40.0)"
+    },
+    {
+      "overall": 88,
+      "round": 11,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1628370,
+      "player_name": "Malik Monk",
+      "reason": "Contrarian: selected Malik Monk (FPPG 20.28, age 28, score 33.2)"
+    },
+    {
+      "overall": 89,
+      "round": 12,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 1642259,
+      "player_name": "Alex Sarr",
+      "reason": "Contrarian: selected Alex Sarr (FPPG 34.53, age 20, score 31.5)"
+    },
+    {
+      "overall": 90,
+      "round": 12,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 203897,
+      "player_name": "Zach LaVine",
+      "reason": "Vet Win-Now: selected Zach LaVine (FPPG 26.61, age 31, score 38.1)"
+    },
+    {
+      "overall": 91,
+      "round": 12,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 1631113,
+      "player_name": "Kennedy Chandler",
+      "reason": "Youth Upside: selected Kennedy Chandler (FPPG 30.03, age 23, score 37.1)"
+    },
+    {
+      "overall": 92,
+      "round": 12,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 1628386,
+      "player_name": "Jarrett Allen",
+      "reason": "Balanced Builder: selected Jarrett Allen (FPPG 31.5, age 27, score 29.5)"
+    },
+    {
+      "overall": 93,
+      "round": 12,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 1631106,
+      "player_name": "Tari Eason",
+      "reason": "Stars & Scrubs: selected Tari Eason (FPPG 23.16, age 24, score 34.4)"
+    },
+    {
+      "overall": 94,
+      "round": 12,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 1629014,
+      "player_name": "Anfernee Simons",
+      "reason": "Punt TO: selected Anfernee Simons (FPPG 21.2, age 26, score 28.1)"
+    },
+    {
+      "overall": 95,
+      "round": 12,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 1629661,
+      "player_name": "Cameron Johnson",
+      "reason": "BPA Nerd: selected Cameron Johnson (FPPG 22.21, age 30, score 31.8)"
+    },
+    {
+      "overall": 96,
+      "round": 12,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 202710,
+      "player_name": "Jimmy Butler III",
+      "reason": null
+    },
+    {
+      "overall": 97,
+      "round": 13,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 1642264,
+      "player_name": "Stephon Castle",
+      "reason": null
+    },
+    {
+      "overall": 98,
+      "round": 13,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 204001,
+      "player_name": "Kristaps Porziņģis",
+      "reason": "BPA Nerd: selected Kristaps Porziņģis (FPPG 29.89, age 30, score 31.9)"
+    },
+    {
+      "overall": 99,
+      "round": 13,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 1626162,
+      "player_name": "Kelly Oubre Jr.",
+      "reason": "Punt TO: selected Kelly Oubre Jr. (FPPG 25.85, age 30, score 26.4)"
+    },
+    {
+      "overall": 100,
+      "round": 13,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 1631097,
+      "player_name": "Bennedict Mathurin",
+      "reason": "Stars & Scrubs: selected Bennedict Mathurin (FPPG 27.98, age 23, score 33.7)"
+    },
+    {
+      "overall": 101,
+      "round": 13,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 1630591,
+      "player_name": "Jalen Suggs",
+      "reason": "Balanced Builder: selected Jalen Suggs (FPPG 30.28, age 24, score 29.6)"
+    },
+    {
+      "overall": 102,
+      "round": 13,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 1642907,
+      "player_name": "Cedric Coward",
+      "reason": "Youth Upside: selected Cedric Coward (FPPG 25.68, age 22, score 33.6)"
+    },
+    {
+      "overall": 103,
+      "round": 13,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 1629023,
+      "player_name": "P.J. Washington",
+      "reason": "Vet Win-Now: selected P.J. Washington (FPPG 28.85, age 27, score 38.2)"
+    },
+    {
+      "overall": 104,
+      "round": 13,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 1626181,
+      "player_name": "Norman Powell",
+      "reason": "Contrarian: selected Norman Powell (FPPG 31.0, age 32, score 31.4)"
+    }
+  ]
+}

@@ -1,0 +1,1111 @@
+{
+  "seed": 2703138100,
+  "teams": [
+    {
+      "id": 0,
+      "name": "StressTeam",
+      "is_human": true,
+      "gm_persona": null,
+      "roster": [
+        304,
+        133,
+        764,
+        420,
+        96,
+        129,
+        423,
+        23,
+        947,
+        1122,
+        952,
+        708,
+        711
+      ]
+    },
+    {
+      "id": 1,
+      "name": "AITeam1",
+      "is_human": false,
+      "gm_persona": "youth",
+      "roster": [
+        950,
+        686,
+        951,
+        739,
+        677,
+        953,
+        718,
+        469,
+        406,
+        787,
+        121,
+        934,
+        124
+      ]
+    },
+    {
+      "id": 2,
+      "name": "AITeam2",
+      "is_human": false,
+      "gm_persona": "balanced",
+      "roster": [
+        252,
+        299,
+        383,
+        358,
+        224,
+        57,
+        361,
+        389,
+        717,
+        76,
+        136,
+        905,
+        757
+      ]
+    },
+    {
+      "id": 3,
+      "name": "AITeam3",
+      "is_human": false,
+      "gm_persona": "bpa",
+      "roster": [
+        255,
+        339,
+        452,
+        72,
+        779,
+        431,
+        938,
+        221,
+        238,
+        330,
+        208,
+        111,
+        1005
+      ]
+    },
+    {
+      "id": 4,
+      "name": "AITeam4",
+      "is_human": false,
+      "gm_persona": "contrarian",
+      "roster": [
+        185,
+        896,
+        782,
+        210,
+        467,
+        762,
+        904,
+        283,
+        204,
+        22,
+        949,
+        178,
+        363
+      ]
+    },
+    {
+      "id": 5,
+      "name": "AITeam5",
+      "is_human": false,
+      "gm_persona": "vet",
+      "roster": [
+        56,
+        193,
+        297,
+        296,
+        120,
+        349,
+        168,
+        907,
+        324,
+        891,
+        436,
+        17,
+        270
+      ]
+    },
+    {
+      "id": 6,
+      "name": "AITeam6",
+      "is_human": false,
+      "gm_persona": "stars_scrubs",
+      "roster": [
+        84,
+        165,
+        134,
+        954,
+        948,
+        714,
+        915,
+        696,
+        682,
+        919,
+        123,
+        754,
+        393
+      ]
+    },
+    {
+      "id": 7,
+      "name": "AITeam7",
+      "is_human": false,
+      "gm_persona": "punt_to",
+      "roster": [
+        893,
+        937,
+        87,
+        302,
+        397,
+        922,
+        765,
+        911,
+        103,
+        98,
+        422,
+        89,
+        735
+      ]
+    }
+  ],
+  "picks": [
+    {
+      "overall": 1,
+      "round": 1,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 406,
+      "player_name": "Shaquille O'Neal",
+      "reason": null
+    },
+    {
+      "overall": 2,
+      "round": 1,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 947,
+      "player_name": "Allen Iverson",
+      "reason": "Youth Upside: selected Allen Iverson (FPPG 41.27, age 22, score 62.6)"
+    },
+    {
+      "overall": 3,
+      "round": 1,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 252,
+      "player_name": "Karl Malone",
+      "reason": "Balanced Builder: selected Karl Malone (FPPG 48.23, age 33, score 56.1)"
+    },
+    {
+      "overall": 4,
+      "round": 1,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 255,
+      "player_name": "Grant Hill",
+      "reason": "BPA Nerd: selected Grant Hill (FPPG 45.95, age 24, score 49.4)"
+    },
+    {
+      "overall": 5,
+      "round": 1,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 185,
+      "player_name": "Chris Webber",
+      "reason": "Contrarian: selected Chris Webber (FPPG 45.16, age 24, score 55.9)"
+    },
+    {
+      "overall": 6,
+      "round": 1,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 56,
+      "player_name": "Gary Payton",
+      "reason": "Vet Win-Now: selected Gary Payton (FPPG 41.87, age 28, score 55.9)"
+    },
+    {
+      "overall": 7,
+      "round": 1,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 84,
+      "player_name": "Latrell Sprewell",
+      "reason": "Stars & Scrubs: selected Latrell Sprewell (FPPG 40.92, age 26, score 57.4)"
+    },
+    {
+      "overall": 8,
+      "round": 1,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 893,
+      "player_name": "Michael Jordan",
+      "reason": "Punt TO: selected Michael Jordan (FPPG 46.63, age 34, score 44.1)"
+    },
+    {
+      "overall": 9,
+      "round": 2,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 937,
+      "player_name": "Scottie Pippen",
+      "reason": "Punt TO: selected Scottie Pippen (FPPG 39.95, age 31, score 39.0)"
+    },
+    {
+      "overall": 10,
+      "round": 2,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 165,
+      "player_name": "Hakeem Olajuwon",
+      "reason": "Stars & Scrubs: selected Hakeem Olajuwon (FPPG 44.39, age 34, score 56.7)"
+    },
+    {
+      "overall": 11,
+      "round": 2,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 193,
+      "player_name": "Anthony Mason",
+      "reason": "Vet Win-Now: selected Anthony Mason (FPPG 39.88, age 30, score 53.8)"
+    },
+    {
+      "overall": 12,
+      "round": 2,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 896,
+      "player_name": "Tim Hardaway",
+      "reason": "Contrarian: selected Tim Hardaway (FPPG 39.48, age 30, score 52.8)"
+    },
+    {
+      "overall": 13,
+      "round": 2,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 339,
+      "player_name": "Tom Gugliotta",
+      "reason": "BPA Nerd: selected Tom Gugliotta (FPPG 40.34, age 27, score 43.1)"
+    },
+    {
+      "overall": 14,
+      "round": 2,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 299,
+      "player_name": "Glenn Robinson",
+      "reason": "Balanced Builder (reach): selected Glenn Robinson (FPPG 35.41, age 24, score 45.7)"
+    },
+    {
+      "overall": 15,
+      "round": 2,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 708,
+      "player_name": "Kevin Garnett",
+      "reason": "Youth Upside: selected Kevin Garnett (FPPG 37.7, age 21, score 58.2)"
+    },
+    {
+      "overall": 16,
+      "round": 2,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 787,
+      "player_name": "Charles Barkley",
+      "reason": null
+    },
+    {
+      "overall": 17,
+      "round": 3,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 121,
+      "player_name": "Patrick Ewing",
+      "reason": null
+    },
+    {
+      "overall": 18,
+      "round": 3,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 952,
+      "player_name": "Antoine Walker",
+      "reason": "Youth Upside: selected Antoine Walker (FPPG 35.05, age 20, score 53.9)"
+    },
+    {
+      "overall": 19,
+      "round": 3,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 383,
+      "player_name": "Kendall Gill",
+      "reason": "Balanced Builder: selected Kendall Gill (FPPG 38.67, age 29, score 48.8)"
+    },
+    {
+      "overall": 20,
+      "round": 3,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 452,
+      "player_name": "Vin Baker",
+      "reason": "BPA Nerd: selected Vin Baker (FPPG 40.56, age 25, score 43.5)"
+    },
+    {
+      "overall": 21,
+      "round": 3,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 782,
+      "player_name": "Mitch Richmond",
+      "reason": "Contrarian: selected Mitch Richmond (FPPG 38.48, age 32, score 51.4)"
+    },
+    {
+      "overall": 22,
+      "round": 3,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 297,
+      "player_name": "Alonzo Mourning",
+      "reason": "Vet Win-Now: selected Alonzo Mourning (FPPG 39.93, age 27, score 50.3)"
+    },
+    {
+      "overall": 23,
+      "round": 3,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 134,
+      "player_name": "Kevin Johnson",
+      "reason": "Stars & Scrubs: selected Kevin Johnson (FPPG 39.52, age 31, score 51.5)"
+    },
+    {
+      "overall": 24,
+      "round": 3,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 87,
+      "player_name": "Dikembe Mutombo",
+      "reason": "Punt TO: selected Dikembe Mutombo (FPPG 36.77, age 31, score 35.0)"
+    },
+    {
+      "overall": 25,
+      "round": 4,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 302,
+      "player_name": "Mookie Blaylock",
+      "reason": "Punt TO: selected Mookie Blaylock (FPPG 37.71, age 30, score 35.2)"
+    },
+    {
+      "overall": 26,
+      "round": 4,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 757,
+      "player_name": "Damon Stoudamire",
+      "reason": "Stars & Scrubs: selected Damon Stoudamire (FPPG 38.97, age 23, score 49.3)"
+    },
+    {
+      "overall": 27,
+      "round": 4,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 393,
+      "player_name": "Rod Strickland",
+      "reason": "Vet Win-Now: selected Rod Strickland (FPPG 36.92, age 30, score 49.8)"
+    },
+    {
+      "overall": 28,
+      "round": 4,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 210,
+      "player_name": "Terrell Brandon",
+      "reason": "Contrarian: selected Terrell Brandon (FPPG 36.83, age 27, score 48.5)"
+    },
+    {
+      "overall": 29,
+      "round": 4,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 72,
+      "player_name": "Kenny Anderson",
+      "reason": "BPA Nerd: selected Kenny Anderson (FPPG 36.53, age 26, score 39.0)"
+    },
+    {
+      "overall": 30,
+      "round": 4,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 358,
+      "player_name": "Anfernee Hardaway",
+      "reason": "Balanced Builder: selected Anfernee Hardaway (FPPG 37.3, age 25, score 44.6)"
+    },
+    {
+      "overall": 31,
+      "round": 4,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 711,
+      "player_name": "Jerry Stackhouse",
+      "reason": "Youth Upside: selected Jerry Stackhouse (FPPG 31.24, age 22, score 52.6)"
+    },
+    {
+      "overall": 32,
+      "round": 4,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 17,
+      "player_name": "Clyde Drexler",
+      "reason": null
+    },
+    {
+      "overall": 33,
+      "round": 5,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 934,
+      "player_name": "Derrick Coleman",
+      "reason": null
+    },
+    {
+      "overall": 34,
+      "round": 5,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 693,
+      "player_name": "Joe Smith",
+      "reason": "Youth Upside: selected Joe Smith (FPPG 33.9, age 21, score 50.6)"
+    },
+    {
+      "overall": 35,
+      "round": 5,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 124,
+      "player_name": "Vlade Divac",
+      "reason": "Balanced Builder: selected Vlade Divac (FPPG 35.3, age 29, score 43.7)"
+    },
+    {
+      "overall": 36,
+      "round": 5,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 779,
+      "player_name": "Glen Rice",
+      "reason": "BPA Nerd: selected Glen Rice (FPPG 35.4, age 30, score 38.4)"
+    },
+    {
+      "overall": 37,
+      "round": 5,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 467,
+      "player_name": "Jason Kidd",
+      "reason": "Contrarian (reach): selected Jason Kidd (FPPG 33.95, age 24, score 41.7)"
+    },
+    {
+      "overall": 38,
+      "round": 5,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 363,
+      "player_name": "Christian Laettner",
+      "reason": "Vet Win-Now: selected Christian Laettner (FPPG 35.01, age 27, score 46.9)"
+    },
+    {
+      "overall": 39,
+      "round": 5,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 954,
+      "player_name": "Kerry Kittles",
+      "reason": "Stars & Scrubs: selected Kerry Kittles (FPPG 29.83, age 23, score 45.1)"
+    },
+    {
+      "overall": 40,
+      "round": 5,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 111,
+      "player_name": "LaPhonso Ellis",
+      "reason": "Punt TO: selected LaPhonso Ellis (FPPG 35.55, age 27, score 34.2)"
+    },
+    {
+      "overall": 41,
+      "round": 6,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 397,
+      "player_name": "Reggie Miller",
+      "reason": "Punt TO: selected Reggie Miller (FPPG 31.9, age 31, score 32.8)"
+    },
+    {
+      "overall": 42,
+      "round": 6,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 949,
+      "player_name": "Shareef Abdur-Rahim",
+      "reason": "Stars & Scrubs (reach): selected Shareef Abdur-Rahim (FPPG 32.48, age 20, score 43.2)"
+    },
+    {
+      "overall": 43,
+      "round": 6,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 296,
+      "player_name": "Rick Fox",
+      "reason": "Vet Win-Now: selected Rick Fox (FPPG 31.79, age 27, score 46.6)"
+    },
+    {
+      "overall": 44,
+      "round": 6,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 436,
+      "player_name": "Juwan Howard",
+      "reason": "Contrarian: selected Juwan Howard (FPPG 34.9, age 24, score 43.1)"
+    },
+    {
+      "overall": 45,
+      "round": 6,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 431,
+      "player_name": "Shawn Kemp",
+      "reason": "BPA Nerd: selected Shawn Kemp (FPPG 36.3, age 27, score 39.7)"
+    },
+    {
+      "overall": 46,
+      "round": 6,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 224,
+      "player_name": "Eddie Jones",
+      "reason": "Balanced Builder: selected Eddie Jones (FPPG 32.62, age 25, score 42.7)"
+    },
+    {
+      "overall": 47,
+      "round": 6,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 950,
+      "player_name": "Stephon Marbury",
+      "reason": "Youth Upside: selected Stephon Marbury (FPPG 30.89, age 20, score 47.2)"
+    },
+    {
+      "overall": 48,
+      "round": 6,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 304,
+      "player_name": "John Stockton",
+      "reason": null
+    },
+    {
+      "overall": 49,
+      "round": 7,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 133,
+      "player_name": "David Wesley",
+      "reason": null
+    },
+    {
+      "overall": 50,
+      "round": 7,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 686,
+      "player_name": "Antonio McDyess",
+      "reason": "Youth Upside: selected Antonio McDyess (FPPG 32.96, age 22, score 47.8)"
+    },
+    {
+      "overall": 51,
+      "round": 7,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 57,
+      "player_name": "Doug Christie",
+      "reason": "Balanced Builder: selected Doug Christie (FPPG 31.96, age 27, score 40.6)"
+    },
+    {
+      "overall": 52,
+      "round": 7,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 938,
+      "player_name": "Rony Seikaly",
+      "reason": "BPA Nerd: selected Rony Seikaly (FPPG 32.85, age 32, score 35.3)"
+    },
+    {
+      "overall": 53,
+      "round": 7,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 762,
+      "player_name": "Shawn Bradley",
+      "reason": "Contrarian: selected Shawn Bradley (FPPG 32.28, age 25, score 43.3)"
+    },
+    {
+      "overall": 54,
+      "round": 7,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 120,
+      "player_name": "Steven Smith",
+      "reason": "Vet Win-Now: selected Steven Smith (FPPG 30.96, age 28, score 43.8)"
+    },
+    {
+      "overall": 55,
+      "round": 7,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 948,
+      "player_name": "Marcus Camby",
+      "reason": "Stars & Scrubs: selected Marcus Camby (FPPG 30.26, age 23, score 39.7)"
+    },
+    {
+      "overall": 56,
+      "round": 7,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 922,
+      "player_name": "Elden Campbell",
+      "reason": "Punt TO: selected Elden Campbell (FPPG 30.45, age 28, score 30.3)"
+    },
+    {
+      "overall": 57,
+      "round": 8,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 919,
+      "player_name": "Loy Vaught",
+      "reason": "Punt TO: selected Loy Vaught (FPPG 30.4, age 29, score 28.4)"
+    },
+    {
+      "overall": 58,
+      "round": 8,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 1005,
+      "player_name": "Walt Williams",
+      "reason": "Stars & Scrubs: selected Walt Williams (FPPG 29.3, age 27, score 35.4)"
+    },
+    {
+      "overall": 59,
+      "round": 8,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 349,
+      "player_name": "Mark Jackson",
+      "reason": "Vet Win-Now: selected Mark Jackson (FPPG 32.71, age 32, score 44.3)"
+    },
+    {
+      "overall": 60,
+      "round": 8,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 270,
+      "player_name": "Horace Grant",
+      "reason": "Contrarian: selected Horace Grant (FPPG 31.75, age 31, score 36.7)"
+    },
+    {
+      "overall": 61,
+      "round": 8,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 89,
+      "player_name": "Nick Van Exel",
+      "reason": "BPA Nerd: selected Nick Van Exel (FPPG 31.33, age 25, score 34.7)"
+    },
+    {
+      "overall": 62,
+      "round": 8,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 361,
+      "player_name": "Clifford Robinson",
+      "reason": "Balanced Builder: selected Clifford Robinson (FPPG 27.6, age 30, score 34.8)"
+    },
+    {
+      "overall": 63,
+      "round": 8,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 951,
+      "player_name": "Ray Allen",
+      "reason": "Youth Upside: selected Ray Allen (FPPG 22.8, age 21, score 38.2)"
+    },
+    {
+      "overall": 64,
+      "round": 8,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 764,
+      "player_name": "David Robinson",
+      "reason": null
+    },
+    {
+      "overall": 65,
+      "round": 9,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 420,
+      "player_name": "Jayson Williams",
+      "reason": null
+    },
+    {
+      "overall": 66,
+      "round": 9,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 739,
+      "player_name": "Rasheed Wallace",
+      "reason": "Youth Upside: selected Rasheed Wallace (FPPG 27.76, age 22, score 38.1)"
+    },
+    {
+      "overall": 67,
+      "round": 9,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 389,
+      "player_name": "Toni Kukoc",
+      "reason": "Balanced Builder: selected Toni Kukoc (FPPG 27.87, age 28, score 34.0)"
+    },
+    {
+      "overall": 68,
+      "round": 9,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 754,
+      "player_name": "Jim Jackson",
+      "reason": "BPA Nerd: selected Jim Jackson (FPPG 29.46, age 26, score 31.6)"
+    },
+    {
+      "overall": 69,
+      "round": 9,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 123,
+      "player_name": "Robert Pack",
+      "reason": "Contrarian: selected Robert Pack (FPPG 30.64, age 28, score 34.7)"
+    },
+    {
+      "overall": 70,
+      "round": 9,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 168,
+      "player_name": "Chris Mills",
+      "reason": "Vet Win-Now: selected Chris Mills (FPPG 27.09, age 27, score 42.0)"
+    },
+    {
+      "overall": 71,
+      "round": 9,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 735,
+      "player_name": "Bryant Reeves",
+      "reason": "Stars & Scrubs: selected Bryant Reeves (FPPG 30.02, age 24, score 34.3)"
+    },
+    {
+      "overall": 72,
+      "round": 9,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 765,
+      "player_name": "Hersey Hawkins",
+      "reason": "Punt TO: selected Hersey Hawkins (FPPG 26.48, age 30, score 26.3)"
+    },
+    {
+      "overall": 73,
+      "round": 10,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 911,
+      "player_name": "Ervin Johnson",
+      "reason": "Punt TO: selected Ervin Johnson (FPPG 29.37, age 29, score 26.6)"
+    },
+    {
+      "overall": 74,
+      "round": 10,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 714,
+      "player_name": "Michael Finley",
+      "reason": "Stars & Scrubs: selected Michael Finley (FPPG 25.2, age 24, score 34.5)"
+    },
+    {
+      "overall": 75,
+      "round": 10,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 178,
+      "player_name": "Olden Polynice",
+      "reason": "Vet Win-Now: selected Olden Polynice (FPPG 29.08, age 32, score 37.5)"
+    },
+    {
+      "overall": 76,
+      "round": 10,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 904,
+      "player_name": "Chris Mullin",
+      "reason": "Contrarian: selected Chris Mullin (FPPG 28.05, age 33, score 33.1)"
+    },
+    {
+      "overall": 77,
+      "round": 10,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 221,
+      "player_name": "Clar. Weatherspoon",
+      "reason": "BPA Nerd: selected Clar. Weatherspoon (FPPG 27.76, age 26, score 30.0)"
+    },
+    {
+      "overall": 78,
+      "round": 10,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 717,
+      "player_name": "Arvydas Sabonis",
+      "reason": "Balanced Builder: selected Arvydas Sabonis (FPPG 29.08, age 32, score 28.8)"
+    },
+    {
+      "overall": 79,
+      "round": 10,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 677,
+      "player_name": "Eric Williams",
+      "reason": "Youth Upside: selected Eric Williams (FPPG 24.32, age 24, score 36.7)"
+    },
+    {
+      "overall": 80,
+      "round": 10,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 96,
+      "player_name": "Detlef Schrempf",
+      "reason": null
+    },
+    {
+      "overall": 81,
+      "round": 11,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 129,
+      "player_name": "Dino Radja",
+      "reason": null
+    },
+    {
+      "overall": 82,
+      "round": 11,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 953,
+      "player_name": "Lorenzen Wright",
+      "reason": "Youth Upside: selected Lorenzen Wright (FPPG 18.02, age 21, score 31.8)"
+    },
+    {
+      "overall": 83,
+      "round": 11,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 76,
+      "player_name": "Cedric Ceballos",
+      "reason": "Balanced Builder: selected Cedric Ceballos (FPPG 25.77, age 27, score 26.9)"
+    },
+    {
+      "overall": 84,
+      "round": 11,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 238,
+      "player_name": "Tyrone Hill",
+      "reason": "BPA Nerd: selected Tyrone Hill (FPPG 27.83, age 29, score 31.0)"
+    },
+    {
+      "overall": 85,
+      "round": 11,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 283,
+      "player_name": "Lindsey Hunter",
+      "reason": "Contrarian: selected Lindsey Hunter (FPPG 23.96, age 26, score 32.2)"
+    },
+    {
+      "overall": 86,
+      "round": 11,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 907,
+      "player_name": "Malik Sealy",
+      "reason": "Vet Win-Now: selected Malik Sealy (FPPG 23.85, age 27, score 36.8)"
+    },
+    {
+      "overall": 87,
+      "round": 11,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 915,
+      "player_name": "Rodney Rogers",
+      "reason": "Stars & Scrubs: selected Rodney Rogers (FPPG 25.42, age 26, score 29.9)"
+    },
+    {
+      "overall": 88,
+      "round": 11,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 103,
+      "player_name": "Todd Day",
+      "reason": "Punt TO: selected Todd Day (FPPG 24.67, age 27, score 23.4)"
+    },
+    {
+      "overall": 89,
+      "round": 12,
+      "pick_in_round": 1,
+      "team_id": 7,
+      "player_id": 98,
+      "player_name": "Nick Anderson",
+      "reason": "Punt TO: selected Nick Anderson (FPPG 26.71, age 29, score 23.6)"
+    },
+    {
+      "overall": 90,
+      "round": 12,
+      "pick_in_round": 2,
+      "team_id": 6,
+      "player_id": 696,
+      "player_name": "Travis Best",
+      "reason": "Stars & Scrubs: selected Travis Best (FPPG 20.34, age 24, score 28.8)"
+    },
+    {
+      "overall": 91,
+      "round": 12,
+      "pick_in_round": 3,
+      "team_id": 5,
+      "player_id": 324,
+      "player_name": "Anthony Peeler",
+      "reason": "Vet Win-Now: selected Anthony Peeler (FPPG 26.03, age 27, score 37.2)"
+    },
+    {
+      "overall": 92,
+      "round": 12,
+      "pick_in_round": 4,
+      "team_id": 4,
+      "player_id": 204,
+      "player_name": "Jeff Hornacek",
+      "reason": "Contrarian: selected Jeff Hornacek (FPPG 27.48, age 34, score 29.4)"
+    },
+    {
+      "overall": 93,
+      "round": 12,
+      "pick_in_round": 5,
+      "team_id": 3,
+      "player_id": 330,
+      "player_name": "Danny Manning",
+      "reason": "BPA Nerd: selected Danny Manning (FPPG 27.27, age 31, score 30.1)"
+    },
+    {
+      "overall": 94,
+      "round": 12,
+      "pick_in_round": 6,
+      "team_id": 2,
+      "player_id": 136,
+      "player_name": "P.J. Brown",
+      "reason": "Balanced Builder: selected P.J. Brown (FPPG 25.73, age 27, score 24.6)"
+    },
+    {
+      "overall": 95,
+      "round": 12,
+      "pick_in_round": 7,
+      "team_id": 1,
+      "player_id": 718,
+      "player_name": "Gary Trent",
+      "reason": "Youth Upside: selected Gary Trent (FPPG 19.59, age 22, score 31.2)"
+    },
+    {
+      "overall": 96,
+      "round": 12,
+      "pick_in_round": 8,
+      "team_id": 0,
+      "player_id": 423,
+      "player_name": "Chris Gatling",
+      "reason": null
+    },
+    {
+      "overall": 97,
+      "round": 13,
+      "pick_in_round": 1,
+      "team_id": 0,
+      "player_id": 23,
+      "player_name": "Dennis Rodman",
+      "reason": null
+    },
+    {
+      "overall": 98,
+      "round": 13,
+      "pick_in_round": 2,
+      "team_id": 1,
+      "player_id": 469,
+      "player_name": "Jamal Mashburn",
+      "reason": "Youth Upside: selected Jamal Mashburn (FPPG 22.96, age 24, score 30.3)"
+    },
+    {
+      "overall": 99,
+      "round": 13,
+      "pick_in_round": 3,
+      "team_id": 2,
+      "player_id": 905,
+      "player_name": "Dale Davis",
+      "reason": "Balanced Builder: selected Dale Davis (FPPG 26.19, age 28, score 25.7)"
+    },
+    {
+      "overall": 100,
+      "round": 13,
+      "pick_in_round": 4,
+      "team_id": 3,
+      "player_id": 208,
+      "player_name": "Sam Cassell",
+      "reason": "BPA Nerd: selected Sam Cassell (FPPG 28.2, age 27, score 27.9)"
+    },
+    {
+      "overall": 101,
+      "round": 13,
+      "pick_in_round": 5,
+      "team_id": 4,
+      "player_id": 22,
+      "player_name": "Rik Smits",
+      "reason": "Contrarian: selected Rik Smits (FPPG 28.68, age 30, score 31.8)"
+    },
+    {
+      "overall": 102,
+      "round": 13,
+      "pick_in_round": 6,
+      "team_id": 5,
+      "player_id": 891,
+      "player_name": "Charles Oakley",
+      "reason": "Vet Win-Now: selected Charles Oakley (FPPG 28.91, age 33, score 36.5)"
+    },
+    {
+      "overall": 103,
+      "round": 13,
+      "pick_in_round": 7,
+      "team_id": 6,
+      "player_id": 682,
+      "player_name": "Bob Sura",
+      "reason": "Stars & Scrubs: selected Bob Sura (FPPG 22.51, age 24, score 28.1)"
+    },
+    {
+      "overall": 104,
+      "round": 13,
+      "pick_in_round": 8,
+      "team_id": 7,
+      "player_id": 422,
+      "player_name": "Avery Johnson",
+      "reason": "Punt TO: selected Avery Johnson (FPPG 24.83, age 32, score 23.4)"
+    }
+  ]
+}

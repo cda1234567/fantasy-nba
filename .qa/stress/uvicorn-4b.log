@@ -1,0 +1,262 @@
+INFO:     Started server process [15020]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3503 (Press CTRL+C to quit)
+INFO:     127.0.0.1:52133 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63450 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56454 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60359 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60362 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60367 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60369 - "GET /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58156 - "POST /api/leagues/delete HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52777 - "GET /api/leagues/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52605 - "POST /api/leagues/switch HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:52626 - "POST /api/league/settings HTTP/1.1" 400 Bad Request
+INFO:     127.0.0.1:59205 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59206 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59208 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59207 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59209 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59212 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59210 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59211 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54421 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54422 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54423 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54424 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54427 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54428 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54426 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54429 - "POST /api/league/settings HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude/fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude/fantasy nba\app\main.py", line 442, in patch_league_settings
+    storage.save_league_settings(updated)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\claude/fantasy nba\app\storage.py", line 160, in save_league_settings
+    self._atomic_write(self.league_settings_path, settings.model_dump())
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude/fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\stress\\data-4\\leagues\\delta\\league_settings.json.15020.98360c7bf2a341e2a39b4f86e4aa976f.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\stress\\data-4\\leagues\\delta\\league_settings.json'
+INFO:     127.0.0.1:63755 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63756 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63759 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63758 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63761 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63760 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58889 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58890 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58597 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58599 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58598 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58600 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58602 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58601 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58603 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58605 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60662 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60663 - "POST /api/league/settings HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 420, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.scope, self.receive, self.send
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\uvicorn\middleware\proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\applications.py", line 1159, in __call__
+    await super().__call__(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\applications.py", line 90, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 186, in __call__
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 191, in __call__
+    with recv_stream, send_stream, collapse_excgroups():
+                                   ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_utils.py", line 87, in collapse_excgroups
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 193, in __call__
+    response = await self.dispatch_func(request, call_next)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude/fantasy nba\app\main.py", line 84, in _security_and_cache_headers
+    response = await call_next(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 168, in call_next
+    raise app_exc from app_exc.__cause__ or app_exc.__context__
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\base.py", line 144, in coro
+    await self.app(scope, receive_or_disconnect, send_no_error)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\middleware\exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\middleware\asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 660, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 680, in app
+    await route.handle(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\routing.py", line 276, in handle
+    await self.app(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 134, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 120, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 674, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\fastapi\routing.py", line 330, in run_endpoint_function
+    return await run_in_threadpool(dependant.call, **values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\starlette\concurrency.py", line 32, in run_in_threadpool
+    return await anyio.to_thread.run_sync(func)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\to_thread.py", line 63, in run_sync
+    return await get_async_backend().run_sync_in_worker_thread(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        func, args, abandon_on_cancel=abandon_on_cancel, limiter=limiter
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 2518, in run_sync_in_worker_thread
+    return await future
+           ^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\.venv\Lib\site-packages\anyio\_backends\_asyncio.py", line 1002, in run
+    result = context.run(func, *args)
+  File "D:\claude/fantasy nba\app\main.py", line 442, in patch_league_settings
+    storage.save_league_settings(updated)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\claude/fantasy nba\app\storage.py", line 160, in save_league_settings
+    self._atomic_write(self.league_settings_path, settings.model_dump())
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude/fantasy nba\app\storage.py", line 66, in _atomic_write
+    os.replace(tmp, path)
+    ~~~~~~~~~~^^^^^^^^^^^
+PermissionError: [WinError 5] 存取被拒。: 'D:\\claude\\fantasy nba\\.qa\\stress\\data-4\\leagues\\gamma\\league_settings.json.15020.597f3a25a68c4b2e9e5fa74655863d86.tmp' -> 'D:\\claude\\fantasy nba\\.qa\\stress\\data-4\\leagues\\gamma\\league_settings.json'
+INFO:     127.0.0.1:60664 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60666 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60665 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60668 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60669 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60670 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50670 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50673 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50675 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50676 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50677 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50678 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64475 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64476 - "POST /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61760 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63306 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61755 - "GET /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62092 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62096 - "GET /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62100 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62105 - "GET /api/league/settings HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62108 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62110 - "GET /api/league/settings HTTP/1.1" 200 OK

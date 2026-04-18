@@ -1,0 +1,509 @@
+{
+  "pending": [
+    {
+      "id": "922d115a2a754b9cba5a010f0b458cf4",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 2,
+      "to_team": 0,
+      "send_player_ids": [
+        203952
+      ],
+      "receive_player_ids": [
+        1630166
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Punt TO",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "9c75ce02a8c64329bcc0764ba668e9cb",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 4,
+      "to_team": 0,
+      "send_player_ids": [
+        203468
+      ],
+      "receive_player_ids": [
+        1630166
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Balanced Builder",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": "60f06db53b0448839f58e667a78d874d"
+    },
+    {
+      "id": "78ee83c3a4b64a8ca5fc8b1885a7daba",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 3,
+      "to_team": 0,
+      "send_player_ids": [
+        1630581
+      ],
+      "receive_player_ids": [
+        203954,
+        1630166
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Stars & Scrubs",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "fb60489b106448a3945fd9dc8f1f57e8",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 3,
+      "to_team": 0,
+      "send_player_ids": [
+        203507
+      ],
+      "receive_player_ids": [
+        203954,
+        1630166
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Stars & Scrubs",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": "b46e31aaf49b410986a6a29f586af20b"
+    },
+    {
+      "id": "1983128eea184253864defb56e04f9fc",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 5,
+      "to_team": 0,
+      "send_player_ids": [
+        1630700,
+        1642276
+      ],
+      "receive_player_ids": [
+        202695
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Youth Upside",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": "d728c1c9f5c7434b9782b124fbb5d7b2"
+    },
+    {
+      "id": "88a976a11992405f8f850a44702e2c4c",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 7,
+      "to_team": 0,
+      "send_player_ids": [
+        1629630,
+        1631096,
+        1629008
+      ],
+      "receive_player_ids": [
+        203954,
+        1630166
+      ],
+      "status": "pending_accept",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "還價：Contrarian",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [],
+      "force_executed": false,
+      "counter_of": "e43b086eb62a42809e60b94e8b2b7f57"
+    }
+  ],
+  "history": [
+    {
+      "id": "82d021731369463e9b62d692c5ec0afa",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 2,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1627826
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 30,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "60f06db53b0448839f58e667a78d874d",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 4,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1629627
+      ],
+      "status": "countered",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "cce70465e2d84097af58c40ae9335eef",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 5,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1630700
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 30,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "169295f529814b7fa5713227c568b34f",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        203954,
+        1630166
+      ],
+      "receive_player_ids": [
+        1630595
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 30,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "b46e31aaf49b410986a6a29f586af20b",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 3,
+      "send_player_ids": [
+        203954,
+        1630166
+      ],
+      "receive_player_ids": [
+        1630162
+      ],
+      "status": "countered",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "d728c1c9f5c7434b9782b124fbb5d7b2",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 5,
+      "send_player_ids": [
+        202695
+      ],
+      "receive_player_ids": [
+        1630700,
+        1629027
+      ],
+      "status": "countered",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e43b086eb62a42809e60b94e8b2b7f57",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 7,
+      "send_player_ids": [
+        203954,
+        1630166
+      ],
+      "receive_player_ids": [
+        1629630,
+        1631096,
+        1627749
+      ],
+      "status": "countered",
+      "counterparty_decided_day": null,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "abe4371dc21544a484097f0217c65b58",
+      "proposed_week": 5,
+      "proposed_day": 30,
+      "from_team": 0,
+      "to_team": 7,
+      "send_player_ids": [
+        1630166
+      ],
+      "receive_player_ids": [
+        1630530
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 30,
+      "veto_votes": [
+        4
+      ],
+      "veto_deadline_day": 32,
+      "reasoning": "human",
+      "executed_day": 32,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 1
+}

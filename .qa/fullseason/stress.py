@@ -144,6 +144,38 @@ def _start_season(sc: StressClient) -> str:
     return f"week={post['current_week']} day={post.get('current_day')}"
 
 
+def _propose_trade(sc: StressClient) -> str:
+    # Reproduce exactly what the "送出提案" button does: grab a player from the
+    # human roster, a player from team 1 (any AI), post /api/trades/propose
+    # with {from_team, to_team, send, receive, proposer_message, force}.
+    draft = sc.get("/api/state").json()
+    human_id = draft["human_team_id"]
+    to_team = next((t for t in draft["teams"] if t["id"] != human_id), None)
+    assert to_team is not None, "no non-human team to trade with"
+
+    human_players = sc.get(f"/api/teams/{human_id}").json().get("players", [])
+    ai_players = sc.get(f"/api/teams/{to_team['id']}").json().get("players", [])
+    assert human_players and ai_players, "rosters empty post-draft?"
+
+    send_id = human_players[0]["id"]
+    recv_id = ai_players[0]["id"]
+
+    r = sc.post("/api/trades/propose", json={
+        "from_team": human_id,
+        "to_team": to_team["id"],
+        "send": [send_id],
+        "receive": [recv_id],
+        "proposer_message": "",
+        "force": False,
+    }).json()
+    assert r.get("id") or r.get("trade", {}).get("id") or r.get("ok") in (True, None), f"propose returned unexpected shape: {r}"
+
+    pending = sc.get("/api/trades/pending").json().get("pending", [])
+    assert any(t.get("from_team") == human_id for t in pending), \
+        f"proposed trade not in /pending (pending count={len(pending)})"
+    return f"sent {send_id}->{recv_id} to_team={to_team['id']} pending={len(pending)}"
+
+
 def _sim_regular_season(sc: StressClient) -> str:
     # Use sim-to-playoffs (single endpoint) as the fast path; it's what the
     # "模擬到季後賽" button calls. If it's a no-op, advance-week fallback
@@ -192,6 +224,7 @@ def run_once(base_url: str, iter_idx: int, keep: bool) -> IterResult:
         ("setup",         lambda: _setup(sc)),
         ("draft",         lambda: _run_draft(sc)),
         ("season.start",  lambda: _start_season(sc)),
+        ("propose_trade", lambda: _propose_trade(sc)),
         ("sim.regseason", lambda: _sim_regular_season(sc)),
         ("sim.playoffs",  lambda: _sim_playoff_bracket(sc)),
         ("summary",       lambda: _summary(sc)),

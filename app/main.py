@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.47"
+APP_VERSION = "0.5.48"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -530,6 +530,7 @@ def list_players(
     limit: int = 200,
     q: Optional[str] = None,
     pos: Optional[str] = None,
+    exclude_injured: bool = False,
 ):
     pool = draft.available_players() if available else list(draft.players)
     if q:
@@ -537,6 +538,21 @@ def list_players(
         pool = [p for p in pool if ql in p.name.lower() or ql in p.team.lower()]
     if pos:
         pool = [p for p in pool if p.pos.upper() == pos.upper()]
+
+    # Injury overlay: when season exists, tag each player with injury status
+    # so the frontend can show badges. exclude_injured drops OUT/DTD from pool.
+    season = _load_or_init_season()
+    injuries_map: dict[int, dict] = {}
+    if season is not None:
+        for pid, inj in season.injuries.items():
+            if inj.status != "healthy":
+                injuries_map[pid] = {
+                    "status": inj.status,
+                    "return_in_days": inj.return_in_days,
+                    "note": inj.note,
+                }
+    if exclude_injured and injuries_map:
+        pool = [p for p in pool if p.id not in injuries_map]
 
     reverse = sort != "name" and sort != "to"
     pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
@@ -546,6 +562,9 @@ def list_players(
         row = p.model_dump()
         pf = prev_map.get(p.id)
         row["prev_fppg"] = pf if pf is not None else None
+        inj = injuries_map.get(p.id)
+        if inj is not None:
+            row["injury"] = inj
         out.append(row)
     return out
 

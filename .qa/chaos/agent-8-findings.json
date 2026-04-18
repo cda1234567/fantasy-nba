@@ -1,0 +1,750 @@
+[
+  {
+    "section": "home",
+    "type": "overflow",
+    "details": [
+      {
+        "tag": "TABLE",
+        "cls": "board",
+        "overflowBy": 698
+      },
+      {
+        "tag": "THEAD",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 59
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 210
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 330
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 450
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 578
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TBODY",
+        "cls": "",
+        "overflowBy": 698
+      }
+    ]
+  },
+  {
+    "section": "home",
+    "type": "small_tap_target",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 11,
+        "h": 11,
+        "cls": "hh-dot-btn active"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      }
+    ]
+  },
+  {
+    "section": "home",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      }
+    ]
+  },
+  {
+    "section": "draft",
+    "type": "overflow",
+    "details": [
+      {
+        "tag": "TABLE",
+        "cls": "board",
+        "overflowBy": 698
+      },
+      {
+        "tag": "THEAD",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 59
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 210
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 330
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 450
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 578
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TBODY",
+        "cls": "",
+        "overflowBy": 698
+      }
+    ]
+  },
+  {
+    "section": "draft",
+    "type": "small_tap_target",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 11,
+        "h": 11,
+        "cls": "hh-dot-btn active"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "w": 8,
+        "h": 8,
+        "cls": "hh-dot-btn "
+      }
+    ]
+  },
+  {
+    "section": "draft",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      }
+    ]
+  },
+  {
+    "section": "teams",
+    "type": "small_tap_target",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "\u8a2d\u5b9a\u5148\u767c\u9663\u5bb9",
+        "w": 98,
+        "h": 36,
+        "cls": "btn small"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u63db",
+        "w": 38,
+        "h": 36,
+        "cls": "btn small ghost lineup-change-btn"
+      }
+    ]
+  },
+  {
+    "section": "teams",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      }
+    ]
+  },
+  {
+    "section": "fa",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "\u7c3d\u5165",
+        "bottom": 827,
+        "viewH": 844,
+        "cls": "btn small btn-sign"
+      },
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      }
+    ]
+  },
+  {
+    "section": "league",
+    "type": "small_tap_target",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "\u5c0d\u6230",
+        "w": 88,
+        "h": 34,
+        "cls": "league-tab active"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u6230\u7e3e",
+        "w": 88,
+        "h": 34,
+        "cls": "league-tab "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u806f\u76df",
+        "w": 88,
+        "h": 34,
+        "cls": "league-tab "
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u52d5\u614b",
+        "w": 88,
+        "h": 34,
+        "cls": "league-tab "
+      }
+    ]
+  },
+  {
+    "section": "league",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      }
+    ]
+  },
+  {
+    "section": "schedule",
+    "type": "clipped_under_tabs",
+    "details": [
+      {
+        "tag": "BUTTON",
+        "text": "\u7b2c 15 \u9031\u672a\u958b\u59cb4 \u5834\u5c0d\u6230",
+        "bottom": 868,
+        "viewH": 844,
+        "cls": "week-cell"
+      },
+      {
+        "tag": "BUTTON",
+        "text": "\u7b2c 16 \u9031\u672a\u958b\u59cb4 \u5834\u5c0d\u6230",
+        "bottom": 868,
+        "viewH": 844,
+        "cls": "week-cell"
+      },
+      {
+        "tag": "A",
+        "text": "D\u9078\u79c0",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "T\u968a\u4f0d",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "F\u81ea\u7531",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "L\u806f\u76df",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn"
+      },
+      {
+        "tag": "A",
+        "text": "S\u8cfd\u7a0b",
+        "bottom": 844,
+        "viewH": 844,
+        "cls": "tab-btn active"
+      }
+    ]
+  },
+  {
+    "section": "settings",
+    "type": "not_found",
+    "details": "settings button not found on home"
+  },
+  {
+    "section": "trade",
+    "type": "not_found",
+    "details": "trade/propose button not found on teams"
+  },
+  {
+    "section": "random-tap-0",
+    "type": "overflow",
+    "details": [
+      {
+        "tag": "TABLE",
+        "cls": "board",
+        "overflowBy": 698
+      },
+      {
+        "tag": "THEAD",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TR",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 59
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 210
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 330
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 450
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 578
+      },
+      {
+        "tag": "TH",
+        "cls": "",
+        "overflowBy": 698
+      },
+      {
+        "tag": "TBODY",
+        "cls": "",
+        "overflowBy": 698
+      }
+    ]
+  },
+  {
+    "section": "inputs",
+    "type": "keyboard_obscure_risk",
+    "details": [
+      {
+        "type": "radio",
+        "id": "",
+        "bottom": 531,
+        "viewH": 844,
+        "nearBottom": true
+      },
+      {
+        "type": "radio",
+        "id": "",
+        "bottom": 583,
+        "viewH": 844,
+        "nearBottom": true
+      },
+      {
+        "type": "radio",
+        "id": "",
+        "bottom": 583,
+        "viewH": 844,
+        "nearBottom": true
+      },
+      {
+        "type": "radio",
+        "id": "",
+        "bottom": 635,
+        "viewH": 844,
+        "nearBottom": true
+      }
+    ]
+  }
+]

@@ -1,0 +1,62 @@
+{
+  "seed": 2699264967,
+  "teams": [
+    {
+      "id": 0,
+      "name": "我的隊伍",
+      "is_human": true,
+      "gm_persona": null,
+      "roster": []
+    },
+    {
+      "id": 1,
+      "name": "BPA Nerd",
+      "is_human": false,
+      "gm_persona": "bpa",
+      "roster": []
+    },
+    {
+      "id": 2,
+      "name": "Punt TO",
+      "is_human": false,
+      "gm_persona": "punt_to",
+      "roster": []
+    },
+    {
+      "id": 3,
+      "name": "Stars & Scrubs",
+      "is_human": false,
+      "gm_persona": "stars_scrubs",
+      "roster": []
+    },
+    {
+      "id": 4,
+      "name": "Balanced Builder",
+      "is_human": false,
+      "gm_persona": "balanced",
+      "roster": []
+    },
+    {
+      "id": 5,
+      "name": "Youth Upside",
+      "is_human": false,
+      "gm_persona": "youth",
+      "roster": []
+    },
+    {
+      "id": 6,
+      "name": "Vet Win-Now",
+      "is_human": false,
+      "gm_persona": "vet",
+      "roster": []
+    },
+    {
+      "id": 7,
+      "name": "Contrarian",
+      "is_human": false,
+      "gm_persona": "contrarian",
+      "roster": []
+    }
+  ],
+  "picks": []
+}

@@ -1,0 +1,215 @@
+{
+  "desktop": {
+    "viewport": "1400x900",
+    "issues": [
+      {
+        "kind": "input_no_label",
+        "id": "draft-display-mode-switch",
+        "type": "select-one"
+      },
+      {
+        "kind": "table_no_caption",
+        "id": "tbl-available"
+      },
+      {
+        "kind": "table_no_caption",
+        "id": ""
+      }
+    ],
+    "muted_sample": [
+      {
+        "id": "",
+        "cls": "dialog-inner small",
+        "color": "rgb(201, 209, 217)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      },
+      {
+        "id": "",
+        "cls": "s fppg",
+        "color": "rgb(201, 209, 217)"
+      },
+      {
+        "id": "",
+        "cls": "btn small",
+        "color": "rgb(5, 18, 42)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      }
+    ]
+  },
+  "tablet": {
+    "viewport": "900x1200",
+    "issues": [
+      {
+        "kind": "input_no_label",
+        "id": "draft-display-mode-switch",
+        "type": "select-one"
+      },
+      {
+        "kind": "table_no_caption",
+        "id": "tbl-available"
+      },
+      {
+        "kind": "table_no_caption",
+        "id": ""
+      }
+    ],
+    "muted_sample": [
+      {
+        "id": "",
+        "cls": "dialog-inner small",
+        "color": "rgb(201, 209, 217)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      },
+      {
+        "id": "",
+        "cls": "s fppg",
+        "color": "rgb(201, 209, 217)"
+      },
+      {
+        "id": "",
+        "cls": "btn small",
+        "color": "rgb(5, 18, 42)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      }
+    ]
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "issues": [
+      {
+        "kind": "input_no_label",
+        "id": "draft-display-mode-switch",
+        "type": "select-one"
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "btn-league-switch",
+        "size": "114x26",
+        "text": "聯盟\n        stress-72"
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "32x32",
+        "text": "‹"
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "32x32",
+        "text": "›"
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "11x11",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "small_tap_target",
+        "id": "",
+        "size": "8x8",
+        "text": ""
+      },
+      {
+        "kind": "table_no_caption",
+        "id": "tbl-available"
+      },
+      {
+        "kind": "table_no_caption",
+        "id": ""
+      }
+    ],
+    "muted_sample": [
+      {
+        "id": "",
+        "cls": "dialog-inner small",
+        "color": "rgb(201, 209, 217)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      },
+      {
+        "id": "",
+        "cls": "s fppg",
+        "color": "rgb(139, 148, 158)"
+      },
+      {
+        "id": "",
+        "cls": "btn small",
+        "color": "rgb(5, 18, 42)"
+      },
+      {
+        "id": "",
+        "cls": "num fppg hidden-m",
+        "color": "rgb(251, 191, 36)"
+      }
+    ]
+  }
+}

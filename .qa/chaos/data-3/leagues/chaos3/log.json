@@ -1,0 +1,14 @@
+[
+  {
+    "ts": 1776520679.6200132,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776520683.4480193,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  }
+]

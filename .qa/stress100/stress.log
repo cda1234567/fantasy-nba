@@ -1,0 +1,310 @@
+[17:51:14] === round 1/100 (chaos=none) ===
+[17:51:41] r1: draft complete after 21 iters
+[17:51:41] r1: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[17:51:41] === round 2/100 (chaos=none) ===
+[17:52:09] r2: draft complete after 21 iters
+[17:52:09] r2: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[17:52:09] === round 3/100 (chaos=none) ===
+[17:52:32] r3: draft complete after 21 iters
+[17:52:32] r3: ok=True iters=21 t=23s cerr=2 5xx=0 visual=0
+[17:52:32] === round 4/100 (chaos=none) ===
+[17:52:59] r4: draft complete after 21 iters
+[17:52:59] r4: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[17:52:59] === round 5/100 (chaos=none) ===
+[17:53:24] r5: draft complete after 21 iters
+[17:53:24] r5: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[17:53:24] === round 6/100 (chaos=none) ===
+[17:53:49] r6: draft complete after 21 iters
+[17:53:49] r6: ok=True iters=21 t=24s cerr=2 5xx=0 visual=0
+[17:53:49] === round 7/100 (chaos=none) ===
+[17:54:16] r7: draft complete after 21 iters
+[17:54:16] r7: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[17:54:16] === round 8/100 (chaos=none) ===
+[17:54:41] r8: draft complete after 21 iters
+[17:54:41] r8: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[17:54:41] === round 9/100 (chaos=none) ===
+[17:55:05] r9: draft complete after 21 iters
+[17:55:05] r9: ok=True iters=21 t=23s cerr=2 5xx=0 visual=0
+[17:55:05] === round 10/100 (chaos=none) ===
+[17:55:30] r10: draft complete after 21 iters
+[17:55:30] r10: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[17:55:30] === round 11/100 (chaos=none) ===
+[17:55:55] r11: draft complete after 21 iters
+[17:55:55] r11: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[17:55:55] === round 12/100 (chaos=none) ===
+[17:56:21] r12: draft complete after 21 iters
+[17:56:21] r12: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[17:56:21] === round 13/100 (chaos=none) ===
+[17:56:43] r13: draft complete after 21 iters
+[17:56:43] r13: ok=True iters=21 t=22s cerr=2 5xx=0 visual=0
+[17:56:43] === round 14/100 (chaos=none) ===
+[17:57:10] r14: draft complete after 21 iters
+[17:57:10] r14: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[17:57:10] === round 15/100 (chaos=none) ===
+[17:57:32] r15: draft complete after 21 iters
+[17:57:32] r15: ok=True iters=21 t=22s cerr=2 5xx=0 visual=0
+[17:57:32] === round 16/100 (chaos=none) ===
+[17:57:54] r16: EXC Error: Page.evaluate: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[17:57:54] r16: ok=False iters=0 t=21s cerr=4 5xx=2 visual=0
+[17:57:54] === round 17/100 (chaos=none) ===
+[17:58:25] r17: EXC TimeoutError: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#btn-league-switch")
+
+[17:58:25] r17: ok=False iters=0 t=30s cerr=1 5xx=1 visual=0
+[17:58:25] === round 18/100 (chaos=none) ===
+[17:58:52] r18: draft complete after 21 iters
+[17:58:52] r18: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[17:58:52] === round 19/100 (chaos=none) ===
+[17:59:13] r19: draft complete after 21 iters
+[17:59:13] r19: ok=True iters=21 t=21s cerr=2 5xx=0 visual=0
+[17:59:13] === round 20/100 (chaos=none) ===
+[17:59:34] r20: draft complete after 21 iters
+[17:59:34] r20: ok=True iters=21 t=20s cerr=2 5xx=0 visual=0
+[17:59:34] === round 21/100 (chaos=none) ===
+[18:00:01] r21: draft complete after 21 iters
+[18:00:01] r21: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:00:01] === round 22/100 (chaos=none) ===
+[18:00:25] r22: draft complete after 21 iters
+[18:00:25] r22: ok=True iters=21 t=24s cerr=2 5xx=0 visual=0
+[18:00:25] === round 23/100 (chaos=none) ===
+[18:00:52] r23: draft complete after 21 iters
+[18:00:52] r23: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:00:52] === round 24/100 (chaos=none) ===
+[18:01:17] r24: draft complete after 21 iters
+[18:01:18] r24: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[18:01:18] === round 25/100 (chaos=none) ===
+[18:01:45] r25: draft complete after 21 iters
+[18:01:45] r25: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:01:45] === round 26/100 (chaos=none) ===
+[18:02:12] r26: draft complete after 21 iters
+[18:02:13] r26: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:02:13] === round 27/100 (chaos=none) ===
+[18:02:39] r27: draft complete after 21 iters
+[18:02:39] r27: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:02:39] === round 28/100 (chaos=none) ===
+[18:03:05] r28: draft complete after 21 iters
+[18:03:05] r28: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[18:03:05] === round 29/100 (chaos=none) ===
+[18:03:31] r29: draft complete after 21 iters
+[18:03:31] r29: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:03:31] === round 30/100 (chaos=none) ===
+[18:03:56] r30: draft complete after 21 iters
+[18:03:56] r30: ok=True iters=21 t=24s cerr=2 5xx=0 visual=0
+[18:03:56] === round 31/100 (chaos=none) ===
+[18:04:23] r31: draft complete after 21 iters
+[18:04:23] r31: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:04:23] === round 32/100 (chaos=none) ===
+[18:04:50] r32: draft complete after 21 iters
+[18:04:50] r32: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:04:50] === round 33/100 (chaos=none) ===
+[18:05:15] r33: draft complete after 21 iters
+[18:05:15] r33: ok=True iters=21 t=24s cerr=2 5xx=0 visual=0
+[18:05:15] === round 34/100 (chaos=none) ===
+[18:05:42] r34: draft complete after 21 iters
+[18:05:42] r34: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:05:42] === round 35/100 (chaos=none) ===
+[18:06:09] r35: draft complete after 21 iters
+[18:06:09] r35: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:06:09] === round 36/100 (chaos=none) ===
+[18:06:36] r36: draft complete after 21 iters
+[18:06:36] r36: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:06:36] === round 37/100 (chaos=none) ===
+[18:07:03] r37: draft complete after 21 iters
+[18:07:03] r37: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:07:03] === round 38/100 (chaos=none) ===
+[18:07:30] r38: draft complete after 21 iters
+[18:07:30] r38: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:07:30] === round 39/100 (chaos=none) ===
+[18:07:58] r39: draft complete after 21 iters
+[18:07:58] r39: ok=True iters=21 t=28s cerr=2 5xx=0 visual=0
+[18:07:58] === round 40/100 (chaos=none) ===
+[18:08:26] r40: draft complete after 21 iters
+[18:08:26] r40: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:08:26] === round 41/100 (chaos=none) ===
+[18:08:48] r41: draft complete after 21 iters
+[18:08:48] r41: ok=True iters=21 t=22s cerr=2 5xx=0 visual=0
+[18:08:48] === round 42/100 (chaos=none) ===
+[18:09:15] r42: draft complete after 21 iters
+[18:09:15] r42: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:09:15] === round 43/100 (chaos=none) ===
+[18:09:42] r43: draft complete after 21 iters
+[18:09:43] r43: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:09:43] === round 44/100 (chaos=none) ===
+[18:10:07] r44: draft complete after 21 iters
+[18:10:07] r44: ok=True iters=21 t=24s cerr=2 5xx=0 visual=0
+[18:10:07] === round 45/100 (chaos=none) ===
+[18:10:34] r45: draft complete after 21 iters
+[18:10:34] r45: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:10:34] === round 46/100 (chaos=none) ===
+[18:11:01] r46: draft complete after 21 iters
+[18:11:01] r46: ok=True iters=21 t=27s cerr=2 5xx=0 visual=0
+[18:11:01] === round 47/100 (chaos=none) ===
+[18:11:28] r47: draft complete after 21 iters
+[18:11:28] r47: ok=True iters=21 t=26s cerr=2 5xx=0 visual=0
+[18:11:28] === round 48/100 (chaos=none) ===
+[18:11:48] r48: EXC Error: Page.evaluate: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+[18:11:48] r48: ok=False iters=0 t=19s cerr=5 5xx=3 visual=0
+[18:11:48] === round 49/100 (chaos=none) ===
+[18:12:19] r49: EXC TimeoutError: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("#btn-league-switch")
+
+[18:12:19] r49: ok=False iters=0 t=30s cerr=1 5xx=1 visual=0
+[18:12:19] === round 50/100 (chaos=none) ===
+[18:12:40] r50: draft complete after 21 iters
+[18:12:40] r50: ok=True iters=21 t=20s cerr=0 5xx=0 visual=0
+[18:12:40] === round 51/100 (chaos=none) ===
+[18:13:06] r51: draft complete after 21 iters
+[18:13:06] r51: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:13:06] === round 52/100 (chaos=none) ===
+[18:13:32] r52: draft complete after 21 iters
+[18:13:33] r52: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:13:33] === round 53/100 (chaos=none) ===
+[18:13:47] r53: ok=False iters=1 t=13s cerr=1 5xx=0 visual=0
+[18:13:47] === round 54/100 (chaos=none) ===
+[18:14:14] r54: EXC TimeoutError: Locator.wait_for: Timeout 25000ms exceeded.
+Call log:
+  - waiting for locator("#tbl-available") to be visible
+    - waiting for" https://nbafantasy.cda1234567.com/" navigation to finish...
+    - navig
+[18:14:14] r54: ok=False iters=0 t=27s cerr=0 5xx=0 visual=0
+[18:14:14] === round 55/100 (chaos=none) ===
+[18:14:41] r55: draft complete after 21 iters
+[18:14:41] r55: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:14:41] === round 56/100 (chaos=none) ===
+[18:15:06] r56: draft complete after 21 iters
+[18:15:07] r56: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:15:07] === round 57/100 (chaos=none) ===
+[18:15:30] r57: draft complete after 21 iters
+[18:15:30] r57: ok=True iters=21 t=23s cerr=0 5xx=0 visual=0
+[18:15:30] === round 58/100 (chaos=none) ===
+[18:15:55] r58: draft complete after 21 iters
+[18:15:56] r58: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:15:56] === round 59/100 (chaos=none) ===
+[18:16:22] r59: draft complete after 21 iters
+[18:16:22] r59: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:16:22] === round 60/100 (chaos=none) ===
+[18:16:48] r60: draft complete after 21 iters
+[18:16:48] r60: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:16:48] === round 61/100 (chaos=none) ===
+[18:17:15] r61: draft complete after 21 iters
+[18:17:15] r61: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:17:15] === round 62/100 (chaos=none) ===
+[18:17:38] r62: draft complete after 21 iters
+[18:17:39] r62: ok=True iters=21 t=23s cerr=0 5xx=0 visual=0
+[18:17:39] === round 63/100 (chaos=none) ===
+[18:18:04] r63: draft complete after 21 iters
+[18:18:05] r63: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:18:05] === round 64/100 (chaos=none) ===
+[18:18:30] r64: draft complete after 21 iters
+[18:18:30] r64: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:18:30] === round 65/100 (chaos=none) ===
+[18:18:54] r65: draft complete after 21 iters
+[18:18:54] r65: ok=True iters=21 t=23s cerr=0 5xx=0 visual=1
+[18:18:54] === round 66/100 (chaos=none) ===
+[18:19:21] r66: draft complete after 21 iters
+[18:19:21] r66: ok=True iters=21 t=27s cerr=0 5xx=0 visual=0
+[18:19:21] === round 67/100 (chaos=none) ===
+[18:19:41] r67: draft complete after 21 iters
+[18:19:41] r67: ok=True iters=21 t=20s cerr=0 5xx=0 visual=0
+[18:19:41] === round 68/100 (chaos=none) ===
+[18:20:07] r68: draft complete after 21 iters
+[18:20:08] r68: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:20:08] === round 69/100 (chaos=none) ===
+[18:20:32] r69: draft complete after 21 iters
+[18:20:32] r69: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:20:32] === round 70/100 (chaos=double_click) ===
+[18:20:57] r70: draft complete after 21 iters
+[18:20:57] r70: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[18:20:57] === round 71/100 (chaos=none) ===
+[18:21:22] r71: draft complete after 21 iters
+[18:21:23] r71: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:21:23] === round 72/100 (chaos=none) ===
+[18:21:48] r72: draft complete after 21 iters
+[18:21:48] r72: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:21:48] === round 73/100 (chaos=none) ===
+[18:22:15] r73: draft complete after 21 iters
+[18:22:16] r73: ok=True iters=21 t=27s cerr=0 5xx=0 visual=0
+[18:22:16] === round 74/100 (chaos=none) ===
+[18:22:41] r74: draft complete after 21 iters
+[18:22:41] r74: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:22:41] === round 75/100 (chaos=none) ===
+[18:23:08] r75: draft complete after 21 iters
+[18:23:09] r75: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:23:09] === round 76/100 (chaos=none) ===
+[18:23:35] r76: draft complete after 21 iters
+[18:23:36] r76: ok=True iters=21 t=27s cerr=0 5xx=0 visual=0
+[18:23:36] === round 77/100 (chaos=none) ===
+[18:24:00] r77: draft complete after 21 iters
+[18:24:00] r77: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:24:00] === round 78/100 (chaos=none) ===
+[18:24:25] r78: draft complete after 21 iters
+[18:24:25] r78: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:24:25] === round 79/100 (chaos=none) ===
+[18:24:48] r79: draft complete after 21 iters
+[18:24:48] r79: ok=True iters=21 t=23s cerr=0 5xx=0 visual=0
+[18:24:48] === round 80/100 (chaos=league_switch) ===
+[18:25:18] r80: draft complete after 21 iters
+[18:25:18] r80: ok=True iters=21 t=30s cerr=0 5xx=0 visual=0
+[18:25:18] === round 81/100 (chaos=none) ===
+[18:25:39] r81: draft complete after 21 iters
+[18:25:40] r81: ok=True iters=21 t=21s cerr=0 5xx=0 visual=0
+[18:25:40] === round 82/100 (chaos=none) ===
+[18:26:05] r82: draft complete after 21 iters
+[18:26:06] r82: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:26:06] === round 83/100 (chaos=none) ===
+[18:26:30] r83: draft complete after 21 iters
+[18:26:30] r83: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:26:30] === round 84/100 (chaos=none) ===
+[18:26:55] r84: draft complete after 21 iters
+[18:26:55] r84: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:26:55] === round 85/100 (chaos=none) ===
+[18:27:19] r85: draft complete after 21 iters
+[18:27:20] r85: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:27:20] === round 86/100 (chaos=none) ===
+[18:27:46] r86: draft complete after 21 iters
+[18:27:46] r86: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:27:46] === round 87/100 (chaos=none) ===
+[18:28:12] r87: draft complete after 21 iters
+[18:28:12] r87: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:28:12] === round 88/100 (chaos=none) ===
+[18:28:38] r88: draft complete after 21 iters
+[18:28:38] r88: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:28:38] === round 89/100 (chaos=none) ===
+[18:29:01] r89: draft complete after 21 iters
+[18:29:02] r89: ok=True iters=21 t=23s cerr=0 5xx=0 visual=0
+[18:29:02] === round 90/100 (chaos=double_click) ===
+[18:29:27] r90: draft complete after 21 iters
+[18:29:27] r90: ok=True iters=21 t=25s cerr=2 5xx=0 visual=0
+[18:29:27] === round 91/100 (chaos=none) ===
+[18:29:53] r91: draft complete after 21 iters
+[18:29:53] r91: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:29:54] === round 92/100 (chaos=none) ===
+[18:30:20] r92: draft complete after 21 iters
+[18:30:20] r92: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:30:20] === round 93/100 (chaos=none) ===
+[18:30:47] r93: draft complete after 21 iters
+[18:30:47] r93: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:30:47] === round 94/100 (chaos=none) ===
+[18:31:15] r94: draft complete after 21 iters
+[18:31:15] r94: ok=True iters=21 t=27s cerr=0 5xx=0 visual=0
+[18:31:15] === round 95/100 (chaos=none) ===
+[18:31:41] r95: draft complete after 21 iters
+[18:31:41] r95: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:31:41] === round 96/100 (chaos=none) ===
+[18:32:06] r96: draft complete after 21 iters
+[18:32:06] r96: ok=True iters=21 t=24s cerr=0 5xx=0 visual=0
+[18:32:06] === round 97/100 (chaos=none) ===
+[18:32:32] r97: draft complete after 21 iters
+[18:32:33] r97: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:32:33] === round 98/100 (chaos=none) ===
+[18:32:59] r98: draft complete after 21 iters
+[18:32:59] r98: ok=True iters=21 t=26s cerr=0 5xx=0 visual=0
+[18:32:59] === round 99/100 (chaos=none) ===
+[18:33:25] r99: draft complete after 21 iters
+[18:33:25] r99: ok=True iters=21 t=25s cerr=0 5xx=0 visual=0
+[18:33:25] === round 100/100 (chaos=league_switch) ===
+[18:33:56] r100: draft complete after 21 iters
+[18:33:56] r100: ok=True iters=21 t=30s cerr=0 5xx=0 visual=0
+[18:33:56] done. report: D:\claude\fantasy nba\.qa\stress100\stress_report.md

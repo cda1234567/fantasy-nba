@@ -1,0 +1,13 @@
+INFO:     Started server process [9432]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:3503 (Press CTRL+C to quit)
+INFO:     127.0.0.1:62266 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50146 - "POST /api/leagues/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50148 - "POST /api/leagues/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57757 - "POST /api/leagues/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51895 - "POST /api/leagues/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51897 - "POST /api/leagues/create HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51901 - "GET /api/leagues/list HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55155 - "POST /api/leagues/switch HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55158 - "GET /api/health HTTP/1.1" 200 OK

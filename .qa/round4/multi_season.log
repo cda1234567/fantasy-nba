@@ -1,0 +1,36 @@
+[17:46:53] console.error: Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://static.cloudflareinsights.com'. Either the 'unsafe-inline' keyword, a hash ('sha256-mXfD7m3j
+[17:46:55] version: v0.5.28
+[17:46:56] league r4-5612 created
+[17:46:56] console.error: Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://static.cloudflareinsights.com'. Either the 'unsafe-inline' keyword, a hash ('sha256-PvyNLLQ6
+[17:46:58] setup done
+[17:46:59] human picked pid=203999 (#1)
+[17:47:00] clicked 模擬到我
+[17:47:01] console.error: Failed to load resource: the server responded with a status of 500 ()
+[17:47:03] human picked pid=202695 (#2)
+[17:47:05] human picked pid=1627759 (#3)
+[17:47:06] clicked 模擬到我
+[17:47:07] console.error: Failed to load resource: the server responded with a status of 409 ()
+[17:47:10] human picked pid=203954 (#4)
+[17:47:11] human picked pid=1630166 (#5)
+[17:47:13] clicked 模擬到我
+[17:47:13] console.error: Failed to load resource: the server responded with a status of 409 ()
+[17:47:16] human picked pid=2544 (#6)
+[17:47:17] human picked pid=1628374 (#7)
+[17:47:19] clicked 模擬到我
+[17:47:19] console.error: Failed to load resource: the server responded with a status of 409 ()
+[17:47:22] human picked pid=201939 (#8)
+[17:47:24] human picked pid=1629645 (#9)
+[17:47:25] clicked 模擬到我
+[17:47:25] console.error: Failed to load resource: the server responded with a status of 409 ()
+[17:47:28] human picked pid=1629008 (#10)
+[17:47:30] human picked pid=202710 (#11)
+[17:47:31] clicked 模擬到我
+[17:47:31] console.error: Failed to load resource: the server responded with a status of 409 ()
+[17:47:34] human picked pid=1642259 (#12)
+[17:47:36] human picked pid=1642270 (#13)
+[17:47:37] clicked 模擬到我
+[17:47:40] draft phase: False
+[17:47:42] 開始賽季 button not found
+[17:47:45] clicked 模擬到季後賽
+[17:48:04] champion visible in league view: False
+[17:48:04] report: D:\claude\fantasy nba\.qa\round4\multi_season.md

@@ -1,0 +1,1558 @@
+{
+  "pending": [],
+  "history": [
+    {
+      "id": "940393910ceb4d569bf988b4f6b19cdc",
+      "proposed_week": 1,
+      "proposed_day": 4,
+      "from_team": 1,
+      "to_team": 6,
+      "send_player_ids": [
+        1631114
+      ],
+      "receive_player_ids": [
+        1627826
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 4,
+      "veto_votes": [],
+      "veto_deadline_day": 6,
+      "reasoning": "BPA Nerd: swap Jalen Williams (32.7) for Ivica Zubac (31.3)",
+      "executed_day": 6,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "fe84b18f11df45f7a61766da60288b26",
+      "proposed_week": 1,
+      "proposed_day": 7,
+      "from_team": 3,
+      "to_team": 4,
+      "send_player_ids": [
+        1642264
+      ],
+      "receive_player_ids": [
+        202696
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 7,
+      "veto_votes": [],
+      "veto_deadline_day": 9,
+      "reasoning": "Stars & Scrubs: swap Stephon Castle (34.5) for Nikola Vučević (31.8)",
+      "executed_day": 9,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "10dee07c2c4e4ff9b5553762ce1f42ef",
+      "proposed_week": 2,
+      "proposed_day": 10,
+      "from_team": 4,
+      "to_team": 5,
+      "send_player_ids": [
+        1642264
+      ],
+      "receive_player_ids": [
+        1631096
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 10,
+      "veto_votes": [],
+      "veto_deadline_day": 12,
+      "reasoning": "Balanced Builder: swap Stephon Castle (34.5) for Chet Holmgren (35.0)",
+      "executed_day": 12,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "963ed010966547b682dc4e1574b4664b",
+      "proposed_week": 4,
+      "proposed_day": 25,
+      "from_team": 4,
+      "to_team": 5,
+      "send_player_ids": [
+        1628401
+      ],
+      "receive_player_ids": [
+        1631113
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 25,
+      "veto_votes": [],
+      "veto_deadline_day": 27,
+      "reasoning": "Balanced Builder: swap Derrick White (34.2) for Kennedy Chandler (30.0)",
+      "executed_day": 27,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e18b041b9a054fd2a3c19f83cf359bbb",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 3,
+      "send_player_ids": [
+        202695
+      ],
+      "receive_player_ids": [
+        1641705
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human 強制執行,跳過否決",
+      "executed_day": 28,
+      "proposer_message": "",
+      "force": true,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": true,
+      "counter_of": null
+    },
+    {
+      "id": "7c32cf557b1e4dc3b1fb276bcc541cb5",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 7,
+      "send_player_ids": [
+        1642270
+      ],
+      "receive_player_ids": [
+        1628378
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "a209052fd4734dffa2e6dcf264274e1a",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        1630552
+      ],
+      "receive_player_ids": [
+        1630163
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "b4508c4c226248a3b21703e9f0d543d8",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        203999
+      ],
+      "receive_player_ids": [
+        1629029
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [
+        5
+      ],
+      "veto_deadline_day": 30,
+      "reasoning": "human",
+      "executed_day": 30,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "13ef04bd43d548bf86fbe994f7794a2c",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 2,
+      "send_player_ids": [
+        1630552
+      ],
+      "receive_player_ids": [
+        1628983
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": 30,
+      "reasoning": "human",
+      "executed_day": 30,
+      "proposer_message": "fair deal bro",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "0b773c5477ba4544b1d21475a14b2aaa",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 4,
+      "send_player_ids": [
+        1627759,
+        203954
+      ],
+      "receive_player_ids": [
+        203507,
+        1630595
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": 30,
+      "reasoning": "human",
+      "executed_day": 30,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "612fb5b684424083848648a668ff75e2",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 5,
+      "send_player_ids": [
+        1629008
+      ],
+      "receive_player_ids": [
+        1628401
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": 30,
+      "reasoning": "human",
+      "executed_day": 30,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "d343560a1f1a4eb4b7a8a5afea1d7dfc",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 0,
+      "to_team": 6,
+      "send_player_ids": [
+        202710
+      ],
+      "receive_player_ids": [
+        1626157
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": 30,
+      "reasoning": "human",
+      "executed_day": 30,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "9a801895bfef4476a857b3941101073c",
+      "proposed_week": 5,
+      "proposed_day": 29,
+      "from_team": 2,
+      "to_team": 3,
+      "send_player_ids": [
+        1629027
+      ],
+      "receive_player_ids": [
+        1631101
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 29,
+      "veto_votes": [],
+      "veto_deadline_day": 31,
+      "reasoning": "Punt TO: swap Trae Young (32.2) for Shaedon Sharpe (30.7)",
+      "executed_day": 31,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "f6d70bebb80b406dac4151b3120a9bc1",
+      "proposed_week": 6,
+      "proposed_day": 36,
+      "from_team": 4,
+      "to_team": 5,
+      "send_player_ids": [
+        1630168
+      ],
+      "receive_player_ids": [
+        1642845
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 36,
+      "veto_votes": [],
+      "veto_deadline_day": 38,
+      "reasoning": "Balanced Builder: swap Onyeka Okongwu (32.8) for VJ Edgecombe (32.0)",
+      "executed_day": 38,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "0146507d60a04ab197ed6d8f92bef1f9",
+      "proposed_week": 6,
+      "proposed_day": 38,
+      "from_team": 3,
+      "to_team": 2,
+      "send_player_ids": [
+        1630532
+      ],
+      "receive_player_ids": [
+        1631101
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 38,
+      "veto_votes": [],
+      "veto_deadline_day": 40,
+      "reasoning": "Stars & Scrubs: swap Franz Wagner (33.1) for Shaedon Sharpe (30.7)",
+      "executed_day": 40,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "bc2793d624b342008180501afa512d43",
+      "proposed_week": 6,
+      "proposed_day": 42,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        1628401
+      ],
+      "receive_player_ids": [
+        203999
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 42,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "2bad0ad7db6943428b8966697e4c2d24",
+      "proposed_week": 6,
+      "proposed_day": 42,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        1628401
+      ],
+      "receive_player_ids": [
+        203999
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 42,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "5a21484d9cc54b9ca2a8eac41d0fd810",
+      "proposed_week": 6,
+      "proposed_day": 42,
+      "from_team": 0,
+      "to_team": 2,
+      "send_player_ids": [
+        1642270
+      ],
+      "receive_player_ids": [
+        1630552
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 42,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human 強制執行,跳過否決",
+      "executed_day": 42,
+      "proposer_message": "",
+      "force": true,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": true,
+      "counter_of": null
+    },
+    {
+      "id": "69bae02a4af141fba6d99d72dfe5bd7f",
+      "proposed_week": 6,
+      "proposed_day": 42,
+      "from_team": 0,
+      "to_team": 6,
+      "send_player_ids": [
+        1630552
+      ],
+      "receive_player_ids": [
+        202710
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 42,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "d7211903996d4d6bb4155ae7b2f93a71",
+      "proposed_week": 6,
+      "proposed_day": 41,
+      "from_team": 4,
+      "to_team": 2,
+      "send_player_ids": [
+        1627742
+      ],
+      "receive_player_ids": [
+        1629639
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 41,
+      "veto_votes": [],
+      "veto_deadline_day": 43,
+      "reasoning": "Balanced Builder: swap Brandon Ingram (35.1) for Tyler Herro (33.3)",
+      "executed_day": 43,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e19865d743b74785bdc59f0c2619f8e5",
+      "proposed_week": 7,
+      "proposed_day": 47,
+      "from_team": 5,
+      "to_team": 4,
+      "send_player_ids": [
+        1641718
+      ],
+      "receive_player_ids": [
+        1630217
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 47,
+      "veto_votes": [],
+      "veto_deadline_day": 49,
+      "reasoning": "Youth Upside: swap Keyonte George (37.6) for Desmond Bane (32.9)",
+      "executed_day": 49,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "798cabce64a547a08343961fc30659f1",
+      "proposed_week": 8,
+      "proposed_day": 56,
+      "from_team": 3,
+      "to_team": 7,
+      "send_player_ids": [
+        1641706
+      ],
+      "receive_player_ids": [
+        1630530
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 56,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Stars & Scrubs: swap Brandon Miller (32.8) for Trey Murphy III (37.0)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "5b591eca08c54ac384bd2dc2bdf8440c",
+      "proposed_week": 10,
+      "proposed_day": 65,
+      "from_team": 5,
+      "to_team": 1,
+      "send_player_ids": [
+        1630700
+      ],
+      "receive_player_ids": [
+        1630163
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 65,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Youth Upside: swap Dyson Daniels (33.1) for LaMelo Ball (37.5)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "7b66fa4d49394ed9bb20e1ca59b7c18d",
+      "proposed_week": 10,
+      "proposed_day": 64,
+      "from_team": 2,
+      "to_team": 1,
+      "send_player_ids": [
+        1630532
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 64,
+      "veto_votes": [],
+      "veto_deadline_day": 66,
+      "reasoning": "Punt TO: swap Franz Wagner (33.1) for Jaren Jackson Jr. (33.3)",
+      "executed_day": 66,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "9fa38c8b82b140dc9dfe359cdbc673aa",
+      "proposed_week": 10,
+      "proposed_day": 66,
+      "from_team": 5,
+      "to_team": 2,
+      "send_player_ids": [
+        1630217
+      ],
+      "receive_player_ids": [
+        1630193
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 66,
+      "veto_votes": [],
+      "veto_deadline_day": 68,
+      "reasoning": "Youth Upside: swap Desmond Bane (32.9) for Immanuel Quickley (32.0)",
+      "executed_day": 68,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "6019ace1aeb1475ba2173649a93c9a5a",
+      "proposed_week": 10,
+      "proposed_day": 70,
+      "from_team": 3,
+      "to_team": 2,
+      "send_player_ids": [
+        1629027
+      ],
+      "receive_player_ids": [
+        1628970
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 70,
+      "veto_votes": [],
+      "veto_deadline_day": 72,
+      "reasoning": "Stars & Scrubs: swap Trae Young (32.2) for Miles Bridges (30.0)",
+      "executed_day": 72,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "93b5469243de470aa59ece4bcf36b6af",
+      "proposed_week": 11,
+      "proposed_day": 71,
+      "from_team": 5,
+      "to_team": 2,
+      "send_player_ids": [
+        1630168
+      ],
+      "receive_player_ids": [
+        1642270
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 71,
+      "veto_votes": [],
+      "veto_deadline_day": 73,
+      "reasoning": "Youth Upside: swap Onyeka Okongwu (32.8) for Donovan Clingan (33.7)",
+      "executed_day": 73,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e4d49b09432343958b3772e249227d6c",
+      "proposed_week": 11,
+      "proposed_day": 72,
+      "from_team": 3,
+      "to_team": 6,
+      "send_player_ids": [
+        1631101
+      ],
+      "receive_player_ids": [
+        203497
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 72,
+      "veto_votes": [],
+      "veto_deadline_day": 74,
+      "reasoning": "Stars & Scrubs: swap Shaedon Sharpe (30.7) for Rudy Gobert (31.9)",
+      "executed_day": 74,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "dae37189d43e47dcb412fb57f8380873",
+      "proposed_week": 11,
+      "proposed_day": 74,
+      "from_team": 3,
+      "to_team": 6,
+      "send_player_ids": [
+        1630581
+      ],
+      "receive_player_ids": [
+        202710
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 74,
+      "veto_votes": [],
+      "veto_deadline_day": 76,
+      "reasoning": "Stars & Scrubs: swap Josh Giddey (40.8) for Jimmy Butler III (36.5)",
+      "executed_day": 76,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "46b0c15f4d0c47cf9c1e8a9e7b6ccf8b",
+      "proposed_week": 12,
+      "proposed_day": 78,
+      "from_team": 6,
+      "to_team": 7,
+      "send_player_ids": [
+        201942
+      ],
+      "receive_player_ids": [
+        1642259
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 78,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Vet Win-Now: swap DeMar DeRozan (30.1) for Alex Sarr (34.5)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "ef2e81503cfa4b308f633376933fa137",
+      "proposed_week": 13,
+      "proposed_day": 88,
+      "from_team": 4,
+      "to_team": 3,
+      "send_player_ids": [
+        1631096
+      ],
+      "receive_player_ids": [
+        1630596
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 88,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "Balanced Builder: swap Chet Holmgren (35.0) for Evan Mobley (38.5)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "05221edce8d141d2810d9ce3b2bc3541",
+      "proposed_week": 17,
+      "proposed_day": 113,
+      "from_team": 7,
+      "to_team": 3,
+      "send_player_ids": [
+        1627749
+      ],
+      "receive_player_ids": [
+        202710
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 113,
+      "veto_votes": [],
+      "veto_deadline_day": 115,
+      "reasoning": "Contrarian: swap Dejounte Murray (33.9) for Jimmy Butler III (36.5)",
+      "executed_day": 115,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "be2926927fc140608ab37d503b761743",
+      "proposed_week": 17,
+      "proposed_day": 115,
+      "from_team": 4,
+      "to_team": 2,
+      "send_player_ids": [
+        1631096
+      ],
+      "receive_player_ids": [
+        1630217
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 115,
+      "veto_votes": [],
+      "veto_deadline_day": 117,
+      "reasoning": "Balanced Builder: swap Chet Holmgren (35.0) for Desmond Bane (32.9)",
+      "executed_day": 117,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "f8b136f92c9d40d6bf73bc4ee815fc77",
+      "proposed_week": 17,
+      "proposed_day": 116,
+      "from_team": 7,
+      "to_team": 4,
+      "send_player_ids": [
+        1641708
+      ],
+      "receive_player_ids": [
+        1631096
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 116,
+      "veto_votes": [],
+      "veto_deadline_day": 118,
+      "reasoning": "Contrarian: swap Amen Thompson (38.5) for Chet Holmgren (35.0)",
+      "executed_day": 118,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "dfd8a5459e74423c9179db316a80333b",
+      "proposed_week": 17,
+      "proposed_day": 117,
+      "from_team": 3,
+      "to_team": 6,
+      "send_player_ids": [
+        1627749
+      ],
+      "receive_player_ids": [
+        203944
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 117,
+      "veto_votes": [],
+      "veto_deadline_day": 119,
+      "reasoning": "Stars & Scrubs: swap Dejounte Murray (33.9) for Julius Randle (37.2)",
+      "executed_day": 119,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "openai/gpt-4o-mini",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "x-ai/grok-4-fast",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "56f64faa877b4cba8526e0e5e47d1849",
+      "proposed_week": 17,
+      "proposed_day": 119,
+      "from_team": 2,
+      "to_team": 1,
+      "send_player_ids": [
+        1629627
+      ],
+      "receive_player_ids": [
+        1629630
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 119,
+      "veto_votes": [],
+      "veto_deadline_day": 121,
+      "reasoning": "Punt TO: swap Zion Williamson (34.4) for Ja Morant (35.3)",
+      "executed_day": 121,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 27
+}

@@ -1,0 +1,2194 @@
+[
+  {
+    "ts": 1776524380.0038404,
+    "type": "season_reset"
+  },
+  {
+    "ts": 1776524380.0241163,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776524380.0546355,
+    "type": "trade_proposed",
+    "trade_id": "4d497a44b8934a6389912fd1de2a7017",
+    "from_team": 5,
+    "to_team": 0,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      201142
+    ],
+    "day": 1,
+    "week": 1,
+    "reasoning": "Youth Upside: swap Jalen Duren (37.2) for Kevin Durant (40.9)"
+  },
+  {
+    "ts": 1776524380.0711415,
+    "type": "day_advance",
+    "day": 1,
+    "week": 1,
+    "fp_by_team": {
+      "0": 418.92,
+      "1": 261.0,
+      "2": 216.84,
+      "3": 342.62,
+      "4": 347.43,
+      "5": 342.94,
+      "6": 284.08,
+      "7": 376.86
+    }
+  },
+  {
+    "ts": 1776524380.136402,
+    "type": "day_advance",
+    "day": 2,
+    "week": 1,
+    "fp_by_team": {
+      "0": 436.79,
+      "1": 307.36,
+      "2": 409.66,
+      "3": 278.15,
+      "4": 230.67,
+      "5": 382.37,
+      "6": 303.89,
+      "7": 288.19
+    }
+  },
+  {
+    "ts": 1776524380.170478,
+    "type": "day_advance",
+    "day": 3,
+    "week": 1,
+    "fp_by_team": {
+      "0": 322.4,
+      "1": 291.9,
+      "2": 322.93,
+      "3": 428.37,
+      "4": 292.41,
+      "5": 236.02,
+      "6": 318.2,
+      "7": 366.95
+    }
+  },
+  {
+    "ts": 1776524380.2237988,
+    "type": "day_advance",
+    "day": 4,
+    "week": 1,
+    "fp_by_team": {
+      "0": 259.18,
+      "1": 315.41,
+      "2": 339.18,
+      "3": 315.96,
+      "4": 316.3,
+      "5": 370.56,
+      "6": 246.77,
+      "7": 329.89
+    }
+  },
+  {
+    "ts": 1776524380.265376,
+    "type": "trade_proposed",
+    "trade_id": "38294fb38e774cb6acc767fefbf26776",
+    "from_team": 3,
+    "to_team": 6,
+    "send": [
+      1630532
+    ],
+    "receive": [
+      1628368
+    ],
+    "day": 5,
+    "week": 1,
+    "reasoning": "Stars & Scrubs: swap Franz Wagner (33.1) for De'Aaron Fox (33.9)"
+  },
+  {
+    "ts": 1776524380.2809036,
+    "type": "trade_accepted",
+    "trade_id": "38294fb38e774cb6acc767fefbf26776",
+    "from_team": 3,
+    "to_team": 6,
+    "day": 5,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.303642,
+    "type": "day_advance",
+    "day": 5,
+    "week": 1,
+    "fp_by_team": {
+      "0": 429.23,
+      "1": 349.8,
+      "2": 327.22,
+      "3": 305.29,
+      "4": 331.5,
+      "5": 287.07,
+      "6": 315.6,
+      "7": 259.52
+    }
+  },
+  {
+    "ts": 1776524380.3821204,
+    "type": "day_advance",
+    "day": 6,
+    "week": 1,
+    "fp_by_team": {
+      "0": 435.79,
+      "1": 299.11,
+      "2": 254.0,
+      "3": 325.85,
+      "4": 294.46,
+      "5": 360.83,
+      "6": 249.97,
+      "7": 367.23
+    }
+  },
+  {
+    "ts": 1776524380.4326165,
+    "type": "trade_executed",
+    "trade_id": "38294fb38e774cb6acc767fefbf26776",
+    "from_team": 3,
+    "to_team": 6,
+    "send": [
+      1630532
+    ],
+    "receive": [
+      1628368
+    ],
+    "veto_votes": [],
+    "day": 7,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.449214,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 7,
+    "diff": 360.5,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.4623935,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 6,
+    "diff": 265.0,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.475895,
+    "type": "milestone_blowout",
+    "winner": 3,
+    "loser": 4,
+    "diff": 170.0,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.487232,
+    "type": "milestone_top_performer",
+    "player_id": 1626164,
+    "player_name": "Devin Booker",
+    "team_id": 6,
+    "fp": 93.4,
+    "week": 1
+  },
+  {
+    "ts": 1776524380.5026288,
+    "type": "day_advance",
+    "day": 7,
+    "week": 1,
+    "fp_by_team": {
+      "0": 304.29,
+      "1": 410.25,
+      "2": 403.31,
+      "3": 348.24,
+      "4": 361.74,
+      "5": 252.64,
+      "6": 251.29,
+      "7": 257.49
+    }
+  },
+  {
+    "ts": 1776524380.5797727,
+    "type": "trade_expired",
+    "trade_id": "4d497a44b8934a6389912fd1de2a7017",
+    "from_team": 5,
+    "to_team": 0,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      201142
+    ],
+    "veto_votes": [],
+    "day": 8,
+    "week": 2
+  },
+  {
+    "ts": 1776524380.5930285,
+    "type": "trade_proposed",
+    "trade_id": "f4c098494f5740c4a84f8cb2ec934bfa",
+    "from_team": 3,
+    "to_team": 2,
+    "send": [
+      1642882
+    ],
+    "receive": [
+      1629027
+    ],
+    "day": 8,
+    "week": 2,
+    "reasoning": "Stars & Scrubs: swap Julian Reese (29.6) for Trae Young (32.2)"
+  },
+  {
+    "ts": 1776524380.6100395,
+    "type": "trade_accepted",
+    "trade_id": "f4c098494f5740c4a84f8cb2ec934bfa",
+    "from_team": 3,
+    "to_team": 2,
+    "day": 8,
+    "week": 2
+  },
+  {
+    "ts": 1776524380.6289184,
+    "type": "day_advance",
+    "day": 8,
+    "week": 2,
+    "fp_by_team": {
+      "0": 329.98,
+      "1": 399.3,
+      "2": 444.14,
+      "3": 234.95,
+      "4": 385.1,
+      "5": 283.46,
+      "6": 386.92,
+      "7": 175.19
+    }
+  },
+  {
+    "ts": 1776524380.6907723,
+    "type": "day_advance",
+    "day": 9,
+    "week": 2,
+    "fp_by_team": {
+      "0": 346.02,
+      "1": 342.27,
+      "2": 391.56,
+      "3": 242.12,
+      "4": 292.58,
+      "5": 330.72,
+      "6": 259.54,
+      "7": 207.11
+    }
+  },
+  {
+    "ts": 1776524380.7572434,
+    "type": "trade_executed",
+    "trade_id": "f4c098494f5740c4a84f8cb2ec934bfa",
+    "from_team": 3,
+    "to_team": 2,
+    "send": [
+      1642882
+    ],
+    "receive": [
+      1629027
+    ],
+    "veto_votes": [],
+    "day": 10,
+    "week": 2
+  },
+  {
+    "ts": 1776524380.7729259,
+    "type": "day_advance",
+    "day": 10,
+    "week": 2,
+    "fp_by_team": {
+      "0": 324.93,
+      "1": 353.33,
+      "2": 393.5,
+      "3": 243.47,
+      "4": 419.29,
+      "5": 327.84,
+      "6": 214.58,
+      "7": 341.21
+    }
+  },
+  {
+    "ts": 1776524380.8637657,
+    "type": "day_advance",
+    "day": 11,
+    "week": 2,
+    "fp_by_team": {
+      "0": 386.93,
+      "1": 417.34,
+      "2": 320.13,
+      "3": 385.66,
+      "4": 347.46,
+      "5": 331.7,
+      "6": 285.0,
+      "7": 327.67
+    }
+  },
+  {
+    "ts": 1776524380.9326541,
+    "type": "day_advance",
+    "day": 12,
+    "week": 2,
+    "fp_by_team": {
+      "0": 345.99,
+      "1": 382.67,
+      "2": 308.63,
+      "3": 310.26,
+      "4": 429.55,
+      "5": 260.84,
+      "6": 315.27,
+      "7": 341.07
+    }
+  },
+  {
+    "ts": 1776524380.9937105,
+    "type": "trade_proposed",
+    "trade_id": "b9ce1a3b7e6d4426a18ddda7ab1e90db",
+    "from_team": 7,
+    "to_team": 0,
+    "send": [
+      1629008
+    ],
+    "receive": [
+      1628374
+    ],
+    "day": 13,
+    "week": 2,
+    "reasoning": "Contrarian: swap Michael Porter Jr. (38.4) for Lauri Markkanen (40.4)"
+  },
+  {
+    "ts": 1776524381.0134344,
+    "type": "day_advance",
+    "day": 13,
+    "week": 2,
+    "fp_by_team": {
+      "0": 392.95,
+      "1": 335.82,
+      "2": 267.21,
+      "3": 314.7,
+      "4": 277.85,
+      "5": 338.43,
+      "6": 293.2,
+      "7": 367.19
+    }
+  },
+  {
+    "ts": 1776524381.0879405,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 6,
+    "diff": 388.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524381.1000817,
+    "type": "milestone_blowout",
+    "winner": 5,
+    "loser": 7,
+    "diff": 147.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524381.1111722,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 4,
+    "diff": 104.1,
+    "week": 2
+  },
+  {
+    "ts": 1776524381.1231747,
+    "type": "milestone_blowout",
+    "winner": 2,
+    "loser": 3,
+    "diff": 442.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524381.131883,
+    "type": "milestone_top_performer",
+    "player_id": 1630178,
+    "player_name": "Tyrese Maxey",
+    "team_id": 2,
+    "fp": 92.5,
+    "week": 2
+  },
+  {
+    "ts": 1776524381.1527932,
+    "type": "day_advance",
+    "day": 14,
+    "week": 2,
+    "fp_by_team": {
+      "0": 317.83,
+      "1": 391.34,
+      "2": 375.92,
+      "3": 327.51,
+      "4": 366.17,
+      "5": 250.68,
+      "6": 301.68,
+      "7": 216.83
+    }
+  },
+  {
+    "ts": 1776524381.2337782,
+    "type": "day_advance",
+    "day": 15,
+    "week": 3,
+    "fp_by_team": {
+      "0": 306.8,
+      "1": 245.67,
+      "2": 420.04,
+      "3": 348.8,
+      "4": 294.7,
+      "5": 281.31,
+      "6": 384.33,
+      "7": 261.92
+    }
+  },
+  {
+    "ts": 1776524381.3243127,
+    "type": "day_advance",
+    "day": 16,
+    "week": 3,
+    "fp_by_team": {
+      "0": 435.83,
+      "1": 422.7,
+      "2": 321.44,
+      "3": 265.23,
+      "4": 390.03,
+      "5": 333.74,
+      "6": 311.39,
+      "7": 287.07
+    }
+  },
+  {
+    "ts": 1776524381.4042597,
+    "type": "day_advance",
+    "day": 17,
+    "week": 3,
+    "fp_by_team": {
+      "0": 298.23,
+      "1": 345.06,
+      "2": 256.74,
+      "3": 293.82,
+      "4": 436.05,
+      "5": 234.53,
+      "6": 307.07,
+      "7": 337.28
+    }
+  },
+  {
+    "ts": 1776524381.5005984,
+    "type": "day_advance",
+    "day": 18,
+    "week": 3,
+    "fp_by_team": {
+      "0": 491.22,
+      "1": 304.64,
+      "2": 352.29,
+      "3": 275.03,
+      "4": 302.94,
+      "5": 284.98,
+      "6": 368.04,
+      "7": 391.64
+    }
+  },
+  {
+    "ts": 1776524381.5949183,
+    "type": "day_advance",
+    "day": 19,
+    "week": 3,
+    "fp_by_team": {
+      "0": 471.19,
+      "1": 350.55,
+      "2": 245.91,
+      "3": 291.26,
+      "4": 393.16,
+      "5": 291.57,
+      "6": 217.95,
+      "7": 373.78
+    }
+  },
+  {
+    "ts": 1776524381.691528,
+    "type": "trade_expired",
+    "trade_id": "b9ce1a3b7e6d4426a18ddda7ab1e90db",
+    "from_team": 7,
+    "to_team": 0,
+    "send": [
+      1629008
+    ],
+    "receive": [
+      1628374
+    ],
+    "veto_votes": [],
+    "day": 20,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.7126317,
+    "type": "day_advance",
+    "day": 20,
+    "week": 3,
+    "fp_by_team": {
+      "0": 407.62,
+      "1": 279.74,
+      "2": 348.16,
+      "3": 407.11,
+      "4": 362.38,
+      "5": 358.22,
+      "6": 272.22,
+      "7": 307.26
+    }
+  },
+  {
+    "ts": 1776524381.8300915,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 5,
+    "diff": 789.4,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.8376808,
+    "type": "milestone_blowout",
+    "winner": 4,
+    "loser": 6,
+    "diff": 225.5,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.8481112,
+    "type": "milestone_blowout",
+    "winner": 7,
+    "loser": 3,
+    "diff": 107.6,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.8584824,
+    "type": "milestone_win_streak",
+    "team_id": 0,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.869927,
+    "type": "milestone_win_streak",
+    "team_id": 1,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.881966,
+    "type": "milestone_lose_streak",
+    "team_id": 6,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.8939984,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 107.0,
+    "week": 3
+  },
+  {
+    "ts": 1776524381.914814,
+    "type": "day_advance",
+    "day": 21,
+    "week": 3,
+    "fp_by_team": {
+      "0": 399.17,
+      "1": 383.4,
+      "2": 345.36,
+      "3": 242.69,
+      "4": 275.53,
+      "5": 236.35,
+      "6": 368.31,
+      "7": 272.62
+    }
+  },
+  {
+    "ts": 1776524382.0243134,
+    "type": "day_advance",
+    "day": 22,
+    "week": 4,
+    "fp_by_team": {
+      "0": 427.94,
+      "1": 386.46,
+      "2": 283.81,
+      "3": 244.61,
+      "4": 299.83,
+      "5": 309.83,
+      "6": 358.38,
+      "7": 150.19
+    }
+  },
+  {
+    "ts": 1776524382.1195357,
+    "type": "day_advance",
+    "day": 23,
+    "week": 4,
+    "fp_by_team": {
+      "0": 426.14,
+      "1": 344.33,
+      "2": 324.77,
+      "3": 347.03,
+      "4": 229.15,
+      "5": 271.17,
+      "6": 286.47,
+      "7": 394.34
+    }
+  },
+  {
+    "ts": 1776524382.190118,
+    "type": "trade_proposed",
+    "trade_id": "b66e4c79253c4b039769b836424ab51e",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1642851
+    ],
+    "receive": [
+      1629027
+    ],
+    "day": 24,
+    "week": 4,
+    "reasoning": "Youth Upside: swap Kon Knueppel (30.2) for Trae Young (32.2)"
+  },
+  {
+    "ts": 1776524382.206078,
+    "type": "trade_accepted",
+    "trade_id": "b66e4c79253c4b039769b836424ab51e",
+    "from_team": 5,
+    "to_team": 3,
+    "day": 24,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.2285953,
+    "type": "day_advance",
+    "day": 24,
+    "week": 4,
+    "fp_by_team": {
+      "0": 453.04,
+      "1": 261.24,
+      "2": 302.61,
+      "3": 319.15,
+      "4": 352.96,
+      "5": 330.16,
+      "6": 308.43,
+      "7": 317.36
+    }
+  },
+  {
+    "ts": 1776524382.336474,
+    "type": "day_advance",
+    "day": 25,
+    "week": 4,
+    "fp_by_team": {
+      "0": 267.78,
+      "1": 342.15,
+      "2": 316.05,
+      "3": 262.96,
+      "4": 328.62,
+      "5": 209.69,
+      "6": 303.13,
+      "7": 240.28
+    }
+  },
+  {
+    "ts": 1776524382.4227903,
+    "type": "trade_executed",
+    "trade_id": "b66e4c79253c4b039769b836424ab51e",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1642851
+    ],
+    "receive": [
+      1629027
+    ],
+    "veto_votes": [],
+    "day": 26,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.4463375,
+    "type": "day_advance",
+    "day": 26,
+    "week": 4,
+    "fp_by_team": {
+      "0": 455.54,
+      "1": 279.33,
+      "2": 329.96,
+      "3": 329.49,
+      "4": 340.15,
+      "5": 260.51,
+      "6": 271.26,
+      "7": 292.26
+    }
+  },
+  {
+    "ts": 1776524382.554565,
+    "type": "day_advance",
+    "day": 27,
+    "week": 4,
+    "fp_by_team": {
+      "0": 387.37,
+      "1": 224.65,
+      "2": 314.24,
+      "3": 337.98,
+      "4": 349.45,
+      "5": 279.45,
+      "6": 292.28,
+      "7": 252.55
+    }
+  },
+  {
+    "ts": 1776524382.629816,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 4,
+    "diff": 624.0,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.643289,
+    "type": "milestone_blowout",
+    "winner": 3,
+    "loser": 5,
+    "diff": 341.5,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.6566284,
+    "type": "milestone_blowout",
+    "winner": 2,
+    "loser": 6,
+    "diff": 83.1,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.668018,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 7,
+    "diff": 166.9,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.6795638,
+    "type": "milestone_win_streak",
+    "team_id": 0,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.6936483,
+    "type": "milestone_win_streak",
+    "team_id": 1,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.7081852,
+    "type": "milestone_lose_streak",
+    "team_id": 6,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.7220013,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 93.0,
+    "week": 4
+  },
+  {
+    "ts": 1776524382.7451158,
+    "type": "day_advance",
+    "day": 28,
+    "week": 4,
+    "fp_by_team": {
+      "0": 480.66,
+      "1": 345.0,
+      "2": 338.18,
+      "3": 337.32,
+      "4": 374.3,
+      "5": 176.24,
+      "6": 306.61,
+      "7": 369.27
+    }
+  },
+  {
+    "ts": 1776524382.8471823,
+    "type": "trade_proposed",
+    "trade_id": "9fbbf40b0f5f4f93b5bfed012c743a1c",
+    "from_team": 2,
+    "to_team": 7,
+    "send": [
+      1630217
+    ],
+    "receive": [
+      1631096
+    ],
+    "day": 29,
+    "week": 5,
+    "reasoning": "Punt TO: swap Desmond Bane (32.9) for Chet Holmgren (35.0)"
+  },
+  {
+    "ts": 1776524382.8617454,
+    "type": "trade_accepted",
+    "trade_id": "9fbbf40b0f5f4f93b5bfed012c743a1c",
+    "from_team": 2,
+    "to_team": 7,
+    "day": 29,
+    "week": 5
+  },
+  {
+    "ts": 1776524382.8835347,
+    "type": "day_advance",
+    "day": 29,
+    "week": 5,
+    "fp_by_team": {
+      "0": 404.88,
+      "1": 380.64,
+      "2": 329.49,
+      "3": 311.99,
+      "4": 370.28,
+      "5": 298.56,
+      "6": 303.35,
+      "7": 345.81
+    }
+  },
+  {
+    "ts": 1776524382.963958,
+    "type": "day_advance",
+    "day": 30,
+    "week": 5,
+    "fp_by_team": {
+      "0": 431.06,
+      "1": 399.22,
+      "2": 372.57,
+      "3": 233.0,
+      "4": 425.33,
+      "5": 306.66,
+      "6": 420.19,
+      "7": 263.3
+    }
+  },
+  {
+    "ts": 1776524403.487932,
+    "type": "season_reset"
+  },
+  {
+    "ts": 1776524403.5106957,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776524403.5636938,
+    "type": "trade_proposed",
+    "trade_id": "d0a6dc421c7e412fb9b796e249ba7ae3",
+    "from_team": 5,
+    "to_team": 0,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      201142
+    ],
+    "day": 1,
+    "week": 1,
+    "reasoning": "Youth Upside: swap Jalen Duren (37.2) for Kevin Durant (40.9)"
+  },
+  {
+    "ts": 1776524403.5798204,
+    "type": "day_advance",
+    "day": 1,
+    "week": 1,
+    "fp_by_team": {
+      "0": 418.92,
+      "1": 261.0,
+      "2": 216.84,
+      "3": 342.62,
+      "4": 347.43,
+      "5": 342.94,
+      "6": 284.08,
+      "7": 376.86
+    }
+  },
+  {
+    "ts": 1776524403.6403184,
+    "type": "day_advance",
+    "day": 2,
+    "week": 1,
+    "fp_by_team": {
+      "0": 436.79,
+      "1": 307.36,
+      "2": 409.66,
+      "3": 278.15,
+      "4": 230.67,
+      "5": 382.37,
+      "6": 303.89,
+      "7": 288.19
+    }
+  },
+  {
+    "ts": 1776524403.696272,
+    "type": "day_advance",
+    "day": 3,
+    "week": 1,
+    "fp_by_team": {
+      "0": 322.4,
+      "1": 291.9,
+      "2": 322.93,
+      "3": 428.37,
+      "4": 292.41,
+      "5": 236.02,
+      "6": 318.2,
+      "7": 366.95
+    }
+  },
+  {
+    "ts": 1776524403.7603931,
+    "type": "day_advance",
+    "day": 4,
+    "week": 1,
+    "fp_by_team": {
+      "0": 259.18,
+      "1": 315.41,
+      "2": 339.18,
+      "3": 315.96,
+      "4": 316.3,
+      "5": 370.56,
+      "6": 246.77,
+      "7": 329.89
+    }
+  },
+  {
+    "ts": 1776524403.8138509,
+    "type": "trade_proposed",
+    "trade_id": "062c3aab0302467aa5c8fd6ebbaf9969",
+    "from_team": 3,
+    "to_team": 6,
+    "send": [
+      1630532
+    ],
+    "receive": [
+      1628368
+    ],
+    "day": 5,
+    "week": 1,
+    "reasoning": "Stars & Scrubs: swap Franz Wagner (33.1) for De'Aaron Fox (33.9)"
+  },
+  {
+    "ts": 1776524403.8289883,
+    "type": "trade_accepted",
+    "trade_id": "062c3aab0302467aa5c8fd6ebbaf9969",
+    "from_team": 3,
+    "to_team": 6,
+    "day": 5,
+    "week": 1
+  },
+  {
+    "ts": 1776524403.8437257,
+    "type": "day_advance",
+    "day": 5,
+    "week": 1,
+    "fp_by_team": {
+      "0": 429.23,
+      "1": 349.8,
+      "2": 327.22,
+      "3": 305.29,
+      "4": 331.5,
+      "5": 287.07,
+      "6": 315.6,
+      "7": 259.52
+    }
+  },
+  {
+    "ts": 1776524403.9073803,
+    "type": "day_advance",
+    "day": 6,
+    "week": 1,
+    "fp_by_team": {
+      "0": 435.79,
+      "1": 299.11,
+      "2": 254.0,
+      "3": 325.85,
+      "4": 294.46,
+      "5": 360.83,
+      "6": 249.97,
+      "7": 367.23
+    }
+  },
+  {
+    "ts": 1776524403.9606683,
+    "type": "trade_executed",
+    "trade_id": "062c3aab0302467aa5c8fd6ebbaf9969",
+    "from_team": 3,
+    "to_team": 6,
+    "send": [
+      1630532
+    ],
+    "receive": [
+      1628368
+    ],
+    "veto_votes": [],
+    "day": 7,
+    "week": 1
+  },
+  {
+    "ts": 1776524403.9752712,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 7,
+    "diff": 360.5,
+    "week": 1
+  },
+  {
+    "ts": 1776524403.9870088,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 6,
+    "diff": 265.0,
+    "week": 1
+  },
+  {
+    "ts": 1776524403.9976525,
+    "type": "milestone_blowout",
+    "winner": 3,
+    "loser": 4,
+    "diff": 170.0,
+    "week": 1
+  },
+  {
+    "ts": 1776524404.0112963,
+    "type": "milestone_top_performer",
+    "player_id": 1626164,
+    "player_name": "Devin Booker",
+    "team_id": 6,
+    "fp": 93.4,
+    "week": 1
+  },
+  {
+    "ts": 1776524404.0300443,
+    "type": "day_advance",
+    "day": 7,
+    "week": 1,
+    "fp_by_team": {
+      "0": 304.29,
+      "1": 410.25,
+      "2": 403.31,
+      "3": 348.24,
+      "4": 361.74,
+      "5": 252.64,
+      "6": 251.29,
+      "7": 257.49
+    }
+  },
+  {
+    "ts": 1776524404.086475,
+    "type": "trade_expired",
+    "trade_id": "d0a6dc421c7e412fb9b796e249ba7ae3",
+    "from_team": 5,
+    "to_team": 0,
+    "send": [
+      1631105
+    ],
+    "receive": [
+      201142
+    ],
+    "veto_votes": [],
+    "day": 8,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.102923,
+    "type": "trade_proposed",
+    "trade_id": "e0e002b7582347cf944dbbc05b721434",
+    "from_team": 3,
+    "to_team": 2,
+    "send": [
+      1642882
+    ],
+    "receive": [
+      1629027
+    ],
+    "day": 8,
+    "week": 2,
+    "reasoning": "Stars & Scrubs: swap Julian Reese (29.6) for Trae Young (32.2)"
+  },
+  {
+    "ts": 1776524404.1187627,
+    "type": "trade_accepted",
+    "trade_id": "e0e002b7582347cf944dbbc05b721434",
+    "from_team": 3,
+    "to_team": 2,
+    "day": 8,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.1379986,
+    "type": "day_advance",
+    "day": 8,
+    "week": 2,
+    "fp_by_team": {
+      "0": 329.98,
+      "1": 399.3,
+      "2": 444.14,
+      "3": 234.95,
+      "4": 385.1,
+      "5": 283.46,
+      "6": 386.92,
+      "7": 175.19
+    }
+  },
+  {
+    "ts": 1776524404.2300546,
+    "type": "day_advance",
+    "day": 9,
+    "week": 2,
+    "fp_by_team": {
+      "0": 346.02,
+      "1": 342.27,
+      "2": 391.56,
+      "3": 242.12,
+      "4": 292.58,
+      "5": 330.72,
+      "6": 259.54,
+      "7": 207.11
+    }
+  },
+  {
+    "ts": 1776524404.3096938,
+    "type": "trade_executed",
+    "trade_id": "e0e002b7582347cf944dbbc05b721434",
+    "from_team": 3,
+    "to_team": 2,
+    "send": [
+      1642882
+    ],
+    "receive": [
+      1629027
+    ],
+    "veto_votes": [],
+    "day": 10,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.3294861,
+    "type": "day_advance",
+    "day": 10,
+    "week": 2,
+    "fp_by_team": {
+      "0": 324.93,
+      "1": 353.33,
+      "2": 393.5,
+      "3": 243.47,
+      "4": 419.29,
+      "5": 327.84,
+      "6": 214.58,
+      "7": 341.21
+    }
+  },
+  {
+    "ts": 1776524404.3996737,
+    "type": "day_advance",
+    "day": 11,
+    "week": 2,
+    "fp_by_team": {
+      "0": 386.93,
+      "1": 417.34,
+      "2": 320.13,
+      "3": 385.66,
+      "4": 347.46,
+      "5": 331.7,
+      "6": 285.0,
+      "7": 327.67
+    }
+  },
+  {
+    "ts": 1776524404.456925,
+    "type": "day_advance",
+    "day": 12,
+    "week": 2,
+    "fp_by_team": {
+      "0": 345.99,
+      "1": 382.67,
+      "2": 308.63,
+      "3": 310.26,
+      "4": 429.55,
+      "5": 260.84,
+      "6": 315.27,
+      "7": 341.07
+    }
+  },
+  {
+    "ts": 1776524404.526114,
+    "type": "trade_proposed",
+    "trade_id": "a06fc0a116a04184a3e8d184be937b75",
+    "from_team": 7,
+    "to_team": 0,
+    "send": [
+      1629008
+    ],
+    "receive": [
+      1628374
+    ],
+    "day": 13,
+    "week": 2,
+    "reasoning": "Contrarian: swap Michael Porter Jr. (38.4) for Lauri Markkanen (40.4)"
+  },
+  {
+    "ts": 1776524404.5473814,
+    "type": "day_advance",
+    "day": 13,
+    "week": 2,
+    "fp_by_team": {
+      "0": 392.95,
+      "1": 335.82,
+      "2": 267.21,
+      "3": 314.7,
+      "4": 277.85,
+      "5": 338.43,
+      "6": 293.2,
+      "7": 367.19
+    }
+  },
+  {
+    "ts": 1776524404.61393,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 6,
+    "diff": 388.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.62552,
+    "type": "milestone_blowout",
+    "winner": 5,
+    "loser": 7,
+    "diff": 147.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.639013,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 4,
+    "diff": 104.1,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.6523166,
+    "type": "milestone_blowout",
+    "winner": 2,
+    "loser": 3,
+    "diff": 442.4,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.6662006,
+    "type": "milestone_top_performer",
+    "player_id": 1630178,
+    "player_name": "Tyrese Maxey",
+    "team_id": 2,
+    "fp": 92.5,
+    "week": 2
+  },
+  {
+    "ts": 1776524404.684469,
+    "type": "day_advance",
+    "day": 14,
+    "week": 2,
+    "fp_by_team": {
+      "0": 317.83,
+      "1": 391.34,
+      "2": 375.92,
+      "3": 327.51,
+      "4": 366.17,
+      "5": 250.68,
+      "6": 301.68,
+      "7": 216.83
+    }
+  },
+  {
+    "ts": 1776524404.7727346,
+    "type": "day_advance",
+    "day": 15,
+    "week": 3,
+    "fp_by_team": {
+      "0": 306.8,
+      "1": 245.67,
+      "2": 420.04,
+      "3": 348.8,
+      "4": 294.7,
+      "5": 281.31,
+      "6": 384.33,
+      "7": 261.92
+    }
+  },
+  {
+    "ts": 1776524404.864102,
+    "type": "day_advance",
+    "day": 16,
+    "week": 3,
+    "fp_by_team": {
+      "0": 435.83,
+      "1": 422.7,
+      "2": 321.44,
+      "3": 265.23,
+      "4": 390.03,
+      "5": 333.74,
+      "6": 311.39,
+      "7": 287.07
+    }
+  },
+  {
+    "ts": 1776524404.9358537,
+    "type": "day_advance",
+    "day": 17,
+    "week": 3,
+    "fp_by_team": {
+      "0": 298.23,
+      "1": 345.06,
+      "2": 256.74,
+      "3": 293.82,
+      "4": 436.05,
+      "5": 234.53,
+      "6": 307.07,
+      "7": 337.28
+    }
+  },
+  {
+    "ts": 1776524405.033153,
+    "type": "day_advance",
+    "day": 18,
+    "week": 3,
+    "fp_by_team": {
+      "0": 491.22,
+      "1": 304.64,
+      "2": 352.29,
+      "3": 275.03,
+      "4": 302.94,
+      "5": 284.98,
+      "6": 368.04,
+      "7": 391.64
+    }
+  },
+  {
+    "ts": 1776524405.1132739,
+    "type": "day_advance",
+    "day": 19,
+    "week": 3,
+    "fp_by_team": {
+      "0": 471.19,
+      "1": 350.55,
+      "2": 245.91,
+      "3": 291.26,
+      "4": 393.16,
+      "5": 291.57,
+      "6": 217.95,
+      "7": 373.78
+    }
+  },
+  {
+    "ts": 1776524405.2027385,
+    "type": "trade_expired",
+    "trade_id": "a06fc0a116a04184a3e8d184be937b75",
+    "from_team": 7,
+    "to_team": 0,
+    "send": [
+      1629008
+    ],
+    "receive": [
+      1628374
+    ],
+    "veto_votes": [],
+    "day": 20,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.225913,
+    "type": "day_advance",
+    "day": 20,
+    "week": 3,
+    "fp_by_team": {
+      "0": 407.62,
+      "1": 279.74,
+      "2": 348.16,
+      "3": 407.11,
+      "4": 362.38,
+      "5": 358.22,
+      "6": 272.22,
+      "7": 307.26
+    }
+  },
+  {
+    "ts": 1776524405.340939,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 5,
+    "diff": 789.4,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.3542607,
+    "type": "milestone_blowout",
+    "winner": 4,
+    "loser": 6,
+    "diff": 225.5,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.3675418,
+    "type": "milestone_blowout",
+    "winner": 7,
+    "loser": 3,
+    "diff": 107.6,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.3782356,
+    "type": "milestone_win_streak",
+    "team_id": 0,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.3899586,
+    "type": "milestone_win_streak",
+    "team_id": 1,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.4022415,
+    "type": "milestone_lose_streak",
+    "team_id": 6,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.4143386,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 107.0,
+    "week": 3
+  },
+  {
+    "ts": 1776524405.4357069,
+    "type": "day_advance",
+    "day": 21,
+    "week": 3,
+    "fp_by_team": {
+      "0": 399.17,
+      "1": 383.4,
+      "2": 345.36,
+      "3": 242.69,
+      "4": 275.53,
+      "5": 236.35,
+      "6": 368.31,
+      "7": 272.62
+    }
+  },
+  {
+    "ts": 1776524405.5346718,
+    "type": "day_advance",
+    "day": 22,
+    "week": 4,
+    "fp_by_team": {
+      "0": 427.94,
+      "1": 386.46,
+      "2": 283.81,
+      "3": 244.61,
+      "4": 299.83,
+      "5": 309.83,
+      "6": 358.38,
+      "7": 150.19
+    }
+  },
+  {
+    "ts": 1776524405.631087,
+    "type": "day_advance",
+    "day": 23,
+    "week": 4,
+    "fp_by_team": {
+      "0": 426.14,
+      "1": 344.33,
+      "2": 324.77,
+      "3": 347.03,
+      "4": 229.15,
+      "5": 271.17,
+      "6": 286.47,
+      "7": 394.34
+    }
+  },
+  {
+    "ts": 1776524405.7112112,
+    "type": "trade_proposed",
+    "trade_id": "ecbce84cf97148c59dca8bf561c14ec9",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1642851
+    ],
+    "receive": [
+      1629027
+    ],
+    "day": 24,
+    "week": 4,
+    "reasoning": "Youth Upside: swap Kon Knueppel (30.2) for Trae Young (32.2)"
+  },
+  {
+    "ts": 1776524405.7273178,
+    "type": "trade_accepted",
+    "trade_id": "ecbce84cf97148c59dca8bf561c14ec9",
+    "from_team": 5,
+    "to_team": 3,
+    "day": 24,
+    "week": 4
+  },
+  {
+    "ts": 1776524405.7510982,
+    "type": "day_advance",
+    "day": 24,
+    "week": 4,
+    "fp_by_team": {
+      "0": 453.04,
+      "1": 261.24,
+      "2": 302.61,
+      "3": 319.15,
+      "4": 352.96,
+      "5": 330.16,
+      "6": 308.43,
+      "7": 317.36
+    }
+  },
+  {
+    "ts": 1776524405.8409333,
+    "type": "day_advance",
+    "day": 25,
+    "week": 4,
+    "fp_by_team": {
+      "0": 267.78,
+      "1": 342.15,
+      "2": 316.05,
+      "3": 262.96,
+      "4": 328.62,
+      "5": 209.69,
+      "6": 303.13,
+      "7": 240.28
+    }
+  },
+  {
+    "ts": 1776524405.9314368,
+    "type": "trade_executed",
+    "trade_id": "ecbce84cf97148c59dca8bf561c14ec9",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1642851
+    ],
+    "receive": [
+      1629027
+    ],
+    "veto_votes": [],
+    "day": 26,
+    "week": 4
+  },
+  {
+    "ts": 1776524405.9527845,
+    "type": "day_advance",
+    "day": 26,
+    "week": 4,
+    "fp_by_team": {
+      "0": 455.54,
+      "1": 279.33,
+      "2": 329.96,
+      "3": 329.49,
+      "4": 340.15,
+      "5": 260.51,
+      "6": 271.26,
+      "7": 292.26
+    }
+  },
+  {
+    "ts": 1776524406.0602388,
+    "type": "day_advance",
+    "day": 27,
+    "week": 4,
+    "fp_by_team": {
+      "0": 387.37,
+      "1": 224.65,
+      "2": 314.24,
+      "3": 337.98,
+      "4": 349.45,
+      "5": 279.45,
+      "6": 292.28,
+      "7": 252.55
+    }
+  },
+  {
+    "ts": 1776524406.1521258,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 4,
+    "diff": 624.0,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.166112,
+    "type": "milestone_blowout",
+    "winner": 3,
+    "loser": 5,
+    "diff": 341.5,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.1782851,
+    "type": "milestone_blowout",
+    "winner": 2,
+    "loser": 6,
+    "diff": 83.1,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.1912932,
+    "type": "milestone_blowout",
+    "winner": 1,
+    "loser": 7,
+    "diff": 166.9,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.2046514,
+    "type": "milestone_win_streak",
+    "team_id": 0,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.2174246,
+    "type": "milestone_win_streak",
+    "team_id": 1,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.232158,
+    "type": "milestone_lose_streak",
+    "team_id": 6,
+    "streak": 3,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.245503,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 93.0,
+    "week": 4
+  },
+  {
+    "ts": 1776524406.2672095,
+    "type": "day_advance",
+    "day": 28,
+    "week": 4,
+    "fp_by_team": {
+      "0": 480.66,
+      "1": 345.0,
+      "2": 338.18,
+      "3": 337.32,
+      "4": 374.3,
+      "5": 176.24,
+      "6": 306.61,
+      "7": 369.27
+    }
+  },
+  {
+    "ts": 1776524406.353119,
+    "type": "trade_proposed",
+    "trade_id": "fd7e7af996c94175ab39fa99af98650f",
+    "from_team": 2,
+    "to_team": 7,
+    "send": [
+      1630217
+    ],
+    "receive": [
+      1631096
+    ],
+    "day": 29,
+    "week": 5,
+    "reasoning": "Punt TO: swap Desmond Bane (32.9) for Chet Holmgren (35.0)"
+  },
+  {
+    "ts": 1776524406.3695343,
+    "type": "trade_accepted",
+    "trade_id": "fd7e7af996c94175ab39fa99af98650f",
+    "from_team": 2,
+    "to_team": 7,
+    "day": 29,
+    "week": 5
+  },
+  {
+    "ts": 1776524406.3941426,
+    "type": "day_advance",
+    "day": 29,
+    "week": 5,
+    "fp_by_team": {
+      "0": 404.88,
+      "1": 380.64,
+      "2": 329.49,
+      "3": 311.99,
+      "4": 370.28,
+      "5": 298.56,
+      "6": 303.35,
+      "7": 345.81
+    }
+  },
+  {
+    "ts": 1776524406.4851754,
+    "type": "day_advance",
+    "day": 30,
+    "week": 5,
+    "fp_by_team": {
+      "0": 431.06,
+      "1": 399.22,
+      "2": 372.57,
+      "3": 233.0,
+      "4": 425.33,
+      "5": 306.66,
+      "6": 420.19,
+      "7": 263.3
+    }
+  },
+  {
+    "ts": 1776524406.996806,
+    "type": "trade_proposed",
+    "trade_id": "69caf00410f2407a86df9d9c98d59111",
+    "from_team": 0,
+    "to_team": 1,
+    "send": [
+      203999
+    ],
+    "receive": [
+      1628983
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.0402634,
+    "type": "trade_proposed",
+    "trade_id": "1e165135c5df45a8ad863175e46fb45f",
+    "from_team": 0,
+    "to_team": 1,
+    "send": [
+      1642259
+    ],
+    "receive": [
+      1628983
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.0947237,
+    "type": "trade_proposed",
+    "trade_id": "899c0f537e7b4f89bd334782608cede4",
+    "from_team": 0,
+    "to_team": 2,
+    "send": [
+      1642259,
+      202710
+    ],
+    "receive": [
+      1641705
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.1306524,
+    "type": "trade_proposed",
+    "trade_id": "2a34431b4ea04f59a85a55d816759f95",
+    "from_team": 0,
+    "to_team": 3,
+    "send": [
+      203999
+    ],
+    "receive": [
+      1628368,
+      1641706
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.1923885,
+    "type": "trade_proposed",
+    "trade_id": "6c4a1fd43e534e8391d67f3306159d49",
+    "from_team": 0,
+    "to_team": 4,
+    "send": [
+      1642259,
+      202710,
+      1629645
+    ],
+    "receive": [
+      1629029
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.3037617,
+    "type": "trade_proposed",
+    "trade_id": "ddeb347239814edfa2b1697737ebd2eb",
+    "from_team": 0,
+    "to_team": 6,
+    "send": [
+      1627759,
+      203954,
+      1630166
+    ],
+    "receive": [
+      1626164,
+      203944,
+      1630532
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.3559954,
+    "type": "trade_proposed",
+    "trade_id": "c5eb84f0d87a480fa20209566d56660d",
+    "from_team": 0,
+    "to_team": 7,
+    "send": [
+      1642259,
+      202710,
+      1629645
+    ],
+    "receive": [
+      1628378,
+      203076,
+      1641708
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.3957403,
+    "type": "trade_proposed",
+    "trade_id": "103eebe7b5bc4cc899ca51f85456aeb6",
+    "from_team": 0,
+    "to_team": 1,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1627734
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.4304438,
+    "type": "trade_proposed",
+    "trade_id": "82d021731369463e9b62d692c5ec0afa",
+    "from_team": 0,
+    "to_team": 2,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1627826
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.4860415,
+    "type": "trade_proposed",
+    "trade_id": "c4319fbb957c487bb7b7feaacd59869b",
+    "from_team": 0,
+    "to_team": 3,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1641706
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.526001,
+    "type": "trade_proposed",
+    "trade_id": "60f06db53b0448839f58e667a78d874d",
+    "from_team": 0,
+    "to_team": 4,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1629627
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.581067,
+    "type": "trade_proposed",
+    "trade_id": "cce70465e2d84097af58c40ae9335eef",
+    "from_team": 0,
+    "to_team": 5,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1630700
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.618275,
+    "type": "trade_proposed",
+    "trade_id": "127eb73b1a664d7da5410ac8e5702674",
+    "from_team": 0,
+    "to_team": 6,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1630532
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.6750448,
+    "type": "trade_proposed",
+    "trade_id": "abe4371dc21544a484097f0217c65b58",
+    "from_team": 0,
+    "to_team": 7,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1630530
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.732823,
+    "type": "trade_proposed",
+    "trade_id": "169295f529814b7fa5713227c568b34f",
+    "from_team": 0,
+    "to_team": 1,
+    "send": [
+      203954,
+      1630166
+    ],
+    "receive": [
+      1630595
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.834694,
+    "type": "trade_proposed",
+    "trade_id": "b46e31aaf49b410986a6a29f586af20b",
+    "from_team": 0,
+    "to_team": 3,
+    "send": [
+      203954,
+      1630166
+    ],
+    "receive": [
+      1630162
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.8727274,
+    "type": "trade_proposed",
+    "trade_id": "cb5b354642ca45119c0417b50cf4828f",
+    "from_team": 0,
+    "to_team": 4,
+    "send": [
+      202695
+    ],
+    "receive": [
+      1629627,
+      1628401
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.92063,
+    "type": "trade_proposed",
+    "trade_id": "d728c1c9f5c7434b9782b124fbb5d7b2",
+    "from_team": 0,
+    "to_team": 5,
+    "send": [
+      202695
+    ],
+    "receive": [
+      1630700,
+      1629027
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524407.9527674,
+    "type": "trade_proposed",
+    "trade_id": "9b3706f2ba064b30bed743957a56a337",
+    "from_team": 0,
+    "to_team": 6,
+    "send": [
+      203954,
+      1630166
+    ],
+    "receive": [
+      203497,
+      1628384,
+      201942
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524408.0025427,
+    "type": "trade_proposed",
+    "trade_id": "e43b086eb62a42809e60b94e8b2b7f57",
+    "from_team": 0,
+    "to_team": 7,
+    "send": [
+      203954,
+      1630166
+    ],
+    "receive": [
+      1629630,
+      1631096,
+      1627749
+    ],
+    "day": 30,
+    "week": 5,
+    "reasoning": "human"
+  },
+  {
+    "ts": 1776524408.224414,
+    "type": "day_advance",
+    "day": 31,
+    "week": 5,
+    "fp_by_team": {
+      "0": 434.05,
+      "1": 331.47,
+      "2": 255.99,
+      "3": 353.1,
+      "4": 444.62,
+      "5": 263.41,
+      "6": 376.41,
+      "7": 385.22
+    }
+  },
+  {
+    "ts": 1776524408.2936246,
+    "type": "trade_executed",
+    "trade_id": "abe4371dc21544a484097f0217c65b58",
+    "from_team": 0,
+    "to_team": 7,
+    "send": [
+      1630166
+    ],
+    "receive": [
+      1630530
+    ],
+    "veto_votes": [
+      4
+    ],
+    "day": 32,
+    "week": 5
+  },
+  {
+    "ts": 1776524408.323095,
+    "type": "day_advance",
+    "day": 32,
+    "week": 5,
+    "fp_by_team": {
+      "0": 407.19,
+      "1": 317.58,
+      "2": 319.19,
+      "3": 219.04,
+      "4": 354.23,
+      "5": 252.02,
+      "6": 307.42,
+      "7": 407.58
+    }
+  },
+  {
+    "ts": 1776524408.4311383,
+    "type": "day_advance",
+    "day": 33,
+    "week": 5,
+    "fp_by_team": {
+      "0": 472.53,
+      "1": 459.8,
+      "2": 275.2,
+      "3": 206.81,
+      "4": 367.42,
+      "5": 296.01,
+      "6": 210.37,
+      "7": 312.1
+    }
+  }
+]

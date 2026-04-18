@@ -1,0 +1,1893 @@
+[
+  {
+    "ts": 1776520635.0071123,
+    "type": "season_start",
+    "num_teams": 8,
+    "weeks": 20
+  },
+  {
+    "ts": 1776520635.0550456,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.069095,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.0814817,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.093924,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.1068552,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.117529,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.1302834,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.1465526,
+    "type": "day_advance",
+    "day": 1,
+    "week": 1,
+    "fp_by_team": {
+      "0": 422.67,
+      "1": 252.28,
+      "2": 277.43,
+      "3": 389.3,
+      "4": 368.37,
+      "5": 370.02,
+      "6": 354.65,
+      "7": 387.99
+    }
+  },
+  {
+    "ts": 1776520635.161906,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.1759984,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.1914098,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2044234,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2176118,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2313561,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2464771,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2621484,
+    "type": "day_advance",
+    "day": 2,
+    "week": 1,
+    "fp_by_team": {
+      "0": 388.08,
+      "1": 376.81,
+      "2": 283.55,
+      "3": 322.51,
+      "4": 270.39,
+      "5": 308.02,
+      "6": 271.71,
+      "7": 385.02
+    }
+  },
+  {
+    "ts": 1776520635.2797778,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.2944374,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.3084667,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.3212075,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.334033,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.3490605,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.3646958,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.3812745,
+    "type": "day_advance",
+    "day": 3,
+    "week": 1,
+    "fp_by_team": {
+      "0": 401.67,
+      "1": 231.88,
+      "2": 361.16,
+      "3": 254.32,
+      "4": 441.64,
+      "5": 329.0,
+      "6": 349.96,
+      "7": 394.51
+    }
+  },
+  {
+    "ts": 1776520635.3969522,
+    "type": "trade_proposed",
+    "trade_id": "262b68de0fbe44b98e2e395c5aaf0dfe",
+    "from_team": 4,
+    "to_team": 2,
+    "send": [
+      1629627
+    ],
+    "receive": [
+      1628970
+    ],
+    "day": 4,
+    "week": 1,
+    "reasoning": "Balanced Builder: swap Zion Williamson (34.4) for Miles Bridges (30.0)"
+  },
+  {
+    "ts": 1776520635.4169466,
+    "type": "trade_accepted",
+    "trade_id": "262b68de0fbe44b98e2e395c5aaf0dfe",
+    "from_team": 4,
+    "to_team": 2,
+    "day": 4,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.4313545,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.446645,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.4623582,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.47711,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.4911277,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.507488,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.521754,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.5386188,
+    "type": "day_advance",
+    "day": 4,
+    "week": 1,
+    "fp_by_team": {
+      "0": 501.34,
+      "1": 293.28,
+      "2": 229.01,
+      "3": 292.25,
+      "4": 281.94,
+      "5": 209.01,
+      "6": 284.81,
+      "7": 341.02
+    }
+  },
+  {
+    "ts": 1776520635.5669153,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.5797906,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.5946894,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.6114569,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.6262183,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.640051,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.6539655,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.6700735,
+    "type": "day_advance",
+    "day": 5,
+    "week": 1,
+    "fp_by_team": {
+      "0": 212.39,
+      "1": 348.21,
+      "2": 306.66,
+      "3": 231.75,
+      "4": 334.34,
+      "5": 319.32,
+      "6": 294.35,
+      "7": 324.93
+    }
+  },
+  {
+    "ts": 1776520635.6825936,
+    "type": "trade_executed",
+    "trade_id": "262b68de0fbe44b98e2e395c5aaf0dfe",
+    "from_team": 4,
+    "to_team": 2,
+    "send": [
+      1629627
+    ],
+    "receive": [
+      1628970
+    ],
+    "veto_votes": [],
+    "day": 6,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.6975553,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.7106562,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.7256136,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.7396703,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.7550697,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.7673268,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.782821,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.8024483,
+    "type": "day_advance",
+    "day": 6,
+    "week": 1,
+    "fp_by_team": {
+      "0": 504.82,
+      "1": 121.61,
+      "2": 297.26,
+      "3": 331.88,
+      "4": 326.78,
+      "5": 370.43,
+      "6": 376.75,
+      "7": 405.8
+    }
+  },
+  {
+    "ts": 1776520635.8301532,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.8456855,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.8580704,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.872778,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.885677,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.899341,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.9126167,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520635.9294715,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 7,
+    "diff": 114.5,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.9466057,
+    "type": "milestone_blowout",
+    "winner": 6,
+    "loser": 1,
+    "diff": 288.8,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.9634752,
+    "type": "milestone_blowout",
+    "winner": 5,
+    "loser": 2,
+    "diff": 196.6,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.977342,
+    "type": "milestone_blowout",
+    "winner": 4,
+    "loser": 3,
+    "diff": 132.0,
+    "week": 1
+  },
+  {
+    "ts": 1776520635.9923048,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 92.0,
+    "week": 1
+  },
+  {
+    "ts": 1776520636.0134983,
+    "type": "day_advance",
+    "day": 7,
+    "week": 1,
+    "fp_by_team": {
+      "0": 400.58,
+      "1": 306.22,
+      "2": 334.07,
+      "3": 390.51,
+      "4": 321.09,
+      "5": 379.93,
+      "6": 286.85,
+      "7": 477.82
+    }
+  },
+  {
+    "ts": 1776520636.0740597,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.089053,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.1039774,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.116988,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.1314788,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.1445374,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.1635323,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.1828656,
+    "type": "day_advance",
+    "day": 8,
+    "week": 2,
+    "fp_by_team": {
+      "0": 446.49,
+      "1": 328.47,
+      "2": 254.66,
+      "3": 373.43,
+      "4": 351.38,
+      "5": 348.77,
+      "6": 313.31,
+      "7": 248.69
+    }
+  },
+  {
+    "ts": 1776520636.1981063,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2112439,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2233143,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.234426,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2476635,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2625206,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2768474,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.2987087,
+    "type": "day_advance",
+    "day": 9,
+    "week": 2,
+    "fp_by_team": {
+      "0": 513.61,
+      "1": 212.24,
+      "2": 349.82,
+      "3": 322.27,
+      "4": 411.68,
+      "5": 429.72,
+      "6": 271.71,
+      "7": 329.61
+    }
+  },
+  {
+    "ts": 1776520636.3121917,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3232317,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3385315,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3522146,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3676834,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3800287,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.3958354,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.4147506,
+    "type": "day_advance",
+    "day": 10,
+    "week": 2,
+    "fp_by_team": {
+      "0": 372.71,
+      "1": 304.02,
+      "2": 295.75,
+      "3": 299.94,
+      "4": 444.16,
+      "5": 300.71,
+      "6": 395.18,
+      "7": 372.01
+    }
+  },
+  {
+    "ts": 1776520636.4300072,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.438752,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.446335,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.4583766,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.4706807,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.4822285,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.495712,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.5159602,
+    "type": "day_advance",
+    "day": 11,
+    "week": 2,
+    "fp_by_team": {
+      "0": 366.34,
+      "1": 374.26,
+      "2": 316.83,
+      "3": 286.15,
+      "4": 433.11,
+      "5": 270.35,
+      "6": 346.06,
+      "7": 372.27
+    }
+  },
+  {
+    "ts": 1776520636.531125,
+    "type": "trade_proposed",
+    "trade_id": "d298585798a44360b83e6a1916c03362",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1641718
+    ],
+    "receive": [
+      1630163
+    ],
+    "day": 12,
+    "week": 2,
+    "reasoning": "Youth Upside: swap Keyonte George (37.6) for LaMelo Ball (37.5)"
+  },
+  {
+    "ts": 1776520636.5478835,
+    "type": "trade_accepted",
+    "trade_id": "d298585798a44360b83e6a1916c03362",
+    "from_team": 5,
+    "to_team": 3,
+    "day": 12,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.5620193,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.5742579,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.587663,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.598197,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.6110606,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.6266086,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.6397095,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.6595368,
+    "type": "day_advance",
+    "day": 12,
+    "week": 2,
+    "fp_by_team": {
+      "0": 428.97,
+      "1": 304.04,
+      "2": 336.71,
+      "3": 328.66,
+      "4": 289.7,
+      "5": 391.87,
+      "6": 393.45,
+      "7": 202.03
+    }
+  },
+  {
+    "ts": 1776520636.6871917,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.699432,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.7095728,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.7226002,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.7353678,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.7484467,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.76095,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.7793996,
+    "type": "day_advance",
+    "day": 13,
+    "week": 2,
+    "fp_by_team": {
+      "0": 338.18,
+      "1": 354.09,
+      "2": 357.48,
+      "3": 345.23,
+      "4": 284.31,
+      "5": 292.0,
+      "6": 427.0,
+      "7": 307.75
+    }
+  },
+  {
+    "ts": 1776520636.7951722,
+    "type": "trade_executed",
+    "trade_id": "d298585798a44360b83e6a1916c03362",
+    "from_team": 5,
+    "to_team": 3,
+    "send": [
+      1641718
+    ],
+    "receive": [
+      1630163
+    ],
+    "veto_votes": [],
+    "day": 14,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.8050196,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8179052,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8300784,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8415606,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8545377,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.86643,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8781338,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520636.8938844,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 6,
+    "diff": 427.5,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.9068463,
+    "type": "milestone_blowout",
+    "winner": 5,
+    "loser": 7,
+    "diff": 180.6,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.919012,
+    "type": "milestone_blowout",
+    "winner": 4,
+    "loser": 1,
+    "diff": 456.6,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.9318924,
+    "type": "milestone_blowout",
+    "winner": 3,
+    "loser": 2,
+    "diff": 84.2,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.9460175,
+    "type": "milestone_top_performer",
+    "player_id": 203999,
+    "player_name": "Nikola Jokić",
+    "team_id": 0,
+    "fp": 101.4,
+    "week": 2
+  },
+  {
+    "ts": 1776520636.9651504,
+    "type": "day_advance",
+    "day": 14,
+    "week": 2,
+    "fp_by_team": {
+      "0": 389.02,
+      "1": 220.47,
+      "2": 301.37,
+      "3": 341.13,
+      "4": 339.86,
+      "5": 293.74,
+      "6": 281.12,
+      "7": 314.15
+    }
+  },
+  {
+    "ts": 1776520637.0502267,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.0633943,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.0753098,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.085699,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.0953517,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.1024845,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.1114902,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.133964,
+    "type": "day_advance",
+    "day": 15,
+    "week": 3,
+    "fp_by_team": {
+      "0": 451.53,
+      "1": 323.09,
+      "2": 399.47,
+      "3": 308.7,
+      "4": 394.66,
+      "5": 285.79,
+      "6": 260.18,
+      "7": 303.98
+    }
+  },
+  {
+    "ts": 1776520637.1492605,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.1627553,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.1781485,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.1893067,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.2019122,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.2150414,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.226525,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.2473612,
+    "type": "day_advance",
+    "day": 16,
+    "week": 3,
+    "fp_by_team": {
+      "0": 504.19,
+      "1": 379.06,
+      "2": 448.02,
+      "3": 290.24,
+      "4": 308.17,
+      "5": 263.38,
+      "6": 315.61,
+      "7": 300.2
+    }
+  },
+  {
+    "ts": 1776520637.2609203,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.272413,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.285192,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.300383,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.312611,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.3270123,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.3394349,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.3653135,
+    "type": "day_advance",
+    "day": 17,
+    "week": 3,
+    "fp_by_team": {
+      "0": 308.24,
+      "1": 266.77,
+      "2": 300.34,
+      "3": 303.38,
+      "4": 287.47,
+      "5": 302.12,
+      "6": 225.89,
+      "7": 356.57
+    }
+  },
+  {
+    "ts": 1776520637.3816452,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.3961833,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.409446,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.4231954,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.4368613,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.4483163,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.4608173,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.4832385,
+    "type": "day_advance",
+    "day": 18,
+    "week": 3,
+    "fp_by_team": {
+      "0": 448.53,
+      "1": 334.13,
+      "2": 326.83,
+      "3": 172.04,
+      "4": 296.49,
+      "5": 344.96,
+      "6": 368.01,
+      "7": 386.24
+    }
+  },
+  {
+    "ts": 1776520637.4988196,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.5120354,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.527595,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.5396597,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.5526288,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.5655537,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.5781865,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.6058536,
+    "type": "day_advance",
+    "day": 19,
+    "week": 3,
+    "fp_by_team": {
+      "0": 354.62,
+      "1": 301.77,
+      "2": 322.96,
+      "3": 245.65,
+      "4": 408.66,
+      "5": 268.31,
+      "6": 324.99,
+      "7": 363.72
+    }
+  },
+  {
+    "ts": 1776520637.625287,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.6415617,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.6588545,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.6724682,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.6870062,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.7019246,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.7179322,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.7435384,
+    "type": "day_advance",
+    "day": 20,
+    "week": 3,
+    "fp_by_team": {
+      "0": 392.15,
+      "1": 361.18,
+      "2": 310.42,
+      "3": 329.27,
+      "4": 336.92,
+      "5": 369.77,
+      "6": 348.06,
+      "7": 372.27
+    }
+  },
+  {
+    "ts": 1776520637.7581716,
+    "type": "ai_decision",
+    "team_id": 1,
+    "persona": "bpa",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.772298,
+    "type": "ai_decision",
+    "team_id": 2,
+    "persona": "punt_to",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.7877555,
+    "type": "ai_decision",
+    "team_id": 3,
+    "persona": "stars_scrubs",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.8008022,
+    "type": "ai_decision",
+    "team_id": 4,
+    "persona": "balanced",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.8145416,
+    "type": "ai_decision",
+    "team_id": 5,
+    "persona": "youth",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.8279343,
+    "type": "ai_decision",
+    "team_id": 6,
+    "persona": "vet",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.8425367,
+    "type": "ai_decision",
+    "team_id": 7,
+    "persona": "contrarian",
+    "action": "lineup",
+    "used_api": false,
+    "excerpt": "heuristic: top-10 FPPG"
+  },
+  {
+    "ts": 1776520637.8601985,
+    "type": "milestone_blowout",
+    "winner": 0,
+    "loser": 5,
+    "diff": 887.6,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.8767796,
+    "type": "milestone_blowout",
+    "winner": 4,
+    "loser": 6,
+    "diff": 123.7,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.891447,
+    "type": "milestone_blowout",
+    "winner": 7,
+    "loser": 3,
+    "diff": 407.7,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9079542,
+    "type": "milestone_blowout",
+    "winner": 2,
+    "loser": 1,
+    "diff": 246.0,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9231102,
+    "type": "milestone_win_streak",
+    "team_id": 0,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9390252,
+    "type": "milestone_lose_streak",
+    "team_id": 1,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9508054,
+    "type": "milestone_win_streak",
+    "team_id": 4,
+    "streak": 3,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9625823,
+    "type": "milestone_top_performer",
+    "player_id": 1628369,
+    "player_name": "Jayson Tatum",
+    "team_id": 2,
+    "fp": 87.6,
+    "week": 3
+  },
+  {
+    "ts": 1776520637.9847715,
+    "type": "day_advance",
+    "day": 21,
+    "week": 3,
+    "fp_by_team": {
+      "0": 474.38,
+      "1": 320.66,
+      "2": 424.6,
+      "3": 323.22,
+      "4": 249.27,
+      "5": 211.71,
+      "6": 315.18,
+      "7": 297.19
+    }
+  }
+]

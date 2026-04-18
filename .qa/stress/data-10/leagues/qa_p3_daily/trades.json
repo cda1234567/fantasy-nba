@@ -1,0 +1,222 @@
+{
+  "pending": [
+    {
+      "id": "190993c347b048d79651ae87a9880686",
+      "proposed_week": 3,
+      "proposed_day": 17,
+      "from_team": 7,
+      "to_team": 1,
+      "send_player_ids": [
+        1629639
+      ],
+      "receive_player_ids": [
+        203897
+      ],
+      "status": "accepted",
+      "counterparty_decided_day": 17,
+      "veto_votes": [],
+      "veto_deadline_day": 19,
+      "reasoning": "Contrarian: swap Tyler Herro (38.5) for Zach LaVine (34.5)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "history": [
+    {
+      "id": "5c71ac75b9d3416cbde110db9766d697",
+      "proposed_week": 1,
+      "proposed_day": 7,
+      "from_team": 1,
+      "to_team": 4,
+      "send_player_ids": [
+        1630217
+      ],
+      "receive_player_ids": [
+        1630567
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 7,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "BPA Nerd: swap Desmond Bane (36.1) for Scottie Barnes (40.4)",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "9fffeca4d3e0425087167e792d3b586e",
+      "proposed_week": 2,
+      "proposed_day": 9,
+      "from_team": 4,
+      "to_team": 3,
+      "send_player_ids": [
+        202681
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 9,
+      "veto_votes": [],
+      "veto_deadline_day": 11,
+      "reasoning": "Balanced Builder: swap Kyrie Irving (39.7) for Jaren Jackson Jr. (36.6)",
+      "executed_day": 11,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "T5",
+          "model": "deepseek/deepseek-chat",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "e12dfd6ebda34016a30ce1f33fa726aa",
+      "proposed_week": 2,
+      "proposed_day": 10,
+      "from_team": 3,
+      "to_team": 5,
+      "send_player_ids": [
+        1631101
+      ],
+      "receive_player_ids": [
+        1631105
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 10,
+      "veto_votes": [],
+      "veto_deadline_day": 12,
+      "reasoning": "Stars & Scrubs: swap Shaedon Sharpe (28.8) for Jalen Duren (31.0)",
+      "executed_day": 12,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "T1",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "da126c2b3e7347f3a37c25c5e9dda9ac",
+      "proposed_week": 3,
+      "proposed_day": 16,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        203999
+      ],
+      "receive_player_ids": [
+        1629029
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 16,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "T2",
+          "model": "openai/gpt-4o",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "T3",
+          "model": "google/gemini-2.0-flash-001",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "T4",
+          "model": "anthropic/claude-sonnet-4.5",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 2
+}

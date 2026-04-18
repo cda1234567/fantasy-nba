@@ -1,0 +1,383 @@
+# Stress Test Report — agent-8
+
+Run at: 2026-04-18 23:01:25
+
+## Endpoints Tested
+- GET /api/season/week-recap?week=N
+- GET /api/season/matchup-detail?week=N&team_a=A&team_b=B
+
+## Issues Found
+- No recap 500s
+- No score mismatches
+- No logs_trimmed flag errors
+- No empty-players issues for recent weeks
+
+## All Findings
+- [PASS] setup 200: status=200
+- [PASS] draft complete
+- [PASS] season start 200: status=200
+- [PASS] sim-to-playoffs 200: status=200 elapsed=7.5s
+- [PASS] at least 1 completed regular week: count=20
+- [PASS] week 1 recap matchups non-empty: count=4
+- [PASS] week 1 top_performers length 0-5: len=0
+- [PASS] week 1 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 1 0v7 scores match schedule: detail=(3029.22,2094.15) sched=(3029.22,2094.15)
+- [PASS] week 1 7v0 flipped also 200: status=200
+- [PASS] week 1 flipped scores present: score_a=3029.22 score_b=2094.15
+- [PASS] week 1 1v6 scores match schedule: detail=(2170.05,2163.4) sched=(2170.05,2163.4)
+- [PASS] week 1 6v1 flipped also 200: status=200
+- [PASS] week 1 flipped scores present: score_a=2170.05 score_b=2163.4
+- [PASS] week 1 2v5 scores match schedule: detail=(2338.36,2173.09) sched=(2338.36,2173.09)
+- [PASS] week 1 5v2 flipped also 200: status=200
+- [PASS] week 1 flipped scores present: score_a=2338.36 score_b=2173.09
+- [PASS] week 1 3v4 scores match schedule: detail=(2423.03,2366.72) sched=(2423.03,2366.72)
+- [PASS] week 1 4v3 flipped also 200: status=200
+- [PASS] week 1 flipped scores present: score_a=2423.03 score_b=2366.72
+- [PASS] week 2 recap matchups non-empty: count=4
+- [PASS] week 2 top_performers length 0-5: len=0
+- [PASS] week 2 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 2 0v6 scores match schedule: detail=(2873.48,2224.95) sched=(2873.48,2224.95)
+- [PASS] week 2 6v0 flipped also 200: status=200
+- [PASS] week 2 flipped scores present: score_a=2873.48 score_b=2224.95
+- [PASS] week 2 7v5 scores match schedule: detail=(2285.3,2223.78) sched=(2285.3,2223.78)
+- [PASS] week 2 5v7 flipped also 200: status=200
+- [PASS] week 2 flipped scores present: score_a=2285.3 score_b=2223.78
+- [PASS] week 2 1v4 scores match schedule: detail=(2084.69,2616.71) sched=(2084.69,2616.71)
+- [PASS] week 2 4v1 flipped also 200: status=200
+- [PASS] week 2 flipped scores present: score_a=2084.69 score_b=2616.71
+- [PASS] week 2 2v3 scores match schedule: detail=(2374.89,2416.67) sched=(2374.89,2416.67)
+- [PASS] week 2 3v2 flipped also 200: status=200
+- [PASS] week 2 flipped scores present: score_a=2374.89 score_b=2416.67
+- [PASS] week 3 recap matchups non-empty: count=4
+- [PASS] week 3 top_performers length 0-5: len=0
+- [PASS] week 3 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 3 0v5 scores match schedule: detail=(2850.29,2140.83) sched=(2850.29,2140.83)
+- [PASS] week 3 5v0 flipped also 200: status=200
+- [PASS] week 3 flipped scores present: score_a=2850.29 score_b=2140.83
+- [PASS] week 3 6v4 scores match schedule: detail=(2285.63,2497.12) sched=(2285.63,2497.12)
+- [PASS] week 3 4v6 flipped also 200: status=200
+- [PASS] week 3 flipped scores present: score_a=2285.63 score_b=2497.12
+- [PASS] week 3 7v3 scores match schedule: detail=(2189.67,2331.53) sched=(2189.67,2331.53)
+- [PASS] week 3 3v7 flipped also 200: status=200
+- [PASS] week 3 flipped scores present: score_a=2189.67 score_b=2331.53
+- [PASS] week 3 1v2 scores match schedule: detail=(2428.46,2320.71) sched=(2428.46,2320.71)
+- [PASS] week 3 2v1 flipped also 200: status=200
+- [PASS] week 3 flipped scores present: score_a=2428.46 score_b=2320.71
+- [PASS] week 4 recap matchups non-empty: count=4
+- [PASS] week 4 top_performers length 0-5: len=0
+- [PASS] week 4 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 4 0v4 scores match schedule: detail=(3069.39,2023.53) sched=(3069.39,2023.53)
+- [PASS] week 4 4v0 flipped also 200: status=200
+- [PASS] week 4 flipped scores present: score_a=3069.39 score_b=2023.53
+- [PASS] week 4 5v3 scores match schedule: detail=(2112.72,2170.43) sched=(2112.72,2170.43)
+- [PASS] week 4 3v5 flipped also 200: status=200
+- [PASS] week 4 flipped scores present: score_a=2112.72 score_b=2170.43
+- [PASS] week 4 6v2 scores match schedule: detail=(2037.46,2290.64) sched=(2037.46,2290.64)
+- [PASS] week 4 2v6 flipped also 200: status=200
+- [PASS] week 4 flipped scores present: score_a=2037.46 score_b=2290.64
+- [PASS] week 4 7v1 scores match schedule: detail=(2225.4,2352.06) sched=(2225.4,2352.06)
+- [PASS] week 4 1v7 flipped also 200: status=200
+- [PASS] week 4 flipped scores present: score_a=2225.4 score_b=2352.06
+- [PASS] week 5 recap matchups non-empty: count=4
+- [PASS] week 5 top_performers length 0-5: len=0
+- [PASS] week 5 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 5 0v3 scores match schedule: detail=(2683.43,2441.75) sched=(2683.43,2441.75)
+- [PASS] week 5 3v0 flipped also 200: status=200
+- [PASS] week 5 flipped scores present: score_a=2683.43 score_b=2441.75
+- [PASS] week 5 4v2 scores match schedule: detail=(2383.72,2141.01) sched=(2383.72,2141.01)
+- [PASS] week 5 2v4 flipped also 200: status=200
+- [PASS] week 5 flipped scores present: score_a=2383.72 score_b=2141.01
+- [PASS] week 5 5v1 scores match schedule: detail=(2122.54,2244.06) sched=(2122.54,2244.06)
+- [PASS] week 5 1v5 flipped also 200: status=200
+- [PASS] week 5 flipped scores present: score_a=2122.54 score_b=2244.06
+- [PASS] week 5 6v7 scores match schedule: detail=(1922.97,2161.71) sched=(1922.97,2161.71)
+- [PASS] week 5 7v6 flipped also 200: status=200
+- [PASS] week 5 flipped scores present: score_a=1922.97 score_b=2161.71
+- [PASS] week 6 recap matchups non-empty: count=4
+- [PASS] week 6 top_performers length 0-5: len=0
+- [PASS] week 6 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 6 0v2 scores match schedule: detail=(2840.72,2120.9) sched=(2840.72,2120.9)
+- [PASS] week 6 2v0 flipped also 200: status=200
+- [PASS] week 6 flipped scores present: score_a=2840.72 score_b=2120.9
+- [PASS] week 6 3v1 scores match schedule: detail=(2180.79,2014.03) sched=(2180.79,2014.03)
+- [PASS] week 6 1v3 flipped also 200: status=200
+- [PASS] week 6 flipped scores present: score_a=2180.79 score_b=2014.03
+- [PASS] week 6 4v7 scores match schedule: detail=(2440.1,2317.55) sched=(2440.1,2317.55)
+- [PASS] week 6 7v4 flipped also 200: status=200
+- [PASS] week 6 flipped scores present: score_a=2440.1 score_b=2317.55
+- [PASS] week 6 5v6 scores match schedule: detail=(2120.83,1958.7) sched=(2120.83,1958.7)
+- [PASS] week 6 6v5 flipped also 200: status=200
+- [PASS] week 6 flipped scores present: score_a=2120.83 score_b=1958.7
+- [PASS] week 7 recap matchups non-empty: count=4
+- [PASS] week 7 top_performers length 0-5: len=0
+- [PASS] week 7 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 7 0v1 scores match schedule: detail=(2520.7,2324.19) sched=(2520.7,2324.19)
+- [PASS] week 7 1v0 flipped also 200: status=200
+- [PASS] week 7 flipped scores present: score_a=2520.7 score_b=2324.19
+- [PASS] week 7 2v7 scores match schedule: detail=(2095.77,2357.98) sched=(2095.77,2357.98)
+- [PASS] week 7 7v2 flipped also 200: status=200
+- [PASS] week 7 flipped scores present: score_a=2095.77 score_b=2357.98
+- [PASS] week 7 3v6 scores match schedule: detail=(2124.86,2111.2) sched=(2124.86,2111.2)
+- [PASS] week 7 6v3 flipped also 200: status=200
+- [PASS] week 7 flipped scores present: score_a=2124.86 score_b=2111.2
+- [PASS] week 7 4v5 scores match schedule: detail=(2328.52,2209.94) sched=(2328.52,2209.94)
+- [PASS] week 7 5v4 flipped also 200: status=200
+- [PASS] week 7 flipped scores present: score_a=2328.52 score_b=2209.94
+- [PASS] week 8 recap matchups non-empty: count=4
+- [PASS] week 8 top_performers length 0-5: len=0
+- [PASS] week 8 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 8 7v0 scores match schedule: detail=(2326.49,2502.01) sched=(2326.49,2502.01)
+- [PASS] week 8 0v7 flipped also 200: status=200
+- [PASS] week 8 flipped scores present: score_a=2326.49 score_b=2502.01
+- [PASS] week 8 6v1 scores match schedule: detail=(1981.7,2063.11) sched=(1981.7,2063.11)
+- [PASS] week 8 1v6 flipped also 200: status=200
+- [PASS] week 8 flipped scores present: score_a=1981.7 score_b=2063.11
+- [PASS] week 8 5v2 scores match schedule: detail=(2267.84,2143.48) sched=(2267.84,2143.48)
+- [PASS] week 8 2v5 flipped also 200: status=200
+- [PASS] week 8 flipped scores present: score_a=2267.84 score_b=2143.48
+- [PASS] week 8 4v3 scores match schedule: detail=(2363.35,2246.13) sched=(2363.35,2246.13)
+- [PASS] week 8 3v4 flipped also 200: status=200
+- [PASS] week 8 flipped scores present: score_a=2363.35 score_b=2246.13
+- [PASS] week 9 recap matchups non-empty: count=4
+- [PASS] week 9 top_performers length 0-5: len=0
+- [PASS] week 9 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 9 6v0 scores match schedule: detail=(1959.49,2873.78) sched=(1959.49,2873.78)
+- [PASS] week 9 0v6 flipped also 200: status=200
+- [PASS] week 9 flipped scores present: score_a=1959.49 score_b=2873.78
+- [PASS] week 9 5v7 scores match schedule: detail=(2224.13,2395.28) sched=(2224.13,2395.28)
+- [PASS] week 9 7v5 flipped also 200: status=200
+- [PASS] week 9 flipped scores present: score_a=2224.13 score_b=2395.28
+- [PASS] week 9 4v1 scores match schedule: detail=(2260.43,2160.46) sched=(2260.43,2160.46)
+- [PASS] week 9 1v4 flipped also 200: status=200
+- [PASS] week 9 flipped scores present: score_a=2260.43 score_b=2160.46
+- [PASS] week 9 3v2 scores match schedule: detail=(2180.48,2180.18) sched=(2180.48,2180.18)
+- [PASS] week 9 2v3 flipped also 200: status=200
+- [PASS] week 9 flipped scores present: score_a=2180.48 score_b=2180.18
+- [PASS] week 10 recap matchups non-empty: count=4
+- [PASS] week 10 top_performers length 0-5: len=0
+- [PASS] week 10 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 10 5v0 scores match schedule: detail=(2097.27,3020.68) sched=(2097.27,3020.68)
+- [PASS] week 10 0v5 flipped also 200: status=200
+- [PASS] week 10 flipped scores present: score_a=2097.27 score_b=3020.68
+- [PASS] week 10 4v6 scores match schedule: detail=(2516.95,2113.84) sched=(2516.95,2113.84)
+- [PASS] week 10 6v4 flipped also 200: status=200
+- [PASS] week 10 flipped scores present: score_a=2516.95 score_b=2113.84
+- [PASS] week 10 3v7 scores match schedule: detail=(2439.9,2210.25) sched=(2439.9,2210.25)
+- [PASS] week 10 7v3 flipped also 200: status=200
+- [PASS] week 10 flipped scores present: score_a=2439.9 score_b=2210.25
+- [PASS] week 10 2v1 scores match schedule: detail=(2227.21,2263.91) sched=(2227.21,2263.91)
+- [PASS] week 10 1v2 flipped also 200: status=200
+- [PASS] week 10 flipped scores present: score_a=2227.21 score_b=2263.91
+- [PASS] week 11 recap matchups non-empty: count=4
+- [PASS] week 11 top_performers length 0-5: len=0
+- [PASS] week 11 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 11 4v0 scores match schedule: detail=(2549.15,3108.84) sched=(2549.15,3108.84)
+- [PASS] week 11 0v4 flipped also 200: status=200
+- [PASS] week 11 flipped scores present: score_a=2549.15 score_b=3108.84
+- [PASS] week 11 3v5 scores match schedule: detail=(2093.22,2208.69) sched=(2093.22,2208.69)
+- [PASS] week 11 5v3 flipped also 200: status=200
+- [PASS] week 11 flipped scores present: score_a=2093.22 score_b=2208.69
+- [PASS] week 11 2v6 scores match schedule: detail=(2078.17,2023.62) sched=(2078.17,2023.62)
+- [PASS] week 11 6v2 flipped also 200: status=200
+- [PASS] week 11 flipped scores present: score_a=2078.17 score_b=2023.62
+- [PASS] week 11 1v7 scores match schedule: detail=(2219.97,2460.57) sched=(2219.97,2460.57)
+- [PASS] week 11 7v1 flipped also 200: status=200
+- [PASS] week 11 flipped scores present: score_a=2219.97 score_b=2460.57
+- [PASS] week 12 recap matchups non-empty: count=4
+- [PASS] week 12 top_performers length 0-5: len=0
+- [PASS] week 12 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 12 3v0 scores match schedule: detail=(2086.6,2433.04) sched=(2086.6,2433.04)
+- [PASS] week 12 0v3 flipped also 200: status=200
+- [PASS] week 12 flipped scores present: score_a=2086.6 score_b=2433.04
+- [PASS] week 12 2v4 scores match schedule: detail=(2225.67,2182.81) sched=(2225.67,2182.81)
+- [PASS] week 12 4v2 flipped also 200: status=200
+- [PASS] week 12 flipped scores present: score_a=2225.67 score_b=2182.81
+- [PASS] week 12 1v5 scores match schedule: detail=(2376.98,2088.57) sched=(2376.98,2088.57)
+- [PASS] week 12 5v1 flipped also 200: status=200
+- [PASS] week 12 flipped scores present: score_a=2376.98 score_b=2088.57
+- [PASS] week 12 7v6 scores match schedule: detail=(2230.25,2239.54) sched=(2230.25,2239.54)
+- [PASS] week 12 6v7 flipped also 200: status=200
+- [PASS] week 12 flipped scores present: score_a=2230.25 score_b=2239.54
+- [PASS] week 13 recap matchups non-empty: count=4
+- [PASS] week 13 top_performers length 0-5: len=0
+- [PASS] week 13 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 13 2v0 scores match schedule: detail=(2225.89,2903.25) sched=(2225.89,2903.25)
+- [PASS] week 13 0v2 flipped also 200: status=200
+- [PASS] week 13 flipped scores present: score_a=2225.89 score_b=2903.25
+- [PASS] week 13 1v3 scores match schedule: detail=(1904.93,2375.15) sched=(1904.93,2375.15)
+- [PASS] week 13 3v1 flipped also 200: status=200
+- [PASS] week 13 flipped scores present: score_a=1904.93 score_b=2375.15
+- [PASS] week 13 7v4 scores match schedule: detail=(2253.16,2216.21) sched=(2253.16,2216.21)
+- [PASS] week 13 4v7 flipped also 200: status=200
+- [PASS] week 13 flipped scores present: score_a=2253.16 score_b=2216.21
+- [PASS] week 13 6v5 scores match schedule: detail=(2199.55,2051.17) sched=(2199.55,2051.17)
+- [PASS] week 13 5v6 flipped also 200: status=200
+- [PASS] week 13 flipped scores present: score_a=2199.55 score_b=2051.17
+- [PASS] week 14 recap matchups non-empty: count=4
+- [PASS] week 14 top_performers length 0-5: len=0
+- [PASS] week 14 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 14 1v0 scores match schedule: detail=(2385.09,2618.6) sched=(2385.09,2618.6)
+- [PASS] week 14 0v1 flipped also 200: status=200
+- [PASS] week 14 flipped scores present: score_a=2385.09 score_b=2618.6
+- [PASS] week 14 7v2 scores match schedule: detail=(2348.96,2327.84) sched=(2348.96,2327.84)
+- [PASS] week 14 2v7 flipped also 200: status=200
+- [PASS] week 14 flipped scores present: score_a=2348.96 score_b=2327.84
+- [PASS] week 14 6v3 scores match schedule: detail=(1959.52,2327.72) sched=(1959.52,2327.72)
+- [PASS] week 14 3v6 flipped also 200: status=200
+- [PASS] week 14 flipped scores present: score_a=1959.52 score_b=2327.72
+- [PASS] week 14 5v4 scores match schedule: detail=(2060.57,2501.82) sched=(2060.57,2501.82)
+- [PASS] week 14 4v5 flipped also 200: status=200
+- [PASS] week 14 flipped scores present: score_a=2060.57 score_b=2501.82
+- [PASS] week 15 recap matchups non-empty: count=4
+- [PASS] week 15 top_performers length 0-5: len=0
+- [PASS] week 15 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 15 0v7 scores match schedule: detail=(3173.43,2499.18) sched=(3173.43,2499.18)
+- [PASS] week 15 7v0 flipped also 200: status=200
+- [PASS] week 15 flipped scores present: score_a=3173.43 score_b=2499.18
+- [PASS] week 15 1v6 scores match schedule: detail=(1920.11,1906.75) sched=(1920.11,1906.75)
+- [PASS] week 15 6v1 flipped also 200: status=200
+- [PASS] week 15 flipped scores present: score_a=1920.11 score_b=1906.75
+- [PASS] week 15 2v5 scores match schedule: detail=(1917.08,2295.54) sched=(1917.08,2295.54)
+- [PASS] week 15 5v2 flipped also 200: status=200
+- [PASS] week 15 flipped scores present: score_a=1917.08 score_b=2295.54
+- [PASS] week 15 3v4 scores match schedule: detail=(2254.65,2230.68) sched=(2254.65,2230.68)
+- [PASS] week 15 4v3 flipped also 200: status=200
+- [PASS] week 15 flipped scores present: score_a=2254.65 score_b=2230.68
+- [PASS] week 16 recap matchups non-empty: count=4
+- [PASS] week 16 top_performers length 0-5: len=0
+- [PASS] week 16 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 16 0v6 scores match schedule: detail=(2738.03,2140.25) sched=(2738.03,2140.25)
+- [PASS] week 16 6v0 flipped also 200: status=200
+- [PASS] week 16 flipped scores present: score_a=2738.03 score_b=2140.25
+- [PASS] week 16 7v5 scores match schedule: detail=(2195.29,1847.97) sched=(2195.29,1847.97)
+- [PASS] week 16 5v7 flipped also 200: status=200
+- [PASS] week 16 flipped scores present: score_a=2195.29 score_b=1847.97
+- [PASS] week 16 1v4 scores match schedule: detail=(2267.69,2152.0) sched=(2267.69,2152.0)
+- [PASS] week 16 4v1 flipped also 200: status=200
+- [PASS] week 16 flipped scores present: score_a=2267.69 score_b=2152.0
+- [PASS] week 16 2v3 scores match schedule: detail=(2069.19,2418.26) sched=(2069.19,2418.26)
+- [PASS] week 16 3v2 flipped also 200: status=200
+- [PASS] week 16 flipped scores present: score_a=2069.19 score_b=2418.26
+- [PASS] week 17 recap matchups non-empty: count=4
+- [PASS] week 17 top_performers length 0-5: len=0
+- [PASS] week 17 logs_trimmed flag correct: trimmed=True expected=True
+- [PASS] week 17 0v5 scores match schedule: detail=(2604.56,1960.39) sched=(2604.56,1960.39)
+- [PASS] week 17 5v0 flipped also 200: status=200
+- [PASS] week 17 flipped scores present: score_a=2604.56 score_b=1960.39
+- [PASS] week 17 6v4 scores match schedule: detail=(2069.22,2246.95) sched=(2069.22,2246.95)
+- [PASS] week 17 4v6 flipped also 200: status=200
+- [PASS] week 17 flipped scores present: score_a=2069.22 score_b=2246.95
+- [PASS] week 17 7v3 scores match schedule: detail=(2272.26,2303.35) sched=(2272.26,2303.35)
+- [PASS] week 17 3v7 flipped also 200: status=200
+- [PASS] week 17 flipped scores present: score_a=2272.26 score_b=2303.35
+- [PASS] week 17 1v2 scores match schedule: detail=(2407.08,2373.32) sched=(2407.08,2373.32)
+- [PASS] week 17 2v1 flipped also 200: status=200
+- [PASS] week 17 flipped scores present: score_a=2407.08 score_b=2373.32
+- [PASS] week 18 recap matchups non-empty: count=4
+- [PASS] week 18 top_performers length 0-5: len=5
+- [PASS] week 18 logs_trimmed flag correct: trimmed=False expected=False
+- [PASS] week 18 0v4 scores match schedule: detail=(2881.74,2304.97) sched=(2881.74,2304.97)
+- [PASS] week 18 0v4 not 0-0 when not trimmed
+- [PASS] week 18 0v4 players_a length sane: len=70
+- [PASS] week 18 0v4 players_b length sane: len=70
+- [PASS] week 18 0v4 recent week has players: pa=70 pb=70
+- [PASS] week 18 4v0 flipped also 200: status=200
+- [PASS] week 18 flipped scores present: score_a=2881.74 score_b=2304.97
+- [PASS] week 18 5v3 scores match schedule: detail=(1861.35,2517.39) sched=(1861.35,2517.39)
+- [PASS] week 18 5v3 not 0-0 when not trimmed
+- [PASS] week 18 5v3 players_a length sane: len=70
+- [PASS] week 18 5v3 players_b length sane: len=70
+- [PASS] week 18 5v3 recent week has players: pa=70 pb=70
+- [PASS] week 18 3v5 flipped also 200: status=200
+- [PASS] week 18 flipped scores present: score_a=1861.35 score_b=2517.39
+- [PASS] week 18 6v2 scores match schedule: detail=(2295.62,2319.5) sched=(2295.62,2319.5)
+- [PASS] week 18 6v2 not 0-0 when not trimmed
+- [PASS] week 18 6v2 players_a length sane: len=70
+- [PASS] week 18 6v2 players_b length sane: len=70
+- [PASS] week 18 6v2 recent week has players: pa=70 pb=70
+- [PASS] week 18 2v6 flipped also 200: status=200
+- [PASS] week 18 flipped scores present: score_a=2295.62 score_b=2319.5
+- [PASS] week 18 7v1 scores match schedule: detail=(2495.19,2607.52) sched=(2495.19,2607.52)
+- [PASS] week 18 7v1 not 0-0 when not trimmed
+- [PASS] week 18 7v1 players_a length sane: len=70
+- [PASS] week 18 7v1 players_b length sane: len=70
+- [PASS] week 18 7v1 recent week has players: pa=70 pb=70
+- [PASS] week 18 1v7 flipped also 200: status=200
+- [PASS] week 18 flipped scores present: score_a=2495.19 score_b=2607.52
+- [PASS] week 19 recap matchups non-empty: count=4
+- [PASS] week 19 top_performers length 0-5: len=5
+- [PASS] week 19 logs_trimmed flag correct: trimmed=False expected=False
+- [PASS] week 19 0v3 scores match schedule: detail=(3102.76,2518.82) sched=(3102.76,2518.82)
+- [PASS] week 19 0v3 not 0-0 when not trimmed
+- [PASS] week 19 0v3 players_a length sane: len=70
+- [PASS] week 19 0v3 players_b length sane: len=70
+- [PASS] week 19 0v3 recent week has players: pa=70 pb=70
+- [PASS] week 19 3v0 flipped also 200: status=200
+- [PASS] week 19 flipped scores present: score_a=3102.76 score_b=2518.82
+- [PASS] week 19 4v2 scores match schedule: detail=(2446.94,2379.63) sched=(2446.94,2379.63)
+- [PASS] week 19 4v2 not 0-0 when not trimmed
+- [PASS] week 19 4v2 players_a length sane: len=70
+- [PASS] week 19 4v2 players_b length sane: len=70
+- [PASS] week 19 4v2 recent week has players: pa=70 pb=70
+- [PASS] week 19 2v4 flipped also 200: status=200
+- [PASS] week 19 flipped scores present: score_a=2446.94 score_b=2379.63
+- [PASS] week 19 5v1 scores match schedule: detail=(1986.97,2330.58) sched=(1986.97,2330.58)
+- [PASS] week 19 5v1 not 0-0 when not trimmed
+- [PASS] week 19 5v1 players_a length sane: len=70
+- [PASS] week 19 5v1 players_b length sane: len=70
+- [PASS] week 19 5v1 recent week has players: pa=70 pb=70
+- [PASS] week 19 1v5 flipped also 200: status=200
+- [PASS] week 19 flipped scores present: score_a=1986.97 score_b=2330.58
+- [PASS] week 19 6v7 scores match schedule: detail=(2064.57,2424.85) sched=(2064.57,2424.85)
+- [PASS] week 19 6v7 not 0-0 when not trimmed
+- [PASS] week 19 6v7 players_a length sane: len=70
+- [PASS] week 19 6v7 players_b length sane: len=70
+- [PASS] week 19 6v7 recent week has players: pa=70 pb=70
+- [PASS] week 19 7v6 flipped also 200: status=200
+- [PASS] week 19 flipped scores present: score_a=2064.57 score_b=2424.85
+- [PASS] week 20 recap matchups non-empty: count=4
+- [PASS] week 20 top_performers length 0-5: len=5
+- [PASS] week 20 logs_trimmed flag correct: trimmed=False expected=False
+- [PASS] week 20 0v2 scores match schedule: detail=(2831.14,2516.19) sched=(2831.14,2516.19)
+- [PASS] week 20 0v2 not 0-0 when not trimmed
+- [PASS] week 20 0v2 players_a length sane: len=70
+- [PASS] week 20 0v2 players_b length sane: len=70
+- [PASS] week 20 0v2 recent week has players: pa=70 pb=70
+- [PASS] week 20 2v0 flipped also 200: status=200
+- [PASS] week 20 flipped scores present: score_a=2831.14 score_b=2516.19
+- [PASS] week 20 3v1 scores match schedule: detail=(2475.16,2510.33) sched=(2475.16,2510.33)
+- [PASS] week 20 3v1 not 0-0 when not trimmed
+- [PASS] week 20 3v1 players_a length sane: len=70
+- [PASS] week 20 3v1 players_b length sane: len=70
+- [PASS] week 20 3v1 recent week has players: pa=70 pb=70
+- [PASS] week 20 1v3 flipped also 200: status=200
+- [PASS] week 20 flipped scores present: score_a=2475.16 score_b=2510.33
+- [PASS] week 20 4v7 scores match schedule: detail=(2405.9,2077.53) sched=(2405.9,2077.53)
+- [PASS] week 20 4v7 not 0-0 when not trimmed
+- [PASS] week 20 4v7 players_a length sane: len=70
+- [PASS] week 20 4v7 players_b length sane: len=70
+- [PASS] week 20 4v7 recent week has players: pa=70 pb=70
+- [PASS] week 20 7v4 flipped also 200: status=200
+- [PASS] week 20 flipped scores present: score_a=2405.9 score_b=2077.53
+- [PASS] week 20 5v6 scores match schedule: detail=(2200.61,2049.49) sched=(2200.61,2049.49)
+- [PASS] week 20 5v6 not 0-0 when not trimmed
+- [PASS] week 20 5v6 players_a length sane: len=70
+- [PASS] week 20 5v6 players_b length sane: len=70
+- [PASS] week 20 5v6 recent week has players: pa=70 pb=70
+- [PASS] week 20 6v5 flipped also 200: status=200
+- [PASS] week 20 flipped scores present: score_a=2200.61 score_b=2049.49
+- [PASS] no week-recap 500s: OK
+- [PASS] no matchup score mismatches: OK
+- [PASS] no logs_trimmed flag wrong: OK
+- [PASS] no empty players for recent weeks: OK
+- [PASS] last week matchup-detail: logs_trimmed=False: trimmed=False
+- [PASS] last week matchup-detail: players_a non-empty: len=70
+- [PASS] last week matchup-detail: players_b non-empty: len=70
+- [PASS] week 1 logs_trimmed=True (oldest week): logs_trimmed=True current_week=20
+- [PASS] week-recap week=999 → 404: status=404
+- [PASS] week-recap week=0 → 422: status=422
+- [PASS] matchup-detail team_a=99 not in league → 404: status=404
+- [PASS] matchup-detail team_a=team_b → 404: status=404
+- [PASS] matchup-detail week=999 → 404: status=404
+
+## Summary: 366 passed, 0 failed

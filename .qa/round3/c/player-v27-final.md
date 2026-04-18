@@ -1,15 +1,15 @@
 # R3-C v0.5.27 Final Verification
 
-Version: v0.5.27
-League: r3v27f-5253
-One-click success: 1/5
+Version: v0.5.28
+League: r3v27f-5547
+One-click success: 5/5
 
 | pick | pid | result | elapsed(ms) | note |
 |------|-----|--------|-------------|------|
-| 1 | 203954 | PASS | 497 |  |
-| 2 | 1630178 | FAIL | 10674 |  |
-| 3 | 1630178 | FAIL | 10282 |  |
-| 4 | 1630178 | FAIL | 10083 |  |
-| 5 | 1630178 | FAIL | 10211 |  |
+| 1 | 203999 | PASS | 492 |  |
+| 2 | 1630552 | PASS | 1434 |  |
+| 3 | 202695 | PASS | 493 |  |
+| 4 | 1627759 | PASS | 493 |  |
+| 5 | 203954 | PASS | 496 |  |
 
-Verdict: FAIL
+Verdict: PASS

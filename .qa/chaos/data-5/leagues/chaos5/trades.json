@@ -1,0 +1,350 @@
+{
+  "pending": [],
+  "history": [
+    {
+      "id": "7b5a206388d44b82b5bcccfcc7bfeeee",
+      "proposed_week": 1,
+      "proposed_day": 3,
+      "from_team": 4,
+      "to_team": 1,
+      "send_player_ids": [
+        1630168
+      ],
+      "receive_player_ids": [
+        1629636
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 3,
+      "veto_votes": [],
+      "veto_deadline_day": 5,
+      "reasoning": "Balanced Builder: swap Onyeka Okongwu (32.8) for Darius Garland (31.8)",
+      "executed_day": 5,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "55d2cede97f14410bd5955eff724e3fe",
+      "proposed_week": 1,
+      "proposed_day": 4,
+      "from_team": 7,
+      "to_team": 1,
+      "send_player_ids": [
+        1629027
+      ],
+      "receive_player_ids": [
+        1631114
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 4,
+      "veto_votes": [],
+      "veto_deadline_day": 6,
+      "reasoning": "Contrarian: swap Trae Young (32.2) for Jalen Williams (32.7)",
+      "executed_day": 6,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "ba7a85d0d1874cd4901f2afe4994db49",
+      "proposed_week": 1,
+      "proposed_day": 7,
+      "from_team": 4,
+      "to_team": 2,
+      "send_player_ids": [
+        1629636
+      ],
+      "receive_player_ids": [
+        1630193
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 7,
+      "veto_votes": [],
+      "veto_deadline_day": 9,
+      "reasoning": "Balanced Builder: swap Darius Garland (31.8) for Immanuel Quickley (32.0)",
+      "executed_day": 9,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "qwen/qwen-2.5-72b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "bdad3b4f5aa343a8be9b875e03b26f09",
+      "proposed_week": 2,
+      "proposed_day": 8,
+      "from_team": 1,
+      "to_team": 2,
+      "send_player_ids": [
+        1629627
+      ],
+      "receive_player_ids": [
+        1630532
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 8,
+      "veto_votes": [],
+      "veto_deadline_day": 10,
+      "reasoning": "BPA Nerd: swap Zion Williamson (34.4) for Franz Wagner (33.1)",
+      "executed_day": 10,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "c1c0a284422a45dd92482c4407b87007",
+      "proposed_week": 2,
+      "proposed_day": 10,
+      "from_team": 3,
+      "to_team": 4,
+      "send_player_ids": [
+        1641706
+      ],
+      "receive_player_ids": [
+        1630217
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 10,
+      "veto_votes": [],
+      "veto_deadline_day": 12,
+      "reasoning": "Stars & Scrubs: swap Brandon Miller (32.8) for Desmond Bane (32.9)",
+      "executed_day": 12,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "qwen/qwen-2.5-72b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 5,
+          "team_name": "Youth Upside",
+          "model": "anthropic/claude-haiku-4.5",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "04c0c983ce75468fafa84d36ac30cbf8",
+      "proposed_week": 2,
+      "proposed_day": 12,
+      "from_team": 6,
+      "to_team": 2,
+      "send_player_ids": [
+        1628368
+      ],
+      "receive_player_ids": [
+        1629627
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 12,
+      "veto_votes": [],
+      "veto_deadline_day": 14,
+      "reasoning": "Vet Win-Now: swap De'Aaron Fox (33.9) for Zion Williamson (34.4)",
+      "executed_day": 14,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 1,
+          "team_name": "BPA Nerd",
+          "model": "qwen/qwen-2.5-72b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "bfffe7fb09634df4b349c680f547a2ab",
+      "proposed_week": 4,
+      "proposed_day": 28,
+      "from_team": 1,
+      "to_team": 7,
+      "send_player_ids": [
+        1630163
+      ],
+      "receive_player_ids": [
+        1628991
+      ],
+      "status": "executed",
+      "counterparty_decided_day": 28,
+      "veto_votes": [],
+      "veto_deadline_day": 30,
+      "reasoning": "BPA Nerd: swap LaMelo Ball (37.5) for Jaren Jackson Jr. (33.3)",
+      "executed_day": 30,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "挺公平的交易。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "挺公平的交易。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    },
+    {
+      "id": "36c63bea6fd04504be12b6e9786d1a03",
+      "proposed_week": 5,
+      "proposed_day": 35,
+      "from_team": 0,
+      "to_team": 1,
+      "send_player_ids": [
+        203999
+      ],
+      "receive_player_ids": [
+        203507
+      ],
+      "status": "rejected",
+      "counterparty_decided_day": 35,
+      "veto_votes": [],
+      "veto_deadline_day": null,
+      "reasoning": "human",
+      "executed_day": null,
+      "proposer_message": "",
+      "force": false,
+      "peer_commentary": [
+        {
+          "team_id": 2,
+          "team_name": "Punt TO",
+          "model": "openai/gpt-4o",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 3,
+          "team_name": "Stars & Scrubs",
+          "model": "mistralai/mistral-small-3.1-24b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        },
+        {
+          "team_id": 4,
+          "team_name": "Balanced Builder",
+          "model": "meta-llama/llama-3.3-70b-instruct",
+          "text": "看起來兩邊價值差距不小。"
+        }
+      ],
+      "force_executed": false,
+      "counter_of": null
+    }
+  ],
+  "season_executed_count": 7
+}
