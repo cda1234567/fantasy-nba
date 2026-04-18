@@ -2169,7 +2169,15 @@ async function refreshTradeHistoryRaw() {
     const res = await fetch('/api/trades/history');
     if (!res.ok) return;
     const d = await res.json();
-    state.tradesHistory = d.history || [];
+    const hist = d.history || [];
+    hist.sort((a, b) => {
+      const weekA = a.proposed_week ?? 0;
+      const weekB = b.proposed_week ?? 0;
+      const dayA  = a.executed_day ?? a.proposed_day ?? 0;
+      const dayB  = b.executed_day ?? b.proposed_day ?? 0;
+      return (weekB * 1000 + dayB) - (weekA * 1000 + dayA);
+    });
+    state.tradesHistory = hist;
   } catch (_) {}
 }
 
@@ -3934,6 +3942,11 @@ async function onSubmitProposeTrade() {
         state.tradeHistoryOpen = true;
         state.expandedHistory.add(newId);
       }
+      // Auto-navigate to 交易 sub-tab so user immediately sees the new proposal
+      // at the top of the list (sort-newest-first ensures visibility).
+      state.leagueSubTab = 'trades';
+      state.tradesSubtabFilter = 'all';
+      render();
       await afterTradeMutation();
       if (newId) scrollToHistoryTrade(newId).catch(() => {});
       const reportDecision = (tr) => {
