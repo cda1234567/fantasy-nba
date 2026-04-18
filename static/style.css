@@ -3016,3 +3016,395 @@ table.mgmt-teams td.persona {
   .lsw-label { display: none; }
   .lsw-menu { min-width: 220px; right: -6px; }
 }
+
+/* ================================================================
+   DRAFT PAGE VISUAL POLISH  (CSS-only, appended)
+   Aesthetic: sports-app urgency × dark editorial.
+   All motion gated behind prefers-reduced-motion.
+   ================================================================ */
+
+/* ── Design tokens for draft polish ─────────────────────────── */
+:root {
+  --draft-you-glow:   rgba(16, 185, 129, 0.55);
+  --draft-you-ring:   #10b981;
+  --draft-ai-accent:  #3b82f6;
+  --draft-pick-gold:  #fbbf24;
+  --draft-board-cur:  rgba(88, 166, 255, 0.18);
+  --draft-board-you:  rgba(16, 185, 129, 0.12);
+  --draft-stripe:     rgba(255, 255, 255, 0.06);
+}
+
+/* ── 1. HERO – stronger you-turn treatment ───────────────────── */
+
+/* Sharper, wider glow on your turn */
+.draft-hero.you-turn {
+  border-width: 1.5px;
+  border-color: var(--draft-you-ring);
+}
+
+/* Animated ring — more dramatic pulse */
+@keyframes dh-pulse-you-v2 {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(16, 185, 129, 0.45),
+      0 0 24px rgba(16, 185, 129, 0.20),
+      0 12px 48px rgba(0, 0, 0, 0.45);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(16, 185, 129, 0.60),
+      0 0 48px rgba(16, 185, 129, 0.32),
+      0 12px 48px rgba(0, 0, 0, 0.45);
+  }
+}
+.draft-hero.you-turn {
+  animation: dh-pulse-you-v2 2s ease-in-out infinite;
+}
+
+/* Picker box: shimmer tint on your turn */
+.draft-hero.you-turn .dh-picker {
+  background: rgba(16, 185, 129, 0.10);
+  border-color: rgba(16, 185, 129, 0.30);
+}
+
+/* Pick number: tabular, monospace-feel, larger + glow */
+.dh-picker-num {
+  font-size: 56px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.draft-hero.you-turn .dh-picker-num {
+  text-shadow:
+    0 0 20px rgba(110, 231, 183, 0.55),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+.draft-hero.ai-turn .dh-picker-num {
+  color: var(--draft-pick-gold);
+  text-shadow:
+    0 0 16px rgba(251, 191, 36, 0.40),
+    0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* Round/pick sub-label: slightly bolder */
+.dh-picker-sub {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* "On the clock" badge: crisper on your turn */
+.draft-hero.you-turn .dh-badge {
+  font-size: 13px;
+  letter-spacing: 0.10em;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+/* dh-who: stronger weight differentiation */
+.draft-hero.you-turn .dh-who {
+  font-size: 28px;
+  text-shadow: 0 0 24px rgba(110, 231, 183, 0.30);
+}
+
+/* ── 2. PROGRESS BAR – gradient fill + animated stripe ───────── */
+
+/* Slightly taller bar */
+.dh-progress {
+  height: 8px;
+  margin-top: var(--sp-4);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.70);
+}
+
+/* Animated diagonal stripes layered over gradient fill */
+.dh-progress-fill {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 6px,
+      var(--draft-stripe) 6px,
+      var(--draft-stripe) 12px
+    ),
+    linear-gradient(90deg, #10b981 0%, #3b82f6 55%, #8b5cf6 100%);
+  background-size: 24px 100%, 100% 100%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes stripe-scroll {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 24px 0, 0 0; }
+}
+.dh-progress-fill {
+  animation: stripe-scroll 1.2s linear infinite;
+}
+
+/* Label: slightly more visible */
+.dh-progress-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.02em;
+}
+
+/* ── 3. DRAFT GRID PANELS – elevation hierarchy ──────────────── */
+
+.draft-grid .panel {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  border-color: rgba(48, 54, 61, 0.9);
+}
+
+.draft-grid .panel-head {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 100%
+  );
+}
+
+/* Panel head label: slightly more prominent */
+.draft-grid .panel-head h2 {
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  color: #6e7681;
+}
+
+/* ── 4. BOARD TABLE polish ───────────────────────────────────── */
+
+table.board {
+  border-radius: var(--radius);
+}
+
+/* Filled cells: more visual weight, subtle rounding */
+table.board td:not(.empty):not(.rnd) {
+  background: rgba(30, 38, 52, 0.70);
+  border-radius: 4px;
+  transition: background 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+/* Hover on filled cells */
+table.board td:not(.empty):not(.rnd):not(.current):hover {
+  background: rgba(44, 56, 74, 0.95);
+  transform: scale(1.015);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.30);
+  z-index: 1;
+  position: relative;
+}
+
+/* Current pick: animated border glow */
+@keyframes board-cur-pulse {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--accent),
+      0 0 12px rgba(88, 166, 255, 0.25);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 2px var(--accent-hi),
+      0 0 24px rgba(88, 166, 255, 0.45);
+  }
+}
+table.board td.current {
+  background: var(--draft-board-cur);
+  outline: none; /* remove static outline, replaced by inset shadow */
+  animation: board-cur-pulse 1.5s ease-in-out infinite;
+  font-weight: 700;
+  color: var(--accent-hi);
+}
+
+/* Your column: stronger accent + left border marker */
+table.board td.you-cell {
+  background: var(--draft-board-you);
+  border-left: 2px solid rgba(16, 185, 129, 0.45);
+}
+table.board td.you-cell:not(.empty):not(.current) .pname {
+  color: #6ee7b7;
+}
+
+/* Header: your column highlighted */
+table.board thead th.you-cell {
+  background: rgba(16, 185, 129, 0.10);
+  color: #6ee7b7;
+  border-bottom: 2px solid rgba(16, 185, 129, 0.40);
+}
+
+/* Player name: bolder, slightly larger */
+table.board .pname {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+/* Pick sub: cleaner muted style */
+table.board .psub {
+  font-size: 10px;
+  color: #475569;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Empty cells: less visually noisy */
+table.board td.empty {
+  color: #334155;
+  font-style: normal;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+/* Round column: tighter, monospace */
+table.board td.rnd,
+table.board th.rnd {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #475569;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ── 5. AVAILABLE PLAYERS TABLE ──────────────────────────────── */
+
+/* Stronger row hover */
+#tbl-available.data tbody tr:hover {
+  background: rgba(36, 48, 66, 0.90);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* FPPG column: more visually distinct */
+#tbl-available.data td.fppg {
+  color: #fbbf24;
+  font-weight: 700;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+#tbl-available.data th.fppg {
+  color: #d97706;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+/* Player name: stronger weight */
+#tbl-available.data td.name {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+/* Zebra-light: very subtle alternating rows for readability */
+#tbl-available.data tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.018);
+}
+#tbl-available.data tbody tr:nth-child(even):hover {
+  background: rgba(36, 48, 66, 0.90);
+}
+
+/* ── 6. DRAFT (選秀) BUTTON – CTA polish ─────────────────────── */
+
+/* Primary draft button inside available panel: enticing */
+#panel-available .btn.primary {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border-color: #059669;
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.30);
+  transition:
+    background var(--tr),
+    box-shadow var(--tr),
+    transform 100ms ease;
+}
+#panel-available .btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.50);
+  transform: translateY(-1px);
+}
+#panel-available .btn.primary:active:not(:disabled) {
+  transform: scale(0.97) translateY(0);
+  box-shadow: 0 1px 4px rgba(16, 185, 129, 0.25);
+}
+
+/* Disabled state: clearly unavailable during AI turn */
+#panel-available .btn.primary:disabled {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.20);
+  color: rgba(110, 231, 183, 0.40);
+  box-shadow: none;
+  opacity: 1; /* override default so text reads as "not available" not "broken" */
+}
+
+/* ── 7. FILTER BAR – modern input/select styling ─────────────── */
+
+#panel-available .filter-bar input[type="search"],
+#panel-available .filter-bar select {
+  background: rgba(15, 23, 42, 0.60);
+  border-color: rgba(48, 54, 61, 0.80);
+  border-radius: 8px;
+  font-size: 13px;
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+#panel-available .filter-bar input[type="search"]:focus,
+#panel-available .filter-bar select:focus {
+  border-color: var(--accent);
+  background: rgba(15, 23, 42, 0.85);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+  outline: none;
+}
+
+/* Display mode select in panel head */
+#draft-display-mode-switch {
+  background: rgba(15, 23, 42, 0.60);
+  border: 1px solid rgba(48, 54, 61, 0.80);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 4px 8px;
+  transition: border-color 150ms ease;
+}
+#draft-display-mode-switch:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+/* ── 8. MOBILE CARD POLISH ───────────────────────────────────── */
+
+@media (max-width: 639px) {
+  /* Player card rows: cleaner separation, more depth */
+  .players-table.responsive tbody tr {
+    border-radius: 10px;
+    margin-bottom: 4px;
+    border: 1px solid rgba(48, 54, 61, 0.60);
+    background: rgba(22, 27, 34, 0.80);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid rgba(48, 54, 61, 0.60);
+  }
+  /* FPPG in mobile cards: gold accent */
+  .players-table.responsive tbody td.stats .s.fppg b {
+    color: #fbbf24;
+  }
+  /* Draft hero on mobile: slightly more padding */
+  .draft-hero {
+    padding: var(--sp-3) var(--sp-3);
+    border-radius: 12px;
+  }
+}
+
+/* ── 9. RESPECT prefers-reduced-motion ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .draft-hero.you-turn {
+    animation: none;
+    box-shadow:
+      0 0 0 2px var(--draft-you-ring),
+      0 8px 32px rgba(0, 0, 0, 0.4);
+  }
+  .dh-progress-fill {
+    animation: none;
+    background: linear-gradient(90deg, #10b981 0%, #3b82f6 55%, #8b5cf6 100%);
+  }
+  table.board td.current {
+    animation: none;
+    box-shadow: inset 0 0 0 2px var(--accent);
+  }
+  .dh-live-dot {
+    animation: none;
+  }
+}
