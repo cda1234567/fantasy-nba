@@ -3326,6 +3326,23 @@ function buildTradeHistoryRow(trade) {
     el('span', { class: 'chevron' }, expanded ? '▾' : '▸'),
   );
   row.append(header);
+  // Inline one-line preview of the latest rejection reason / AI reply / user message
+  // so the user doesn't have to expand to know what happened.
+  if (!expanded) {
+    let preview = '';
+    if (trade.status === 'rejected' && trade.reasoning && trade.reasoning !== 'human') {
+      preview = String(trade.reasoning)
+        .replace(/^human\s*｜\s*/, '')
+        .replace(/^拒絕原因：/, '拒絕：');
+    } else if (Array.isArray(trade.messages) && trade.messages.length) {
+      const last = trade.messages[trade.messages.length - 1];
+      const name = teamName(last.from_team) || `#${last.from_team}`;
+      preview = `${name}：${last.body || ''}`;
+    }
+    if (preview) {
+      row.append(el('div', { class: 'trade-hist-preview' }, preview));
+    }
+  }
   if (expanded) {
     row.append(buildTradeHistoryDetail(trade));
   }
@@ -3430,6 +3447,8 @@ function buildTradeHistoryDetail(trade) {
       ),
     );
   }
+  const thread = buildTradeThread(trade);
+  if (thread) detail.append(thread);
   return detail;
 }
 
@@ -3670,7 +3689,7 @@ async function onSubmitProposeTrade() {
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '發送中...'; }
 
     try {
-      await api('/api/trades/propose', {
+      const created = await api('/api/trades/propose', {
         method: 'POST',
         body: JSON.stringify({
           from_team: humanId,
@@ -3683,9 +3702,32 @@ async function onSubmitProposeTrade() {
       });
       toast(force ? '交易已強制執行' : '交易已發起,等 AI 回覆中...', 'success');
       $('#trade-propose').close();
+      const newId = created && created.id;
+      if (newId) {
+        state.tradeHistoryOpen = true;
+        state.expandedHistory.add(newId);
+      }
       await afterTradeMutation();
-      setTimeout(() => { afterTradeMutation().catch(() => {}); }, 3000);
-      setTimeout(() => { afterTradeMutation().catch(() => {}); }, 10000);
+      if (newId) scrollToHistoryTrade(newId).catch(() => {});
+      const reportDecision = (tr) => {
+        if (!tr) return;
+        if (tr.status === 'rejected' && tr.reasoning && tr.reasoning !== 'human') {
+          const reason = String(tr.reasoning).replace(/^human\s*｜\s*/, '').replace(/^拒絕原因：/, '');
+          toast(`AI 拒絕：${reason.slice(0, 80)}`, 'warn');
+        } else if (tr.status === 'accepted') {
+          toast('AI 接受 — 進入否決期', 'success');
+        } else if (tr.status === 'countered') {
+          toast('AI 提出還價，請查看', 'info');
+        }
+      };
+      const pollDecision = async () => {
+        await afterTradeMutation();
+        if (!newId) return;
+        const tr = (state.tradesHistory || []).find((t) => t.id === newId);
+        if (tr && tr.status !== 'pending_accept') reportDecision(tr);
+      };
+      setTimeout(() => { pollDecision().catch(() => {}); }, 3000);
+      setTimeout(() => { pollDecision().catch(() => {}); }, 10000);
     } catch (e) {
       console.warn('[trade-propose] failed', e);
       toast(e.message || '提案失敗', 'error');

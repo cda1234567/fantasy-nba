@@ -1207,6 +1207,23 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   margin-top: var(--sp-1);
 }
 
+.trade-hist-preview {
+  padding: 4px 12px 8px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  background: rgba(210,153,34,0.04);
+  border-left: 2px solid rgba(210,153,34,0.4);
+  margin: 0 6px 4px 6px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 540px) {
+  .trade-hist-preview { white-space: normal; font-size: 12px; }
+}
+
 /* Trade counter-offer chat thread */
 .trade-thread {
   display: flex;
