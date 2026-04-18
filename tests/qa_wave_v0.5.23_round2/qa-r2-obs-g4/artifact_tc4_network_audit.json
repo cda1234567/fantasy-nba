@@ -1,0 +1,853 @@
+{
+  "idleWindowMs": 180000,
+  "activeWindowMs": 180000,
+  "idleTotal": 11,
+  "activeTotal": 126,
+  "idlePerEndpoint": {
+    "/api/personas": 1,
+    "/api/league/status": 1,
+    "/api/seasons/list": 1,
+    "/api/league/settings": 1,
+    "/api/leagues/list": 1,
+    "/api/state": 1,
+    "/api/season/standings": 1,
+    "/api/season/schedule": 1,
+    "/api/season/lineup-alerts": 1,
+    "/api/seasons/2025-26/headlines": 1,
+    "/api/players": 1
+  },
+  "activePerEndpoint": {
+    "/api/seasons/2025-26/headlines": 18,
+    "/api/players": 36,
+    "/api/teams/0": 18,
+    "/api/fa/claim-status": 18,
+    "/api/season/logs": 18,
+    "/api/trades/pending": 18
+  },
+  "idleLog": [
+    {
+      "t": 1776488703322,
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703514,
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703514,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703516,
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703721,
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703862,
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703991,
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488703994,
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488704131,
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488704265,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488704266,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    }
+  ],
+  "activeLog": [
+    {
+      "t": 1776488884928,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488885017,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488886958,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488888987,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488889038,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488890979,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488890988,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488894998,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488894999,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488897050,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488899045,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488899059,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488901056,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488901062,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488905078,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488905087,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488907092,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488909117,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488909124,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488911127,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488911135,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488915127,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488915136,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488917159,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488919181,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488919183,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488921226,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488921232,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488925186,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488925186,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488927218,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488929244,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488929245,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488931251,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488931254,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488935264,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488935264,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488937282,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488939308,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488939321,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488941301,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488941314,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488945329,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488945329,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488947339,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488949359,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488949371,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488951363,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488951369,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488955384,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488955394,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488957402,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488959438,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488959450,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488961571,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488961571,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488965477,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488965487,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488967494,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488969503,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488969516,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488971512,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488971514,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488975527,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488975528,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488977541,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488979570,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488979576,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488981562,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488981566,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488985574,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488985575,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488987601,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488989610,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488989621,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488991620,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488991623,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488995634,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488995645,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488997652,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488999678,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776488999684,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489001688,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489001693,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489005702,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489005709,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489007723,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489009732,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489009745,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489011737,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489011825,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489015763,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489015776,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489017811,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489019812,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489019817,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489021810,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489021815,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489025820,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489025835,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489027921,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489029889,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489029896,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489031874,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489031879,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489035899,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489035913,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489037930,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489039952,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489039963,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489041952,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489041965,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489045971,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489045971,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489047987,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489050005,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489050019,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489052020,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489052020,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489056025,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489056034,
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2025-26/headlines",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489058046,
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489060072,
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489060075,
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489062067,
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "t": 1776489062080,
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200
+    }
+  ]
+}

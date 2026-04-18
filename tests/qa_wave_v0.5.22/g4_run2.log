@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+Initial load. Version text: v0.5.22. Console errors: 0
+League switcher opened. Existing leagues: 6
+qa-g4 already exists; will reuse.
+Clicked 建立並切換
+Active league label after create: "聯盟"
+P1: Active league label does not reflect qa-g4 (got "聯盟"). Check switcher refresh.
+  ✘  1 [chromium] › g4_player.spec.ts:24:5 › g4 player QA journey (6.6s)
+
+
+  1) [chromium] › g4_player.spec.ts:24:5 › g4 player QA journey ────────────────────────────────────
+
+    Error: locator.count: Unexpected token "=" while parsing css selector "[data-route="setup"], #view-setup, text=/聯盟設定|團隊設定|設定賽季/". Did you mean to CSS.escape it?
+
+      88 |   await page.waitForTimeout(800);
+      89 |   await snap(page, 'setup_or_draft');
+    > 90 |   const onSetup = await page.locator('[data-route="setup"], #view-setup, text=/聯盟設定|團隊設定|設定賽季/').first().count();
+         |                                                                                                          ^
+      91 |   log(`On setup-like view after create? ${onSetup > 0}`);
+      92 |
+      93 |   // === 4. Navigate to draft ===
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.22\g4_player.spec.ts:90:106
+
+    Error Context: test-results\g4_player-g4-player-QA-journey-chromium\error-context.md
+
+  1 failed
+    [chromium] › g4_player.spec.ts:24:5 › g4 player QA journey ─────────────────────────────────────

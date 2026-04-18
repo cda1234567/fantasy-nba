@@ -1,0 +1,26 @@
+{
+  "draftLatencies": [],
+  "doubleClickEffect": null,
+  "weekSimTimes": [],
+  "tradeLatencies": [],
+  "tabStressConflicts": [
+    "tab0: locator.click: Timeout 8000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '推進一週' }).first()\u001b[22m\n",
+    "tab1: locator.click: Timeout 8000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '推進一週' }).first()\u001b[22m\n",
+    "tab2: locator.click: Timeout 8000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('button').filter({ hasText: '推進一週' }).first()\u001b[22m\n"
+  ],
+  "consoleErrors": [],
+  "networkErrors": [],
+  "pageErrors": [],
+  "stepTimings": {
+    "setup_reload_cycle": 4111,
+    "setup_submit": 2547,
+    "total_setup": 12019,
+    "rapid_fire_draft": 389,
+    "tab_stress_parallel": 8017,
+    "total_test": 36165
+  },
+  "missedClicks": [],
+  "rapidFireCycles": 0,
+  "setupRacePassed": true,
+  "fixBugAssessment": "UNKNOWN — draft not reached"
+}

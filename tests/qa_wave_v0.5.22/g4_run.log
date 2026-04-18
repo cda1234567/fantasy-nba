@@ -1,0 +1,26 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [chromium] › g4_player.spec.ts:23:5 › g4 player QA journey (127ms)
+
+
+  1) [chromium] › g4_player.spec.ts:23:5 › g4 player QA journey ────────────────────────────────────
+
+    Error: page.goto: Protocol error (Page.navigate): Cannot navigate to invalid URL
+    Call log:
+    [2m  - navigating to "/", waiting until "domcontentloaded"[22m
+
+
+      28 |
+      29 |   // === 1. Initial load ===
+    > 30 |   await page.goto('/', { waitUntil: 'domcontentloaded' });
+         |              ^
+      31 |   await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
+      32 |   await snap(page, 'loaded');
+      33 |   const ver = await page.locator('text=/v0\\.\\d+\\.\\d+/').first().textContent().catch(() => '');
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.22\g4_player.spec.ts:30:14
+
+    Error Context: test-results\g4_player-g4-player-QA-journey-chromium\error-context.md
+
+  1 failed
+    [chromium] › g4_player.spec.ts:23:5 › g4 player QA journey ─────────────────────────────────────

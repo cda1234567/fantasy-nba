@@ -1,0 +1,10 @@
+[14:02:54] version: v0.5.25
+[14:02:54] created + switched to r3cv25-92171
+[14:02:55] no setup form — league already setup or setup view not active
+[14:03:04] pick#1: FAILED — 1 click didn't advance table in 5503ms
+[14:03:10] pick#2: FAILED — 1 click didn't advance table in 5510ms
+[14:03:17] pick#3: FAILED — 1 click didn't advance table in 5525ms
+[14:03:24] pick#4: FAILED — 1 click didn't advance table in 5545ms
+[14:03:31] pick#5: FAILED — 1 click didn't advance table in 5522ms
+[14:03:35] after reopen: label=r3cv25-92171
+[14:03:35] report written to D:\claude\fantasy nba\.qa\round3\c\player-v25.md

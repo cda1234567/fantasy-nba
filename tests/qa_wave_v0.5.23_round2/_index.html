@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0d1117" />
+  <title>NBA Fantasy 模擬器</title>
+  <link rel="stylesheet" href="/static/style.css?v=0.5.23" />
+</head>
+<body><a href="https://nbafantasy.cda1234567.com/cdn-cgi/content?id=FzgUK2BRwwYkcYakeCcmNNSnWmFKvKA9siZbsEA1OLg-1776488510.2023077-1.0.1.1-iKjEAnHnpexUoB54mnL5R23uAr4Cw41R9JYnbEzzlqA" aria-hidden="true" rel="nofollow noopener" style="display: none !important; visibility: hidden !important"></a>
+  <header class="app-header" role="banner">
+    <button class="icon-btn hamburger" id="btn-menu" aria-label="開啟設定" aria-haspopup="dialog" aria-controls="dlg-settings">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <h1 class="app-title">NBA Fantasy 模擬器</h1>
+    <div class="league-switcher" id="league-switcher">
+      <button class="lsw-btn" id="btn-league-switch" aria-haspopup="menu" aria-expanded="false" aria-controls="league-switch-menu" type="button">
+        <span class="lsw-label">聯盟</span>
+        <span class="lsw-current" id="lsw-current">—</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="lsw-menu" id="league-switch-menu" role="menu" hidden></div>
+    </div>
+    <div class="header-status">
+      <span class="conn-dot" id="conn-dot" aria-hidden="true"></span>
+      <span class="conn-text" id="conn-text">連線中</span>
+      <span class="app-version" id="app-version" title="應用版本">v0.5.23</span>
+    </div>
+  </header>
+
+  <dialog id="dlg-new-league" class="dialog new-league-dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-new-league-title" aria-label="建立新聯盟">
+    <form method="dialog" class="dialog-inner small">
+      <header class="dialog-head">
+        <h2>建立新聯盟</h2>
+        <button type="submit" value="cancel" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body">
+        <label class="new-league-field" for="new-league-id">
+          <span>聯盟 ID（僅限英數字 / - / _）</span>
+          <input type="text" id="new-league-id" maxlength="32" placeholder="例如 season2" autocomplete="off" aria-label="聯盟 ID">
+        </label>
+        <p class="new-league-hint" id="new-league-hint">建立後會自動切換到新聯盟,並進入設定畫面。</p>
+      </section>
+      <footer class="dialog-foot">
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-new-league-create">建立並切換</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="layout">
+    <nav class="side-nav" id="side-nav" role="navigation" aria-label="主選單">
+      <a class="nav-item" href="#draft" data-route="draft">
+        <span class="nav-icon" aria-hidden="true">D</span>
+        <span class="nav-label">選秀</span>
+      </a>
+      <a class="nav-item" href="#teams" data-route="teams">
+        <span class="nav-icon" aria-hidden="true">T</span>
+        <span class="nav-label">隊伍</span>
+      </a>
+      <a class="nav-item" href="#fa" data-route="fa">
+        <span class="nav-icon" aria-hidden="true">F</span>
+        <span class="nav-label">自由球員</span>
+      </a>
+      <a class="nav-item" href="#league" data-route="league">
+        <span class="nav-icon" aria-hidden="true">L</span>
+        <span class="nav-label">聯盟</span>
+      </a>
+      <a class="nav-item" href="#schedule" data-route="schedule">
+        <span class="nav-icon" aria-hidden="true">S</span>
+        <span class="nav-label">賽程</span>
+      </a>
+    </nav>
+
+    <main class="main-view" id="main-view" role="main" tabindex="-1"></main>
+
+    <aside class="log-aside" id="log-aside" aria-label="活動記錄">
+      <div class="log-head">
+        <h2>活動</h2>
+        <button class="icon-btn" id="btn-log-refresh" aria-label="重新整理活動記錄" type="button">
+          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5L13 3v4h-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <ul class="log-list" id="log-list"></ul>
+    </aside>
+  </div>
+
+  <nav class="bottom-tabs" id="bottom-tabs" role="navigation" aria-label="主選單（手機）">
+    <a class="tab-btn" href="#draft" data-route="draft"><span class="tab-ic">D</span><span class="tab-lbl">選秀</span></a>
+    <a class="tab-btn" href="#teams" data-route="teams"><span class="tab-ic">T</span><span class="tab-lbl">隊伍</span></a>
+    <a class="tab-btn" href="#fa" data-route="fa"><span class="tab-ic">F</span><span class="tab-lbl">自由</span></a>
+    <a class="tab-btn" href="#league" data-route="league"><span class="tab-ic">L</span><span class="tab-lbl">聯盟</span></a>
+    <a class="tab-btn" href="#schedule" data-route="schedule"><span class="tab-ic">S</span><span class="tab-lbl">賽程</span></a>
+  </nav>
+
+  <dialog id="dlg-settings" class="dialog settings-dialog" role="dialog" aria-modal="true" aria-label="設定">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2>設定</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body">
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">開始賽季</div>
+            <div class="setting-sub">確認選秀並建立 14 週賽程。</div>
+          </div>
+          <button type="button" class="btn" id="btn-season-start">開始</button>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">模擬到季後賽</div>
+            <div class="setting-sub">快進例行賽（第 1–14 週）。</div>
+          </div>
+          <button type="button" class="btn ghost" id="btn-sim-playoffs">模擬</button>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">模擬季後賽</div>
+            <div class="setting-sub">執行淘汰賽（第 15–16 週）。</div>
+          </div>
+          <button type="button" class="btn ghost" id="btn-sim-playoffs-bracket">執行</button>
+        </div>
+        <div class="setting-divider"></div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">重置選秀</div>
+            <div class="setting-sub danger">清除所有順位並重新開始。</div>
+          </div>
+          <button type="button" class="btn danger" id="btn-reset-draft">重置</button>
+        </div>
+        <div class="setting-row">
+          <div>
+            <div class="setting-label">重置賽季</div>
+            <div class="setting-sub danger">僅清除賽季資料。</div>
+          </div>
+          <button type="button" class="btn danger" id="btn-reset-season">重置</button>
+        </div>
+      </section>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-confirm" class="dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <form method="dialog" class="dialog-inner small">
+      <header class="dialog-head">
+        <h2 id="confirm-title">確認</h2>
+      </header>
+      <section class="dialog-body">
+        <p id="confirm-body" class="confirm-body"></p>
+      </section>
+      <footer class="dialog-foot">
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="submit" value="ok" class="btn danger" id="confirm-ok">確定</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-matchup" class="dialog matchup-dialog" role="dialog" aria-modal="true" aria-labelledby="matchup-title">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2 id="matchup-title">對戰</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body" id="matchup-body"></section>
+    </form>
+  </dialog>
+
+  <dialog id="trade-propose" class="dialog trade-propose-dialog" role="dialog" aria-modal="true" aria-label="發起交易">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2>發起交易</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body" id="trade-propose-body"></section>
+      <section class="dialog-body propose-extras">
+        <label class="sr-only" for="trade-message">說服對方的訊息</label>
+        <textarea id="trade-message" maxlength="300" placeholder="說服對方的話 (選填)" rows="2" aria-label="說服對方的訊息"></textarea>
+        <label class="force-label" for="trade-force">
+          <input type="checkbox" id="trade-force" aria-label="強制執行交易">
+          強制執行 (跳過同意與否決)
+        </label>
+        <div id="trade-force-warn" class="force-warn" hidden>⚠ 作弊模式：會直接成交不能被否決</div>
+      </section>
+      <footer class="dialog-foot">
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-trade-propose-submit">送出提案</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-league-settings" class="dialog league-settings-dialog" role="dialog" aria-modal="true" aria-label="聯盟設定">
+    <form method="dialog" class="dialog-inner">
+      <header class="dialog-head">
+        <h2>聯盟設定（賽季中可調整）</h2>
+        <button type="submit" value="close" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body" id="dlg-league-settings-body"></section>
+      <footer class="dialog-foot">
+        <button type="submit" value="close" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-league-settings-save">儲存設定</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast-stack" id="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="/static/app.js?v=0.5.23"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ee11d24cac88359',t:'MTc3NjQ4ODUxMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

@@ -1,0 +1,74 @@
+[
+  {
+    "method": "POST",
+    "url": "/api/leagues/create",
+    "body": "{\"detail\":\"league_id required\"}",
+    "status": 400,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/leagues/delete",
+    "body": "{\"detail\":\"league 'nonexistent_xxxxx' does not exist\"}",
+    "status": 400,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/draft/pick",
+    "body": "{\"detail\":\"聯盟尚未設定,請先完成設定\"}",
+    "status": 409,
+    "chinese": true,
+    "englishOnly": false
+  },
+  {
+    "method": "POST",
+    "url": "/api/season/lineup",
+    "body": "{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"starters\"],\"msg\":\"Field required\",\"input\":{\"team_id\":99999,\"lineup\":[]}}]}",
+    "status": 422,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/fa/claim",
+    "body": "{\"detail\":[{\"type\":\"int_type\",\"loc\":[\"body\",\"drop_player_id\"],\"msg\":\"Input should be a valid integer\",\"input\":null},{\"type\":\"missing\",\"loc\":[\"body\",\"add_player_id\"],\"msg\":\"Field required\",\"input\":{\"player_id\":-1,\"drop_player_id\":null}}]}",
+    "status": 422,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/trades/accept",
+    "body": "{\"detail\":\"Not Found\"}",
+    "status": 404,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/trades/reject",
+    "body": "{\"detail\":\"Not Found\"}",
+    "status": 404,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/trades/cancel",
+    "body": "{\"detail\":\"Not Found\"}",
+    "status": 404,
+    "chinese": false,
+    "englishOnly": true
+  },
+  {
+    "method": "POST",
+    "url": "/api/trades/veto-vote",
+    "body": "{\"detail\":\"Not Found\"}",
+    "status": 404,
+    "chinese": false,
+    "englishOnly": true
+  }
+]

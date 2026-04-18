@@ -1,0 +1,2055 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Fantasy NBA Draft Sim",
+    "version": "0.5.23"
+  },
+  "paths": {
+    "/api/injuries/active": {
+      "get": {
+        "summary": "List Active",
+        "operationId": "list_active_api_injuries_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/injuries/history": {
+      "get": {
+        "summary": "Injury History",
+        "operationId": "injury_history_api_injuries_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leagues/list": {
+      "get": {
+        "summary": "Leagues List",
+        "operationId": "leagues_list_api_leagues_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leagues/create": {
+      "post": {
+        "summary": "Leagues Create",
+        "operationId": "leagues_create_api_leagues_create_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeagueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leagues/switch": {
+      "post": {
+        "summary": "Leagues Switch",
+        "operationId": "leagues_switch_api_leagues_switch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchLeagueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/leagues/delete": {
+      "post": {
+        "summary": "Leagues Delete",
+        "operationId": "leagues_delete_api_leagues_delete_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwitchLeagueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons/list": {
+      "get": {
+        "summary": "Seasons List",
+        "operationId": "seasons_list_api_seasons_list_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons/{year}/headlines": {
+      "get": {
+        "summary": "Season Headlines",
+        "operationId": "season_headlines_api_seasons__year__headlines_get",
+        "parameters": [
+          {
+            "name": "year",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Year"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/league/settings": {
+      "get": {
+        "summary": "Get League Settings",
+        "operationId": "get_league_settings_api_league_settings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Patch League Settings",
+        "operationId": "patch_league_settings_api_league_settings_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": true,
+                "type": "object",
+                "title": "Body"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/league/setup": {
+      "post": {
+        "summary": "League Setup",
+        "description": "Validate and save full settings; reset draft to the chosen season.",
+        "operationId": "league_setup_api_league_setup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeagueSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/league/status": {
+      "get": {
+        "summary": "League Status",
+        "operationId": "league_status_api_league_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/state": {
+      "get": {
+        "summary": "Get State",
+        "operationId": "get_state_api_state_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftStateOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/personas": {
+      "get": {
+        "summary": "Get Personas",
+        "operationId": "get_personas_api_personas_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/players": {
+      "get": {
+        "summary": "List Players",
+        "operationId": "list_players_api_players_get",
+        "parameters": [
+          {
+            "name": "available",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true,
+              "title": "Available"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(fppg|pts|reb|ast|stl|blk|to|name|age|mpg)$",
+              "default": "fppg",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 200,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "pos",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Pos"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}": {
+      "get": {
+        "summary": "Get Team",
+        "operationId": "get_team_api_teams__team_id__get",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/draft/pick": {
+      "post": {
+        "summary": "Human Pick",
+        "operationId": "human_pick_api_draft_pick_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/draft/ai-advance": {
+      "post": {
+        "summary": "Ai Advance",
+        "operationId": "ai_advance_api_draft_ai_advance_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/draft/sim-to-me": {
+      "post": {
+        "summary": "Sim To Me",
+        "operationId": "sim_to_me_api_draft_sim_to_me_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/draft/reset": {
+      "post": {
+        "summary": "Reset Draft",
+        "operationId": "reset_draft_api_draft_reset_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetRequestV2",
+                "default": {
+                  "randomize_order": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/start": {
+      "post": {
+        "summary": "Season Start Endpoint",
+        "operationId": "season_start_endpoint_api_season_start_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartSeasonRequest",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/advance-day": {
+      "post": {
+        "summary": "Season Advance Day Endpoint",
+        "operationId": "season_advance_day_endpoint_api_season_advance_day_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest",
+                "default": {
+                  "use_ai": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/advance-week": {
+      "post": {
+        "summary": "Season Advance Week Endpoint",
+        "operationId": "season_advance_week_endpoint_api_season_advance_week_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest",
+                "default": {
+                  "use_ai": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/advance-week/stream": {
+      "get": {
+        "summary": "Season Advance Week Stream",
+        "operationId": "season_advance_week_stream_api_season_advance_week_stream_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/sim-to-playoffs": {
+      "post": {
+        "summary": "Season Sim To Playoffs Endpoint",
+        "operationId": "season_sim_to_playoffs_endpoint_api_season_sim_to_playoffs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest",
+                "default": {
+                  "use_ai": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/sim-playoffs": {
+      "post": {
+        "summary": "Season Sim Playoffs Endpoint",
+        "operationId": "season_sim_playoffs_endpoint_api_season_sim_playoffs_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceRequest",
+                "default": {
+                  "use_ai": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fa/claim-status": {
+      "get": {
+        "summary": "Fa Claim Status",
+        "description": "Return how many claims the human team has used today and the limit.",
+        "operationId": "fa_claim_status_api_fa_claim_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/fa/claim": {
+      "post": {
+        "summary": "Fa Claim",
+        "operationId": "fa_claim_api_fa_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FAClaimRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/lineup": {
+      "post": {
+        "summary": "Set Lineup Override",
+        "description": "Human user manually sets their 10 starters. Persists until cleared (or one-shot if today_only).",
+        "operationId": "set_lineup_override_api_season_lineup_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LineupOverrideRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/lineup/{team_id}": {
+      "delete": {
+        "summary": "Clear Lineup Override",
+        "description": "Reset human lineup override back to auto.",
+        "operationId": "clear_lineup_override_api_season_lineup__team_id__delete",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/lineup-alerts": {
+      "get": {
+        "summary": "Get Lineup Override Alerts",
+        "description": "Return pending lineup_override_alerts (cleared-override notifications for the UI).",
+        "operationId": "get_lineup_override_alerts_api_season_lineup_alerts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Clear Lineup Override Alerts",
+        "description": "Clear the pending lineup_override_alerts list (called by UI after showing toasts).",
+        "operationId": "clear_lineup_override_alerts_api_season_lineup_alerts_delete",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/standings": {
+      "get": {
+        "summary": "Season Standings",
+        "operationId": "season_standings_api_season_standings_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/schedule": {
+      "get": {
+        "summary": "Season Schedule",
+        "operationId": "season_schedule_api_season_schedule_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/matchup": {
+      "get": {
+        "summary": "Season Matchup",
+        "operationId": "season_matchup_api_season_matchup_get",
+        "parameters": [
+          {
+            "name": "week",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Week"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/logs": {
+      "get": {
+        "summary": "Season Logs",
+        "operationId": "season_logs_api_season_logs_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/activity": {
+      "get": {
+        "summary": "Season Activity",
+        "description": "Return up to `limit` notable activity feed entries, newest first.",
+        "operationId": "season_activity_api_season_activity_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/ai-models": {
+      "get": {
+        "summary": "Season Ai Models",
+        "operationId": "season_ai_models_api_season_ai_models_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/reset": {
+      "post": {
+        "summary": "Season Reset",
+        "operationId": "season_reset_api_season_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/week-recap": {
+      "get": {
+        "summary": "Season Week Recap",
+        "description": "Weekly recap: matchup scores, top 5 single-game performances that week,\nbiggest blowout, closest game, human matchup highlight.",
+        "operationId": "season_week_recap_api_season_week_recap_get",
+        "parameters": [
+          {
+            "name": "week",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "title": "Week"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/season/summary": {
+      "get": {
+        "summary": "Season Summary",
+        "description": "Championship summary: final standings, MVP (highest season fp),\ntop 5 single-game performances, human record, persona callouts.",
+        "operationId": "season_summary_api_season_summary_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/pending": {
+      "get": {
+        "summary": "Trades Pending",
+        "operationId": "trades_pending_api_trades_pending_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/history": {
+      "get": {
+        "summary": "Trades History",
+        "operationId": "trades_history_api_trades_history_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/propose": {
+      "post": {
+        "summary": "Trades Propose",
+        "operationId": "trades_propose_api_trades_propose_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeProposeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/{trade_id}/accept": {
+      "post": {
+        "summary": "Trades Accept",
+        "operationId": "trades_accept_api_trades__trade_id__accept_post",
+        "parameters": [
+          {
+            "name": "trade_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trade Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/{trade_id}/reject": {
+      "post": {
+        "summary": "Trades Reject",
+        "operationId": "trades_reject_api_trades__trade_id__reject_post",
+        "parameters": [
+          {
+            "name": "trade_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trade Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/{trade_id}/veto": {
+      "post": {
+        "summary": "Trades Veto",
+        "operationId": "trades_veto_api_trades__trade_id__veto_post",
+        "parameters": [
+          {
+            "name": "trade_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trade Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TradeVetoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/trades/{trade_id}/cancel": {
+      "post": {
+        "summary": "Trades Cancel",
+        "operationId": "trades_cancel_api_trades__trade_id__cancel_post",
+        "parameters": [
+          {
+            "name": "trade_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Trade Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AdvanceRequest": {
+        "properties": {
+          "use_ai": {
+            "type": "boolean",
+            "title": "Use Ai",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "AdvanceRequest"
+      },
+      "CreateLeagueRequest": {
+        "properties": {
+          "league_id": {
+            "type": "string",
+            "title": "League Id"
+          },
+          "switch": {
+            "type": "boolean",
+            "title": "Switch",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "league_id"
+        ],
+        "title": "CreateLeagueRequest"
+      },
+      "DraftStateOut": {
+        "properties": {
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "picks": {
+            "items": {
+              "$ref": "#/components/schemas/Pick"
+            },
+            "type": "array",
+            "title": "Picks"
+          },
+          "board": {
+            "items": {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/Pick"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Board"
+          },
+          "current_overall": {
+            "type": "integer",
+            "title": "Current Overall"
+          },
+          "current_round": {
+            "type": "integer",
+            "title": "Current Round"
+          },
+          "current_pick_in_round": {
+            "type": "integer",
+            "title": "Current Pick In Round"
+          },
+          "current_team_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Team Id"
+          },
+          "is_complete": {
+            "type": "boolean",
+            "title": "Is Complete"
+          },
+          "available_count": {
+            "type": "integer",
+            "title": "Available Count"
+          },
+          "total_rounds": {
+            "type": "integer",
+            "title": "Total Rounds"
+          },
+          "num_teams": {
+            "type": "integer",
+            "title": "Num Teams"
+          },
+          "human_team_id": {
+            "type": "integer",
+            "title": "Human Team Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "teams",
+          "picks",
+          "board",
+          "current_overall",
+          "current_round",
+          "current_pick_in_round",
+          "current_team_id",
+          "is_complete",
+          "available_count",
+          "total_rounds",
+          "num_teams",
+          "human_team_id"
+        ],
+        "title": "DraftStateOut"
+      },
+      "FAClaimRequest": {
+        "properties": {
+          "drop_player_id": {
+            "type": "integer",
+            "title": "Drop Player Id"
+          },
+          "add_player_id": {
+            "type": "integer",
+            "title": "Add Player Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "drop_player_id",
+          "add_player_id"
+        ],
+        "title": "FAClaimRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LeagueSettings": {
+        "properties": {
+          "league_name": {
+            "type": "string",
+            "title": "League Name",
+            "default": "我的聯盟"
+          },
+          "season_year": {
+            "type": "string",
+            "title": "Season Year",
+            "default": "2025-26"
+          },
+          "player_team_index": {
+            "type": "integer",
+            "title": "Player Team Index",
+            "default": 0
+          },
+          "team_names": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Team Names"
+          },
+          "randomize_draft_order": {
+            "type": "boolean",
+            "title": "Randomize Draft Order",
+            "default": false
+          },
+          "num_teams": {
+            "type": "integer",
+            "title": "Num Teams",
+            "default": 8
+          },
+          "roster_size": {
+            "type": "integer",
+            "title": "Roster Size",
+            "default": 13
+          },
+          "starters_per_day": {
+            "type": "integer",
+            "title": "Starters Per Day",
+            "default": 10
+          },
+          "il_slots": {
+            "type": "integer",
+            "title": "Il Slots",
+            "default": 3
+          },
+          "scoring_weights": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Scoring Weights"
+          },
+          "regular_season_weeks": {
+            "type": "integer",
+            "title": "Regular Season Weeks",
+            "default": 20
+          },
+          "playoff_teams": {
+            "type": "integer",
+            "title": "Playoff Teams",
+            "default": 6
+          },
+          "trade_deadline_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trade Deadline Week"
+          },
+          "ai_trade_frequency": {
+            "type": "string",
+            "title": "Ai Trade Frequency",
+            "default": "normal"
+          },
+          "ai_trade_style": {
+            "type": "string",
+            "title": "Ai Trade Style",
+            "default": "balanced"
+          },
+          "veto_threshold": {
+            "type": "integer",
+            "title": "Veto Threshold",
+            "default": 3
+          },
+          "veto_window_days": {
+            "type": "integer",
+            "title": "Veto Window Days",
+            "default": 2
+          },
+          "ai_decision_mode": {
+            "type": "string",
+            "title": "Ai Decision Mode",
+            "default": "auto"
+          },
+          "draft_display_mode": {
+            "type": "string",
+            "title": "Draft Display Mode",
+            "default": "prev_full"
+          },
+          "show_offseason_headlines": {
+            "type": "boolean",
+            "title": "Show Offseason Headlines",
+            "default": true
+          },
+          "setup_complete": {
+            "type": "boolean",
+            "title": "Setup Complete",
+            "default": false
+          },
+          "use_openrouter": {
+            "type": "boolean",
+            "title": "Use Openrouter",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "LeagueSettings"
+      },
+      "LineupOverrideRequest": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "starters": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Starters"
+          },
+          "today_only": {
+            "type": "boolean",
+            "title": "Today Only",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id",
+          "starters"
+        ],
+        "title": "LineupOverrideRequest"
+      },
+      "Pick": {
+        "properties": {
+          "overall": {
+            "type": "integer",
+            "title": "Overall"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "pick_in_round": {
+            "type": "integer",
+            "title": "Pick In Round"
+          },
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          },
+          "player_id": {
+            "type": "integer",
+            "title": "Player Id"
+          },
+          "player_name": {
+            "type": "string",
+            "title": "Player Name"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "overall",
+          "round",
+          "pick_in_round",
+          "team_id",
+          "player_id",
+          "player_name"
+        ],
+        "title": "Pick"
+      },
+      "PickRequest": {
+        "properties": {
+          "player_id": {
+            "type": "integer",
+            "title": "Player Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "player_id"
+        ],
+        "title": "PickRequest"
+      },
+      "ResetRequestV2": {
+        "properties": {
+          "randomize_order": {
+            "type": "boolean",
+            "title": "Randomize Order",
+            "default": false
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "season_year": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Season Year"
+          }
+        },
+        "type": "object",
+        "title": "ResetRequestV2"
+      },
+      "StartSeasonRequest": {
+        "properties": {
+          "league_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "League Id"
+          }
+        },
+        "type": "object",
+        "title": "StartSeasonRequest"
+      },
+      "SwitchLeagueRequest": {
+        "properties": {
+          "league_id": {
+            "type": "string",
+            "title": "League Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "league_id"
+        ],
+        "title": "SwitchLeagueRequest"
+      },
+      "Team": {
+        "properties": {
+          "id": {
+            "type": "integer",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "is_human": {
+            "type": "boolean",
+            "title": "Is Human",
+            "default": false
+          },
+          "gm_persona": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gm Persona"
+          },
+          "roster": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Roster"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "Team"
+      },
+      "TradeProposeRequest": {
+        "properties": {
+          "from_team": {
+            "type": "integer",
+            "title": "From Team"
+          },
+          "to_team": {
+            "type": "integer",
+            "title": "To Team"
+          },
+          "send": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Send"
+          },
+          "receive": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Receive"
+          },
+          "proposer_message": {
+            "type": "string",
+            "title": "Proposer Message",
+            "default": ""
+          },
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "from_team",
+          "to_team",
+          "send",
+          "receive"
+        ],
+        "title": "TradeProposeRequest"
+      },
+      "TradeVetoRequest": {
+        "properties": {
+          "team_id": {
+            "type": "integer",
+            "title": "Team Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "title": "TradeVetoRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -897,15 +897,17 @@ function scheduleDraftAutoAdvance() {
     if (currentRoute() !== 'draft') return;
     if (cur.current_team_id === cur.human_team_id) return;
     state.draftAutoBusy = true;
+    let ok = false;
     try {
       const r = await api('/api/draft/ai-advance', { method: 'POST' });
       state.draft = r.state;
-      render();
+      ok = true;
     } catch (err) {
       console.warn('auto ai-advance failed', err);
     } finally {
       state.draftAutoBusy = false;
     }
+    if (ok) render();
   }, 1500);
 }
 

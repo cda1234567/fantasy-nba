@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [chromium] › g3_player.spec.ts:13:5 › g3 player full flow (4.2m)
+
+  1 passed (4.2m)

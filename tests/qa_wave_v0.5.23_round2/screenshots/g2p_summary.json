@@ -1,0 +1,89 @@
+{
+  "league_id": "qa-r2-g2",
+  "version": "v0.5.23",
+  "setup_errors": [
+    "veto_threshold=1 not in UI radio options (P1 finding)",
+    "setup submit button not found"
+  ],
+  "draft_picks": 13,
+  "draft_click_timing": {
+    "n": 13,
+    "avg_ms": 292,
+    "min_ms": 40,
+    "max_ms": 1274
+  },
+  "roster_size": 0,
+  "slot_order_api": [
+    "PG",
+    "SG",
+    "G",
+    "SF",
+    "PF",
+    "F",
+    "C",
+    "C",
+    "UTIL",
+    "UTIL"
+  ],
+  "slot_order_expected": [
+    "PG",
+    "SG",
+    "G",
+    "SF",
+    "PF",
+    "F",
+    "C",
+    "C",
+    "UTIL",
+    "UTIL"
+  ],
+  "slot_order_match": true,
+  "dom_slot_order": [
+    "PG",
+    "SG",
+    "G",
+    "SF",
+    "PF",
+    "F",
+    "C",
+    "C",
+    "UTIL",
+    "UTIL"
+  ],
+  "dom_slot_match": true,
+  "bench_count": 2,
+  "rage_click_timings_ms": [
+    11,
+    7,
+    7,
+    8,
+    6,
+    8,
+    6,
+    10,
+    9,
+    8
+  ],
+  "timings": {
+    "home_load_ms": 1958,
+    "first_playoff_week_ms": 1939
+  },
+  "console_errors_count": 6,
+  "network_4xx5xx": [
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/sim-to-playoffs",
+      "status": 504,
+      "method": "POST"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/start",
+      "status": 409,
+      "method": "POST"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/sim-to-playoffs",
+      "status": 504,
+      "method": "POST"
+    }
+  ]
+}

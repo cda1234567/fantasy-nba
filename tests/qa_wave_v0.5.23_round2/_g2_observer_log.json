@@ -1,0 +1,146 @@
+[
+  {
+    "ts": 1776488764995,
+    "kind": "tc4_delegation_marker_after_ai_turns",
+    "data": {
+      "tblFound": true,
+      "delegated": "1",
+      "btnCount": 80
+    }
+  },
+  {
+    "ts": 1776488767001,
+    "kind": "tc4_after_click",
+    "data": {
+      "before": 1,
+      "after": 2,
+      "registered": true
+    }
+  },
+  {
+    "ts": 1776488776607,
+    "kind": "tc5_select_count",
+    "data": {
+      "selectExists": 1
+    }
+  },
+  {
+    "ts": 1776488776612,
+    "kind": "tc5_select_toggled",
+    "data": {
+      "switched": true,
+      "before": "prev_full",
+      "after": "current_full"
+    }
+  },
+  {
+    "ts": 1776488776795,
+    "kind": "console",
+    "data": {
+      "tag": "tc5",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    }
+  },
+  {
+    "ts": 1776488776796,
+    "kind": "console",
+    "data": {
+      "tag": "tc5",
+      "type": "warning",
+      "text": "save draft_display_mode failed Error: Cannot change ['il_slots', 'league_name', 'num_teams', 'player_team_index', 'playoff_teams', 'randomize_draft_order', 'regular_season_weeks', 'roster_size', 'scoring_weights', 'season_year', 'setup_complete', 'starters_per_day', 'trade_deadline_week', 'use_openrouter', 'veto_threshold', 'veto_window_days'] after league setup is complete\n    at api (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.23:131:17)\n    at async HTMLSelectElement.onDraftDisplayM"
+    }
+  },
+  {
+    "ts": 1776488777232,
+    "kind": "tc5_delegation_after_rerender",
+    "data": {
+      "tblFound": true,
+      "delegated": "1",
+      "btnCount": 80
+    }
+  },
+  {
+    "ts": 1776488779051,
+    "kind": "tc5_click_after_rerender",
+    "data": {
+      "before": 16,
+      "after": 17,
+      "registered": true
+    }
+  },
+  {
+    "ts": 1776488782771,
+    "kind": "tc6_focus_result",
+    "data": {
+      "found": true,
+      "focused": true,
+      "pid": "202695"
+    }
+  },
+  {
+    "ts": 1776488784266,
+    "kind": "tc6_enter_result",
+    "data": {
+      "before": 17,
+      "after": 18,
+      "registered": true
+    }
+  },
+  {
+    "ts": 1776488784623,
+    "kind": "tc7_state",
+    "data": {
+      "onAiTurn": true
+    }
+  },
+  {
+    "ts": 1776488787412,
+    "kind": "tc7_button_disabled_on_ai",
+    "data": {
+      "tblFound": true,
+      "total": 80,
+      "disabledCount": 80
+    }
+  },
+  {
+    "ts": 1776488791202,
+    "kind": "tc8_no_slots_found",
+    "data": {}
+  },
+  {
+    "ts": 1776488801141,
+    "kind": "tc9_count",
+    "data": {
+      "count": 80,
+      "onHumanTurn": true
+    }
+  },
+  {
+    "ts": 1776488801292,
+    "kind": "console",
+    "data": {
+      "tag": "tc9",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    }
+  },
+  {
+    "ts": 1776488801300,
+    "kind": "console",
+    "data": {
+      "tag": "tc9",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    }
+  },
+  {
+    "ts": 1776488803805,
+    "kind": "tc9_rapid_click_result",
+    "data": {
+      "before": 32,
+      "after": 33,
+      "delta": 1
+    }
+  }
+]

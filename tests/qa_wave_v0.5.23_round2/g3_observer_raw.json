@@ -1,0 +1,323 @@
+{
+  "version": "0.5.23",
+  "findings": [
+    {
+      "id": "V0",
+      "title": "version check",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "0.5.23",
+      "actual": "0.5.23",
+      "evidence": {
+        "ok": true,
+        "version": "0.5.23",
+        "league_id": "qa-r2-obs-g2",
+        "ai_enabled": true
+      }
+    },
+    {
+      "id": "H1",
+      "title": "HSTS header",
+      "severity": "P2",
+      "status": "FAIL",
+      "expected": "Strict-Transport-Security: max-age>=15552000",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H2",
+      "title": "Content-Security-Policy",
+      "severity": "P2",
+      "status": "FAIL",
+      "expected": "CSP header present (script-src restrictions)",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H3",
+      "title": "X-Frame-Options / frame-ancestors",
+      "severity": "P3",
+      "status": "FAIL",
+      "expected": "DENY or SAMEORIGIN (clickjacking)",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H4",
+      "title": "X-Content-Type-Options",
+      "severity": "P3",
+      "status": "FAIL",
+      "expected": "nosniff",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H5",
+      "title": "Referrer-Policy",
+      "severity": "INFO",
+      "status": "FAIL",
+      "expected": "strict-origin-when-cross-origin (recommended)",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H6",
+      "title": "Permissions-Policy",
+      "severity": "INFO",
+      "status": "FAIL",
+      "expected": "restrict camera/mic/geolocation",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H7",
+      "title": "Cross-Origin-Opener-Policy",
+      "severity": "INFO",
+      "status": "FAIL",
+      "expected": "same-origin",
+      "actual": "(missing)"
+    },
+    {
+      "id": "H8",
+      "title": "Server / framework info disclosure",
+      "severity": "P3",
+      "status": "INFO",
+      "expected": "minimal / no version string",
+      "actual": "server=cloudflare"
+    },
+    {
+      "id": "H9",
+      "title": "Cookie flags (HttpOnly/Secure/SameSite)",
+      "severity": "INFO",
+      "status": "INFO",
+      "expected": "any session cookie must be HttpOnly+Secure+SameSite",
+      "actual": "[{\"name\":\"cf_clearance\",\"httpOnly\":true,\"secure\":true,\"sameSite\":\"None\"}]",
+      "evidence": [
+        {
+          "name": "cf_clearance",
+          "value": "evmf8WbmAjusSaUowZ7BJ_lIr8xdmNQGzaia77pHdNs-1776488691-1.2.1.1-riCrApCzOdAHz2_4BCIteEUm0vMyjvGtNCHHeJ.tzdh3IdWiyN0PeBMMSwMfTQcoPrpnCMcLM1jcZkE6ZHagceAgsvX6shphwgVulRSqWfbl_.qhlnvZLdgz_w4jI34mwUe5wpArGoTcQkFqlB914ijF5sVoDA_PB7Uqnpo5nFPwOdK27TQiv3gGagDk76uEpL32fMluEgaoxNJAdUUZhSW_at8R4m.qbY6Wh_lk0PrIPsqTcNlSZebNBGDTB_5QWsfqegzcITrPtiK4K4dBDRKF7D1cdWzyM3Eclt0By1FLKSRdUJTeqQRMUOHbmNA9GNPQWFwh0XH04_sRIymOWA",
+          "domain": ".cda1234567.com",
+          "path": "/",
+          "expires": 1808024692.794047,
+          "httpOnly": true,
+          "secure": true,
+          "sameSite": "None",
+          "partitionKey": "https://cda1234567.com",
+          "_crHasCrossSiteAncestor": false
+        }
+      ]
+    },
+    {
+      "id": "S1",
+      "title": "XSS via league name (<script>)",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "payload escaped, window._xss remains undefined",
+      "actual": "window._xss=undefined; server patch status=200",
+      "evidence": {
+        "patchResp": {
+          "status": 200,
+          "body": "{\"league_name\":\"<script>window._xss=1</script>\",\"season_year\":\"2025-26\",\"player_team_index\":0,\"team_names\":[\"我的隊伍\",\"BPA Nerd\",\"Punt TO\",\"Stars & Scrubs\",\"Balanced Builder\",\"Youth Upside\",\"Vet Win-Now\",\"Contrarian\"],\"randomize_draft_order\":false,\"num_teams\":8,\"roster_size\":13,\"starters_per_day\":10,\"il_slots\":3,\"scoring_weights\":{\"pts\":1.0,\"reb\":1.2,\"ast\":1.5,\"stl\":2.5,\"blk\":2.5,\"to\":-1.0},\"regular_season_weeks\":20,\"playoff_teams\":6,\"trade_deadline_week\":null,\"ai_trade_frequency\":\"normal\",\"ai_trade_style\":\"balanced\",\"veto_threshold\":3,\"veto_window_days\":2,\"ai_decision_mode\":\"auto\",\"draft_display_mode\":\"prev_full\",\"show_offseason_headlines\":true,\"setup_complete\":false,\"use_openrouter\":true}"
+        },
+        "leagueNameInDom": {
+          "textMatch": true,
+          "rawHtmlHas": false
+        }
+      }
+    },
+    {
+      "id": "S2",
+      "title": "XSS via team name (<img onerror>)",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "no <img onerror> injected; window._xss2 undefined",
+      "actual": "window._xss2=undefined; img-with-payload-onerror=false; patch=200",
+      "evidence": {
+        "teamPatch": {
+          "status": 200,
+          "body": "{\"league_name\":\"<script>window._xss=1</script>\",\"season_year\":\"2025-26\",\"player_team_index\":0,\"team_names\":[\"<img src=x onerror=\\\"window._xss2=1\\\">\",\"T1\",\"T2\",\"T3\",\"T4\",\"T5\",\"T6\",\"T7\"],\"randomize_draft_order\":false,\"num_teams\":8,\"roster_size\":13,\"starters_per_day\":10,\"il_slots\":3,\"scoring_weights\":{\"pts\":1.0,\"reb\":1.2,\"ast\":1.5,\"stl\":2.5,\"blk\":2.5,\"to\":-1.0},\"regular_season_weeks\":20,\"playoff_teams\":6,\"trade_deadline_week\":null,\"ai_trade_frequency\":\"normal\",\"ai_trade_style\":\"balanced\",\"veto_threshold\":3,\"veto_window_days\":2,\"ai_decision_mode\":\"auto\",\"draft_display_mode\":\"prev_full\",\"show_offseason_headlines\":true,\"setup_complete\":false,\"use_openrouter\":true}"
+        }
+      }
+    },
+    {
+      "id": "S3",
+      "title": "XSS via trade proposer_message",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "payload escaped / stored safely / rejected; window._xss3 undefined",
+      "actual": "window._xss3=undefined; rawHtmlHasScriptTag=false; propose status=409",
+      "evidence": {
+        "tradeAttempt": {
+          "status": 409,
+          "body": "{\"detail\":\"賽季尚未開始\"}"
+        }
+      }
+    },
+    {
+      "id": "S4",
+      "title": "Path traversal in league_id",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "400/422 with validator error; no disk write",
+      "actual": "status=400 body={\"detail\":\"league_id may only contain letters, digits, '-', '_'\"}",
+      "evidence": {
+        "status": 400,
+        "body": "{\"detail\":\"league_id may only contain letters, digits, '-', '_'\"}"
+      }
+    },
+    {
+      "id": "S5",
+      "title": "Oversized league_id (10k chars)",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "400/422 with length-limit error",
+      "actual": "status=400 body={\"detail\":\"league_id too long (max 64 chars)\"}",
+      "evidence": {
+        "status": 400,
+        "body": "{\"detail\":\"league_id too long (max 64 chars)\"}"
+      }
+    },
+    {
+      "id": "S6",
+      "title": "SQL-injection-like league_id",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "rejected; players endpoint still returns data",
+      "actual": "status=400 body={\"detail\":\"league_id may only contain letters, digits, '-', '_'\"}",
+      "evidence": {
+        "status": 400,
+        "body": "{\"detail\":\"league_id may only contain letters, digits, '-', '_'\"}"
+      }
+    },
+    {
+      "id": "S6b",
+      "title": "DB integrity after SQLi attempt",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "players list still returns ≥1 item",
+      "actual": "status=200 count=3"
+    },
+    {
+      "id": "S7",
+      "title": "Double-submit idempotency (10x /leagues/create)",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "1 created; duplicates rejected cleanly (no 5xx)",
+      "actual": "ok=1 dup=9 serverErr=0 actualCreated=1",
+      "evidence": [
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 200,
+          "body": "{\"ok\":true,\"active\":\"qa-r2-obs-g3\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        },
+        {
+          "status": 400,
+          "body": "{\"detail\":\"league 'qa-r2-obs-g3-dupe-2694' already exists\"}"
+        }
+      ]
+    },
+    {
+      "id": "S8",
+      "title": "CSRF / CORS — hostile Origin on state-changing POST",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "no ACAO for foreign origin (browser same-origin policy blocks the cross-site attacker)",
+      "actual": "ACAO=(none) ACAC=(none) status=200 body={\"ok\":true,\"active\":\"qa-r2-obs-g3\"}",
+      "evidence": {
+        "headers": {
+          "date": "Sat, 18 Apr 2026 05:05:02 GMT",
+          "content-type": "application/json",
+          "transfer-encoding": "chunked",
+          "connection": "keep-alive",
+          "server": "cloudflare",
+          "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+          "vary": "Accept-Encoding",
+          "content-encoding": "gzip",
+          "cf-cache-status": "DYNAMIC",
+          "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=l%2FAouo7J0JqMIo3HayX3aMDpWFF1G%2F179LZphujfIADxLqQOGQipTZ9fVtmbvqpnZmlut55o5vnSJUfRD6b%2FHoYzNRsXEpD2qdKueorIQmY08SKWhbxCTBl%2FVGZc8hhRsf%2BZpnLxTLCa71YY\"}]}",
+          "cf-ray": "9ee121d35b7fd4a0-SIN",
+          "alt-svc": "h3=\":443\"; ma=86400"
+        }
+      }
+    },
+    {
+      "id": "S8b",
+      "title": "CORS preflight from evil origin",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "preflight does not whitelist attacker origin",
+      "actual": "status=405 ACAO=(none)",
+      "evidence": {
+        "date": "Sat, 18 Apr 2026 05:05:02 GMT",
+        "content-type": "application/json",
+        "content-length": "31",
+        "connection": "keep-alive",
+        "server": "cloudflare",
+        "nel": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+        "allow": "POST",
+        "cf-cache-status": "DYNAMIC",
+        "report-to": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=MpIfwFllbYhJzN84qwEBG%2BD%2F3rrBs9DVTTxZgWD5HQtTZEgp3Sy91lwkN0NA5YpqIUdGHeqFNOCscJ5mGfPGJ3x4tt5lUcanADYQzFhsuTCDndqj1fZQsIeOGn5LYhDkJgvjLACKVrjOP2g%2B\"}]}",
+        "cf-ray": "9ee121d49f26d4a0-SIN",
+        "alt-svc": "h3=\":443\"; ma=86400"
+      }
+    },
+    {
+      "id": "L1",
+      "title": "Absolute-path / secret leakage in response bodies",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "no C:\\, /home/, data_dir, API keys, or stack traces",
+      "actual": "(none)",
+      "evidence": []
+    },
+    {
+      "id": "X1",
+      "title": "No runtime XSS markers fired during full sweep",
+      "severity": "INFO",
+      "status": "PASS",
+      "expected": "no alert() dialogs, no _xss* globals set, no pageerror from XSS",
+      "actual": "dialogs=0 pageErrors=0 consoleErrors=13",
+      "evidence": {
+        "dialogs": [],
+        "pageErrors": [],
+        "consoleErrors": [
+          "Failed to load resource: the server responded with a status of 409 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()",
+          "Failed to load resource: the server responded with a status of 400 ()"
+        ]
+      }
+    }
+  ]
+}

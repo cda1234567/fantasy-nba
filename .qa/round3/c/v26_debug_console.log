@@ -1,0 +1,94 @@
+[14:33:09.227] error: Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://static.cloudflareinsights.com'. Either the 'unsafe-inline' keyword, a hash ('sha256-kQhNNkaoS+f0gTRh+J1TVReIe0xwkxr62r9uDSR0OzA='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked.
+[14:33:10.898] version: v0.5.26
+[14:33:11.804] created league r3cv26d-93988
+[14:33:12.308] error: Executing inline script violates the following Content Security Policy directive 'script-src 'self' https://static.cloudflareinsights.com'. Either the 'unsafe-inline' keyword, a hash ('sha256-tzr9Kf93J2s5jvFgBKquDuBTWf/fwmDsmiy+rqjpcJM='), or a nonce ('nonce-...') is required to enable inline execution. The action has been blocked.
+[14:33:13.695] log: [TRACE] scheduleDraftAutoAdvance hooked
+[14:33:13.695] log: [TRACE] api hooked
+[14:33:13.696] log: [TRACE] render hooked
+[14:33:13.696] instrumentation injected
+[14:33:13.715] log: [TRACE] api call: POST /api/league/setup
+[14:33:13.717] setup submitted
+[14:33:13.918] log: [TRACE] api OK: /api/league/setup
+[14:33:13.919] log: [TRACE] api call: GET /api/league/status
+[14:33:13.919] log: [TRACE] api call: GET /api/league/settings
+[14:33:14.063] log: [TRACE] api OK: /api/league/status
+[14:33:14.090] log: [TRACE] api OK: /api/league/settings
+[14:33:14.090] log: [TRACE] api call: GET /api/state
+[14:33:14.225] log: [TRACE] api OK: /api/state
+[14:33:14.226] log: [TRACE] api call: GET /api/season/standings
+[14:33:14.227] log: [TRACE] api call: GET /api/season/schedule
+[14:33:14.369] log: [TRACE] api OK: /api/season/schedule
+[14:33:14.369] log: [TRACE] api OK: /api/season/standings
+[14:33:14.370] log: [TRACE] api call: GET /api/season/lineup-alerts
+[14:33:14.502] log: [TRACE] api OK: /api/season/lineup-alerts
+[14:33:14.505] log: [TRACE] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:14.507] log: [TRACE] api call: GET /api/seasons/2025-26/headlines
+[14:33:14.508] log: [TRACE] scheduleDraftAutoAdvance called: no draft state
+[14:33:14.512] log: [TRACE] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:14.566] human turn reached (or not)
+[14:33:14.582] clicking draft button pid=1641705
+[14:33:14.647] log: [TRACE] api OK: /api/seasons/2025-26/headlines
+[14:33:14.969] log: [TRACE] api call: POST /api/draft/pick
+[14:33:14.972] human click done; now observing auto-advance cycle for 40s
+[14:33:15.113] log: [TRACE] api OK: /api/draft/pick
+[14:33:15.114] log: [TRACE] render() called; route=draft
+[14:33:15.115] log: [TRACE] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:15.116] log: [TRACE] api call: GET /api/seasons/2025-26/headlines
+[14:33:15.117] log: [TRACE] scheduleDraftAutoAdvance called: no draft state
+[14:33:15.120] log: [TRACE] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:15.250] log: [TRACE] api OK: /api/seasons/2025-26/headlines
+[14:33:15.995] [tick 0s] state=None
+[14:33:16.624] log: [TRACE] api call: POST /api/draft/ai-advance
+[14:33:16.773] log: [TRACE] api OK: /api/draft/ai-advance
+[14:33:16.774] log: [TRACE] render() called; route=draft
+[14:33:16.775] log: [TRACE] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:16.777] log: [TRACE] api call: GET /api/seasons/2025-26/headlines
+[14:33:16.778] log: [TRACE] scheduleDraftAutoAdvance called: no draft state
+[14:33:16.780] log: [TRACE] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:16.915] log: [TRACE] api OK: /api/seasons/2025-26/headlines
+[14:33:21.096] [tick 5s] state=None
+[14:33:26.185] [tick 10s] state=None
+[14:33:31.273] [tick 15s] state=None
+[14:33:36.351] [tick 20s] state=None
+[14:33:41.439] [tick 25s] state=None
+[14:33:46.515] [tick 30s] state=None
+[14:33:51.580] [tick 35s] state=None
+[14:33:55.626] === full client trace ===
+[14:33:55.627] [06:33:13.693] scheduleDraftAutoAdvance hooked
+[14:33:55.627] [06:33:13.694] api hooked
+[14:33:55.628] [06:33:13.694] render hooked
+[14:33:55.628] [06:33:13.713] api call: POST /api/league/setup
+[14:33:55.628] [06:33:13.916] api OK: /api/league/setup
+[14:33:55.628] [06:33:13.916] api call: GET /api/league/status
+[14:33:55.628] [06:33:13.917] api call: GET /api/league/settings
+[14:33:55.629] [06:33:14.062] api OK: /api/league/status
+[14:33:55.629] [06:33:14.087] api OK: /api/league/settings
+[14:33:55.629] [06:33:14.088] api call: GET /api/state
+[14:33:55.629] [06:33:14.223] api OK: /api/state
+[14:33:55.629] [06:33:14.223] api call: GET /api/season/standings
+[14:33:55.630] [06:33:14.223] api call: GET /api/season/schedule
+[14:33:55.630] [06:33:14.367] api OK: /api/season/schedule
+[14:33:55.630] [06:33:14.367] api OK: /api/season/standings
+[14:33:55.630] [06:33:14.367] api call: GET /api/season/lineup-alerts
+[14:33:55.631] [06:33:14.500] api OK: /api/season/lineup-alerts
+[14:33:55.631] [06:33:14.503] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:55.631] [06:33:14.503] api call: GET /api/seasons/2025-26/headlines
+[14:33:55.631] [06:33:14.504] scheduleDraftAutoAdvance called: no draft state
+[14:33:55.632] [06:33:14.510] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:55.633] [06:33:14.645] api OK: /api/seasons/2025-26/headlines
+[14:33:55.633] [06:33:14.967] api call: POST /api/draft/pick
+[14:33:55.633] [06:33:15.111] api OK: /api/draft/pick
+[14:33:55.634] [06:33:15.111] render() called; route=draft
+[14:33:55.634] [06:33:15.114] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:55.634] [06:33:15.114] api call: GET /api/seasons/2025-26/headlines
+[14:33:55.634] [06:33:15.115] scheduleDraftAutoAdvance called: no draft state
+[14:33:55.634] [06:33:15.119] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:55.634] [06:33:15.249] api OK: /api/seasons/2025-26/headlines
+[14:33:55.635] [06:33:16.623] api call: POST /api/draft/ai-advance
+[14:33:55.635] [06:33:16.770] api OK: /api/draft/ai-advance
+[14:33:55.635] [06:33:16.770] render() called; route=draft
+[14:33:55.635] [06:33:16.771] api call: GET /api/players?available=true&sort=fppg&limit=80
+[14:33:55.635] [06:33:16.772] api call: GET /api/seasons/2025-26/headlines
+[14:33:55.635] [06:33:16.772] scheduleDraftAutoAdvance called: no draft state
+[14:33:55.635] [06:33:16.776] api OK: /api/players?available=true&sort=fppg&limit=80
+[14:33:55.635] [06:33:16.913] api OK: /api/seasons/2025-26/headlines

@@ -1,0 +1,38 @@
+
+Running 1 test using 1 worker
+
+Initial load. Version text: v0.5.22. Console errors: 0
+League switcher opened. Existing leagues: 6
+qa-g4 already exists; will reuse.
+Clicked 建立並切換
+Active league label after create: "聯盟"
+P1: Active league label does not reflect qa-g4 (got "聯盟"). Check switcher refresh.
+On setup-like view after create? false
+Draft hero visible: false
+P0: Draft hero not visible on #draft route.
+Available players rows: 80
+Draft search box present: true
+Position filter controls count: 0
+Sort controls count: 1
+Round iteration 0: no enabled draft button; waiting.
+Round iteration 1: no enabled draft button; waiting.
+Round iteration 2: no enabled draft button; waiting.
+Round iteration 3: no enabled draft button; waiting.
+Round iteration 4: no enabled draft button; waiting.
+Round iteration 5: no enabled draft button; waiting.
+Round iteration 6: no enabled draft button; waiting.
+Round iteration 7: no enabled draft button; waiting.
+Round iteration 8: no enabled draft button; waiting.
+Round iteration 9: no enabled draft button; waiting.
+Round iteration 10: no enabled draft button; waiting.
+Round iteration 11: no enabled draft button; waiting.
+Total manual picks: 0
+P1: Could not complete 5 manual picks within retry budget. UX flow issue or AI/locking stuck.
+Draft completed: true
+P2: Could not find trade entry point on teams page.
+Clicked sim-to-playoffs
+Final console errors count: 2
+First 3 console errors: Failed to load resource: the server responded with a status of 400 () | Failed to load resource: the server responded with a status of 400 ()
+  ✓  1 [chromium] › g4_player.spec.ts:24:5 › g4 player QA journey (2.6m)
+
+  1 passed (2.6m)

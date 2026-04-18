@@ -1,0 +1,35 @@
+{
+  "total_s": 4.8,
+  "base": "https://nbafantasy.cda1234567.com",
+  "results": {
+    "version_query_string_v0_5_14_or_newer": {
+      "pass": true,
+      "js_version": "0.5.15",
+      "css_version": "0.5.15",
+      "html_len": 9672
+    },
+    "frontend_bundle_size_ge_129KB": {
+      "pass": false,
+      "bytes": 126399,
+      "kilobytes": 123.4,
+      "status": 200,
+      "versioned_url_used": "/static/app.js?v=0.5.15",
+      "base_url_bytes": 89516,
+      "base_url_kb": 87.4,
+      "content_type": "text/javascript; charset=utf-8"
+    },
+    "lineup_override_no_500": {
+      "pass": true,
+      "http_status": 200,
+      "body": "{\"ok\":true,\"starters\":[1630178,1627759,202695,1628374,203999,1642270,201939,1630166,1629645,202710],\"today_only\":false}",
+      "lineup_size": 10
+    },
+    "is_playoffs_flips_after_regular_season": {
+      "pass": true,
+      "reason": "already in playoffs",
+      "current_week": 20,
+      "regular_weeks": 20,
+      "is_playoffs": true
+    }
+  }
+}

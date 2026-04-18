@@ -1,0 +1,29 @@
+[00:25:44] PASS health_ok: {'ok': True, 'version': '0.5.6', 'league_id': 'default', 'data_dir': '/app/data', 'ai_enabled': True}
+[00:25:47] PASS reset_empty: pick=1 teams=8
+[00:25:47] PASS expected_104_picks: 8x13 = 104
+[00:28:20] PASS draft_complete: picks=104
+[00:28:20] PASS draft_picks_104: 104
+[00:28:20] PASS v052_pos_backfill: 0 drafted players missing pos
+[00:28:20] FAIL draft_pos_diversity: {}
+[00:28:21] PASS season_started: week=1
+[00:28:36] PASS logs_present: 30 log entries
+[00:28:36] FAIL logs_cjk: cjk_found=False sample={"ts": 1776442624.6101604, "type": "day_advance", "day": 62, "week": 9, "fp_by_team": {"0": 343.43, "1": 350.8, "2": 286
+[00:28:36] ISSUE[LOGS_NOT_CHINESE]: activity log lacks Chinese: {"ts": 1776442624.6101604, "type": "day_advance", "day": 62, "week": 9, "fp_by_team": {"0": 343.43, "1": 350.8, "2": 286.87, "3": 287.99, "4": 234.64, "5": 376.17, "6": 302.2, "7": 354.7}} {"ts": 1776
+[00:38:17] FAIL reached_playoffs: week=20 is_playoffs=False
+[00:38:18] PASS leaders_pos_real: positions=['C', 'PG', 'SF', 'PG', 'C', 'C', 'PF', 'PF', 'PF', 'SF']
+[00:38:20] PASS has_champion: champion=0
+[00:38:20] FAIL summary_is_complete: None
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 356, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 274, in main
+    check("summary_has_mvp", summary2.get("mvp") is not None, str((summary2.get("mvp") or {}).get("name")))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 116, in check
+    log(f"{'PASS' if ok else 'FAIL'} {name}: {detail}")
+    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 33, in log
+    print(f"[{time.strftime('%H:%M:%S')}] {msg}", flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'cp950' codec can't encode character '\u0107' in position 44: illegal multibyte sequence

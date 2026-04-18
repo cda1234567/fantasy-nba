@@ -1,0 +1,36 @@
+{
+  "total_s": 42.4,
+  "results": {
+    "advance_week_under_10s": {
+      "pass": false,
+      "elapsed_s": 0.72,
+      "http_status": 200,
+      "pre_week": 20,
+      "post_week": 20,
+      "pre_day": 140,
+      "post_day": 140,
+      "advanced": false
+    },
+    "counter_offer_ux": {
+      "pass": false,
+      "counter_trade_id": "1a4589144ea94248969d8a662ed721a4",
+      "counter_of": "02164ec5ab2547898d1e6e77047ee741",
+      "banner_seen": false,
+      "history_chip_seen": false,
+      "pending_card_counter": false
+    },
+    "week_recap_browser": {
+      "pass": false,
+      "reason": "overlay did not render",
+      "onShowWeekRecap_type": "undefined",
+      "api_status": 200,
+      "target_week": 19
+    },
+    "lineup_override_invalidation": {
+      "pass": false,
+      "reason": "could not set lineup override",
+      "status": 500,
+      "detail": "Internal Server Error"
+    }
+  }
+}

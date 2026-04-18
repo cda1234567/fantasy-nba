@@ -1,0 +1,14 @@
+[2026-04-18 05:39:11] watcher starting
+[2026-04-18 05:39:11] waiting 60s for player agent to create league
+[2026-04-18 05:40:11] navigating to https://nbafantasy.cda1234567.com
+[2026-04-18 05:40:12] console[error]: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516' violates the following Content Security Policy directive: "script-src 'self'". N
+[2026-04-18 05:40:12] console[error]: Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-neUfMM4XEYN2yNvKh2K7GxiMo6wE7eIKgG635A7rMQg=')
+[2026-04-18 05:40:44] watcher starting (v2 - restarted)
+[2026-04-18 05:40:44] already past initial 60s wait, proceeding to launch browser
+[2026-04-18 05:40:44] navigating to https://nbafantasy.cda1234567.com
+[2026-04-18 05:40:45] console[error]: Executing inline script violates the following Content Security Policy directive 'script-src 'self''. Either the 'unsafe-inline' keyword, a hash ('sha256-I3/zdMrq5Vrm27DRMcMl1X6FdtCamZRwyAmqds39kjU=')
+[2026-04-18 05:40:45] console[error]: Loading the script 'https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516' violates the following Content Security Policy directive: "script-src 'self'". N
+[2026-04-18 05:40:49] league selected: round3-a on attempt 1
+[2026-04-18 05:40:53] snapshot #1-league taken url=https://nbafantasy.cda1234567.com/#league injuries=0 weekMarkers=0
+[2026-04-18 05:40:56] snapshot #1-team taken url=https://nbafantasy.cda1234567.com/#teams injuries=0 weekMarkers=0
+[2026-04-18 05:40:56] sleeping 60s before next cycle

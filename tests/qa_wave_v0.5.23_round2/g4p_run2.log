@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+[05:05:49] [pre-season] GET /api/injuries/active → status=200 body={"active":[{"player_id":1642259,"status":"out","return_in_days":34,"note":"大傷，可能賽季報銷","diagnosed_day":66,"player_name":"
+[05:05:55] League qa-r2-g4: created
+[05:05:55] Active league label: "聯盟"
+[05:05:57] P0: draft hero not visible
+[05:11:01] Draft complete: false
+[05:11:01] P0: draft did not complete.
+[05:11:02] P1: 開始賽季 button missing on league page
+[05:11:02] P0: could not start season.
+[05:11:04] After start: 開始賽季 button count=0 disabled=false
+[05:11:04] [post-season] GET /api/injuries/active → status=200 body(0..200)={"active":[{"player_id":1642259,"status":"out","return_in_days":28,"note":"大傷，可能賽季報銷","diagnosed_day":66,"player_name":"Alex Sarr","nba_team":"WAS","fantasy_team_id":0,"fantasy_team_name":"我的隊伍"}],"co
+[05:11:05] Advanced 1 week: false
+[05:11:08] Lineup slot order observed: []
+[05:11:08] Slot order matches expected ["PG","SG","G","SF","PF","F","C","C","UTIL","UTIL"]: false
+[05:11:08] P0: Lineup slot order mismatch. expected=PG,SG,G,SF,PF,F,C,C,UTIL,UTIL got=
+[05:11:08] Bench rows count: 0
+[05:11:08] Change buttons in lineup: 0
+[05:11:08] Roster snapshot — total=13 G-eligible=4 C-eligible=3 injured_out=1
+[05:11:08] Slot snapshot (from API): [{"slot":"PG","pid":201939},{"slot":"SG","pid":1627759},{"slot":"G","pid":1629645},{"slot":"SF","pid":202695},{"slot":"PF","pid":1630552},{"slot":"F","pid":1630166},{"slot":"C","pid":203999},{"slot":"C","pid":203954},{"slot":"UTIL","pid":2544},{"slot":"UTIL","pid":1628374}]
+[05:11:08] G-slot current player_id=1629645 ; UTIL player_ids=2544,1628374
+[05:11:08] G-slot change button not found.
+[05:11:09] Injured players on roster: Alex Sarr(C)
+[05:11:12] P1: 設定先發陣容 button missing on team page.
+  ✘  1 g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases (22.0m)
+
+
+  1) g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases ────────────────────────
+
+    [31mTest timeout of 1320000ms exceeded.[39m
+
+    Error: browserContext.newPage: Test timeout of 1320000ms exceeded.
+
+      452 |
+      453 |   // === 8. CONCURRENT LINEUP EDIT (2 tabs, same team) ===
+    > 454 |   const page2: Page = await context.newPage();
+          |                                     ^
+      455 |   page2.on('pageerror', (e) => consoleErr.push('page2 pageerror: ' + e.message));
+      456 |   await page2.goto(BASE + '/#team', { waitUntil: 'domcontentloaded' });
+      457 |   await page2.waitForTimeout(2500);
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\g4_player.spec.ts:454:37
+
+    Error Context: playwright-output-g4p\g4_player-g4-player-lineup-editor-injury-edge-cases\error-context.md
+
+  Slow test file: g4_player.spec.ts (22.0m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases ─────────────────────────

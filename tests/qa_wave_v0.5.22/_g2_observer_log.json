@@ -1,0 +1,1863 @@
+[
+  {
+    "ts": 1776487152170,
+    "kind": "poll",
+    "data": {
+      "t": 277,
+      "names": [
+        "260418",
+        "qa-g1",
+        "qa-g2",
+        "qa-g3",
+        "qa-g4",
+        "default"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152170,
+    "kind": "poll_done",
+    "data": {
+      "found": true,
+      "elapsed": 277
+    }
+  },
+  {
+    "ts": 1776487152319,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/health",
+      "status": 200,
+      "ms": 122,
+      "bytes": 91,
+      "keys": [
+        "ok",
+        "version",
+        "league_id",
+        "data_dir",
+        "ai_enabled"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152450,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/leagues/list",
+      "status": 200,
+      "ms": 131,
+      "bytes": 505,
+      "keys": [
+        "leagues",
+        "active"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152577,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/league/status",
+      "status": 200,
+      "ms": 126,
+      "bytes": 126,
+      "keys": [
+        "setup_complete",
+        "league_name",
+        "season_year",
+        "num_teams",
+        "roster_size",
+        "regular_season_weeks"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152708,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/league/settings",
+      "status": 200,
+      "ms": 130,
+      "bytes": 666,
+      "keys": [
+        "league_name",
+        "season_year",
+        "player_team_index",
+        "team_names",
+        "randomize_draft_order",
+        "num_teams",
+        "roster_size",
+        "starters_per_day",
+        "il_slots",
+        "scoring_weights",
+        "regular_season_weeks",
+        "playoff_teams",
+        "trade_deadline_week",
+        "ai_trade_frequency",
+        "ai_trade_style",
+        "veto_threshold",
+        "veto_window_days",
+        "ai_decision_mode",
+        "draft_display_mode",
+        "show_offseason_headlines"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152840,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/state",
+      "status": 200,
+      "ms": 131,
+      "bytes": 1431,
+      "keys": [
+        "teams",
+        "picks",
+        "board",
+        "current_overall",
+        "current_round",
+        "current_pick_in_round",
+        "current_team_id",
+        "is_complete",
+        "available_count",
+        "total_rounds",
+        "num_teams",
+        "human_team_id"
+      ]
+    }
+  },
+  {
+    "ts": 1776487152962,
+    "kind": "api_probe",
+    "data": {
+      "ep": "/api/seasons/list",
+      "status": 200,
+      "ms": 122,
+      "bytes": 313,
+      "keys": [
+        "seasons"
+      ]
+    }
+  },
+  {
+    "ts": 1776487153102,
+    "kind": "leagues_snapshot",
+    "data": {
+      "leagues": [
+        {
+          "league_id": "260418",
+          "name": "我的聯盟",
+          "created_at": 0,
+          "setup_complete": true
+        },
+        {
+          "league_id": "qa-g1",
+          "name": "qa-g1",
+          "created_at": 0,
+          "setup_complete": false
+        },
+        {
+          "league_id": "qa-g2",
+          "name": "qa-g1",
+          "created_at": 0,
+          "setup_complete": true
+        },
+        {
+          "league_id": "qa-g3",
+          "name": "qa-g3",
+          "created_at": 0,
+          "setup_complete": false
+        },
+        {
+          "league_id": "qa-g4",
+          "name": "qa-g4",
+          "created_at": 0,
+          "setup_complete": false
+        },
+        {
+          "league_id": "default",
+          "name": "QA Test League",
+          "created_at": 1776445122.1946664,
+          "setup_complete": true
+        }
+      ],
+      "active": "qa-g1"
+    }
+  },
+  {
+    "ts": 1776487153243,
+    "kind": "switch_g2",
+    "data": {
+      "status": 200,
+      "body": "{\"ok\":true,\"active\":\"qa-g2\"}"
+    }
+  },
+  {
+    "ts": 1776487153367,
+    "kind": "state_after_switch",
+    "data": {
+      "teams": 8,
+      "total_rounds": 13,
+      "num_teams": 8,
+      "current_overall": 1,
+      "is_complete": false,
+      "available_count": 569
+    }
+  },
+  {
+    "ts": 1776487153496,
+    "kind": "switch_bogus",
+    "data": {
+      "status": 400,
+      "body": "{\"detail\":\"league '__NOT_EXIST__' does not exist\"}"
+    }
+  },
+  {
+    "ts": 1776487153620,
+    "kind": "headlines_bad_year",
+    "data": {
+      "status": 404,
+      "body": "{\"detail\":\"no headlines for this season\"}"
+    }
+  },
+  {
+    "ts": 1776487154361,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154161
+    }
+  },
+  {
+    "ts": 1776487154487,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154362
+    }
+  },
+  {
+    "ts": 1776487154575,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154362
+    }
+  },
+  {
+    "ts": 1776487154575,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154362
+    }
+  },
+  {
+    "ts": 1776487154704,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154577
+    }
+  },
+  {
+    "ts": 1776487154842,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154705
+    }
+  },
+  {
+    "ts": 1776487154971,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154843
+    }
+  },
+  {
+    "ts": 1776487154977,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154843
+    }
+  },
+  {
+    "ts": 1776487155151,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487154978
+    }
+  },
+  {
+    "ts": 1776487155284,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487155156
+    }
+  },
+  {
+    "ts": 1776487155310,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487155156
+    }
+  },
+  {
+    "ts": 1776487155820,
+    "kind": "nav",
+    "data": {
+      "status": 200
+    }
+  },
+  {
+    "ts": 1776487156125,
+    "kind": "a11y_desktop",
+    "data": {
+      "totalEls": 1477,
+      "btnWithoutLabel": [],
+      "inputsNoLabel": [
+        {
+          "id": "draft-display-mode-switch",
+          "name": "",
+          "type": "select-one",
+          "outer": "<select id=\"draft-display-mode-switch\" style=\"margin-left:8px; padding:4px 8px; border-radius:6px;\" title=\"即時切換選秀顯示模式（會儲存到聯盟設定）\"><option value=\"prev_full\" selected=\"\">上季完整（含 FPPG）</option><option valu"
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "search",
+          "outer": "<input type=\"search\" placeholder=\"搜尋姓名 / 球隊...\" value=\"\" style=\"\">"
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "select-one",
+          "outer": "<select>\n        <option value=\"\">所有位置</option>\n        <option value=\"PG\">PG</option>\n        <option value=\"SG\">SG</option>\n        <option value=\"SF\">SF</option>\n        <option value=\"PF\">PF</opti"
+        },
+        {
+          "id": "",
+          "name": "",
+          "type": "select-one",
+          "outer": "<select>\n        <option value=\"fppg\">排序：FPPG</option>\n        <option value=\"pts\">PTS</option>\n        <option value=\"reb\">REB</option>\n        <option value=\"ast\">AST</option>\n        <option value="
+        },
+        {
+          "id": "trade-message",
+          "name": "",
+          "type": "textarea",
+          "outer": "<textarea id=\"trade-message\" maxlength=\"300\" placeholder=\"說服對方的話 (選填)\" rows=\"2\" style=\"\"></textarea>"
+        }
+      ],
+      "lowContrast": [
+        {
+          "tag": "SPAN",
+          "id": "",
+          "cls": "lsw-label",
+          "text": "聯盟",
+          "fg": "rgb(148, 163, 184)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 2.56,
+          "fontSize": 11
+        },
+        {
+          "tag": "SPAN",
+          "id": "lsw-current",
+          "cls": "lsw-current",
+          "text": "qa-g1",
+          "fg": "rgb(201, 209, 217)",
+          "bg": "rgb(255,255,255)",
+          "ratio": 1.54,
+          "fontSize": 13
+        },
+        {
+          "tag": "SPAN",
+          "id": "app-version",
+          "cls": "app-version",
+          "text": "v0.5.22",
+          "fg": "rgb(110, 118, 129)",
+          "bg": "rgb(28,34,48)",
+          "ratio": 3.46,
+          "fontSize": 11
+        },
+        {
+          "tag": "P",
+          "id": "new-league-hint",
+          "cls": "new-league-hint",
+          "text": "建立後會自動切換到新聯盟,並進入設定畫面。",
+          "fg": "rgb(107, 114, 128)",
+          "bg": "rgb(22,27,34)",
+          "ratio": 3.58,
+          "fontSize": 12
+        },
+        {
+          "tag": "A",
+          "id": "",
+          "cls": "nav-item active",
+          "text": "D\n        選秀",
+          "fg": "rgb(88, 166, 255)",
+          "bg": "rgb(88,166,255)",
+          "ratio": 1,
+          "fontSize": 14
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "cls": "nav-label",
+          "text": "選秀",
+          "fg": "rgb(88, 166, 255)",
+          "bg": "rgb(88,166,255)",
+          "ratio": 1,
+          "fontSize": 14
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "hh-count",
+          "text": "10 則",
+          "fg": "rgb(148, 163, 184)",
+          "bg": "rgb(148,163,184)",
+          "ratio": 1,
+          "fontSize": 12
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "hh-cat",
+          "text": "🔄轉隊",
+          "fg": "rgb(203, 213, 225)",
+          "bg": "rgb(148,163,184)",
+          "ratio": 1.73,
+          "fontSize": 12
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "cls": "hh-cat-icon",
+          "text": "🔄",
+          "fg": "rgb(203, 213, 225)",
+          "bg": "rgb(148,163,184)",
+          "ratio": 1.73,
+          "fontSize": 14
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "cls": "hh-cat-label",
+          "text": "轉隊",
+          "fg": "rgb(203, 213, 225)",
+          "bg": "rgb(148,163,184)",
+          "ratio": 1.73,
+          "fontSize": 12
+        },
+        {
+          "tag": "DIV",
+          "id": "",
+          "cls": "hh-pager",
+          "text": "1 / 10",
+          "fg": "rgb(100, 116, 139)",
+          "bg": "rgb(15,23,42)",
+          "ratio": 3.75,
+          "fontSize": 11
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "cls": "dh-persona-tag",
+          "text": "👤 BPA Nerd",
+          "fg": "rgb(196, 181, 253)",
+          "bg": "rgb(167,139,250)",
+          "ratio": 1.47,
+          "fontSize": 12
+        }
+      ],
+      "lowContrastCount": 12,
+      "landmarks": {
+        "header": true,
+        "nav": 2,
+        "main": true,
+        "complementary": true
+      },
+      "dialogs": [
+        {
+          "id": "dlg-new-league",
+          "ariaLabel": "建立新聯盟",
+          "ariaLabelledby": null,
+          "role": null
+        },
+        {
+          "id": "dlg-settings",
+          "ariaLabel": "設定",
+          "ariaLabelledby": null,
+          "role": null
+        },
+        {
+          "id": "dlg-confirm",
+          "ariaLabel": "確認",
+          "ariaLabelledby": null,
+          "role": null
+        },
+        {
+          "id": "dlg-matchup",
+          "ariaLabel": "對戰詳情",
+          "ariaLabelledby": null,
+          "role": null
+        },
+        {
+          "id": "trade-propose",
+          "ariaLabel": "發起交易",
+          "ariaLabelledby": null,
+          "role": null
+        },
+        {
+          "id": "dlg-league-settings",
+          "ariaLabel": "聯盟設定",
+          "ariaLabelledby": null,
+          "role": null
+        }
+      ],
+      "focusables": 53,
+      "title": "NBA Fantasy 模擬器",
+      "lang": "zh-TW"
+    }
+  },
+  {
+    "ts": 1776487156138,
+    "kind": "focus_first",
+    "data": {
+      "tag": "BUTTON",
+      "id": "",
+      "text": "‹"
+    }
+  },
+  {
+    "ts": 1776487156206,
+    "kind": "keyboard_tab_stops",
+    "data": [
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "下一則",
+        "visible": true,
+        "outline": "rgb(226, 232, 240) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 1 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 2 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 3 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 4 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 5 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 6 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 7 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 8 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 9 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": "第 10 則",
+        "visible": true,
+        "outline": "rgb(0, 0, 0) solid 3px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": null,
+        "visible": true,
+        "outline": "rgb(88, 166, 255) solid 2px",
+        "hasOutline": true
+      },
+      {
+        "tag": "BUTTON",
+        "id": "",
+        "role": null,
+        "aria": null,
+        "visible": true,
+        "outline": "rgb(88, 166, 255) solid 2px",
+        "hasOutline": true
+      },
+      {
+        "tag": "SELECT",
+        "id": "draft-display-mode-switch",
+        "role": null,
+        "aria": null,
+        "visible": true,
+        "outline": "rgb(201, 209, 217) none 3px",
+        "hasOutline": false
+      },
+      {
+        "tag": "INPUT",
+        "id": "",
+        "role": null,
+        "aria": null,
+        "visible": true,
+        "outline": "rgb(201, 209, 217) none 3px",
+        "hasOutline": false
+      }
+    ]
+  },
+  {
+    "ts": 1776487156795,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/draft/ai-advance",
+      "method": "POST",
+      "status": 400,
+      "duration_ms": -1776487156663
+    }
+  },
+  {
+    "ts": 1776487156795,
+    "kind": "console",
+    "data": {
+      "tag": "desk",
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 400 ()"
+    }
+  },
+  {
+    "ts": 1776487156797,
+    "kind": "console",
+    "data": {
+      "tag": "desk",
+      "type": "warning",
+      "text": "auto ai-advance failed Error: It's the human's turn\n    at api (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:131:17)\n    at async https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:886:17"
+    }
+  },
+  {
+    "ts": 1776487156798,
+    "kind": "league_menu_items",
+    "data": [
+      "\n        \n          \n          我的聯盟\n          260418\n          \n        \n        ×\n      ",
+      "\n          \n          我的聯盟\n          260418\n          \n        ",
+      "×",
+      "\n        \n          \n          qa-g1\n          \n          未設定\n        \n        ×\n      ",
+      "\n          \n          qa-g1\n          \n          未設定\n        ",
+      "×",
+      "\n        \n          ✓\n          qa-g1\n          qa-g2\n          \n        \n        \n      ",
+      "\n          ✓\n          qa-g1\n          qa-g2\n          \n        ",
+      "\n        \n          \n          qa-g3\n          \n          未設定\n        \n        ×\n      ",
+      "\n          \n          qa-g3\n          \n          未設定\n        ",
+      "×",
+      "\n        \n          \n          qa-g4\n          \n          未設定\n        \n        ×\n      ",
+      "\n          \n          qa-g4\n          \n          未設定\n        ",
+      "×",
+      "\n        \n          \n          QA Test League\n          default\n          \n        \n        ×\n      ",
+      "\n          \n          QA Test League\n          default\n          \n        ",
+      "×",
+      "+ 建立新聯盟"
+    ]
+  },
+  {
+    "ts": 1776487156946,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487156805
+    }
+  },
+  {
+    "ts": 1776487156947,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487156805
+    }
+  },
+  {
+    "ts": 1776487157670,
+    "kind": "route_snapshot",
+    "data": {
+      "route": "#draft",
+      "text": "2024-25\n休賽期頭條\n10 則\n‹\n🔄\n轉隊\nLuka Dončić 震撼轉會，從達拉斯獨行俠加盟洛杉磯湖人\n1 / 10\n›\n總順位\n#18\n第 3 輪 · 第 2 順\n選秀進行中\n🤖 Bucks AI\n👤 BPA Nerd\nBest player available by FPPG, every round.\n推進 AI 一手\n⏭ 模擬到我\n17 / 104 順位已完成\n剩餘球員\n顯示：\n上季完整（含 FPPG）\n上季完整（不含 FPPG）\n本季完整（劇透）\n所有位置\nPG\nSG\nSF\nPF\nC\n排序：FPPG\nPTS\nREB\nAST\nSTL\nBLK\nTO\n年齡\n姓名\n球員\t位置\t球隊\t年齡\t上季FPPG\t出賽\t\nStephen Curry\tPG\tPG · GSW · 37 歲\t37\t39.6\t39.6上季FPPG\t70\t選秀\nJalen Williams\tSG\tSG · "
+    }
+  },
+  {
+    "ts": 1776487157815,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/teams/0",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487157677
+    }
+  },
+  {
+    "ts": 1776487158362,
+    "kind": "route_snapshot",
+    "data": {
+      "route": "#teams",
+      "text": "球員名單\nAndy-QA (你)\nBucks AI\nCeltics AI\nNuggets AI\nWarriors AI\nHeat AI\nSuns AI\nMavs AI\nAndy-QA\n你\n自動陣容\nFPPG 總計 328.0\nPTS 170.7\nREB 59.6\nAST 50.3\n設定先發陣容\n位置\t球員\t定位\tFPPG\t球隊\t\nPG\tCade Cunningham\tPG\t47.2\tDET\t換\nSG\t—\t換\nSF\tLeBron James\tSF\t46.4\tLAL\t換\nPF\tJalen Johnson\tPF\t42.0\tATL\t換\nC\tNikola Jokić\tC\t62.8\tDEN\t換\nC\tKarl-Anthony Towns\tC\t46.0\tNYK\t換\nG\tJames Harden\tPG\t44.0\tLAC\t換\nF\t—\t換\nUTIL\tStephen Curry\tPG\t39.6\tGSW\t換\nUTI"
+    }
+  },
+  {
+    "ts": 1776487158496,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/fa/claim-status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487158368
+    }
+  },
+  {
+    "ts": 1776487158520,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=400",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487158368
+    }
+  },
+  {
+    "ts": 1776487159816,
+    "kind": "route_snapshot",
+    "data": {
+      "route": "#fa",
+      "text": "自由球員\n今日可簽約：3 / 3\n所有位置\nPG\nSG\nSF\nPF\nC\n排序：FPPG\nPTS\nREB\nAST\nSTL\nBLK\nTO\n年齡\n姓名\n球員\t位置\t球隊\t年齡\tFPPG\tPTS\tREB\tAST\tSTL\tBLK\tTO\t出賽\t\nBrandon Ingram\tSF\tSF · TOR · 27 歲\t27\t36.7\t36.7FPPG 22.2PTS 5.6REB 5.2AST\t5.6\t5.2\t0.9\t0.6\t3.8\t18\t簽入\nJosh Hart\tSG\tSG · NYK · 30 歲\t30\t36.6\t36.6FPPG 13.6PTS 9.6REB 5.9AST\t9.6\t5.9\t1.5\t0.4\t2.1\t77\t簽入\nRJ Barrett\tSG\tSG · TOR · 25 歲\t25\t36.6\t36.6FPPG 21.1PTS 6.3REB 5.4AST\t6.3\t5.4\t0.8\t0.3\t2.9\t5"
+    }
+  },
+  {
+    "ts": 1776487159953,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/trades/pending",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487159827
+    }
+  },
+  {
+    "ts": 1776487159959,
+    "kind": "api",
+    "data": {
+      "tag": "desk",
+      "url": "https://nbafantasy.cda1234567.com/api/season/logs?limit=30",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487159826
+    }
+  },
+  {
+    "ts": 1776487160468,
+    "kind": "route_snapshot",
+    "data": {
+      "route": "#league",
+      "text": "選秀尚未完成\n\n目前在第 18 / 104 順位。請先完成選秀再開始賽季。\n\n前往選秀"
+    }
+  },
+  {
+    "ts": 1776487161111,
+    "kind": "route_snapshot",
+    "data": {
+      "route": "#schedule",
+      "text": "賽程\n賽季尚未開始\n\n賽程將在賽季開始後生成。\n\n前往聯盟"
+    }
+  },
+  {
+    "ts": 1776487161633,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161493
+    }
+  },
+  {
+    "ts": 1776487161755,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161635
+    }
+  },
+  {
+    "ts": 1776487161759,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161635
+    }
+  },
+  {
+    "ts": 1776487161763,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161635
+    }
+  },
+  {
+    "ts": 1776487161883,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161764
+    }
+  },
+  {
+    "ts": 1776487162040,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487161886
+    }
+  },
+  {
+    "ts": 1776487162161,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487162042
+    }
+  },
+  {
+    "ts": 1776487162172,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487162043
+    }
+  },
+  {
+    "ts": 1776487162297,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487162171
+    }
+  },
+  {
+    "ts": 1776487162426,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487162302
+    }
+  },
+  {
+    "ts": 1776487162470,
+    "kind": "api",
+    "data": {
+      "tag": "mobile",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487162302
+    }
+  },
+  {
+    "ts": 1776487164125,
+    "kind": "rwd",
+    "data": {
+      "tag": "mobile",
+      "overflow": {
+        "docW": 375,
+        "winW": 375,
+        "hOverflow": false,
+        "offenders": [
+          {
+            "tag": "TABLE",
+            "id": "",
+            "cls": "board",
+            "right": 1069
+          },
+          {
+            "tag": "THEAD",
+            "id": "",
+            "cls": "",
+            "right": 1069
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 1069
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 436
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 582
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 702
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 829
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 949
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 1069
+          },
+          {
+            "tag": "TBODY",
+            "id": "",
+            "cls": "",
+            "right": 1069
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 1069
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 436
+          },
+          {
+            "tag": "SPAN",
+            "id": "",
+            "cls": "pname",
+            "right": 429
+          },
+          {
+            "tag": "SPAN",
+            "id": "",
+            "cls": "psub",
+            "right": 429
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "",
+            "right": 582
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ts": 1776487164133,
+    "kind": "rwd_nav",
+    "data": {
+      "tag": "mobile",
+      "bottomTabsVisible": true,
+      "sideNavVisible": false
+    }
+  },
+  {
+    "ts": 1776487164698,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164542
+    }
+  },
+  {
+    "ts": 1776487164845,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164700
+    }
+  },
+  {
+    "ts": 1776487164854,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164700
+    }
+  },
+  {
+    "ts": 1776487164862,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164700
+    }
+  },
+  {
+    "ts": 1776487164987,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164863
+    }
+  },
+  {
+    "ts": 1776487165182,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487164989
+    }
+  },
+  {
+    "ts": 1776487165314,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487165185
+    }
+  },
+  {
+    "ts": 1776487165326,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487165185
+    }
+  },
+  {
+    "ts": 1776487165461,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487165328
+    }
+  },
+  {
+    "ts": 1776487165587,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487165464
+    }
+  },
+  {
+    "ts": 1776487165609,
+    "kind": "api",
+    "data": {
+      "tag": "tablet",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487165464
+    }
+  },
+  {
+    "ts": 1776487167187,
+    "kind": "rwd",
+    "data": {
+      "tag": "tablet",
+      "overflow": {
+        "docW": 768,
+        "winW": 768,
+        "hOverflow": false,
+        "offenders": [
+          {
+            "tag": "TABLE",
+            "id": "tbl-available",
+            "cls": "data players-table responsive",
+            "right": 892
+          },
+          {
+            "tag": "THEAD",
+            "id": "",
+            "cls": "",
+            "right": 892
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 892
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "num",
+            "right": 791
+          },
+          {
+            "tag": "TH",
+            "id": "",
+            "cls": "",
+            "right": 826
+          },
+          {
+            "tag": "TBODY",
+            "id": "",
+            "cls": "",
+            "right": 892
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 892
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "stats",
+            "right": 791
+          },
+          {
+            "tag": "SPAN",
+            "id": "",
+            "cls": "s fppg",
+            "right": 781
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "num hidden-m",
+            "right": 826
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "act",
+            "right": 892
+          },
+          {
+            "tag": "BUTTON",
+            "id": "",
+            "cls": "btn small",
+            "right": 882
+          },
+          {
+            "tag": "TR",
+            "id": "",
+            "cls": "",
+            "right": 892
+          },
+          {
+            "tag": "TD",
+            "id": "",
+            "cls": "stats",
+            "right": 791
+          },
+          {
+            "tag": "SPAN",
+            "id": "",
+            "cls": "s fppg",
+            "right": 781
+          }
+        ]
+      }
+    }
+  },
+  {
+    "ts": 1776487167194,
+    "kind": "rwd_nav",
+    "data": {
+      "tag": "tablet",
+      "bottomTabsVisible": false,
+      "sideNavVisible": true
+    }
+  },
+  {
+    "ts": 1776487167807,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487167672
+    }
+  },
+  {
+    "ts": 1776487167929,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487167809
+    }
+  },
+  {
+    "ts": 1776487167936,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487167809
+    }
+  },
+  {
+    "ts": 1776487167937,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487167810
+    }
+  },
+  {
+    "ts": 1776487168059,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487167939
+    }
+  },
+  {
+    "ts": 1776487168190,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168061
+    }
+  },
+  {
+    "ts": 1776487168323,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168198
+    }
+  },
+  {
+    "ts": 1776487168331,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168198
+    }
+  },
+  {
+    "ts": 1776487168460,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168333
+    }
+  },
+  {
+    "ts": 1776487168584,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168465
+    }
+  },
+  {
+    "ts": 1776487168610,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487168465
+    }
+  },
+  {
+    "ts": 1776487169530,
+    "kind": "requestfailed",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "err": "net::ERR_ABORTED"
+    }
+  },
+  {
+    "ts": 1776487169653,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169535
+    }
+  },
+  {
+    "ts": 1776487169776,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169655
+    }
+  },
+  {
+    "ts": 1776487169782,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169655
+    }
+  },
+  {
+    "ts": 1776487169783,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169655
+    }
+  },
+  {
+    "ts": 1776487169904,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169785
+    }
+  },
+  {
+    "ts": 1776487170033,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487169905
+    }
+  },
+  {
+    "ts": 1776487170165,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487170042
+    }
+  },
+  {
+    "ts": 1776487170170,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487170042
+    }
+  },
+  {
+    "ts": 1776487170299,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487170173
+    }
+  },
+  {
+    "ts": 1776487170422,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487170303
+    }
+  },
+  {
+    "ts": 1776487170434,
+    "kind": "api",
+    "data": {
+      "tag": "consistency",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487170302
+    }
+  },
+  {
+    "ts": 1776487171106,
+    "kind": "consistency",
+    "data": {
+      "hasG2": true,
+      "uiCurrent": "qa-g1",
+      "uiVersion": "v0.5.22",
+      "api_num_teams": 8,
+      "api_current_overall": 105,
+      "api_team0_name": "Andy-QA",
+      "api_is_complete": true
+    }
+  },
+  {
+    "ts": 1776487171454,
+    "kind": "concurrency_state",
+    "data": {
+      "duration_ms": 348,
+      "settled": [
+        {
+          "i": 0,
+          "status": 200,
+          "ms": 137,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 1,
+          "status": 200,
+          "ms": 274,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 2,
+          "status": 200,
+          "ms": 288,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 3,
+          "status": 200,
+          "ms": 312,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 4,
+          "status": 200,
+          "ms": 257,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 5,
+          "status": 200,
+          "ms": 265,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 6,
+          "status": 200,
+          "ms": 270,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 7,
+          "status": 200,
+          "ms": 264,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 8,
+          "status": 200,
+          "ms": 281,
+          "overall": 105,
+          "team0": "Andy-QA"
+        },
+        {
+          "i": 9,
+          "status": 200,
+          "ms": 339,
+          "overall": 105,
+          "team0": "Andy-QA"
+        }
+      ]
+    }
+  },
+  {
+    "ts": 1776487171618,
+    "kind": "concurrency_settings_noop",
+    "data": {
+      "duration_ms": 164,
+      "writeResults": [
+        {
+          "i": 0,
+          "status": 200
+        },
+        {
+          "i": 1,
+          "status": 200
+        },
+        {
+          "i": 2,
+          "status": 200
+        },
+        {
+          "i": 3,
+          "status": 200
+        },
+        {
+          "i": 4,
+          "status": 200
+        }
+      ]
+    }
+  },
+  {
+    "ts": 1776487172186,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172042
+    }
+  },
+  {
+    "ts": 1776487172319,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172187
+    }
+  },
+  {
+    "ts": 1776487172325,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172187
+    }
+  },
+  {
+    "ts": 1776487172326,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172188
+    }
+  },
+  {
+    "ts": 1776487172460,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172328
+    }
+  },
+  {
+    "ts": 1776487172595,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172463
+    }
+  },
+  {
+    "ts": 1776487172743,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172609
+    }
+  },
+  {
+    "ts": 1776487172746,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172609
+    }
+  },
+  {
+    "ts": 1776487172881,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172748
+    }
+  },
+  {
+    "ts": 1776487173021,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172886
+    }
+  },
+  {
+    "ts": 1776487173022,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487172886
+    }
+  },
+  {
+    "ts": 1776487173688,
+    "kind": "api",
+    "data": {
+      "tag": "tab2",
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "duration_ms": -1776487173554
+    }
+  },
+  {
+    "ts": 1776487173715,
+    "kind": "cross_tab_state",
+    "data": {
+      "s1_overall": 105,
+      "s2_overall": 105,
+      "match": true
+    }
+  }
+]

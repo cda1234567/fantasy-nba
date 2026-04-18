@@ -1,0 +1,56 @@
+=== PHASE 1: create league + start draft + 2-3 picks ===
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p1_01_league_created.png
+After create, top of body: 'NBA Fantasy 模擬器\n聯盟\nround3-a\n已連線\nv0.5.24\nD\n選秀\nT\n隊伍\nF\n自由球員\nL\n聯盟\nS\n賽程\n總順位\n#16\n第 2 輪 · 第 8 順\n輪到你了\n🎯 我的隊伍（你）\n請在下方「剩餘球員」選擇球員。\n推進 AI 一手\n⏭ 模擬到我\n15 / 104 順位已完成\n剩餘球員\n顯示：\n上季完整（含 FPPG）\n上季完整（不含 FPPG）\n本季完整（劇透）\n所有位置\nPG\nSG\nSF\nPF\nC\n排序：FPPG\nPTS\nREB\nAST\nSTL\nBLK\nTO\n年齡\n姓名\n球員\t位置\t球隊\t年齡\t上季FPPG\t出賽\t\nKawhi Leonard\tSF\tSF · LAC · 34 歲\t34\t44.7\t44.7上季FPPG\t65\t選秀\nJaylen Brown\tSG\tSG · BOS · 29 歲\t29\t44.5\t44.5上季FPPG\t71\t選秀\nJoel Embii'
+FAIL: League name not visible after create
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p1_02_draft_page.png
+Draft page body first 500: 'NBA Fantasy 模擬器\n聯盟\nround3-a\n已連線\nv0.5.24\nD\n選秀\nT\n隊伍\nF\n自由球員\nL\n聯盟\nS\n賽程\n總順位\n#16\n第 2 輪 · 第 8 順\n輪到你了\n🎯 我的隊伍（你）\n請在下方「剩餘球員」選擇球員。\n推進 AI 一手\n⏭ 模擬到我\n15 / 104 順位已完成\n剩餘球員\n顯示：\n上季完整（含 FPPG）\n上季完整（不含 FPPG）\n本季完整（劇透）\n所有位置\nPG\nSG\nSF\nPF\nC\n排序：FPPG\nPTS\nREB\nAST\nSTL\nBLK\nTO\n年齡\n姓名\n球員\t位置\t球隊\t年齡\t上季FPPG\t出賽\t\nKawhi Leonard\tSF\tSF · LAC · 34 歲\t34\t44.7\t44.7上季FPPG\t65\t選秀\nJaylen Brown\tSG\tSG · BOS · 29 歲\t29\t44.5\t44.5上季FPPG\t71\t選秀\nJoel Embiid\tC\tC · PHI · 32 歲\t32\t43.6\t43.6上季FPPG\t38\t選秀\nAnthony Edwards\tSG\tSG · MIN · 24 歲\t24\t43.0\t43.0上季FPPG\t61'
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p1_03_draft_started.png
+Initial draft state: pick=None who=輪到你了 first5=['Kawhi Leonard', 'Jaylen Brown', 'Joel Embiid', 'Anthony Edwards', 'Alperen Sengun']
+--- Pick attempt 1, state.pick_num=None, who=輪到你了
+   -> success=False clicks=5 player=Kawhi Leonard elapsed=2.8s pick_after=None
+   pick button didn't engage; waiting 3s in case AI turn
+--- Pick attempt 2, state.pick_num=None, who=輪到你了
+   -> success=False clicks=5 player=Kawhi Leonard elapsed=2.8s pick_after=None
+   pick button didn't engage; waiting 3s in case AI turn
+--- Pick attempt 3, state.pick_num=None, who=輪到你了
+   -> success=False clicks=5 player=Kawhi Leonard elapsed=2.8s pick_after=None
+   pick button didn't engage; waiting 3s in case AI turn
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p1_04_after_3_picks.png
+State after 3 picks: pick=None first5=['Kawhi Leonard', 'Jaylen Brown', 'Joel Embiid', 'Anthony Edwards', 'Alperen Sengun']
+
+=== PHASE 2: close context + reload in new context ===
+  Closed context A
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p2_01_reopen.png
+  switched to league: True
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p2_02_switched.png
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p2_03_draft_after_reload.png
+Reloaded state: pick=None who=輪到你了 first5=['Nikola Jokić', 'Luka Dončić', 'Victor Wembanyama', 'Shai Gilgeous-Alexander', 'Giannis Antetokounmpo']
+  PERSIST OK: pick_num=None
+  PERSIST WARN/FAIL: first5 before=['Kawhi Leonard', 'Jaylen Brown', 'Joel Embiid', 'Anthony Edwards', 'Alperen Sengun'], after=['Nikola Jokić', 'Luka Dončić', 'Victor Wembanyama', 'Shai Gilgeous-Alexander', 'Giannis Antetokounmpo']
+
+=== PHASE 3: continue drafting 3 more picks ===
+  continued pick 1: success=True clicks=1 player=Nikola Jokić before=None after=None
+  continued pick 2: success=False clicks=0 player=None before=None after=None
+  continued pick 3: success=False clicks=0 player=None before=None after=None
+  [screenshot] D:/claude/fantasy nba/.qa/round3/c/p3_01_after_continued_picks.png
+
+=== PHASE 4: 重置選秀 via hamburger ===
+  Phase 4 err: Locator.click: Timeout 30000ms exceeded.
+Call log:
+  - waiting for locator("button[aria-label='開啟設定']").first
+    - locator resolved to <button id="btn-menu" aria-label="開啟設定" aria-haspopup="dialog" class="icon-btn hamburger" aria-controls="dlg-settings">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    56 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+After reset: pick=None first5=['Nikola Jokić', 'Luka Dončić', 'Victor Wembanyama', 'Shai Gilgeous-Alexander', 'Giannis Antetokounmpo']

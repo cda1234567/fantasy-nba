@@ -1,0 +1,108 @@
+{
+  "issues": [
+    {
+      "kind": "LOGS_NOT_CHINESE",
+      "detail": "activity log lacks Chinese: {\"ts\": 1776443978.2695615, \"type\": \"ai_decision\", \"team_id\": 4, \"persona\": \"balanced\", \"action\": \"lineup\", \"used_api\": true, \"excerpt\": \"This lineup maximizes well-rounded contributions while avoiding"
+    }
+  ],
+  "checks": {
+    "health_ok": {
+      "ok": true,
+      "detail": "{'ok': True, 'version': '0.5.10', 'league_id': 'default', 'data_dir': '/app/data', 'ai_enabled': True}"
+    },
+    "reset_empty": {
+      "ok": true,
+      "detail": "pick=1 teams=8"
+    },
+    "expected_104_picks": {
+      "ok": true,
+      "detail": "8x13 = 104"
+    },
+    "draft_complete": {
+      "ok": true,
+      "detail": "picks=104"
+    },
+    "draft_picks_104": {
+      "ok": true,
+      "detail": "104"
+    },
+    "v052_pos_backfill": {
+      "ok": true,
+      "detail": "0 drafted players missing pos"
+    },
+    "draft_pos_diversity": {
+      "ok": false,
+      "detail": "{}"
+    },
+    "season_started": {
+      "ok": true,
+      "detail": "week=1"
+    },
+    "logs_present": {
+      "ok": true,
+      "detail": "30 log entries"
+    },
+    "logs_cjk": {
+      "ok": false,
+      "detail": "cjk_found=False sample={\"ts\": 1776443978.2695615, \"type\": \"ai_decision\", \"team_id\": 4, \"persona\": \"balanced\", \"action\": \"lineup\", \"used_api\": t"
+    },
+    "reached_playoffs": {
+      "ok": false,
+      "detail": "week=20 is_playoffs=False"
+    },
+    "leaders_pos_real": {
+      "ok": true,
+      "detail": "positions=['PG', 'PF', 'C', 'C', 'PG', 'PF', 'SG', 'SF', 'PF', 'PF']"
+    },
+    "has_champion": {
+      "ok": true,
+      "detail": "champion=0"
+    },
+    "summary_is_complete": {
+      "ok": true,
+      "detail": "我的隊伍"
+    },
+    "summary_has_mvp": {
+      "ok": true,
+      "detail": "Anthony Davis"
+    },
+    "summary_top5_games": {
+      "ok": true,
+      "detail": "5"
+    },
+    "summary_standings_full": {
+      "ok": true,
+      "detail": "8"
+    },
+    "fa_status_shape": {
+      "ok": true,
+      "detail": "{\"used_today\": 0, \"limit\": 3, \"day\": 161, \"remaining\": 3}"
+    },
+    "fa_claim_ok": {
+      "ok": true,
+      "detail": "Joel Embiid->Ty Jerome remaining=2"
+    },
+    "matchup_404_on_bad_week": {
+      "ok": true,
+      "detail": "status=404"
+    },
+    "fa_claim_bad_request": {
+      "ok": true,
+      "detail": "status=400"
+    }
+  },
+  "timings": {
+    "reset_ms": 894,
+    "draft_ms": 32708,
+    "season_start_ms": 143,
+    "adv10d_ms": 34272,
+    "sim_to_playoffs_ms": 660173,
+    "sim_playoffs_ms": 1255
+  },
+  "total_ms": 732198,
+  "summary": {
+    "pass": 18,
+    "fail": 3,
+    "issues": 1
+  }
+}

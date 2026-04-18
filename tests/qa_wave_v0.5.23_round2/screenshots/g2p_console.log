@@ -1,0 +1,57 @@
+[step] 1. open home + create league qa-r2-g2
+[assert] version label: v0.5.23
+[state] initial league=unknown
+[info] qa-r2-g2 button exists but disabled => already active
+[state] after-bootstrap league=undefined
+[step] 2. aggressive setup
+[state] league status={"setup_complete":true,"league_name":"qa-r2-g2","season_year":"2025-26","num_teams":8,"roster_size":13,"regular_season_weeks":20}
+[ok] set roster_size=13 via radio click
+[probe] veto_threshold=1 radio count=0
+[finding] veto_threshold=1 NOT AVAILABLE in UI radios; options are 2/3/4. Using 2 as fallback.
+[warn] couldn't locate trade_deadline select reliably
+[state] post-setup status={"setup_complete":true,"league_name":"qa-r2-g2","season_year":"2025-26","num_teams":8,"roster_size":13,"regular_season_weeks":20}
+[state] settings: roster_size=13 veto=2 trade_deadline=null
+[step] 3. 13-round UI-click draft
+[info] draft already complete; resetting via UI
+[ok] reset-draft confirmed
+[warn] no data-draft button visible at iter 47
+[ok] draft complete at iter 98, human picks made=13
+[timing] draft clicks: n=13 avg=292ms min=40ms max=1274ms
+[assert] my roster size after draft = 0 (expect 13)
+[step] 4. start season via dialog
+[ok] settings dialog open (step4)=true
+[ok] clicked 開始賽季
+[step] 5. 模擬到季後賽 via UI
+[ok] settings dialog open (step5)=true
+[ok] confirmed sim-to-playoffs
+[error] Failed to load resource: the server responded with a status of 504 ()
+[pageerror] 504
+[state] is_playoffs=false week=1
+[step] 6. lineup editor slot order verification
+[assert] slot order API: ["PG","SG","G","SF","PF","F","C","C","UTIL","UTIL"]
+[assert] expected     : ["PG","SG","G","SF","PF","F","C","C","UTIL","UTIL"]
+[assert] slot order match = true
+[assert] DOM slot order: ["PG","SG","G","SF","PF","F","C","C","UTIL","UTIL"]
+[assert] DOM slot order match = true
+[assert] bench count = 2 (expect 3)
+[step] 7. playoff trade attempt (expect graceful failure)
+[ok] trade UI gracefully disabled during playoffs
+[assert] trade playoff attempt: trade button disabled/hidden during playoffs (expected) (attempted=false)
+[step] 8. drop/add during playoffs
+[warn] drop button not clickable
+[finding] FA sign button not actionable during playoffs
+[step] 9. advance playoff weeks + matchup detail
+[ok] first playoff week advance in 1939ms
+[warn] no matchup cell found to click
+[step] 10. rage-click advance-week 10x
+[rage] pre: week=2 complete=false
+[rage] post: week=2 champion=null
+[rage] post button disabled=false
+[step] 11. 重置賽季 round-trip
+[ok] clicked 重置賽季 + confirm
+[state] post-reset: is_playoffs=false week=2
+[error] Failed to load resource: the server responded with a status of 409 ()
+[pageerror] 賽季已存在，請先使用「重置賽季」清除後再開始。
+[ok] re-started season
+[error] Failed to load resource: the server responded with a status of 504 ()
+[pageerror] 504

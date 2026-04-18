@@ -1,0 +1,1 @@
+FOUND_G2 at iter 4: {"leagues":[{"league_id":"260418","name":"我的聯盟","created_at":0.0,"setup_complete":true},{"league_id":"qa-g1","name":"qa-g1","created_at":0.0,"setup_complete":false},{"league_id":"qa-g2","name":"qa-g2","created_at":0.0,"setup_complete":false},{"league_id":"default","name":"QA Test League","created_at":1776445122.1946664,"setup_complete":true}],"active":"qa-g2"}

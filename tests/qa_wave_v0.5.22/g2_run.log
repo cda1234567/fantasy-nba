@@ -1,0 +1,44 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 g2_player.spec.ts:13:5 › g2 player full flow (15.0m)
+
+
+  1) g2_player.spec.ts:13:5 › g2 player full flow ──────────────────────────────────────────────────
+
+    [31mTest timeout of 900000ms exceeded.[39m
+
+    Error: locator.click: Test timeout of 900000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#btn-menu')[22m
+    [2m    - locator resolved to <button id="btn-menu" aria-label="開啟設定" aria-haspopup="dialog" class="icon-btn hamburger" aria-controls="dlg-settings">…</button>[22m
+    [2m  - attempting click action[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and stable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying click action[22m
+    [2m      - waiting 100ms[22m
+    [2m    1716 × waiting for element to be visible, enabled and stable[22m
+    [2m         - element is not visible[22m
+    [2m       - retrying click action[22m
+    [2m         - waiting 500ms[22m
+
+
+      75 |   // 3. Check if setup needed; navigate to setup
+      76 |   const setupBtn = page.locator('#btn-menu');
+    > 77 |   await setupBtn.click();
+         |                  ^
+      78 |   await page.waitForTimeout(400);
+      79 |   await shoot(page, '05_settings_dialog');
+      80 |   await page.keyboard.press('Escape');
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.22\g2_player.spec.ts:77:18
+
+    Error Context: playwright-output-g2\g2_player-g2-player-full-flow\error-context.md
+
+  Slow test file: g2_player.spec.ts (15.0m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    g2_player.spec.ts:13:5 › g2 player full flow ───────────────────────────────────────────────────

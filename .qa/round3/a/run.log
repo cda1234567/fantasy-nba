@@ -1,0 +1,20 @@
+[13:40:06] GET https://nbafantasy.cda1234567.com/
+[13:40:09] screenshot -> 01-landing.png
+[13:40:09] version banner: v0.5.24
+[13:40:09] open league switcher
+[13:40:09] screenshot -> 02-league-switcher-open.png
+[13:40:09] click + 建立新聯盟 in switcher menu
+[13:40:10] screenshot -> 03-new-league-dialog.png
+[13:40:10] type league id 'round3-a'
+[13:40:10] screenshot -> 04-new-league-typed.png
+[13:40:10] click 建立並切換
+[13:40:12] screenshot -> 05-after-create-league.png
+[13:40:12] current league label: 'QA Test League'
+[13:40:12] screenshot -> major-lsw-mismatch.png
+[13:40:12] BUG [major] League switch UI label did not update to round3-a (shows 'QA Test League')
+[13:40:12] navigate to 選秀 (draft)
+[13:40:14] screenshot -> 06-draft-initial.png
+[13:40:14] start drafting loop
+[13:40:14] draft complete banner detected
+[13:40:14] screenshot -> 08-draft-end.png
+[13:40:14] open settings dialog (hamburger)

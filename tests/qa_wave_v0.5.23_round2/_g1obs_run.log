@@ -1,0 +1,29 @@
+
+Running 9 tests using 1 worker
+
+HEALTH {"ok":true,"version":"0.5.23","league_id":"qa-r2-obs-g2","ai_enabled":true}
+ACTIVE_LEAGUE qa-r2-obs-g2 COUNT [33m8[39m
+  ✓  1 [chromium] › g1_observer.spec.ts:82:7 › G1 OBSERVER r2 — read-only audits › 00 env sanity + version == 0.5.23 + no data_dir in /api/health (739ms)
+CONC {"N":50,"wall":504,"p50":394,"p95":464,"p99":475,"min":271,"max":475,"mean":395,"errors":0,"error_codes":[]}
+  ✓  2 [chromium] › g1_observer.spec.ts:100:7 › G1 OBSERVER r2 — read-only audits › 01 concurrency 50 parallel /api/state (p50/p95/p99) (934ms)
+NAV_CONTRAST [{"route":"draft","active":false,"color":"rgb(139, 148, 158)","background":"rgba(0, 0, 0, 0)","parentBg":"rgb(22, 27, 34)","bodyBg":"rgb(13, 17, 23)","outlineOffset":"0px","outline":"rgb(139, 148, 158) none 3px","effectiveBg":"rgb(22, 27, 34)","ratio":5.62},{"route":"teams","active":false,"color":"rgb(139, 148, 158)","background":"rgba(0, 0, 0, 0)","parentBg":"rgb(22, 27, 34)","bodyBg":"rgb(13, 17, 23)","outlineOffset":"0px","outline":"rgb(139, 148, 158) none 3px","effectiveBg":"rgb(22, 27, 34)","ratio":5.62},{"route":"fa","active":false,"color":"rgb(139, 148, 158)","background":"rgba(0, 0, 0, 0)","parentBg":"rgb(22, 27, 34)","bodyBg":"rgb(13, 17, 23)","outlineOffset":"0px","outline":"rgb(139, 148, 158) none 3px","effectiveBg":"rgb(22, 27, 34)","ratio":5.62},{"route":"league","active":false,"color":"rgb(139, 148, 158)","background":"rgba(0, 0, 0, 0)","parentBg":"rgb(22, 27, 34)","bodyBg":"rgb(13, 17, 23)","outlineOffset":"0px","outline":"rgb(139, 148, 158) none 3px","effectiveBg":"rgb(22, 27, 34)","ratio":5.62},{"route":"schedule","active":false,"color":"rgb(139, 148, 158)","background":"rgba(0, 0, 0, 0)","parentBg":"rgb(22, 27, 34)","bodyBg":"rgb(13, 17, 23)","outlineOffset":"0px","outline":"rgb(139, 148, 158) none 3px","effectiveBg":"rgb(22, 27, 34)","ratio":5.62}]
+HEADER_CONTRAST_FAIL [33m0[39m []
+  ✓  3 [chromium] › g1_observer.spec.ts:138:7 › G1 OBSERVER r2 — read-only audits › 02 a11y — dialogs aria-modal + nav-item + contrast tokens (4.6s)
+DRAFT_TAB_STOP {"tag":"A","id":"","cls":"nav-item active","ariaLabel":null,"text":"D\n        選秀","disabled":false,"visible":true,"outline":"rgb(88, 166, 255) solid 2px","outlineWidth":"2px","focusRing":""}
+TAB_STOPS_COUNT [33m52[39m
+FOCUS_RING_VISIBLE_COUNT [33m52[39m / [33m52[39m
+  ✓  4 [chromium] › g1_observer.spec.ts:224:7 › G1 OBSERVER r2 — read-only audits › 03 keyboard tab flow — can Enter activate 選秀 button on draft view (2.3s)
+DRAFT_CANDIDATES [{"idx":6,"text":"開始選秀","disabled":false,"visible":true,"id":"btn-setup-submit","cls":"btn","dataAction":null}]
+DRAFT_CLICK {"attempted":true,"visible":true,"enabled":true,"clicked":false,"reason":"skipped mutation risk: text=\"開始選秀\""}
+  ✓  5 [chromium] › g1_observer.spec.ts:272:7 › G1 OBSERVER r2 — read-only audits › 04 draft button click repro on an existing league (2.3s)
+QA-G1 {"league_id":"qa-g1","name":"qa-g1","created_at":0,"setup_complete":true} QA-G2 {"league_id":"qa-g2","name":"qa-g1","created_at":0,"setup_complete":true}
+POLLUTION_DETECTED: qa-g1.name == qa-g2.name == qa-g1
+  ✓  6 [chromium] › g1_observer.spec.ts:321:7 › G1 OBSERVER r2 — read-only audits › 05 session pollution — verify qa-g1 qa-g2 preserved distinct IDs from prior wave (154ms)
+FOLD {"viewportH":900,"tables":[],"button":{"top":1845,"left":968,"aboveFold":false,"inView":false}}
+  ✓  7 [chromium] › g1_observer.spec.ts:341:7 › G1 OBSERVER r2 — read-only audits › 06 viewport 1440x900 — is 選秀 table above the fold (2.5s)
+API_SEM [{"path":"/api/season/summary","status":409,"body":"{\"detail\":\"賽季尚未開始\"}"},{"path":"/api/injuries/active","status":409,"body":"{\"detail\":\"賽季尚未開始\"}"},{"path":"/api/injuries/history","status":409,"body":"{\"detail\":\"賽季尚未開始\"}"}]
+  ✓  8 [chromium] › g1_observer.spec.ts:370:7 › G1 OBSERVER r2 — read-only audits › 07 api semantics — /api/season/summary /api/injuries/* + /api/health no data_dir (575ms)
+ERR_INVENTORY [{"url":"/api/leagues/create","status":400,"chinese":false,"body":"{\"detail\":\"league_id required\"}"},{"url":"/api/leagues/delete","status":400,"chinese":false,"body":"{\"detail\":\"league 'nonexistent_xxxxx' does not exist\"}"},{"url":"/api/draft/pick","status":409,"chinese":true,"body":"{\"detail\":\"聯盟尚未設定,請先完成設定\"}"},{"url":"/api/season/lineup","status":422,"chinese":false,"body":"{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"starters\"],\"msg\":\"Field required\",\"input\":{\"team_id\":99999,\"lineup\":[]}}]}"},{"url":"/api/fa/claim","status":422,"chinese":false,"body":"{\"detail\":[{\"type\":\"int_type\",\"loc\":[\"body\",\"drop_player_id\"],\"msg\":\"Input should be a valid integer\",\"input\":null},{\"ty"},{"url":"/api/trades/accept","status":404,"chinese":false,"body":"{\"detail\":\"Not Found\"}"},{"url":"/api/trades/reject","status":404,"chinese":false,"body":"{\"detail\":\"Not Found\"}"},{"url":"/api/trades/cancel","status":404,"chinese":false,"body":"{\"detail\":\"Not Found\"}"},{"url":"/api/trades/veto-vote","status":404,"chinese":false,"body":"{\"detail\":\"Not Found\"}"}]
+  ✓  9 [chromium] › g1_observer.spec.ts:395:7 › G1 OBSERVER r2 — read-only audits › 08 english error strings inventory via openapi + probe (1.4s)
+
+  9 passed (16.6s)

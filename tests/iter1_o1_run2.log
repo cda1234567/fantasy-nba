@@ -1,0 +1,20 @@
+[00:24:37] PASS health_ok: {'ok': True, 'version': '0.5.3', 'league_id': 'default', 'data_dir': '/app/data', 'ai_enabled': True}
+[00:24:38] PASS reset_empty: pick=1 teams=8
+[00:24:38] PASS expected_104_picks: 8x13 = 104
+[00:25:00] !! state -> HTTP 502: <!DOCTYPE html>
+<!--[if lt IE 7]> <html class="no-js ie6 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en-US"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en-US"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en-US"> <!
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 304, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 112, in main
+    st = expect_ok(get("/api/state"), "state")
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 47, in expect_ok
+    r.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\models.py", line 1026, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url: https://nbafantasy.cda1234567.com/api/state

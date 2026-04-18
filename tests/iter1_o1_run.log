@@ -1,0 +1,92 @@
+[00:14:47] PASS health_ok: {'ok': True, 'version': '0.5.2', 'league_id': 'default', 'data_dir': '/app/data', 'ai_enabled': True}
+[00:14:48] PASS reset_empty: pick=1 teams=8
+[00:14:48] PASS expected_104_picks: 8x13 = 104
+[00:15:21] PASS draft_complete: picks=104
+[00:15:21] PASS draft_picks_104: 104
+[00:15:21] PASS v052_pos_backfill: 0 drafted players missing pos
+[00:15:21] FAIL draft_pos_diversity: {}
+[00:15:21] PASS season_started: week=1
+[00:15:45] PASS logs_present: 30 log entries
+[00:15:45] FAIL logs_cjk: cjk_found=False sample={"ts": 1776442368.1831613, "type": "ai_decision", "team_id": 3, "persona": "stars_scrubs", "action": "lineup", "used_api
+[00:15:45] ISSUE[LOGS_NOT_CHINESE]: activity log lacks Chinese: {"ts": 1776442368.1831613, "type": "ai_decision", "team_id": 3, "persona": "stars_scrubs", "action": "lineup", "used_api": true, "excerpt": "No roster provided, unable to set lineup."} {"ts": 17764423
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 1389, in _make_request
+    response = conn.getresponse(
+        police_officer=self.pool,
+        early_response_callback=on_early_response,
+        promise=rp,
+    )
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connection.py", line 643, in getresponse
+    low_response = super().getresponse(
+        promise=promise,
+        early_response_callback=early_response_handler,
+    )
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\backend\hface.py", line 1662, in getresponse
+    head_event: HeadersReceived | EarlyHeadersReceived = self.__exchange_until(  # type: ignore[assignment]
+                                                         ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        (
+        ^
+    ...<9 lines>...
+        stream_id=stream_id,
+        ^^^^^^^^^^^^^^^^^^^^
+    ).pop()
+    ^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\backend\hface.py", line 974, in __exchange_until
+    data_in = self.sock.recv(self.blocksize)
+TimeoutError: timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\adapters.py", line 644, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 1828, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\util\retry.py", line 515, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\util\util.py", line 40, in reraise
+    raise value
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 1750, in urlopen
+    response = self._make_request(  # type: ignore[call-overload,misc]
+        conn,
+    ...<15 lines>...
+        extension=extension,
+    )
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 1395, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\urllib3\connectionpool.py", line 812, in _raise_timeout
+    raise ReadTimeoutError(
+        self, url, f"Read timed out. (read timeout={timeout_value})"
+    ) from err
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='nbafantasy.cda1234567.com', port=443): Read timed out. (read timeout=60)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 291, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 174, in main
+    st2 = expect_ok(post("/api/season/sim-to-playoffs", json={"use_ai": False}), "sim-to-playoffs")
+                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\claude\fantasy nba\tests\iter1_o1_sim.py", line 41, in post
+    return S.post(_url(path), timeout=60, **kw)
+           ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\sessions.py", line 637, in post
+    return self.request("POST", url, data=data, json=json, **kwargs)
+           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\sessions.py", line 703, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\Andy-STNB\AppData\Local\Programs\Python\Python313\Lib\site-packages\requests\adapters.py", line 690, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='nbafantasy.cda1234567.com', port=443): Read timed out. (read timeout=60)

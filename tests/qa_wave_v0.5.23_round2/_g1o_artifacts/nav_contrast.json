@@ -1,0 +1,62 @@
+[
+  {
+    "route": "draft",
+    "active": false,
+    "color": "rgb(139, 148, 158)",
+    "background": "rgba(0, 0, 0, 0)",
+    "parentBg": "rgb(22, 27, 34)",
+    "bodyBg": "rgb(13, 17, 23)",
+    "outlineOffset": "0px",
+    "outline": "rgb(139, 148, 158) none 3px",
+    "effectiveBg": "rgb(22, 27, 34)",
+    "ratio": 5.62
+  },
+  {
+    "route": "teams",
+    "active": false,
+    "color": "rgb(139, 148, 158)",
+    "background": "rgba(0, 0, 0, 0)",
+    "parentBg": "rgb(22, 27, 34)",
+    "bodyBg": "rgb(13, 17, 23)",
+    "outlineOffset": "0px",
+    "outline": "rgb(139, 148, 158) none 3px",
+    "effectiveBg": "rgb(22, 27, 34)",
+    "ratio": 5.62
+  },
+  {
+    "route": "fa",
+    "active": false,
+    "color": "rgb(139, 148, 158)",
+    "background": "rgba(0, 0, 0, 0)",
+    "parentBg": "rgb(22, 27, 34)",
+    "bodyBg": "rgb(13, 17, 23)",
+    "outlineOffset": "0px",
+    "outline": "rgb(139, 148, 158) none 3px",
+    "effectiveBg": "rgb(22, 27, 34)",
+    "ratio": 5.62
+  },
+  {
+    "route": "league",
+    "active": false,
+    "color": "rgb(139, 148, 158)",
+    "background": "rgba(0, 0, 0, 0)",
+    "parentBg": "rgb(22, 27, 34)",
+    "bodyBg": "rgb(13, 17, 23)",
+    "outlineOffset": "0px",
+    "outline": "rgb(139, 148, 158) none 3px",
+    "effectiveBg": "rgb(22, 27, 34)",
+    "ratio": 5.62
+  },
+  {
+    "route": "schedule",
+    "active": false,
+    "color": "rgb(139, 148, 158)",
+    "background": "rgba(0, 0, 0, 0)",
+    "parentBg": "rgb(22, 27, 34)",
+    "bodyBg": "rgb(13, 17, 23)",
+    "outlineOffset": "0px",
+    "outline": "rgb(139, 148, 158) none 3px",
+    "effectiveBg": "rgb(22, 27, 34)",
+    "ratio": 5.62
+  }
+]

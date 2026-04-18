@@ -1,0 +1,23 @@
+[13:42:36] step-1 open target
+[13:42:39] version :: {"v": "v0.5.24"}
+[13:42:39] step-2 create/switch league
+[13:42:40] creating new league
+[13:42:45] active-league :: {"label": "round3-c"}
+[13:42:45] step-3 setup / draft / season
+[13:42:45] url :: {"url": "https://nbafantasy.cda1234567.com/"}
+[13:42:47] auto-draft loop
+[13:42:47] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:48] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:49] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:51] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:52] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:53] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:55] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:56] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:57] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:42:58] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:43:00] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:43:01] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:43:02] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:43:04] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}
+[13:43:05] pageerror :: {"msg": "聯盟尚未設定,請先完成設定"}

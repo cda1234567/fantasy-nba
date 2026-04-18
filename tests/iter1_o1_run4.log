@@ -1,0 +1,24 @@
+[00:38:45] PASS health_ok: {'ok': True, 'version': '0.5.10', 'league_id': 'default', 'data_dir': '/app/data', 'ai_enabled': True}
+[00:38:46] PASS reset_empty: pick=1 teams=8
+[00:38:46] PASS expected_104_picks: 8x13 = 104
+[00:39:19] PASS draft_complete: picks=104
+[00:39:19] PASS draft_picks_104: 104
+[00:39:19] PASS v052_pos_backfill: 0 drafted players missing pos
+[00:39:19] FAIL draft_pos_diversity: {}
+[00:39:19] PASS season_started: week=1
+[00:39:54] PASS logs_present: 30 log entries
+[00:39:54] FAIL logs_cjk: cjk_found=False sample={"ts": 1776443978.2695615, "type": "ai_decision", "team_id": 4, "persona": "balanced", "action": "lineup", "used_api": t
+[00:39:54] ISSUE[LOGS_NOT_CHINESE]: activity log lacks Chinese: {"ts": 1776443978.2695615, "type": "ai_decision", "team_id": 4, "persona": "balanced", "action": "lineup", "used_api": true, "excerpt": "This lineup maximizes well-rounded contributions while avoiding
+[00:50:54] FAIL reached_playoffs: week=20 is_playoffs=False
+[00:50:54] PASS leaders_pos_real: positions=['PG', 'PF', 'C', 'C', 'PG', 'PF', 'SG', 'SF', 'PF', 'PF']
+[00:50:55] PASS has_champion: champion=0
+[00:50:56] PASS summary_is_complete: 我的隊伍
+[00:50:56] PASS summary_has_mvp: Anthony Davis
+[00:50:56] PASS summary_top5_games: 5
+[00:50:56] PASS summary_standings_full: 8
+[00:50:56] PASS fa_status_shape: {"used_today": 0, "limit": 3, "day": 161, "remaining": 3}
+[00:50:56] PASS fa_claim_ok: Joel Embiid->Ty Jerome remaining=2
+[00:50:57] PASS matchup_404_on_bad_week: status=404
+[00:50:57] PASS fa_claim_bad_request: status=400
+[00:50:57] 
+=== DONE: pass=18 fail=3 issues=1 in 732198ms ===

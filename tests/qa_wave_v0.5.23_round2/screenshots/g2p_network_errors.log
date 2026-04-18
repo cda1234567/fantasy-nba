@@ -1,0 +1,3 @@
+POST https://nbafantasy.cda1234567.com/api/season/sim-to-playoffs -> 504
+POST https://nbafantasy.cda1234567.com/api/season/start -> 409
+POST https://nbafantasy.cda1234567.com/api/season/sim-to-playoffs -> 504

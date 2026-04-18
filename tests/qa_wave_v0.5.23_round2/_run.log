@@ -1,0 +1,38 @@
+
+Running 10 tests using 1 worker
+
+  ✓   1 g2_observer.spec.ts:34:5 › TC0: create + seed observer league (1.0s)
+  ✓   2 g2_observer.spec.ts:65:5 › TC1: app-version badge v0.5.23 with contrast (1.5s)
+  ✓   3 g2_observer.spec.ts:129:5 › TC2: name pollution regression via /api/leagues/create (2.2s)
+  ✘   4 g2_observer.spec.ts:163:5 › TC3: event delegation click works on draft (36.4s)
+  ✓   5 g2_observer.spec.ts:271:5 › TC4: delegation still fires after 7 AI turns (7.0s)
+  ✓   6 g2_observer.spec.ts:318:5 › TC5: delegation survives display-mode re-render (12.0s)
+  ✓   7 g2_observer.spec.ts:382:5 › TC6: keyboard activation of draft button (5.2s)
+  ✓   8 g2_observer.spec.ts:422:5 › TC7: buttons disabled on AI turn (3.1s)
+  ✓   9 g2_observer.spec.ts:460:5 › TC8: lineup slot order PG/SG/G/SF/PF/F/C/C/UTIL/UTIL (3.8s)
+  ✓  10 g2_observer.spec.ts:482:5 › TC9: rapid double-click should not double-submit (12.6s)
+
+
+  1) g2_observer.spec.ts:163:5 › TC3: event delegation click works on draft ────────────────────────
+
+    TimeoutError: locator.getAttribute: Timeout 30000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#tbl-available button[data-draft]:not([disabled])').first()[22m
+
+
+      239 |
+      240 |   if (countAvail > 0) {
+    > 241 |     const pidBefore = await firstBtn.getAttribute('data-draft');
+          |                                      ^
+      242 |     log('tc3_about_to_click', { pidBefore });
+      243 |
+      244 |     // capture pre-click state.current_overall
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\g2_observer.spec.ts:241:38
+
+    Error Context: playwright-output-g2obs\g2_observer-TC3-event-delegation-click-works-on-draft\error-context.md
+
+    Error Context: playwright-output-g2obs\g2_observer-TC3-event-delegation-click-works-on-draft\error-context.md
+
+  1 failed
+    g2_observer.spec.ts:163:5 › TC3: event delegation click works on draft ─────────────────────────
+  9 passed (1.5m)

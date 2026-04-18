@@ -1,0 +1,32 @@
+[04:39:17] Initial load. Version text: v0.5.22. Console errors: 0
+[04:39:18] League switcher opened. Existing leagues: 6
+[04:39:18] qa-g4 already exists; will reuse.
+[04:39:19] Clicked 建立並切換
+[04:39:22] Active league label after create: "聯盟"
+[04:39:22] P1: Active league label does not reflect qa-g4 (got "聯盟"). Check switcher refresh.
+[04:39:23] On setup-like view after create? false
+[04:39:24] Draft hero visible: false
+[04:39:24] P0: Draft hero not visible on #draft route.
+[04:39:24] Available players rows: 80
+[04:39:24] Draft search box present: true
+[04:39:24] Position filter controls count: 0
+[04:39:24] Sort controls count: 1
+[04:39:24] Round iteration 0: no enabled draft button; waiting.
+[04:39:26] Round iteration 1: no enabled draft button; waiting.
+[04:39:27] Round iteration 2: no enabled draft button; waiting.
+[04:39:29] Round iteration 3: no enabled draft button; waiting.
+[04:39:30] Round iteration 4: no enabled draft button; waiting.
+[04:39:32] Round iteration 5: no enabled draft button; waiting.
+[04:39:34] Round iteration 6: no enabled draft button; waiting.
+[04:39:35] Round iteration 7: no enabled draft button; waiting.
+[04:39:37] Round iteration 8: no enabled draft button; waiting.
+[04:39:38] Round iteration 9: no enabled draft button; waiting.
+[04:39:40] Round iteration 10: no enabled draft button; waiting.
+[04:39:41] Round iteration 11: no enabled draft button; waiting.
+[04:39:43] Total manual picks: 0
+[04:39:43] P1: Could not complete 5 manual picks within retry budget. UX flow issue or AI/locking stuck.
+[04:39:43] Draft completed: true
+[04:41:44] P2: Could not find trade entry point on teams page.
+[04:41:45] Clicked sim-to-playoffs
+[04:41:50] Final console errors count: 2
+[04:41:50] First 3 console errors: Failed to load resource: the server responded with a status of 400 () | Failed to load resource: the server responded with a status of 400 ()

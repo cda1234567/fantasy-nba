@@ -1,0 +1,44 @@
+[
+  {
+    "id": "dlg-new-league",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": "建立新聯盟",
+    "ariaLabelledBy": "dlg-new-league-title"
+  },
+  {
+    "id": "dlg-settings",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": "設定",
+    "ariaLabelledBy": null
+  },
+  {
+    "id": "dlg-confirm",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": null,
+    "ariaLabelledBy": "confirm-title"
+  },
+  {
+    "id": "dlg-matchup",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": null,
+    "ariaLabelledBy": "matchup-title"
+  },
+  {
+    "id": "trade-propose",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": "發起交易",
+    "ariaLabelledBy": null
+  },
+  {
+    "id": "dlg-league-settings",
+    "role": "dialog",
+    "ariaModal": "true",
+    "ariaLabel": "聯盟設定",
+    "ariaLabelledBy": null
+  }
+]

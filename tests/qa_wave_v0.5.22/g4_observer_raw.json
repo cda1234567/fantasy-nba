@@ -1,0 +1,601 @@
+{
+  "api": [
+    {
+      "note": "fallback-created qa-g4",
+      "status": 200
+    },
+    {
+      "endpoint": "/api/leagues/switch",
+      "status": 200,
+      "ms": 132
+    },
+    {
+      "endpoint": "/api/health",
+      "status": 200,
+      "ms": 128,
+      "keys": [
+        "ok",
+        "version",
+        "league_id",
+        "data_dir",
+        "ai_enabled"
+      ],
+      "bodySize": 91
+    },
+    {
+      "endpoint": "/api/state",
+      "status": 200,
+      "ms": 146,
+      "keys": [
+        "teams",
+        "picks",
+        "board",
+        "current_overall",
+        "current_round",
+        "current_pick_in_round",
+        "current_team_id",
+        "is_complete",
+        "available_count",
+        "total_rounds"
+      ],
+      "bodySize": 1431
+    },
+    {
+      "endpoint": "/api/league/status",
+      "status": 200,
+      "ms": 123,
+      "keys": [
+        "setup_complete",
+        "league_name",
+        "season_year",
+        "num_teams",
+        "roster_size",
+        "regular_season_weeks"
+      ],
+      "bodySize": 126
+    },
+    {
+      "endpoint": "/api/league/settings",
+      "status": 200,
+      "ms": 137,
+      "keys": [
+        "league_name",
+        "season_year",
+        "player_team_index",
+        "team_names",
+        "randomize_draft_order",
+        "num_teams",
+        "roster_size",
+        "starters_per_day",
+        "il_slots",
+        "scoring_weights"
+      ],
+      "bodySize": 666
+    },
+    {
+      "endpoint": "/api/leagues/list",
+      "status": 200,
+      "ms": 123,
+      "keys": [
+        "leagues",
+        "active"
+      ],
+      "bodySize": 505
+    },
+    {
+      "endpoint": "/api/personas",
+      "status": 200,
+      "ms": 123,
+      "keys": [
+        "bpa",
+        "punt_to",
+        "stars_scrubs",
+        "balanced",
+        "youth",
+        "vet",
+        "contrarian"
+      ],
+      "bodySize": 689
+    },
+    {
+      "endpoint": "/api/players",
+      "status": 200,
+      "ms": 132,
+      "keys": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
+      "bodySize": 25800
+    },
+    {
+      "endpoint": "/api/season/standings",
+      "status": 200,
+      "ms": 125,
+      "keys": [
+        "standings",
+        "current_week",
+        "current_day",
+        "is_playoffs",
+        "champion",
+        "regular_weeks",
+        "trade_quota",
+        "pending_count"
+      ],
+      "bodySize": 173
+    },
+    {
+      "endpoint": "/api/season/schedule",
+      "status": 200,
+      "ms": 123,
+      "keys": [
+        "schedule"
+      ],
+      "bodySize": 15
+    },
+    {
+      "endpoint": "/api/season/logs",
+      "status": 200,
+      "ms": 122,
+      "keys": [
+        "logs"
+      ],
+      "bodySize": 11
+    },
+    {
+      "endpoint": "/api/season/lineup-alerts",
+      "status": 200,
+      "ms": 122,
+      "keys": [
+        "alerts"
+      ],
+      "bodySize": 13
+    },
+    {
+      "endpoint": "/api/season/summary",
+      "status": 400,
+      "ms": 125,
+      "keys": [
+        "detail"
+      ],
+      "bodySize": 31
+    },
+    {
+      "endpoint": "/api/season/activity",
+      "status": 200,
+      "ms": 125,
+      "keys": [
+        "activity"
+      ],
+      "bodySize": 15
+    },
+    {
+      "endpoint": "/api/injuries/active",
+      "status": 400,
+      "ms": 123,
+      "keys": [
+        "detail"
+      ],
+      "bodySize": 19
+    },
+    {
+      "endpoint": "/api/injuries/history",
+      "status": 400,
+      "ms": 123,
+      "keys": [
+        "detail"
+      ],
+      "bodySize": 19
+    },
+    {
+      "endpoint": "/api/fa/claim-status",
+      "status": 200,
+      "ms": 123,
+      "keys": [
+        "used_today",
+        "limit",
+        "day",
+        "remaining"
+      ],
+      "bodySize": 48
+    },
+    {
+      "endpoint": "/api/trades/pending",
+      "status": 200,
+      "ms": 129,
+      "keys": [
+        "pending",
+        "require_human_attention"
+      ],
+      "bodySize": 43
+    },
+    {
+      "endpoint": "/api/trades/history",
+      "status": 200,
+      "ms": 128,
+      "keys": [
+        "history"
+      ],
+      "bodySize": 14
+    },
+    {
+      "endpoint": "/api/seasons/list",
+      "status": 200,
+      "ms": 124,
+      "keys": [
+        "seasons"
+      ],
+      "bodySize": 313
+    },
+    {
+      "bad": "/api/teams/999",
+      "status": 404,
+      "ms": 127,
+      "body": {
+        "detail": "Unknown team_id"
+      }
+    },
+    {
+      "bad": "/api/teams/-1",
+      "status": 404,
+      "ms": 123,
+      "body": {
+        "detail": "Unknown team_id"
+      }
+    },
+    {
+      "bad": "/api/season/lineup/999",
+      "status": 405,
+      "ms": 122,
+      "body": {
+        "detail": "Method Not Allowed"
+      }
+    },
+    {
+      "bad": "/api/seasons/9999/headlines",
+      "status": 404,
+      "ms": 123,
+      "body": {
+        "detail": "no headlines for this season"
+      }
+    },
+    {
+      "bad": "/api/nonexistent",
+      "status": 404,
+      "ms": 123,
+      "body": {
+        "detail": "Not Found"
+      }
+    }
+  ],
+  "a11y": [
+    {
+      "findings": [
+        {
+          "kind": "input-no-label",
+          "idx": 1,
+          "html": "<input type=\"text\" value=\"我的聯盟\" id=\"setup-league-name\" style=\"\">"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 2,
+          "html": "<select id=\"setup-season-year\"><option value=\"1996-97\">1996-97</option><option value=\"1997-98\">1997-98</option><option value=\"1998-99\">1998-99</option><option value=\"1999-00\">1999-"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 3,
+          "html": "<select id=\"setup-player-team\"><option value=\"0\" selected=\"\">0: 我的隊伍</option><option value=\"1\">1: BPA Nerd</option><option value=\"2\">2: Punt TO</option><option value=\"3\">3: Stars &"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 34,
+          "html": "<select><option value=\"\" selected=\"\">無</option><option value=\"10\">W10</option><option value=\"11\">W11</option><option value=\"12\">W12</option></select>"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 35,
+          "html": "<select><option value=\"very_low\">極少</option><option value=\"low\">少</option><option value=\"normal\" selected=\"\">正常</option><option value=\"high\">多</option><option value=\"very_high\">極多<"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 36,
+          "html": "<select><option value=\"conservative\">保守</option><option value=\"balanced\" selected=\"\">平衡</option><option value=\"aggressive\">激進</option></select>"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 43,
+          "html": "<select><option value=\"auto\" selected=\"\">自動偵測</option><option value=\"claude\">Claude API</option><option value=\"heuristic\">純啟發式</option></select>"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 44,
+          "html": "<select><option value=\"prev_full\" selected=\"\">上季完整（含 FPPG）</option><option value=\"prev_no_fppg\">上季完整（不含 FPPG）</option><option value=\"current_full\">本季完整（劇透）</option></select>"
+        },
+        {
+          "kind": "input-no-label",
+          "idx": 47,
+          "html": "<input type=\"checkbox\" id=\"trade-force\" style=\"\">"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 0,
+          "id": "dlg-new-league"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 1,
+          "id": "dlg-settings"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 2,
+          "id": "dlg-confirm"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 3,
+          "id": "dlg-matchup"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 4,
+          "id": "trade-propose"
+        },
+        {
+          "kind": "dialog-no-aria-modal",
+          "idx": 5,
+          "id": "dlg-league-settings"
+        }
+      ],
+      "h1Count": 2,
+      "lang": "zh-TW"
+    },
+    {
+      "focusAfterTab": {
+        "tag": "SELECT",
+        "id": "setup-season-year",
+        "outline": "none 3px rgb(201, 209, 217)",
+        "boxShadow": "none"
+      }
+    },
+    {
+      "settingsOpenErr": "TimeoutError: page.click: Timeout 2000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#btn-menu')\u001b[22m\n\u001b[2m    - locator resolved to <button id=\"btn-menu\" aria-label=\"開啟設定\" aria-haspopup=\"dialog\" class=\"icon-btn hamburger\" aria-controls=\"dlg-settings\">…</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    4 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 500ms\u001b[22m\n"
+    }
+  ],
+  "console": {
+    "msgs": [],
+    "errors": [],
+    "errorCount": 0,
+    "warnCount": 0,
+    "pageErrorCount": 0
+  },
+  "network": [
+    {
+      "nav": "/",
+      "ms": 1714
+    },
+    {
+      "totalRequests": 14,
+      "failed": [],
+      "slowest": [
+        {
+          "url": "https://nbafantasy.cda1234567.com/api/personas",
+          "status": 200,
+          "ms": 354,
+          "method": "GET",
+          "size": 689
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/",
+          "status": 200,
+          "ms": 288,
+          "method": "GET",
+          "size": 12242
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+          "status": 200,
+          "ms": 242,
+          "method": "GET",
+          "size": 313
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+          "status": 200,
+          "ms": 241,
+          "method": "GET",
+          "size": 686
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/jsd/oneshot/b0a7532ac8ec/0.6119112036141663:1776486163:pqGvi1-NsVHkxm14U2y91xcNLpIef5TlJtdrv_q6h_0/9ee0faece8cdfd87",
+          "status": 200,
+          "ms": 203,
+          "method": "POST",
+          "size": 0
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/scripts/jsd/main.js",
+          "status": 302,
+          "ms": 187,
+          "method": "GET",
+          "size": 0
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+          "status": 204,
+          "ms": 182,
+          "method": "POST",
+          "size": 0
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/scripts/jsd/b0a7532ac8ec/main.js?",
+          "status": 200,
+          "ms": 157,
+          "method": "GET",
+          "size": 28540
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/api/league/status",
+          "status": 200,
+          "ms": 146,
+          "method": "GET",
+          "size": 134
+        },
+        {
+          "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+          "status": 200,
+          "ms": 138,
+          "method": "GET",
+          "size": 523
+        }
+      ]
+    }
+  ],
+  "visual": [
+    {
+      "lowContrast": [
+        {
+          "tag": "BUTTON",
+          "text": "聯盟\nqa-g1",
+          "ratio": 1.54,
+          "fg": "rgb(201, 209, 217)",
+          "fontSize": "13px"
+        },
+        {
+          "tag": "SPAN",
+          "text": "聯盟",
+          "ratio": 2.56,
+          "fg": "rgb(148, 163, 184)",
+          "fontSize": "11px"
+        },
+        {
+          "tag": "SPAN",
+          "text": "qa-g1",
+          "ratio": 1.54,
+          "fg": "rgb(201, 209, 217)",
+          "fontSize": "13px"
+        },
+        {
+          "tag": "SPAN",
+          "text": "",
+          "ratio": 1.49,
+          "fg": "rgb(139, 148, 158)",
+          "fontSize": "12px"
+        },
+        {
+          "tag": "SPAN",
+          "text": "v0.5.22",
+          "ratio": 3.46,
+          "fg": "rgb(110, 118, 129)",
+          "fontSize": "11px"
+        }
+      ]
+    },
+    {
+      "viewport": "mobile",
+      "docW": 375,
+      "winW": 375,
+      "overflowX": false
+    },
+    {
+      "viewport": "tablet",
+      "docW": 768,
+      "winW": 768,
+      "overflowX": false
+    },
+    {
+      "viewport": "desktop",
+      "docW": 1280,
+      "winW": 1280,
+      "overflowX": false
+    }
+  ],
+  "data": [
+    {
+      "uiTitle": "NBA Fantasy 模擬器",
+      "uiVer": "v0.5.22",
+      "uiLeague": "qa-g1",
+      "stateNumTeams": 8,
+      "stateTotalRounds": 13,
+      "stateCurrentOverall": 1,
+      "stateIsComplete": false,
+      "teamsLen": 8,
+      "boardRows": 13,
+      "consistencyIssue": null
+    }
+  ],
+  "concurrency": [
+    {
+      "kind": "10xGET /api/state",
+      "totalMs": 362,
+      "statuses": [
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200,
+        200
+      ],
+      "allIdentical": true,
+      "perReqMs": [
+        131,
+        263,
+        341,
+        359,
+        238,
+        244,
+        270,
+        325,
+        255,
+        239
+      ]
+    },
+    {
+      "kind": "mixed-6",
+      "totalMs": 157,
+      "perReq": [
+        {
+          "i": 0,
+          "status": 200,
+          "ms": 156
+        },
+        {
+          "i": 1,
+          "status": 200,
+          "ms": 143
+        },
+        {
+          "i": 2,
+          "status": 200,
+          "ms": 141
+        },
+        {
+          "i": 3,
+          "status": 200,
+          "ms": 146
+        },
+        {
+          "i": 4,
+          "status": 200,
+          "ms": 142
+        },
+        {
+          "i": 5,
+          "status": 200,
+          "ms": 142
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+[
+  {
+    "idx": 6,
+    "text": "開始選秀",
+    "disabled": false,
+    "visible": true,
+    "id": "btn-setup-submit",
+    "cls": "btn",
+    "dataAction": null
+  }
+]

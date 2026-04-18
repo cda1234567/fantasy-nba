@@ -1,0 +1,52 @@
+[
+  {
+    "url": "https://nbafantasy.cda1234567.com/api/state",
+    "status": 200,
+    "cacheControl": null,
+    "etag": null,
+    "lastModified": null,
+    "vary": "Accept-Encoding",
+    "cfCacheStatus": "DYNAMIC",
+    "contentType": "application/json"
+  },
+  {
+    "url": "https://nbafantasy.cda1234567.com/api/state?league_id=noop",
+    "status": 200,
+    "cacheControl": null,
+    "etag": null,
+    "lastModified": null,
+    "vary": "Accept-Encoding",
+    "cfCacheStatus": "DYNAMIC",
+    "contentType": "application/json"
+  },
+  {
+    "url": "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.23",
+    "status": 200,
+    "cacheControl": "max-age=14400",
+    "etag": "W/\"d2b2e2de2252e4746cd891d7dc70917c\"",
+    "lastModified": "Sat, 18 Apr 2026 04:58:40 GMT",
+    "vary": "Accept-Encoding",
+    "cfCacheStatus": "HIT",
+    "contentType": "text/css; charset=utf-8"
+  },
+  {
+    "url": "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.23",
+    "status": 200,
+    "cacheControl": "max-age=14400",
+    "etag": "W/\"e6300773682d39dca1e6298f6bf70691\"",
+    "lastModified": "Sat, 18 Apr 2026 04:58:40 GMT",
+    "vary": "Accept-Encoding",
+    "cfCacheStatus": "HIT",
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  {
+    "url": "https://nbafantasy.cda1234567.com/",
+    "status": 200,
+    "cacheControl": null,
+    "etag": null,
+    "lastModified": null,
+    "vary": "Accept-Encoding",
+    "cfCacheStatus": "DYNAMIC",
+    "contentType": "text/html; charset=utf-8"
+  }
+]

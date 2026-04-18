@@ -1,0 +1,22 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases (431ms)
+
+
+  1) g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases ────────────────────────
+
+    Error: page.evaluate: TypeError: Failed to fetch
+        at eval (eval at evaluate (:302:30), <anonymous>:2:21)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:2:21)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at apiGet (D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\g4_player.spec.ts:26:21)
+        at D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\g4_player.spec.ts:179:24
+
+    Error Context: playwright-output-g4p\g4_player-g4-player-lineup-editor-injury-edge-cases\error-context.md
+
+  1 failed
+    g4_player.spec.ts:172:5 › g4 player: lineup editor + injury edge cases ─────────────────────────

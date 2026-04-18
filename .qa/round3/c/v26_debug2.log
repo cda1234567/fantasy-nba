@@ -1,0 +1,72 @@
+[14:35:44.884] REQ POST https://nbafantasy.cda1234567.com/api/draft/ai-advance
+[14:35:44.903] league r3cv26x-94141 created
+[14:35:45.024] RSP 200 https://nbafantasy.cda1234567.com/api/draft/ai-advance
+[14:35:47.274] setup done, draft view visible
+[14:35:47.424] initial draft: current=0 human=0 picks=0 rnd=1 pos=1
+[14:35:47.424] HUMAN TURN confirmed - clicking draft
+[14:35:47.437] clicking human draft pid=203999
+[14:35:47.476] REQ POST https://nbafantasy.cda1234567.com/api/draft/pick
+[14:35:47.607] RSP 200 https://nbafantasy.cda1234567.com/api/draft/pick
+[14:35:48.132] poll-0.0s: current=1 human=0 picks=1 complete=False rnd=1/2
+[14:35:48.768] poll-0.5s: current=1 human=0 picks=1 complete=False rnd=1/2
+[14:35:49.114] REQ POST https://nbafantasy.cda1234567.com/api/draft/ai-advance
+[14:35:49.251] RSP 200 https://nbafantasy.cda1234567.com/api/draft/ai-advance
+[14:35:49.421] poll-1.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:50.079] poll-1.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:50.722] poll-2.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:51.375] poll-2.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:52.020] poll-3.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:52.672] poll-3.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:53.319] poll-4.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:54.087] poll-4.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:54.747] poll-5.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:55.394] poll-5.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:56.042] poll-6.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:56.686] poll-6.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:57.368] poll-7.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:58.027] poll-7.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:58.678] poll-8.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:59.334] poll-8.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:35:59.980] poll-9.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:00.635] poll-9.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:01.282] poll-10.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:01.929] poll-10.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:02.586] poll-11.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:03.233] poll-11.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:03.880] poll-12.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:04.534] poll-12.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:05.175] poll-13.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:05.818] poll-13.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:06.473] poll-14.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:07.124] poll-14.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:07.770] poll-15.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:08.416] poll-15.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:09.066] poll-16.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:09.710] poll-16.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:10.373] poll-17.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:11.014] poll-17.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:11.660] poll-18.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:12.309] poll-18.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:12.958] poll-19.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:13.617] poll-19.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:14.275] poll-20.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:14.924] poll-20.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:15.572] poll-21.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:16.229] poll-21.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:16.873] poll-22.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:17.518] poll-22.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:18.163] poll-23.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:18.804] poll-23.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:19.457] poll-24.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:20.104] poll-24.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:20.750] poll-25.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:21.398] poll-25.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:22.046] poll-26.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:22.685] poll-26.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:23.337] poll-27.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:23.981] poll-27.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:24.621] poll-28.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:25.274] poll-28.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:26.040] poll-29.0s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:26.695] poll-29.5s: current=2 human=0 picks=2 complete=False rnd=1/3
+[14:36:26.698] inflight check: cannot read module-scoped state

@@ -1,0 +1,16 @@
+Error: test.setTimeout() can only be called from a test
+
+   at g4_observer.spec.ts:14
+
+  12 | }
+  13 |
+> 14 | test.setTimeout(20 * 60 * 1000); // 20 minutes default per test
+     |      ^
+  15 |
+  16 | test.describe('QA R2 G4 Observer — Performance Profiling', () => {
+  17 |
+    at TestTypeImpl._setTimeout (D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\node_modules\playwright\lib\common\testType.js:226:13)
+    at Function.setTimeout (D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\node_modules\playwright\lib\transform\transform.js:275:12)
+    at Object.<anonymous> (D:\claude\fantasy nba\tests\qa_wave_v0.5.23_round2\qa-r2-obs-g4\g4_observer.spec.ts:14:6)
+Error: No tests found
+

@@ -1,0 +1,60 @@
+[debug] league menu text=我的聯盟
+260418
+×
+qa-g1
+未設定
+×
+✓
+qa-g1
+qa-g2
+qa-g3
+未設定
+×
+qa-g4
+未設定
+×
+QA Test League
+default
+×
++ 建立新聯盟
+[error] Failed to load resource: the server responded with a status of 400 ()
+[error] Failed to load resource: the server responded with a status of 400 ()
+[debug] pre-setup status={"setup_complete":false,"league_name":"我的聯盟","season_year":"2025-26","num_teams":8,"roster_size":13,"regular_season_weeks":20}
+[debug] hero txt=總順位
+#1
+第 1 輪 · 第 1 順
+輪到你了
+🎯 我的隊伍（你）
+請在下方「剩餘球員」選擇球員。
+推進 AI 一手
+⏭ 模擬到我
+0 / 104 順位已完成
+[debug] panel heads=["剩餘球員","蛇形選秀板"]
+[debug] filter bar count=1
+[debug] available rows=80
+[debug] board rows=13
+[warn] no draft btn found / disabled on our turn at i=14
+[warn] no draft btn found / disabled on our turn at i=15
+[warn] no draft btn found / disabled on our turn at i=16
+[warn] no draft btn found / disabled on our turn at i=17
+[warn] no draft btn found / disabled on our turn at i=18
+[debug] manualClicks=6
+[error] Failed to load resource: the server responded with a status of 400 ()
+[warning] save draft_display_mode failed Error: Cannot change ['il_slots', 'league_name', 'num_teams', 'player_team_index', 'playoff_teams', 'randomize_draft_order', 'regular_season_weeks', 'roster_size', 'scoring_weights', 'season_year', 'setup_complete', 'starters_per_day', 'trade_deadline_week', 'use_openrouter', 'veto_threshold', 'veto_window_days'] after league setup is complete
+    at api (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:131:17)
+    at async HTMLSelectElement.onDraftDisplayModeChange (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:1076:5)
+[error] Failed to load resource: the server responded with a status of 400 ()
+[warning] save draft_display_mode failed Error: Cannot change ['il_slots', 'league_name', 'num_teams', 'player_team_index', 'playoff_teams', 'randomize_draft_order', 'regular_season_weeks', 'roster_size', 'scoring_weights', 'season_year', 'setup_complete', 'starters_per_day', 'trade_deadline_week', 'use_openrouter', 'veto_threshold', 'veto_window_days'] after league setup is complete
+    at api (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:131:17)
+    at async HTMLSelectElement.onDraftDisplayModeChange (https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22:1076:5)
+[error] Failed to load resource: the server responded with a status of 400 ()
+[error] Failed to load resource: the server responded with a status of 400 ()
+[error] Failed to load resource: the server responded with a status of 400 ()
+[debug] draft complete at finish-loop i=120
+[debug] season start={"status":200,"body":"{\"started\":true,\"current_day\":0,\"current_week\":1,\"schedule\":[{\"week\":1,\"team_a\":0,\"team_b\":7,\"score_a\":0.0,\"score_b\":0.0,\"winner\":null,\"complete\":false},{\"week\":1,\"team_a\":1,\"team_b\":6,\"score_a\":0.0,\""}
+[error] Failed to load resource: the server responded with a status of 422 ()
+[debug] trade={"status":422,"body":"{\"detail\":[{\"type\":\"missing\",\"loc\":[\"body\",\"send\"],\"msg\":\"Field required\",\"input\":{\"from_team\":0,\"to_team\":1,\"from_players\":[203999],\"to_players\":[1629029],\"force\":true}},{\"type\":\"missing\",\"loc\":[\"body\",\"receive\"],\"msg\":\"Field required\",\"input\":{\"from_team\":0,\"to_team\":1,\"from_players\":[203999],\"to_"}
+[error] Failed to load resource: the server responded with a status of 504 ()
+[debug] sim-to-playoffs=504
+[error] Failed to load resource: the server responded with a status of 504 ()
+[debug] sim-playoffs=504

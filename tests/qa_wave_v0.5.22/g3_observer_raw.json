@@ -1,0 +1,449 @@
+{
+  "siteLoadMs": 1727,
+  "apiState": {
+    "status": 200,
+    "teams": 8,
+    "picks": 104
+  },
+  "apiPlayersCount": 200,
+  "apiPersonas": {
+    "status": 200,
+    "keys": [
+      "bpa",
+      "punt_to",
+      "stars_scrubs",
+      "balanced",
+      "youth",
+      "vet",
+      "contrarian"
+    ]
+  },
+  "a11y": {
+    "imgNoAlt": [],
+    "buttonsNoLabel": [],
+    "inputsNoLabel": [
+      "input#0 <input type=\"text\" id=\"new-league-id\" maxlength=\"32\" placeholder=\"例如 season2\" autocomplete=\"off\" style=\"\">",
+      "select#1 <select id=\"draft-display-mode-switch\" style=\"margin-left:8px; padding:4px 8px; border-radius:6px;\" title=\"即時切換選秀顯示模式（會儲",
+      "input#2 <input type=\"search\" placeholder=\"搜尋姓名 / 球隊...\" value=\"\" style=\"\">",
+      "select#3 <select>\n        <option value=\"\">所有位置</option>\n        <option value=\"PG\">PG</option>\n        <option value=\"SG\">SG</op",
+      "select#4 <select>\n        <option value=\"fppg\">排序：FPPG</option>\n        <option value=\"pts\">PTS</option>\n        <option value=\"r",
+      "textarea#5 <textarea id=\"trade-message\" maxlength=\"300\" placeholder=\"說服對方的話 (選填)\" rows=\"2\" style=\"\"></textarea>",
+      "input#6 <input type=\"checkbox\" id=\"trade-force\" style=\"\">"
+    ],
+    "linksNoText": [],
+    "lowContrast": [
+      "button#2 ratio=1.54 fg=rgb(201, 209, 217) bg=rgba(255, 255, 255, 0.04) txt=\"聯盟\n        qa-g1\"",
+      "span#3 ratio=2.56 fg=rgb(148, 163, 184) bg=rgba(255, 255, 255, 0.04) txt=\"聯盟\"",
+      "span#4 ratio=1.54 fg=rgb(201, 209, 217) bg=rgba(255, 255, 255, 0.04) txt=\"qa-g1\"",
+      "span#9 ratio=3.46 fg=rgb(110, 118, 129) bg=rgb(28, 34, 48) txt=\"v0.5.22\"",
+      "p#13 ratio=3.58 fg=rgb(107, 114, 128) bg=rgb(22, 27, 34) txt=\"建立後會自動切換到新聯盟,並進入設定畫面。\"",
+      "a#17 ratio=1.00 fg=rgb(88, 166, 255) bg=rgba(88, 166, 255, 0.12) txt=\"D\n        選秀\"",
+      "span#19 ratio=1.00 fg=rgb(88, 166, 255) bg=rgba(88, 166, 255, 0.12) txt=\"選秀\"",
+      "div#38 ratio=1.00 fg=rgb(148, 163, 184) bg=rgba(148, 163, 184, 0.12) txt=\"10 則\"",
+      "div#42 ratio=1.73 fg=rgb(203, 213, 225) bg=rgba(148, 163, 184, 0.1) txt=\"🔄轉隊\"",
+      "span#43 ratio=1.73 fg=rgb(203, 213, 225) bg=rgba(148, 163, 184, 0.1) txt=\"🔄\"",
+      "span#44 ratio=1.73 fg=rgb(203, 213, 225) bg=rgba(148, 163, 184, 0.1) txt=\"轉隊\"",
+      "div#46 ratio=3.75 fg=rgb(100, 116, 139) bg=rgba(15, 23, 42, 0.65) txt=\"1 / 10\""
+    ],
+    "missingLang": false,
+    "missingTitle": false,
+    "h1Count": 1,
+    "landmarks": {
+      "main": 1,
+      "nav": 2,
+      "header": 7
+    },
+    "ariaInvalidRoles": [],
+    "focusableCount": 132
+  },
+  "tabOrder": [
+    "{\"tag\":\"button\",\"text\":\"‹\",\"id\":null,\"outline\":\"solid 3px rgb(226, 232, 240)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"›\",\"id\":null,\"outline\":\"solid 3px rgb(226, 232, 240)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"rgba(99, 102, 241, 0.6) 0px 0px 8px 0px\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":null,\"outline\":\"solid 3px rgb(0, 0, 0)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"a\",\"text\":\"🏁 前往聯盟\",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"select\",\"text\":\"上季完整（含 FPPG）上季完整（不含 FPPG）本季完整（劇透）\",\"id\":\"draft-display-mode-switch\",\"outline\":\"none 3px rgb(201, 209, 217)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"input\",\"text\":\"\",\"id\":null,\"outline\":\"none 3px rgb(201, 209, 217)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"select\",\"text\":\"所有位置\\n        PG\\n        SG\\n        SF\\n  \",\"id\":null,\"outline\":\"none 3px rgb(201, 209, 217)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"select\",\"text\":\"排序：FPPG\\n        PTS\\n        REB\\n        \",\"id\":null,\"outline\":\"none 3px rgb(201, 209, 217)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"div\",\"text\":\"球員位置球隊\\n      年齡\\n      上季FPPG\\n      出賽\\n  \",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"div\",\"text\":\"輪Andy-QA *Bucks AICeltics AINuggets AIWa\",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"\",\"id\":\"btn-log-refresh\",\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"button\",\"text\":\"聯盟\\n        qa-g1\",\"id\":\"btn-league-switch\",\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"a\",\"text\":\"D\\n        選秀\",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"a\",\"text\":\"T\\n        隊伍\",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}",
+    "{\"tag\":\"a\",\"text\":\"F\\n        自由球員\",\"id\":null,\"outline\":\"solid 2px rgb(88, 166, 255)\",\"boxShadow\":\"none\"}"
+  ],
+  "mobileOverflow": {
+    "scrollW": 375,
+    "clientW": 375,
+    "overflowX": false
+  },
+  "apiTimingsMs": [
+    132.69999999552965,
+    140.79999999701977,
+    135.20000000298023,
+    147.89999999850988,
+    133.39999999850988
+  ],
+  "concurrency": {
+    "ms": 1304.1999999955297,
+    "uniqueSignatures": [
+      "105-null-true-465-104"
+    ],
+    "count": 10
+  },
+  "uiVsState": {
+    "stateTeamCount": 8,
+    "stateRosterSizes": [
+      13,
+      13,
+      13,
+      13,
+      13,
+      13,
+      13,
+      13
+    ],
+    "uiTeamLikeEls": 0,
+    "stateAvailable": 465,
+    "statePicks": 104,
+    "stateBoardCells": 104
+  },
+  "htmlMeta": {
+    "title": "NBA Fantasy 模擬器",
+    "lang": "zh-TW",
+    "viewport": "width=device-width,initial-scale=1,viewport-fit=cover",
+    "charset": "UTF-8",
+    "h1": [
+      "NBA Fantasy 模擬器"
+    ],
+    "h2Count": 9,
+    "scriptsInline": 1,
+    "scriptsExternal": [
+      "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22",
+      "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516"
+    ],
+    "stylesheets": [
+      "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.22"
+    ],
+    "bodyBytes": 78287
+  },
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "pageErrors": [],
+  "network": [
+    {
+      "url": "https://nbafantasy.cda1234567.com/",
+      "method": "GET",
+      "status": 200,
+      "ms": 243,
+      "bytes": 12242,
+      "type": "document"
+    },
+    {
+      "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+      "method": "GET",
+      "status": 200,
+      "ms": 33,
+      "bytes": 31169,
+      "type": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.22",
+      "method": "GET",
+      "status": 200,
+      "ms": 96,
+      "bytes": 154008,
+      "type": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.22",
+      "method": "GET",
+      "status": 200,
+      "ms": 97,
+      "bytes": 82993,
+      "type": "stylesheet"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/scripts/jsd/main.js",
+      "method": "GET",
+      "status": 302,
+      "ms": 51,
+      "bytes": 0,
+      "type": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "method": "POST",
+      "status": 204,
+      "ms": 51,
+      "bytes": 0,
+      "type": "xhr"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "ms": 131,
+      "bytes": 689,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/scripts/jsd/b0a7532ac8ec/main.js?",
+      "method": "GET",
+      "status": 200,
+      "ms": 130,
+      "bytes": 27887,
+      "type": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "status": 200,
+      "ms": 124,
+      "bytes": 596,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "status": 200,
+      "ms": 125,
+      "bytes": 313,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "status": 200,
+      "ms": 130,
+      "bytes": 126,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/jsd/oneshot/b0a7532ac8ec/0.6119112036141663:1776486163:pqGvi1-NsVHkxm14U2y91xcNLpIef5TlJtdrv_q6h_0/9ee0fceaa9a9ce52",
+      "method": "POST",
+      "status": 200,
+      "ms": 68,
+      "bytes": 0,
+      "type": "xhr"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "status": 200,
+      "ms": 123,
+      "bytes": 523,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 133,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/standings",
+      "method": "GET",
+      "status": 200,
+      "ms": 133,
+      "bytes": 960,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/schedule",
+      "method": "GET",
+      "status": 200,
+      "ms": 138,
+      "bytes": 7418,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/season/lineup-alerts",
+      "method": "GET",
+      "status": 200,
+      "ms": 172,
+      "bytes": 13,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/2024-25/headlines",
+      "method": "GET",
+      "status": 200,
+      "ms": 90,
+      "bytes": 721,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/players?available=true&sort=fppg&limit=80",
+      "method": "GET",
+      "status": 200,
+      "ms": 94,
+      "bytes": 13017,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 164,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/players",
+      "method": "GET",
+      "status": 200,
+      "ms": 153,
+      "bytes": 32512,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "status": 200,
+      "ms": 125,
+      "bytes": 689,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 134,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 144,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 136,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 152,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 136,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 141,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 265,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 398,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 532,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 662,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 787,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 920,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 1050,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 1172,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 1304,
+      "bytes": 38569,
+      "type": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/state",
+      "method": "GET",
+      "status": 200,
+      "ms": 143,
+      "bytes": 38569,
+      "type": "fetch"
+    }
+  ]
+}

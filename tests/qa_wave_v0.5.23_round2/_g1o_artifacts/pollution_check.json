@@ -1,0 +1,14 @@
+{
+  "g1": {
+    "league_id": "qa-g1",
+    "name": "qa-g1",
+    "created_at": 0,
+    "setup_complete": true
+  },
+  "g2": {
+    "league_id": "qa-g2",
+    "name": "qa-g1",
+    "created_at": 0,
+    "setup_complete": true
+  }
+}

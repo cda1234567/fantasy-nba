@@ -1,0 +1,8 @@
+[13:40:10] Phase 1: wait for round3-c to appear (context A)
+[13:40:14] [A] landed on https://nbafantasy.cda1234567.com/leagues/round3-c (round3-c visible)
+[13:40:14] Phase 2: open second context B on round3-c
+[13:40:16] [B] landed on https://nbafantasy.cda1234567.com/leagues/round3-c (round3-c visible)
+[13:40:16] Phase 3: snapshot loop (30s cadence)
+[13:40:16] snapA#1 roster=0 pickHints=[] dialogOpen=False currentPicker=None
+[13:40:16] snapB#1 roster=0 pickHints=[] dialogOpen=False currentPicker=None
+[13:40:16] settings dialog probe B: attempts=1 trap=False focusOk=None

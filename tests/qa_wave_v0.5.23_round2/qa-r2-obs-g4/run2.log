@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+  ✓  1 [chromium] › g4_observer.spec.ts:17:7 › QA R2 G4 Observer — Performance Profiling › TC1 — Page Load Budget (FCP/LCP/TBT/heap/navigation) (3.6s)
+  ✓  2 [chromium] › g4_observer.spec.ts:118:7 › QA R2 G4 Observer — Performance Profiling › TC2 — Bundle Size Breakdown (759ms)
+  ✓  3 [chromium] › g4_observer.spec.ts:145:7 › QA R2 G4 Observer — Performance Profiling › TC3 — Cache Header Audit (API + static) (798ms)
+  ✓  4 [chromium] › g4_observer.spec.ts:175:7 › QA R2 G4 Observer — Performance Profiling › TC4 — Idle 5min + Active 5min Network Inventory (6.1m)
+  ✓  5 [chromium] › g4_observer.spec.ts:232:7 › QA R2 G4 Observer — Performance Profiling › TC5 — Memory Growth (simulated usage loop) (5.1m)
+  ✓  6 [chromium] › g4_observer.spec.ts:267:7 › QA R2 G4 Observer — Performance Profiling › TC6 — DOM Mutation + Longtask audit (1.0m)
+  ✓  7 [chromium] › g4_observer.spec.ts:304:7 › QA R2 G4 Observer — Performance Profiling › TC7 — Polling Audit (timers after 3min idle) (3.0m)
+  ✓  8 [chromium] › g4_observer.spec.ts:353:7 › QA R2 G4 Observer — Performance Profiling › TC8 — Reload stall: cold vs warm (3.9s)
+
+  Slow test file: [chromium] › g4_observer.spec.ts (15.3m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  8 passed (15.4m)

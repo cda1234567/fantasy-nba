@@ -1,0 +1,35 @@
+{
+  "totalBytes": 250861,
+  "breakdown": [
+    {
+      "label": "index.html",
+      "url": "https://nbafantasy.cda1234567.com/",
+      "status": 200,
+      "sizeBytes": 12485,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "label": "style.css",
+      "url": "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.23",
+      "status": 200,
+      "sizeBytes": 83180,
+      "cacheControl": "max-age=14400",
+      "etag": "W/\"d2b2e2de2252e4746cd891d7dc70917c\"",
+      "age": "128",
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "label": "app.js",
+      "url": "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.23",
+      "status": 200,
+      "sizeBytes": 155196,
+      "cacheControl": "max-age=14400",
+      "etag": "W/\"e6300773682d39dca1e6298f6bf70691\"",
+      "age": "220",
+      "contentType": "text/javascript; charset=utf-8"
+    }
+  ]
+}

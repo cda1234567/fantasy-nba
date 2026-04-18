@@ -1,0 +1,111 @@
+{
+  "headerColor": "rgb(201, 209, 217)",
+  "headerBg": "rgb(22, 27, 34)",
+  "kids": [
+    {
+      "tag": "BUTTON",
+      "cls": "icon-btn hamburger",
+      "color": "rgb(139, 148, 158)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": ""
+    },
+    {
+      "tag": "svg",
+      "cls": {},
+      "color": "rgb(139, 148, 158)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": ""
+    },
+    {
+      "tag": "path",
+      "cls": {},
+      "color": "rgb(139, 148, 158)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": ""
+    },
+    {
+      "tag": "H1",
+      "cls": "app-title",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "NBA Fantasy 模擬器"
+    },
+    {
+      "tag": "DIV",
+      "cls": "league-switcher",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "聯盟\n        qa-r2-obs-g2"
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "lsw-btn",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(255, 255, 255, 0.04)",
+      "text": "聯盟\n        qa-r2-obs-g2"
+    },
+    {
+      "tag": "SPAN",
+      "cls": "lsw-label",
+      "color": "rgb(148, 163, 184)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "聯盟"
+    },
+    {
+      "tag": "SPAN",
+      "cls": "lsw-current",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "qa-r2-obs-g2"
+    },
+    {
+      "tag": "svg",
+      "cls": {},
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": ""
+    },
+    {
+      "tag": "path",
+      "cls": {},
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "lsw-menu",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgb(22, 27, 34)",
+      "text": ""
+    },
+    {
+      "tag": "DIV",
+      "cls": "header-status",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "連線中\n      v0.5.23"
+    },
+    {
+      "tag": "SPAN",
+      "cls": "conn-dot",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgb(139, 148, 158)",
+      "text": ""
+    },
+    {
+      "tag": "SPAN",
+      "cls": "conn-text",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgba(0, 0, 0, 0)",
+      "text": "連線中"
+    },
+    {
+      "tag": "SPAN",
+      "cls": "app-version",
+      "color": "rgb(201, 209, 217)",
+      "bg": "rgb(28, 34, 48)",
+      "text": "v0.5.23"
+    }
+  ]
+}

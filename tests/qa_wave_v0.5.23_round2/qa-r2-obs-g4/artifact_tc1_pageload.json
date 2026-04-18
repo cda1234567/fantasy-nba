@@ -1,0 +1,241 @@
+{
+  "gotoElapsedMs": 1488,
+  "perf": {
+    "navigation": {
+      "domContentLoaded": 469.80000000447035,
+      "loadEvent": 470,
+      "domComplete": 469.80000000447035,
+      "ttfb": 137,
+      "responseEnd": 347.1000000014901,
+      "transferSize": 3887,
+      "encodedBodySize": 3587,
+      "decodedBodySize": 12700
+    },
+    "fcp": 460,
+    "memory": {
+      "jsHeapSizeLimit": 3760000000,
+      "totalJSHeapSize": 10000000,
+      "usedJSHeapSize": 10000000
+    },
+    "resourceCount": 10,
+    "transferSizeTotal": 59510,
+    "encodedBodySizeTotal": 56810
+  },
+  "lcpMs": 968,
+  "requestCount": 14,
+  "responseCount": 14,
+  "requests": [
+    {
+      "url": "https://nbafantasy.cda1234567.com/",
+      "method": "GET",
+      "resourceType": "document"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.23",
+      "method": "GET",
+      "resourceType": "stylesheet"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.23",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "method": "GET",
+      "resourceType": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/scripts/jsd/main.js",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "method": "POST",
+      "resourceType": "xhr"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/scripts/jsd/b0a7532ac8ec/main.js?",
+      "method": "GET",
+      "resourceType": "script"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "method": "GET",
+      "resourceType": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "method": "GET",
+      "resourceType": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "method": "GET",
+      "resourceType": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/jsd/oneshot/b0a7532ac8ec/0.6119112036141663:1776486163:pqGvi1-NsVHkxm14U2y91xcNLpIef5TlJtdrv_q6h_0/9ee121b0e94f6591",
+      "method": "POST",
+      "resourceType": "xhr"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "method": "GET",
+      "resourceType": "fetch"
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "method": "POST",
+      "resourceType": "xhr"
+    }
+  ],
+  "responses": [
+    {
+      "url": "https://nbafantasy.cda1234567.com/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "contentLength": 12700,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516",
+      "status": 200,
+      "contentType": "text/javascript;charset=UTF-8",
+      "contentLength": 31169,
+      "cacheControl": "public, max-age=86400",
+      "etag": "W/\"2026.2.0\"",
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/style.css?v=0.5.23",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8",
+      "contentLength": 83180,
+      "cacheControl": "max-age=14400",
+      "etag": "W/\"d2b2e2de2252e4746cd891d7dc70917c\"",
+      "age": "125",
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/static/app.js?v=0.5.23",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "contentLength": 155196,
+      "cacheControl": "max-age=14400",
+      "etag": "W/\"e6300773682d39dca1e6298f6bf70691\"",
+      "age": "216",
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/scripts/jsd/main.js",
+      "status": 302,
+      "contentType": "",
+      "contentLength": 0,
+      "cacheControl": "max-age=300, stale-if-error=10800, stale-while-revalidate=10800, public",
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "status": 204,
+      "contentType": "text/plain",
+      "contentLength": 0,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/personas",
+      "status": 200,
+      "contentType": "application/json",
+      "contentLength": 689,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/scripts/jsd/b0a7532ac8ec/main.js?",
+      "status": 200,
+      "contentType": "application/javascript; charset=UTF-8",
+      "contentLength": 26564,
+      "cacheControl": "max-age=14400, stale-if-error=10800, stale-while-revalidate=10800, public",
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/challenge-platform/h/g/jsd/oneshot/b0a7532ac8ec/0.6119112036141663:1776486163:pqGvi1-NsVHkxm14U2y91xcNLpIef5TlJtdrv_q6h_0/9ee121b0e94f6591",
+      "status": 200,
+      "contentType": "text/plain; charset=UTF-8",
+      "contentLength": 0,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/status",
+      "status": 200,
+      "contentType": "application/json",
+      "contentLength": 152,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/league/settings",
+      "status": 200,
+      "contentType": "application/json",
+      "contentLength": 666,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/seasons/list",
+      "status": 200,
+      "contentType": "application/json",
+      "contentLength": 313,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/api/leagues/list",
+      "status": 200,
+      "contentType": "application/json",
+      "contentLength": 818,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    },
+    {
+      "url": "https://nbafantasy.cda1234567.com/cdn-cgi/rum?",
+      "status": 204,
+      "contentType": "text/plain",
+      "contentLength": 0,
+      "cacheControl": null,
+      "etag": null,
+      "age": null,
+      "fromServiceWorker": false
+    }
+  ]
+}

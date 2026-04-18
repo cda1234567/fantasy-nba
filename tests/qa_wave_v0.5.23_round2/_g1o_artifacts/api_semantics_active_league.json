@@ -1,0 +1,17 @@
+[
+  {
+    "path": "/api/season/summary",
+    "status": 409,
+    "body": "{\"detail\":\"賽季尚未開始\"}"
+  },
+  {
+    "path": "/api/injuries/active",
+    "status": 409,
+    "body": "{\"detail\":\"賽季尚未開始\"}"
+  },
+  {
+    "path": "/api/injuries/history",
+    "status": 409,
+    "body": "{\"detail\":\"賽季尚未開始\"}"
+  }
+]

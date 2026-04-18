@@ -1,0 +1,30 @@
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] g1_player.spec.ts:166:5 › qa-r2-g1 stress & concurrency — BRUTAL
+[1A[2Kg1_player.spec.ts:166:5 › qa-r2-g1 stress & concurrency — BRUTAL
+[g1p] version = "v0.5.23"
+
+[1A[2K[g1p] active after switch = "qa-r2-g1"
+
+[1A[2K[g1p] league status after create = {"setup_complete":false,"league_name":"qa-r2-obs-g3","season_year":"2025-26","num_teams":8,"roster_size":13,"regular_season_weeks":20}
+
+[1A[2K[g1p] setup race: league_name after reload = "<script>window._xss=1</script>"
+
+[1A[2K[g1p] draft ready = true
+
+[1A[2K[g1p] draft complete at cycle 0
+
+[1A[2K[g1p] draft complete = false
+
+[1A[2K[g1p] week-burn: no week-advance button found at iter 0
+
+[1A[2K[g1p] trade 0: button not available (possibly past deadline)
+
+[1A[2K[g1p] tab-stress parallel clicks done in 8017ms
+
+[1A[2K[g1p] final state: week=undefined, is_playoffs=undefined, champion=none
+
+[1A[2K[g1p] metrics saved. total duration = 36165ms
+
+[1A[2K  1 passed (37.1s)
