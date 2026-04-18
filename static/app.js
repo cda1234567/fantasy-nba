@@ -3646,6 +3646,14 @@ async function onAdvanceDay() {
 }
 
 async function onAdvanceWeek() {
+  // Single-flight guard: rage-clicks would otherwise open multiple EventSource
+  // streams in parallel, either no-op'ing or racing each other. Reject extra
+  // clicks until the current advance completes (see g2p round-2 finding).
+  if (state.advanceWeekInFlight) {
+    toast('推進中,請稍候...', 'warn', 1500);
+    return;
+  }
+  state.advanceWeekInFlight = true;
   const prevWeek = state.standings?.current_week || state.schedule?.current_week || 1;
 
   // Show progress indicator
@@ -3667,11 +3675,13 @@ async function onAdvanceWeek() {
       if (data.error) {
         es.close();
         progressEl.remove();
+        state.advanceWeekInFlight = false;
         toast('推進失敗: ' + data.error, 'error');
         resolve();
       } else if (data.done) {
         es.close();
         progressEl.remove();
+        state.advanceWeekInFlight = false;
         await refreshState();
         refreshLogs();
         render();
@@ -3686,6 +3696,7 @@ async function onAdvanceWeek() {
     es.onerror = async () => {
       es.close();
       progressEl.remove();
+      state.advanceWeekInFlight = false;
       toast('推進週次時連線中斷', 'error');
       resolve();
     };
