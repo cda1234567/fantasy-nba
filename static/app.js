@@ -4801,6 +4801,24 @@ function bindGlobalUI() {
       }
     });
   }
+
+  // Global keyboard shortcuts (skip when typing in inputs / modal open)
+  document.addEventListener('keydown', (e) => {
+    const tag = (e.target?.tagName || '').toLowerCase();
+    if (['input', 'textarea', 'select'].includes(tag)) return;
+    if (e.target?.isContentEditable) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    if (document.querySelector('.modal-overlay')) return;
+    if (currentRoute() === 'league' && state.leagueSubTab === 'matchup') {
+      if (e.key === 'ArrowLeft') {
+        const prev = document.querySelector('.matchup-week-nav .mwn-row .btn:first-child');
+        if (prev && !prev.disabled) { prev.click(); e.preventDefault(); }
+      } else if (e.key === 'ArrowRight') {
+        const next = document.querySelector('.matchup-week-nav .mwn-row .btn:last-child');
+        if (next && !next.disabled) { next.click(); e.preventDefault(); }
+      }
+    }
+  });
 }
 
 async function loadLeagues() {
