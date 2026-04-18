@@ -1965,11 +1965,17 @@ function buildLeagueControlBar() {
 
 function buildLeagueSubTabs() {
   const pendingCount = state.standings?.pending_count ?? 0;
+  const humanId = state.draft?.human_team_id ?? 0;
+  const myPendingTrades = (state.tradesHistory || []).filter(
+    (t) => (t.from_team === humanId || t.to_team === humanId) &&
+      (t.status === 'pending_accept' || t.status === 'accepted')
+  ).length;
   const active = state.leagueSubTab || 'matchup';
   const tabs = [
     { id: 'matchup',    label: '對戰', badge: pendingCount > 0 ? pendingCount : null },
     { id: 'standings',  label: '戰績' },
     { id: 'management', label: '聯盟' },
+    { id: 'trades',     label: '交易', badge: myPendingTrades > 0 ? myPendingTrades : null },
     { id: 'activity',   label: '動態' },
   ];
   const wrap = el('div', { class: 'league-tabs', role: 'tablist' });
@@ -1995,9 +2001,156 @@ function renderLeagueSubContent(container) {
     case 'matchup':    renderMatchupSubtab(container); break;
     case 'standings':  renderStandingsSubtab(container); break;
     case 'management': renderManagementSubtab(container); break;
+    case 'trades':     renderTradesSubtab(container); break;
     case 'activity':   renderActivitySubtab(container); break;
     default:           renderMatchupSubtab(container);
   }
+}
+
+// -------- Sub-tab: 交易 --------
+function renderTradesSubtab(container) {
+  const humanId = state.draft?.human_team_id ?? 0;
+  const filter = state.tradesSubtabFilter || 'all';
+
+  const head = el('div', { class: 'panel-head' },
+    el('h2', {}, '我的交易'),
+    el('button', {
+      type: 'button',
+      class: 'btn primary small',
+      onclick: () => openProposeTradeModal(),
+    }, '發起交易'),
+  );
+
+  const chipDefs = [
+    { id: 'all',     label: '全部' },
+    { id: 'pending', label: '待處理' },
+    { id: 'done',    label: '已完成' },
+    { id: 'other',   label: '拒絕/過期' },
+  ];
+  const chips = el('div', { class: 'trade-filter-chips' });
+  for (const c of chipDefs) {
+    chips.append(el('button', {
+      type: 'button',
+      class: `chip ${filter === c.id ? 'active' : ''}`,
+      onclick: () => { state.tradesSubtabFilter = c.id; render(); },
+    }, c.label));
+  }
+
+  const body = el('div', { class: 'panel-body', id: 'my-trades-body' },
+    el('div', { class: 'empty-state' }, '載入中...'),
+  );
+
+  const panel = el('div', { class: 'panel', id: 'panel-my-trades' }, head, chips, body);
+  container.append(panel);
+
+  // Kick off history fetch; render filtered list on completion.
+  (async () => {
+    try {
+      await refreshTradeHistoryRaw();
+    } catch (_) {}
+    renderMyTradesBody(body);
+  })();
+}
+
+function renderMyTradesBody(body) {
+  const humanId = state.draft?.human_team_id ?? 0;
+  const filter = state.tradesSubtabFilter || 'all';
+  let mine = (state.tradesHistory || []).filter(
+    (t) => t.from_team === humanId || t.to_team === humanId,
+  );
+  if (filter === 'pending') {
+    mine = mine.filter((t) => t.status === 'pending_accept' || t.status === 'accepted');
+  } else if (filter === 'done') {
+    mine = mine.filter((t) => t.status === 'executed');
+  } else if (filter === 'other') {
+    mine = mine.filter((t) =>
+      ['rejected','vetoed','expired','countered'].includes(t.status),
+    );
+  }
+  body.innerHTML = '';
+  if (!mine.length) {
+    body.append(el('div', { class: 'empty-state' },
+      filter === 'all' ? '你還沒有交易紀錄。點上方「發起交易」開始。' : '此分類目前為空。'));
+    return;
+  }
+  const list = el('div', { class: 'my-trades-list' });
+  for (const t of mine) {
+    list.append(buildMyTradeCard(t, humanId));
+  }
+  body.append(list);
+}
+
+function buildMyTradeCard(trade, humanId) {
+  const fromName = teamName(trade.from_team) || `T${trade.from_team}`;
+  const toName = teamName(trade.to_team) || `T${trade.to_team}`;
+  const outgoing = trade.from_team === humanId;
+  const direction = outgoing ? `→ ${toName}` : `← ${fromName}`;
+  const week = trade.proposed_week ?? '?';
+  const day = trade.executed_day ?? trade.proposed_day ?? '?';
+  const sendPlayers = (trade.send_player_ids || []).map((id) => state.playerCache.get(id)).filter(Boolean);
+  const recvPlayers = (trade.receive_player_ids || []).map((id) => state.playerCache.get(id)).filter(Boolean);
+  const statusMap = {
+    'pending_accept': '等待回應',
+    'accepted': '否決期',
+    'vetoed': '已否決',
+    'executed': '已完成',
+    'rejected': '已拒絕',
+    'expired': '已過期',
+    'countered': '已還價',
+  };
+  const statusLabel = statusMap[trade.status] || trade.status;
+
+  const card = el('div', { class: `my-trade-card status-${trade.status}` });
+  card.append(el('div', { class: 'mt-head' },
+    el('span', { class: 'mt-when' }, `W${week} D${day}`),
+    el('span', { class: 'mt-direction' }, outgoing ? `你 ${direction}` : `${direction} 給你`),
+    el('span', { class: `trade-status trade-status-${trade.status}` }, statusLabel),
+  ));
+
+  const cols = el('div', { class: 'mt-cols' },
+    el('div', { class: 'mt-col' },
+      el('div', { class: 'mt-col-head' }, `${fromName} 送出`),
+      el('ul', { class: 'mt-players' }, ...sendPlayers.map((p) =>
+        el('li', {}, `${p.name} (${fppg(p.fppg)})`))),
+    ),
+    el('div', { class: 'mt-col' },
+      el('div', { class: 'mt-col-head' }, `${toName} 送出`),
+      el('ul', { class: 'mt-players' }, ...recvPlayers.map((p) =>
+        el('li', {}, `${p.name} (${fppg(p.fppg)})`))),
+    ),
+  );
+  card.append(cols);
+
+  if (trade.reasoning && trade.reasoning !== 'human') {
+    const reason = String(trade.reasoning).replace(/^human\s*｜\s*/, '');
+    card.append(el('div', { class: 'trade-reasoning hist' }, reason));
+  }
+
+  const thread = buildTradeThread(trade);
+  if (thread) card.append(thread);
+
+  const actions = buildTradeActions(trade);
+  if (actions) card.append(actions);
+
+  return card;
+}
+
+// Non-DOM-mutating version of refreshTradeHistory used by the trades sub-tab
+// (the existing one targets #trade-history-body which only exists on 動態).
+async function refreshTradeHistoryRaw() {
+  try {
+    const res = await fetch('/api/trades/history');
+    if (!res.ok) return;
+    const d = await res.json();
+    state.tradesHistory = d.history || [];
+  } catch (_) {}
+}
+
+function openProposeTradeModal() {
+  const btn = document.querySelector('#btn-propose-trade')
+    || Array.from(document.querySelectorAll('button'))
+      .find((b) => b.textContent.trim() === '發起交易');
+  if (btn) btn.click();
 }
 
 // -------- Sub-tab: 對戰 --------

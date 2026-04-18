@@ -1207,6 +1207,96 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   margin-top: var(--sp-1);
 }
 
+/* My Trades sub-tab */
+.trade-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3) 0 var(--sp-3);
+}
+.trade-filter-chips .chip {
+  padding: 6px 14px;
+  min-height: 32px;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.trade-filter-chips .chip.active {
+  color: var(--text);
+  background: rgba(88,166,255,0.14);
+  border-color: var(--accent);
+}
+#panel-my-trades .panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.my-trades-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+}
+.my-trade-card {
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.my-trade-card.status-pending_accept { border-color: var(--accent); }
+.my-trade-card.status-executed { border-color: var(--success); }
+.my-trade-card.status-rejected,
+.my-trade-card.status-vetoed,
+.my-trade-card.status-expired { border-color: var(--border-muted); opacity: 0.92; }
+.mt-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.mt-when {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+.mt-direction {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mt-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3);
+}
+.mt-col-head {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+}
+.mt-players {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  color: var(--text);
+}
+.mt-players li { margin: 2px 0; }
+@media (max-width: 540px) {
+  .mt-cols { grid-template-columns: 1fr; }
+  .mt-direction { font-size: 13px; }
+}
+
 .trade-hist-preview {
   padding: 4px 12px 8px 12px;
   font-size: 12px;
