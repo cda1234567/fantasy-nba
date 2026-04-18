@@ -1859,7 +1859,7 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
   z-index: 1100; animation: summary-fade 200ms ease-out;
 }
 .recap-dialog {
-  background: var(--panel); color: var(--text);
+  background: var(--bg-elevated); color: var(--text);
   border: 1px solid var(--border); border-radius: 10px;
   width: min(760px, 94vw); max-height: 88vh; overflow: auto;
   padding: 18px 22px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
