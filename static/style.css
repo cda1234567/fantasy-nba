@@ -109,6 +109,16 @@ input, select, textarea { font-family: inherit; }
 .conn-dot.ok { background: var(--success); box-shadow: 0 0 6px rgba(63,185,80,0.5); }
 .conn-dot.bad { background: var(--danger); }
 
+.app-version {
+  font-size: 11px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+  padding: 2px 6px;
+  border-radius: var(--radius);
+  background: var(--bg-hover);
+  letter-spacing: 0.02em;
+}
+
 .icon-btn {
   display: inline-flex; align-items: center; justify-content: center;
   min-width: 44px; min-height: 44px;

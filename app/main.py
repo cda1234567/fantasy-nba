@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.21"
+APP_VERSION = "0.5.22"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -143,6 +143,7 @@ def index():
     html = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
     html = html.replace('/static/app.js', f'/static/app.js?v={APP_VERSION}')
     html = html.replace('/static/style.css', f'/static/style.css?v={APP_VERSION}')
+    html = html.replace('{{APP_VERSION}}', APP_VERSION)
     return HTMLResponse(html)
 
 
