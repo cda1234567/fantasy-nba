@@ -801,7 +801,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 @media (max-width: 540px) {
   .mb-day-body { grid-template-columns: 1fr; }
   .mb-side + .mb-side { border-left: none; border-top: 1px solid var(--border); }
-  .mb-statbox { font-size: 11px; }
+  .mb-statbox { font-size: 12px; }
   .mb-statbox th, .mb-statbox td { padding: 3px 3px; }
   .mb-statbox td.mb-sb-name { max-width: 85px; }
 }
@@ -834,7 +834,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 }
 .injury-history-list .ih-tag { font-weight: 700; min-width: 60px; }
 .injury-history-list .ih-name { color: var(--text); }
-.injury-history-list .ih-note { font-size: 11px; }
+.injury-history-list .ih-note { font-size: 12px; }
 
 /* ---------------------------------------------------------- toasts */
 
@@ -1637,7 +1637,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   margin: 0;
 }
 .propose-player-list li .pname { color: var(--text); font-weight: 500; }
-.propose-player-list li .pmeta { color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.propose-player-list li .pmeta { color: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .propose-player-list li.selected { background: rgba(88,166,255,0.08); }
 
 .propose-balance {
@@ -1768,7 +1768,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 
 .setup-hint {
   grid-column: 1 / -1;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
   padding: 0 var(--sp-4) var(--sp-2);
 }
@@ -2215,7 +2215,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 .summary-top-games .tg-player { font-weight: 600; }
 .summary-top-games .tg-team { color: var(--text-muted); }
 .summary-top-games .tg-fp { color: var(--success); font-weight: 600; }
-.summary-top-games .tg-meta { color: var(--text-dim); font-size: 11px; }
+.summary-top-games .tg-meta { color: var(--text-dim); font-size: 12px; }
 .summary-standings, .summary-leaders {
   width: 100%; border-collapse: collapse; font-size: 13px;
 }
