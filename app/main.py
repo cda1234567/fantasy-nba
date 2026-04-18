@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.27"
+APP_VERSION = "0.5.28"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -101,16 +101,12 @@ async def _security_and_cache_headers(request, call_next):
     )
     if request.method == "GET":
         path = request.url.path
-        # Only cache endpoints whose content does not reflect mutable league
-        # state. Caching /api/leagues/list or /api/league/settings caused the
-        # UI to show a stale "active league" label for up to 10s after a
-        # create/switch (v0.5.25 regression).
-        CACHEABLE = (
-            "/api/players",
-            "/api/personas",
-        )
+        # Only /api/personas is truly static. /api/players is NOT cacheable
+        # because available-filtered pool changes on every pick; caching it
+        # left just-drafted players visible in the pick list (v0.5.27 bug).
+        CACHEABLE = ("/api/personas",)
         if any(path == p or path.startswith(p + "/") or path.startswith(p + "?") for p in CACHEABLE):
-            response.headers.setdefault("Cache-Control", "private, max-age=10")
+            response.headers.setdefault("Cache-Control", "private, max-age=60")
         elif path.startswith("/api/"):
             response.headers.setdefault("Cache-Control", "no-store")
     return response
@@ -527,7 +523,14 @@ def list_players(
 
     reverse = sort != "name" and sort != "to"
     pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
-    return [p.model_dump() for p in pool[:limit]]
+    prev_map = getattr(draft, "_prev_fppg_map", {}) or {}
+    out = []
+    for p in pool[:limit]:
+        row = p.model_dump()
+        pf = prev_map.get(p.id)
+        row["prev_fppg"] = pf if pf is not None else None
+        out.append(row)
+    return out
 
 
 @app.get("/api/teams/{team_id}")

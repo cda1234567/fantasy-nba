@@ -848,9 +848,9 @@ async function renderDraftView(root) {
   // Headlines placeholder container
   const headlinesContainer = el('div', { id: 'headlines-container' });
 
-  // Put the Available table above the fold on human's turn so the 選秀 button
-  // is always reachable without scrolling past headlines + hero. This fixes
-  // the QA-reported bug where humans could not click the draft button.
+  // Stable DOM order to avoid layout-jumps when turn flips AI<->human.
+  // Available panel is first during human turn so the 選秀 button is above
+  // the fold; otherwise headlines-first since no action is needed.
   const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
   if (isHumanTurn) {
     root.append(heroContainer, grid, headlinesContainer);
@@ -859,8 +859,12 @@ async function renderDraftView(root) {
   }
 
   wireAvailableFilters();
+  const wasHumanTurn = state._lastDraftWasHumanTurn === true;
+  state._lastDraftWasHumanTurn = isHumanTurn;
   renderAvailableTable(displayMode).then(() => {
-    if (isHumanTurn) {
+    // Only scroll when TRANSITIONING into human turn, not on every render —
+    // otherwise the page jumps every ~1.5s as AI picks trigger re-renders.
+    if (isHumanTurn && !wasHumanTurn) {
       const panel = document.getElementById('panel-available');
       if (panel && typeof panel.scrollIntoView === 'function') {
         panel.scrollIntoView({ behavior: 'smooth', block: 'start' });

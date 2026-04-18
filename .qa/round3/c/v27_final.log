@@ -1,0 +1,8 @@
+[17:40:55] version: v0.5.27
+[17:40:59] league=r3v27f-5253 setup done
+[17:40:59] pick#1: pid=203954 success=True elapsed=497ms
+[17:41:33] pick#2: pid=1630178 success=False elapsed=10674ms
+[17:41:43] pick#3: pid=1630178 success=False elapsed=10282ms
+[17:41:53] pick#4: pid=1630178 success=False elapsed=10083ms
+[17:42:04] pick#5: pid=1630178 success=False elapsed=10211ms
+[17:42:04] report: D:\claude\fantasy nba\.qa\round3\c\player-v27-final.md
