@@ -2646,6 +2646,7 @@ table.mgmt-teams td.persona {
   gap: var(--sp-2);
 }
 .hh-nav {
+  position: relative;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -2660,6 +2661,12 @@ table.mgmt-teams td.persona {
   justify-content: center;
   line-height: 1;
   transition: all 0.15s;
+}
+.hh-nav::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
 }
 .hh-nav:hover {
   background: #6366f1;
@@ -2722,6 +2729,7 @@ table.mgmt-teams td.persona {
   margin-top: var(--sp-3);
 }
 .hh-dot-btn {
+  position: relative;
   width: 8px;
   height: 8px;
   border-radius: 50%;
@@ -2730,6 +2738,11 @@ table.mgmt-teams td.persona {
   cursor: pointer;
   padding: 0;
   transition: all 0.15s;
+}
+.hh-dot-btn::after {
+  content: '';
+  position: absolute;
+  inset: -18px -4px;
 }
 .hh-dot-btn.active {
   background: #6366f1;
@@ -2741,7 +2754,7 @@ table.mgmt-teams td.persona {
   .hh-season { font-size: 16px; }
   .hh-label { font-size: 14px; }
   .hh-text { font-size: 15px; }
-  .hh-nav { width: 32px; height: 32px; font-size: 18px; }
+  .hh-nav { width: 44px; height: 44px; font-size: 20px; }
   .hh-card { padding: var(--sp-2) var(--sp-3); }
 }
 
@@ -3011,7 +3024,7 @@ table.mgmt-teams td.persona {
 
 @media (max-width: 639px) {
   .league-switcher { margin-right: 6px; }
-  .lsw-btn { padding: 4px 8px; font-size: 12px; max-width: 160px; }
+  .lsw-btn { padding: 10px 12px; min-height: 44px; font-size: 12px; max-width: 160px; }
   .lsw-current { max-width: 100px; font-size: 12px; }
   .lsw-label { display: none; }
   .lsw-menu { min-width: 220px; right: -6px; }

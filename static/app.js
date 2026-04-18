@@ -1067,6 +1067,7 @@ function buildAvailablePanel(d, displayMode) {
     id: 'draft-display-mode-switch',
     style: 'margin-left:8px; padding:4px 8px; border-radius:6px;',
     title: '即時切換選秀顯示模式（會儲存到聯盟設定）',
+    'aria-label': '選秀顯示模式',
     html: modeOpts,
     onchange: onDraftDisplayModeChange,
   });
@@ -1079,7 +1080,7 @@ function buildAvailablePanel(d, displayMode) {
     el('div', { class: 'panel-body' },
       buildFilterBar('draftFilter', () => renderAvailableTable(state.draftDisplayMode || 'prev_full')),
       el('div', { class: 'table-wrap' },
-        el('table', { class: 'data players-table responsive', id: 'tbl-available' }),
+        el('table', { class: 'data players-table responsive', id: 'tbl-available', 'aria-label': '剩餘球員列表' }),
       ),
     ),
   );
