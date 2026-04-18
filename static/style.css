@@ -156,7 +156,11 @@ input, select, textarea { font-family: inherit; }
   outline: none;
 }
 @media (max-width: 900px) {
-  .main-view { overflow-x: hidden; }
+  /* body/html already clip x-overflow; do NOT clip here — it kills the
+     internal horizontal scroll on .board-wrap (draft board). */
+  .main-view {
+    padding-bottom: calc(var(--tabbar-h) + var(--sp-4) + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 /* ---------------------------------------------------------- bottom tabs (mobile) */
@@ -278,7 +282,8 @@ input, select, textarea { font-family: inherit; }
 /* Mobile: chunky touch targets. */
 @media (max-width: 767px) {
   .btn { min-height: 44px; padding: 10px 16px; }
-  .btn.small { min-height: 36px; padding: 6px 12px; }
+  .btn.small { min-height: 44px; padding: 8px 12px; }
+  .league-tab { min-height: 44px; padding: 12px 14px; }
 }
 
 /* ---------------------------------------------------------- form controls */

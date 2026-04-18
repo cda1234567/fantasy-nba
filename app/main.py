@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.36"
+APP_VERSION = "0.5.37"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -432,7 +432,13 @@ def patch_league_settings(body: dict[str, Any]):
                 400,
                 f"聯盟設定完成後無法變更欄位：{sorted(forbidden)}",
             )
-    updated = settings.model_copy(update=body)
+    # model_copy(update=...) skips field_validators, so chaos agent 6 found
+    # that empty team_names slipped through. Re-validate by round-tripping
+    # through model_validate, which fires @field_validator.
+    try:
+        updated = LeagueSettings.model_validate({**settings.model_dump(), **body})
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     storage.save_league_settings(updated)
     return updated.model_dump()
 

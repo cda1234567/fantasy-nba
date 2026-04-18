@@ -1795,7 +1795,7 @@ async function onOpenSignDialog(addPlayerId) {
   const dropId = await pickDropDialog(body);
   if (dropId == null) return;
 
-  await mutate(async () => {
+  await once(`fa-claim:${addPlayerId}`, () => mutate(async () => {
     const r = await api('/api/fa/claim', {
       method: 'POST',
       body: JSON.stringify({ add_player_id: addPlayerId, drop_player_id: dropId }),
@@ -1804,7 +1804,7 @@ async function onOpenSignDialog(addPlayerId) {
     await refreshState();
     await refreshFaQuota();
     await renderFaTable();
-  });
+  }));
 }
 
 function pickDropDialog(bodyHtml) {
@@ -1935,7 +1935,7 @@ function buildLeagueControlBar() {
       el('div', { class: 'actions' },
         el('button', { class: 'btn ghost', onclick: onAdvanceDay, disabled: awaitingBracket || champion != null, title: deadTitle }, '推進一天'),
         el('button', { class: 'btn ghost', onclick: onAdvanceWeek, disabled: awaitingBracket || champion != null, title: deadTitle }, '推進一週'),
-        el('button', { class: 'btn ghost', onclick: () => { const w = currentWeekNumber() - 1; if (w >= 1) onShowWeekRecap(w); else toast('尚無已完成週次', 'info'); } }, '📅 週報'),
+        el('button', { class: 'btn ghost', onclick: () => { const w = completedWeekNumber(); if (w >= 1) onShowWeekRecap(w); else toast('尚無已完成週次', 'info'); } }, '📅 週報'),
         el('button', {
           id: 'btn-propose-trade',
           class: 'btn ghost',
@@ -2518,6 +2518,14 @@ function currentWeekNumber() {
   return state.standings?.current_week
       || state.schedule?.current_week
       || 1;
+}
+
+// Highest fully-completed week (day % 7 == 0 means week just finished).
+// Backend keeps current_week pinned to the in-progress week even AFTER the
+// week finishes, so we derive "completed" from current_day instead.
+function completedWeekNumber() {
+  const day = state.standings?.current_day || 0;
+  return Math.floor(day / 7);
 }
 
 function scheduleList() {
@@ -3201,16 +3209,16 @@ async function scrollToHistoryTrade(id) {
 
 // Trade action handlers
 async function onAcceptTrade(id) {
-  await mutate(async () => {
+  return once(`trade-accept:${id}`, () => mutate(async () => {
     await api(`/api/trades/${id}/accept`, { method: 'POST' });
     await afterTradeMutation();
-  }, '交易已接受');
+  }, '交易已接受'));
 }
 async function onRejectTrade(id) {
-  await mutate(async () => {
+  return once(`trade-reject:${id}`, () => mutate(async () => {
     await api(`/api/trades/${id}/reject`, { method: 'POST' });
     await afterTradeMutation();
-  }, '交易已拒絕');
+  }, '交易已拒絕'));
 }
 async function onCancelTrade(id) {
   const ok = await confirmDialog('取消交易？', '撤回你的提案，此操作無法復原。', '取消');
@@ -3402,36 +3410,48 @@ function modelShortName(modelId) {
 }
 
 async function onSubmitProposeTrade() {
-  const humanId = state.draft?.human_team_id ?? 0;
-  const { counterparty, send, receive } = state.proposeDraft;
-  if (counterparty == null) { toast('請選擇交易對象', 'warn'); return; }
-  if (!send.size || !receive.size) { toast('每方至少選一名球員', 'warn'); return; }
+  // Trace: if a user reports "nothing happens", this console line confirms
+  // the click handler actually fired. If it's missing in devtools, the
+  // #btn-trade-propose-submit binding never ran.
+  console.info('[trade-propose] submit clicked',
+    { counterparty: state.proposeDraft?.counterparty,
+      send: state.proposeDraft?.send?.size,
+      receive: state.proposeDraft?.receive?.size });
+  return once('trade-propose', async () => {
+    const humanId = state.draft?.human_team_id ?? 0;
+    const { counterparty, send, receive } = state.proposeDraft;
+    if (counterparty == null) { toast('請選擇交易對象', 'warn'); return; }
+    if (!send.size || !receive.size) { toast('每方至少選一名球員', 'warn'); return; }
 
-  const proposerMessage = ($('#trade-message')?.value || '').trim();
-  const force = !!$('#trade-force')?.checked;
+    const proposerMessage = ($('#trade-message')?.value || '').trim();
+    const force = !!$('#trade-force')?.checked;
+    const submitBtn = $('#btn-trade-propose-submit');
+    if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '發送中...'; }
 
-  try {
-    await api('/api/trades/propose', {
-      method: 'POST',
-      body: JSON.stringify({
-        from_team: humanId,
-        to_team: counterparty,
-        send: Array.from(send),
-        receive: Array.from(receive),
-        proposer_message: proposerMessage,
-        force,
-      }),
-    });
-    toast(force ? '交易已強制執行' : '交易已發起,等 AI 回覆中...', 'success');
-    $('#trade-propose').close();
-    await afterTradeMutation();
-    // AI peer commentary + counterparty decision run in backend background task.
-    // Poll a couple of times so UI picks up the response without manual refresh.
-    setTimeout(() => { afterTradeMutation().catch(() => {}); }, 3000);
-    setTimeout(() => { afterTradeMutation().catch(() => {}); }, 10000);
-  } catch (e) {
-    toast(e.message || '提案失敗', 'error');
-  }
+    try {
+      await api('/api/trades/propose', {
+        method: 'POST',
+        body: JSON.stringify({
+          from_team: humanId,
+          to_team: counterparty,
+          send: Array.from(send),
+          receive: Array.from(receive),
+          proposer_message: proposerMessage,
+          force,
+        }),
+      });
+      toast(force ? '交易已強制執行' : '交易已發起,等 AI 回覆中...', 'success');
+      $('#trade-propose').close();
+      await afterTradeMutation();
+      setTimeout(() => { afterTradeMutation().catch(() => {}); }, 3000);
+      setTimeout(() => { afterTradeMutation().catch(() => {}); }, 10000);
+    } catch (e) {
+      console.warn('[trade-propose] failed', e);
+      toast(e.message || '提案失敗', 'error');
+    } finally {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出提案'; }
+    }
+  });
 }
 
 // ================================================================ log aside
@@ -3581,6 +3601,21 @@ async function mutate(fn, okLabel) {
   }
 }
 
+// Re-entrancy guard for button handlers. Rage-clicks on advance-day /
+// sim-playoffs / trade-propose fire N requests; file-lock makes most idempotent
+// but UX is sloppy (trade propose even creates N duplicate pending trades).
+// Usage: `once('advance-day', () => doWork())`.
+const _inflight = new Set();
+async function once(key, fn) {
+  if (_inflight.has(key)) {
+    toast('處理中,請稍候...', 'warn', 1500);
+    return;
+  }
+  _inflight.add(key);
+  try { return await fn(); }
+  finally { _inflight.delete(key); }
+}
+
 async function onAdvance() {
   await mutate(async () => {
     const r = await api('/api/draft/ai-advance', { method: 'POST' });
@@ -3622,6 +3657,10 @@ async function onResetDraft() {
       body: JSON.stringify({ randomize_order: false }),
     });
     state.draft = r;
+    // Draft reset also invalidates season/standings/rosters; pull a fresh
+    // snapshot so the UI doesn't show stale teams on a blank draft.
+    state.summaryShownFor = null;
+    await refreshState();
     navigate('draft');
     render();
   }, '選秀已重置');
@@ -3632,6 +3671,8 @@ async function onResetSeason() {
   if (!ok) return;
   await mutate(async () => {
     await api('/api/season/reset', { method: 'POST' });
+    // Clear auto-summary flag so the next completed season fires it again.
+    state.summaryShownFor = null;
     await refreshState();
     render();
   }, '賽季已重置');
@@ -3646,14 +3687,14 @@ async function onSeasonStart() {
 }
 
 async function onAdvanceDay() {
-  await mutate(async () => {
+  return once('advance-day', () => mutate(async () => {
     const r = await api('/api/season/advance-day', { method: 'POST' });
     await refreshState();
     refreshLogs();
     render();
     const summary = r?.summary || r?.message || '已推進一天';
     toast(summary, 'success');
-  });
+  }));
 }
 
 async function onAdvanceWeek() {
@@ -3733,7 +3774,9 @@ function renderWeekRecapOverlay(r, browsingWeek, currentWeek) {
   if (existing) existing.remove();
 
   const week = r.week ?? browsingWeek ?? 1;
-  const maxWeek = (currentWeek ?? currentWeekNumber()) - 1;
+  // maxWeek = highest fully-completed week. `current_week - 1` is wrong because
+  // when day=35, current_week=5 but week 5 has fully ended (resolve_week fired).
+  const maxWeek = completedWeekNumber();
   const isHistory = week < (currentWeek ?? currentWeekNumber());
 
   const humanId = state.draft?.human_team_id;
@@ -3843,23 +3886,23 @@ function renderWeekRecapOverlay(r, browsingWeek, currentWeek) {
 async function onSimToPlayoffs() {
   const ok = await confirmDialog('模擬到季後賽？', '執行所有剩餘例行賽週次，可能需要一點時間。', '執行');
   if (!ok) return;
-  await mutate(async () => {
+  return once('sim-to-playoffs', () => mutate(async () => {
     await api('/api/season/sim-to-playoffs', { method: 'POST' });
     await refreshState();
     refreshLogs();
     render();
-  }, '例行賽模擬完成');
+  }, '例行賽模擬完成'));
 }
 
 async function onSimPlayoffs() {
   const ok = await confirmDialog('模擬季後賽淘汰賽？', '前 4 強進行準決賽 + 決賽（第 15–16 週）。', '執行');
   if (!ok) return;
-  await mutate(async () => {
+  return once('sim-playoffs', () => mutate(async () => {
     await api('/api/season/sim-playoffs', { method: 'POST' });
     await refreshState();
     refreshLogs();
     render();
-  }, '季後賽模擬完成');
+  }, '季後賽模擬完成'));
 }
 
 async function onShowSummary() {

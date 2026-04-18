@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from typing import Any, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 DEFAULT_TEAM_NAMES = [
@@ -49,6 +49,17 @@ class LeagueSettings(BaseModel):
     show_offseason_headlines: bool = True
     setup_complete: bool = False
     use_openrouter: bool = True
+
+    @field_validator("team_names")
+    @classmethod
+    def _reject_blank_team_names(cls, v: list[str]) -> list[str]:
+        # Chaos agent 6 found the PATCH endpoint accepted ["","",...] silently.
+        # Empty strings break the UI (blank league header, empty dropdown
+        # options), so guard at the model boundary.
+        for i, name in enumerate(v):
+            if not isinstance(name, str) or not name.strip():
+                raise ValueError(f"隊名不可為空白（第 {i + 1} 個）")
+        return [s.strip() for s in v]
 
 
 class Player(BaseModel):
