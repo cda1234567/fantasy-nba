@@ -438,12 +438,14 @@ class TradeManager:
             trade = self._find(trade_id)
             if trade is None:
                 raise ValueError("Unknown trade_id")
-            # Allow follow-up chat on rejected/countered/expired trades so the
-            # thread doesn't die once the AI turns down a proposal. Only block
-            # truly-finalized states (executed trades can't be renegotiated,
-            # accepted trades are waiting in the veto window and shouldn't
-            # receive new traffic).
-            if trade.status in ("executed", "accepted", "vetoed"):
+            # Post-executed trash-talk mode: after a trade is done, both parties
+            # can keep chatting (閒聊 / 慶祝 / 嘴砲). No renegotiation is
+            # possible — the backend treats these messages as conversational
+            # only. Accepted trades (waiting in veto window) also stay open so
+            # parties can defend their deal.
+            # Only truly-vetoed trades silence the thread (the trade was undone;
+            # there's no reason to stay engaged there).
+            if trade.status == "vetoed":
                 raise ValueError(f"Trade is not open for messaging (status={trade.status})")
             if from_team not in (trade.from_team, trade.to_team):
                 raise ValueError("Only the two trade parties can send messages")
@@ -459,7 +461,10 @@ class TradeManager:
         # want to block other trade mutations while waiting on the network.
         if target_is_ai and ai_gm is not None:
             try:
-                reply = ai_gm.chat_on_trade(trade, self.draft, target_team, self._settings)
+                reply = ai_gm.chat_on_trade(
+                    trade, self.draft, target_team, self._settings,
+                    trade_status=trade.status,
+                )
             except Exception as exc:
                 import traceback, sys
                 print(f"[trades] chat_on_trade failed: {exc!r}", file=sys.stderr)
@@ -469,7 +474,8 @@ class TradeManager:
                 with _TRADES_WRITE_LOCK:
                     self.state = self._load()
                     fresh = self._find(trade_id)
-                    if fresh is not None and fresh.status not in ("executed", "accepted", "vetoed"):
+                    # Only vetoed silences the AI reply; post-executed 嘴砲 is OK.
+                    if fresh is not None and fresh.status != "vetoed":
                         fresh.messages.append(TradeMessage(
                             from_team=target_team, body=str(reply)[:300],
                             ts=time.time(), kind="user",

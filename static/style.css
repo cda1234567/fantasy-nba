@@ -1441,6 +1441,19 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 }
 .tt-input:focus { border-color: var(--accent); }
 .tt-input:disabled { opacity: 0.5; }
+.tt-post-banner {
+  padding: 6px 10px;
+  background: rgba(63,185,80,0.08);
+  border-left: 3px solid var(--good, #3fb950);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: 0;
+}
+.trade-thread.post-trade {
+  background: rgba(63,185,80,0.04);
+  border-color: rgba(63,185,80,0.25);
+}
 @media (max-width: 540px) {
   .tt-msg { max-width: 95%; }
   .tt-list { max-height: 220px; }

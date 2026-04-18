@@ -3502,12 +3502,11 @@ function buildTradeThread(trade) {
   const msgs = Array.isArray(trade.messages) ? trade.messages : [];
   const humanId = state.draft?.human_team_id ?? 0;
   const isParty = trade.from_team === humanId || trade.to_team === humanId;
-  // Chat remains usable as long as the trade isn't fully finalized —
-  // rejected/countered/expired trades still accept follow-up questions so
-  // the user can ask "why?" or counter-propose verbally.
-  const chatOpen = !['executed', 'accepted', 'vetoed'].includes(trade.status);
+  // Only vetoed trades lock chat. Post-executed/accepted allows 嘴砲 / 慶祝.
+  const chatOpen = trade.status !== 'vetoed';
+  const isPostTrade = ['executed', 'accepted', 'rejected', 'countered', 'expired'].includes(trade.status);
   if (!msgs.length && !(isParty && chatOpen)) return null;
-  const wrap = el('div', { class: 'trade-thread' });
+  const wrap = el('div', { class: `trade-thread ${isPostTrade ? 'post-trade' : ''}` });
   if (msgs.length) {
     wrap.append(el('div', { class: 'tt-head' }, '訊息'));
     const list = el('div', { class: 'tt-list' });
@@ -3522,9 +3521,13 @@ function buildTradeThread(trade) {
     wrap.append(list);
   }
   if (isParty && chatOpen) {
-    const placeholder = trade.status === 'pending_accept'
-      ? '跟對方聊兩句…'
-      : '追問 AI 為什麼，或提議新條件…';
+    let placeholder = '追問 AI 為什麼，或提議新條件…';
+    if (trade.status === 'pending_accept') placeholder = '跟對方聊兩句…';
+    else if (trade.status === 'executed') placeholder = '成交了！聊點輕鬆的…（不影響交易）';
+    else if (trade.status === 'accepted') placeholder = '否決期閒聊（不影響投票）…';
+    if (isPostTrade) {
+      wrap.append(el('div', { class: 'tt-post-banner' }, '💬 成交後閒聊模式 — 雙方可繼續聊，但無法重新談判'));
+    }
     const input = el('input', {
       type: 'text', class: 'tt-input',
       placeholder,
