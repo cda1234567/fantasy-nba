@@ -26,9 +26,11 @@ PLAYOFF_WEEKS = 3           # 6-team bracket: round1 + semis + finals
 TOTAL_WEEKS = REGULAR_WEEKS + PLAYOFF_WEEKS
 LINEUP_SIZE = 10            # default starters; overridden by settings
 
-# Yahoo-style lineup slots: strict positions first, then G/F, then UTIL.
+# Yahoo-style lineup slots: PG → SG → G → SF → PF → F → C → C → UTIL → UTIL.
+# Greedy assign_slots still respects strict-before-combo: PG/SG fill before G,
+# SF/PF before F, and all single-position slots before UTIL.
 LINEUP_SLOTS: list[str] = [
-    "PG", "SG", "SF", "PF", "C", "C", "G", "F", "UTIL", "UTIL"
+    "PG", "SG", "G", "SF", "PF", "F", "C", "C", "UTIL", "UTIL"
 ]
 SLOT_ELIGIBILITY: dict[str, set[str]] = {
     "PG":   {"PG"},

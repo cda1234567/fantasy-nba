@@ -255,12 +255,26 @@ def _validate_league_id(league_id: str) -> str:
 
 
 def create_league(data_dir: Path, league_id: str) -> None:
-    """Create a league directory if it does not already exist."""
+    """Create a league directory if it does not already exist.
+
+    Pre-seeds ``league_settings.json`` with ``league_name=league_id`` so a freshly
+    created league never inherits the previously-active league's name (fixes
+    qa-g2 name pollution race where concurrent creators saw the wrong label).
+    """
     lid = _validate_league_id(league_id)
     target = _leagues_root(data_dir) / lid
     if target.exists():
         raise ValueError(f"league '{lid}' already exists")
     target.mkdir(parents=True, exist_ok=False)
+    from .models import LeagueSettings
+    seeded = LeagueSettings(league_name=lid)
+    tmp_path = target / "league_settings.json"
+    tmp = tmp_path.with_suffix(tmp_path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    tmp.write_text(
+        json.dumps(seeded.model_dump(), ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    os.replace(tmp, tmp_path)
 
 
 def delete_league(data_dir: Path, league_id: str) -> None:

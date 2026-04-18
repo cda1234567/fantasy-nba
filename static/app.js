@@ -848,10 +848,25 @@ async function renderDraftView(root) {
   // Headlines placeholder container
   const headlinesContainer = el('div', { id: 'headlines-container' });
 
-  root.append(headlinesContainer, heroContainer, grid);
+  // Put the Available table above the fold on human's turn so the 選秀 button
+  // is always reachable without scrolling past headlines + hero. This fixes
+  // the QA-reported bug where humans could not click the draft button.
+  const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
+  if (isHumanTurn) {
+    root.append(heroContainer, grid, headlinesContainer);
+  } else {
+    root.append(headlinesContainer, heroContainer, grid);
+  }
 
   wireAvailableFilters();
-  renderAvailableTable(displayMode);
+  renderAvailableTable(displayMode).then(() => {
+    if (isHumanTurn) {
+      const panel = document.getElementById('panel-available');
+      if (panel && typeof panel.scrollIntoView === 'function') {
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
 
   // Load headlines async
   if (showHeadlines && seasonYear) {
@@ -1128,9 +1143,11 @@ function buildFilterBar(filterKey, onChange) {
   const wrap = el('div', { class: 'filter-bar' },
     el('input', {
       type: 'search', placeholder: '搜尋姓名 / 球隊...', value: f.q,
+      'aria-label': '搜尋球員姓名或球隊',
       oninput: (e) => { f.q = e.target.value; onChange(); },
     }),
     el('select', {
+      'aria-label': '依位置篩選',
       onchange: (e) => { f.pos = e.target.value; onChange(); },
       html: `
         <option value="">所有位置</option>
@@ -1141,6 +1158,7 @@ function buildFilterBar(filterKey, onChange) {
         <option value="C">C</option>`,
     }),
     el('select', {
+      'aria-label': '排序欄位',
       onchange: (e) => { f.sort = e.target.value; onChange(); },
       html: `
         <option value="fppg">排序：FPPG</option>
@@ -1193,9 +1211,18 @@ async function renderAvailableTable(displayMode) {
     canDraft,
     displayMode: mode,
   });
-  tbl.querySelectorAll('button[data-draft]').forEach((btn) => {
-    btn.addEventListener('click', () => onDraftPlayer(parseInt(btn.dataset.draft, 10)));
-  });
+  // Delegated click handler on the table survives innerHTML replacement and
+  // guarantees the button (or any descendant) fires onDraftPlayer even if the
+  // re-render swaps DOM nodes mid-click. Attach once per table instance.
+  if (!tbl.dataset.draftDelegated) {
+    tbl.dataset.draftDelegated = '1';
+    tbl.addEventListener('click', (ev) => {
+      const btn = ev.target.closest && ev.target.closest('button[data-draft]');
+      if (!btn || btn.disabled) return;
+      ev.preventDefault();
+      onDraftPlayer(parseInt(btn.dataset.draft, 10));
+    });
+  }
 }
 
 function renderPlayersTable(players, { withDraft = false, canDraft = false, withSign = false, displayMode = 'current_full' } = {}) {

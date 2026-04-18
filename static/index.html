@@ -28,7 +28,7 @@
     </div>
   </header>
 
-  <dialog id="dlg-new-league" class="dialog new-league-dialog" aria-label="建立新聯盟">
+  <dialog id="dlg-new-league" class="dialog new-league-dialog" role="dialog" aria-modal="true" aria-labelledby="dlg-new-league-title" aria-label="建立新聯盟">
     <form method="dialog" class="dialog-inner small">
       <header class="dialog-head">
         <h2>建立新聯盟</h2>
@@ -37,9 +37,9 @@
         </button>
       </header>
       <section class="dialog-body">
-        <label class="new-league-field">
+        <label class="new-league-field" for="new-league-id">
           <span>聯盟 ID（僅限英數字 / - / _）</span>
-          <input type="text" id="new-league-id" maxlength="32" placeholder="例如 season2" autocomplete="off">
+          <input type="text" id="new-league-id" maxlength="32" placeholder="例如 season2" autocomplete="off" aria-label="聯盟 ID">
         </label>
         <p class="new-league-hint" id="new-league-hint">建立後會自動切換到新聯盟,並進入設定畫面。</p>
       </section>
@@ -95,7 +95,7 @@
     <a class="tab-btn" href="#schedule" data-route="schedule"><span class="tab-ic">S</span><span class="tab-lbl">賽程</span></a>
   </nav>
 
-  <dialog id="dlg-settings" class="dialog settings-dialog" aria-label="設定">
+  <dialog id="dlg-settings" class="dialog settings-dialog" role="dialog" aria-modal="true" aria-label="設定">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
         <h2>設定</h2>
@@ -144,7 +144,7 @@
     </form>
   </dialog>
 
-  <dialog id="dlg-confirm" class="dialog confirm-dialog" aria-label="確認">
+  <dialog id="dlg-confirm" class="dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
     <form method="dialog" class="dialog-inner small">
       <header class="dialog-head">
         <h2 id="confirm-title">確認</h2>
@@ -159,7 +159,7 @@
     </form>
   </dialog>
 
-  <dialog id="dlg-matchup" class="dialog matchup-dialog" aria-label="對戰詳情">
+  <dialog id="dlg-matchup" class="dialog matchup-dialog" role="dialog" aria-modal="true" aria-labelledby="matchup-title">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
         <h2 id="matchup-title">對戰</h2>
@@ -171,7 +171,7 @@
     </form>
   </dialog>
 
-  <dialog id="trade-propose" class="dialog trade-propose-dialog" aria-label="發起交易">
+  <dialog id="trade-propose" class="dialog trade-propose-dialog" role="dialog" aria-modal="true" aria-label="發起交易">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
         <h2>發起交易</h2>
@@ -181,9 +181,10 @@
       </header>
       <section class="dialog-body" id="trade-propose-body"></section>
       <section class="dialog-body propose-extras">
-        <textarea id="trade-message" maxlength="300" placeholder="說服對方的話 (選填)" rows="2"></textarea>
-        <label class="force-label">
-          <input type="checkbox" id="trade-force">
+        <label class="sr-only" for="trade-message">說服對方的訊息</label>
+        <textarea id="trade-message" maxlength="300" placeholder="說服對方的話 (選填)" rows="2" aria-label="說服對方的訊息"></textarea>
+        <label class="force-label" for="trade-force">
+          <input type="checkbox" id="trade-force" aria-label="強制執行交易">
           強制執行 (跳過同意與否決)
         </label>
         <div id="trade-force-warn" class="force-warn" hidden>⚠ 作弊模式：會直接成交不能被否決</div>
@@ -195,7 +196,7 @@
     </form>
   </dialog>
 
-  <dialog id="dlg-league-settings" class="dialog league-settings-dialog" aria-label="聯盟設定">
+  <dialog id="dlg-league-settings" class="dialog league-settings-dialog" role="dialog" aria-modal="true" aria-label="聯盟設定">
     <form method="dialog" class="dialog-inner">
       <header class="dialog-head">
         <h2>聯盟設定（賽季中可調整）</h2>

@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.22"
+APP_VERSION = "0.5.23"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -223,7 +223,7 @@ def _load_or_init_season() -> Optional[SeasonState]:
 def _require_season() -> SeasonState:
     state = _load_or_init_season()
     if state is None or not state.started:
-        raise HTTPException(400, "賽季尚未開始")
+        raise HTTPException(409, "賽季尚未開始")
     return state
 
 
@@ -243,7 +243,6 @@ def health():
         "ok": True,
         "version": APP_VERSION,
         "league_id": LEAGUE_ID,
-        "data_dir": str(DATA_DIR),
         "ai_enabled": ai_gm.enabled,
     }
 
@@ -529,7 +528,7 @@ def ai_advance():
         return {"pick": None, "state": _state_snapshot().model_dump()}
     _, _, team_id = draft.current_pointers()
     if team_id == draft.human_team_id:
-        raise HTTPException(400, "It's the human's turn")
+        raise HTTPException(409, "目前是玩家的回合")
     pick = draft.ai_pick()
     _persist_draft()
     return {
@@ -1016,7 +1015,7 @@ def season_week_recap(week: int = Query(..., ge=1)):
     biggest blowout, closest game, human matchup highlight."""
     state = _load_or_init_season()
     if state is None or not state.started:
-        raise HTTPException(400, "Season not started")
+        raise HTTPException(409, "賽季尚未開始")
 
     week_matchups = [m for m in state.schedule if m.week == week and m.complete]
     if not week_matchups:
@@ -1111,7 +1110,7 @@ def season_summary():
     top 5 single-game performances, human record, persona callouts."""
     state = _load_or_init_season()
     if state is None or not state.started:
-        raise HTTPException(400, "Season not started")
+        raise HTTPException(409, "賽季尚未開始")
     players_by_id = {p.id: p for p in draft.players}
     teams_by_id = {t.id: t for t in draft.teams}
 
