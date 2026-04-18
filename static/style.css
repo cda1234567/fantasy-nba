@@ -743,9 +743,45 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 .mb-row.mb-dnp { color: var(--text-muted); opacity: 0.7; }
 .mb-pfp { font-variant-numeric: tabular-nums; font-weight: 600; }
 .mb-empty { color: var(--text-muted); text-align: center; padding: 4px 0; }
+.mb-statbox {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.mb-statbox th {
+  text-align: right;
+  padding: 4px 6px 4px 4px;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border);
+}
+.mb-statbox th.mb-sb-name { text-align: left; }
+.mb-statbox th.mb-sb-fp { color: var(--accent-hi); }
+.mb-statbox td {
+  text-align: right;
+  padding: 3px 6px 3px 4px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-muted);
+}
+.mb-statbox td.mb-sb-name {
+  text-align: left;
+  color: var(--text);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mb-statbox td.mb-sb-fp { color: var(--accent-hi); font-weight: 600; }
+.mb-statbox tr.mb-dnp td { color: var(--text-muted); opacity: 0.65; }
+.mb-statbox td.mb-sb-dnp { text-align: center; font-style: italic; }
 @media (max-width: 540px) {
   .mb-day-body { grid-template-columns: 1fr; }
   .mb-side + .mb-side { border-left: none; border-top: 1px solid var(--border); }
+  .mb-statbox { font-size: 11px; }
+  .mb-statbox th, .mb-statbox td { padding: 3px 3px; }
+  .mb-statbox td.mb-sb-name { max-width: 85px; }
 }
 
 /* ---- injury report panel ---- */
@@ -2822,26 +2858,35 @@ table.mgmt-teams td.persona {
 .hh-dots {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin-top: var(--sp-3);
+  gap: 0;
+  margin-top: var(--sp-2);
 }
 .hh-dot-btn {
+  /* Full 44x44 tap target per WCAG / Apple HIG. Visible dot is drawn by a
+     centered background-image so the button stays clickable at its full size
+     while the dot itself looks the same as before. The old implementation
+     used an ::after pseudo to enlarge the hit area, but mobile browsers
+     can route vertical drag-start events to the button and swallow page
+     scroll — flat padding avoids that. */
+  box-sizing: content-box;
+  width: 8px;
+  height: 8px;
+  padding: 18px 10px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
   position: relative;
+}
+.hh-dot-btn > span.hh-dot-inner {
+  display: block;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  border: none;
   background: rgba(148, 163, 184, 0.3);
-  cursor: pointer;
-  padding: 0;
   transition: all 0.15s;
 }
-.hh-dot-btn::after {
-  content: '';
-  position: absolute;
-  inset: -18px -4px;
-}
-.hh-dot-btn.active {
+.hh-dot-btn.active > span.hh-dot-inner {
   background: #6366f1;
   transform: scale(1.4);
   box-shadow: 0 0 8px rgba(99, 102, 241, 0.6);

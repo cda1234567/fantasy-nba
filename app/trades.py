@@ -327,6 +327,7 @@ class TradeManager:
         accept: bool,
         current_day: int,
         ai_gm: Optional[Any] = None,
+        reason: Optional[str] = None,
     ) -> TradeProposal:
         """Accept or reject a pending_accept trade.
 
@@ -345,6 +346,14 @@ class TradeManager:
         trade.counterparty_decided_day = current_day
         if not accept:
             trade.status = "rejected"
+            # Surface the AI's reason so the human sees WHY it was rejected,
+            # not just a terse "rejected" status. The stored reasoning may
+            # already contain the proposer's note; append the decision reason.
+            if reason:
+                clean = reason.strip()[:200]
+                if clean:
+                    prior = (trade.reasoning or "").strip()
+                    trade.reasoning = f"{prior} ｜ 拒絕原因：{clean}" if prior else f"拒絕原因：{clean}"
             self._move_to_history(trade)
             self._save()
             return trade
@@ -413,7 +422,7 @@ class TradeManager:
                 already_counter = trade.counter_of is not None
                 standings = getattr(self.season, "standings", {}) or {}
                 _cur_week = getattr(self.season, "current_week", 0)
-                accept, _ = ai_gm.decide_trade(
+                accept, ai_reason = ai_gm.decide_trade(
                     trade, cp, self.draft, self._settings,
                     current_week=_cur_week,
                     standings=standings,
@@ -447,7 +456,7 @@ class TradeManager:
                             print(f"[trades] counter-offer creation failed: {exc!r}", file=sys.stderr)
                             traceback.print_exc()
                             # Fall through to normal reject — original trade stays intact
-                self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm)
+                self.decide(trade.id, cp.id, accept, current_day, ai_gm=ai_gm, reason=ai_reason)
             decided.append(trade)
         return decided
 

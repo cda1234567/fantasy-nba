@@ -23,6 +23,27 @@ from typing import Any, Optional
 LOG_RING_MAX = 500
 
 
+# Per-path file locks keyed by resolved absolute path. Windows os.replace()
+# fails with PermissionError if the target is held open by another writer
+# racing on the same file — observed under concurrent switch+patch from
+# stress agent 4. A per-path lock serializes tmp→replace across threads.
+_FILE_LOCKS: dict[str, threading.Lock] = {}
+_FILE_LOCKS_GUARD = threading.Lock()
+
+
+def _lock_for(path: Path) -> threading.Lock:
+    # Use absolute() not resolve() — resolve() would fail on non-existent
+    # files (first-write case) and produce a different key than subsequent
+    # writes after the file exists.
+    key = str(Path(path).absolute())
+    with _FILE_LOCKS_GUARD:
+        lk = _FILE_LOCKS.get(key)
+        if lk is None:
+            lk = threading.Lock()
+            _FILE_LOCKS[key] = lk
+        return lk
+
+
 class Storage:
     def __init__(self, data_dir: Path, league_id: str = "default"):
         self.data_dir = Path(data_dir)
@@ -55,23 +76,23 @@ class Storage:
 
     # --------------------------------------------------------------- atomic IO
     def _atomic_write(self, path: Path, data: Any) -> None:
-        # Use a unique tmp filename per write so concurrent writers to the same
-        # target path don't race on a shared .tmp file (one writer's replace()
-        # would otherwise see the file already consumed by another writer).
+        # Per-path lock serializes concurrent writers to the same file. On
+        # Windows, two threads calling os.replace() on the same destination
+        # can trip PermissionError; the lock makes tmp→replace exclusive.
         tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
-        try:
-            tmp.write_text(
-                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-            )
-            os.replace(tmp, path)
-        except Exception:
-            # Best-effort cleanup of the orphan tmp file on failure.
+        with _lock_for(path):
             try:
-                if tmp.exists():
-                    tmp.unlink()
-            except OSError:
-                pass
-            raise
+                tmp.write_text(
+                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+                )
+                os.replace(tmp, path)
+            except Exception:
+                try:
+                    if tmp.exists():
+                        tmp.unlink()
+                except OSError:
+                    pass
+                raise
 
     def _safe_read(self, path: Path) -> Optional[Any]:
         if not path.exists():

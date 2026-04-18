@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.40"
+APP_VERSION = "0.5.41"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -432,7 +432,13 @@ def get_league_settings():
 
 @app.post("/api/league/settings")
 def patch_league_settings(body: dict[str, Any]):
-    settings = _current_settings()
+    # Pin the storage reference for the whole read-modify-write. The module
+    # global `storage` can be reassigned by a concurrent /api/league/switch,
+    # which caused stress agent 4's settings leak: thread A read from league
+    # X, thread B swapped storage to Y, thread A wrote to Y's file.
+    with _league_lock:
+        local_storage = storage
+    settings = local_storage.load_league_settings()
     if settings.setup_complete:
         forbidden = set(body.keys()) - _MID_SEASON_ALLOWED
         if forbidden:
@@ -440,14 +446,11 @@ def patch_league_settings(body: dict[str, Any]):
                 400,
                 f"聯盟設定完成後無法變更欄位：{sorted(forbidden)}",
             )
-    # model_copy(update=...) skips field_validators, so chaos agent 6 found
-    # that empty team_names slipped through. Re-validate by round-tripping
-    # through model_validate, which fires @field_validator.
     try:
         updated = LeagueSettings.model_validate({**settings.model_dump(), **body})
     except ValueError as e:
         raise HTTPException(400, str(e))
-    storage.save_league_settings(updated)
+    local_storage.save_league_settings(updated)
     return updated.model_dump()
 
 

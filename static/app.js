@@ -980,7 +980,7 @@ async function loadHeadlinesBanner(container, seasonYear) {
         class: `hh-dot-btn ${i === carousel.idx ? 'active' : ''}`,
         'aria-label': `第 ${i + 1} 則`,
         onclick: () => { carousel.idx = i; redraw(); },
-      }));
+      }, el('span', { class: 'hh-dot-inner' })));
     }
   }
   redraw();
@@ -2829,16 +2829,38 @@ function buildMbSide(rows) {
     return side;
   }
   rows.sort((a, b) => (b.fp || 0) - (a.fp || 0));
+  const table = el('table', { class: 'mb-statbox' });
+  table.innerHTML = `
+    <thead><tr>
+      <th class="mb-sb-name">球員</th>
+      <th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th>
+      <th class="mb-sb-fp">FP</th>
+    </tr></thead>
+  `;
+  const tbody = el('tbody');
   for (const r of rows) {
-    const line = el('div', { class: 'mb-row' + (r.played ? '' : ' mb-dnp') },
-      el('span', { class: 'mb-pname' }, `${escapeHtml(r.player_name)}`),
-      el('span', { class: 'mb-pfp' }, r.played ? fmtStat(r.fp) : 'DNP'),
-    );
+    const tr = el('tr', { class: r.played ? '' : 'mb-dnp' });
     if (r.played) {
-      line.title = `PTS ${r.pts} / REB ${r.reb} / AST ${r.ast} / STL ${r.stl} / BLK ${r.blk} / TO ${r.to}`;
+      tr.innerHTML = `
+        <td class="mb-sb-name">${escapeHtml(r.player_name)}</td>
+        <td>${fmtStat(r.pts)}</td>
+        <td>${fmtStat(r.reb)}</td>
+        <td>${fmtStat(r.ast)}</td>
+        <td>${fmtStat(r.stl)}</td>
+        <td>${fmtStat(r.blk)}</td>
+        <td>${fmtStat(r.to)}</td>
+        <td class="mb-sb-fp">${fmtStat(r.fp)}</td>
+      `;
+    } else {
+      tr.innerHTML = `
+        <td class="mb-sb-name">${escapeHtml(r.player_name)}</td>
+        <td colspan="7" class="mb-sb-dnp">未出賽</td>
+      `;
     }
-    side.append(line);
+    tbody.append(tr);
   }
+  table.append(tbody);
+  side.append(table);
   return side;
 }
 
