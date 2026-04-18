@@ -18,15 +18,15 @@ DEFAULT_TEAM_NAMES = [
 
 
 class LeagueSettings(BaseModel):
-    league_name: str = "我的聯盟"
-    season_year: str = "2025-26"
-    player_team_index: int = 0
+    league_name: str = Field("我的聯盟", min_length=1, max_length=60)
+    season_year: str = Field("2025-26", min_length=4, max_length=20)
+    player_team_index: int = Field(0, ge=0, le=31)
     team_names: list[str] = Field(default_factory=lambda: list(DEFAULT_TEAM_NAMES))
     randomize_draft_order: bool = False
-    num_teams: int = 8
-    roster_size: int = 13
-    starters_per_day: int = 10
-    il_slots: int = 3
+    num_teams: int = Field(8, ge=4, le=16)
+    roster_size: int = Field(13, ge=8, le=20)
+    starters_per_day: int = Field(10, ge=1, le=15)
+    il_slots: int = Field(3, ge=0, le=5)
     scoring_weights: dict[str, float] = Field(
         default_factory=lambda: {
             "pts": 1.0,
@@ -37,15 +37,15 @@ class LeagueSettings(BaseModel):
             "to": -1.0,
         }
     )
-    regular_season_weeks: int = 20
-    playoff_teams: int = 6
-    trade_deadline_week: Optional[int] = None
-    ai_trade_frequency: str = "normal"
-    ai_trade_style: str = "balanced"
-    veto_threshold: int = 3
-    veto_window_days: int = 2
-    ai_decision_mode: str = "auto"
-    draft_display_mode: str = "prev_full"
+    regular_season_weeks: int = Field(20, ge=2, le=40)
+    playoff_teams: int = Field(6, ge=0, le=16)
+    trade_deadline_week: Optional[int] = Field(None, ge=1, le=40)
+    ai_trade_frequency: Literal["off", "low", "normal", "high"] = "normal"
+    ai_trade_style: Literal["conservative", "balanced", "aggressive"] = "balanced"
+    veto_threshold: int = Field(3, ge=0, le=16)
+    veto_window_days: int = Field(2, ge=0, le=7)
+    ai_decision_mode: Literal["auto", "manual"] = "auto"
+    draft_display_mode: Literal["prev_full", "prev_round", "none"] = "prev_full"
     show_offseason_headlines: bool = True
     setup_complete: bool = False
     use_openrouter: bool = True

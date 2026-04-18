@@ -291,7 +291,7 @@ def delete_league(data_dir: Path, league_id: str) -> None:
     shutil.rmtree(target)
 
 
-def get_active_league(data_dir: Path, fallback: str = "default") -> str:
+def get_active_league(data_dir: Path, fallback: Optional[str] = "default") -> Optional[str]:
     """Return the active league id from the pointer file, or fallback."""
     path = _active_pointer_path(data_dir)
     if not path.exists():

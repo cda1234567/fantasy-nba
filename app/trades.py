@@ -15,9 +15,17 @@ Lifecycle:
 """
 from __future__ import annotations
 
+import threading
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Any, Literal, Optional
+
+
+# Module-level lock serializes read-modify-write on trades.json.
+# Without this, two concurrent proposals both read the same prior state,
+# each appends only its own trade, and the second write silently drops
+# the first (confirmed by stress agents 1 and 10).
+_TRADES_WRITE_LOCK = threading.Lock()
 
 from pydantic import BaseModel, Field
 
@@ -188,31 +196,37 @@ class TradeManager:
             if pid not in receiver_roster:
                 raise ValueError(f"Player {pid} not on counterparty roster")
 
-        for existing in self.state.pending:
-            if (
-                existing.from_team == from_team
-                and existing.to_team == to_team
-                and set(existing.send_player_ids) == set(send_ids)
-                and set(existing.receive_player_ids) == set(receive_ids)
-            ):
-                return existing
+        # Re-load under lock and re-check dedup so concurrent proposals do
+        # not clobber each other. Without the re-load, the `self.state` seen
+        # by this TradeManager instance may be stale relative to a racing
+        # proposer's write that already landed.
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            for existing in self.state.pending:
+                if (
+                    existing.from_team == from_team
+                    and existing.to_team == to_team
+                    and set(existing.send_player_ids) == set(send_ids)
+                    and set(existing.receive_player_ids) == set(receive_ids)
+                ):
+                    return existing
 
-        trade = TradeProposal(
-            id=uuid.uuid4().hex,
-            proposed_week=current_week,
-            proposed_day=current_day,
-            from_team=from_team,
-            to_team=to_team,
-            send_player_ids=list(send_ids),
-            receive_player_ids=list(receive_ids),
-            status="pending_accept",
-            reasoning=reasoning or "",
-            proposer_message=proposer_message[:300] if proposer_message else "",
-            force=force,
-        )
-        self.state.pending.append(trade)
-        self._save()
-        return trade
+            trade = TradeProposal(
+                id=uuid.uuid4().hex,
+                proposed_week=current_week,
+                proposed_day=current_day,
+                from_team=from_team,
+                to_team=to_team,
+                send_player_ids=list(send_ids),
+                receive_player_ids=list(receive_ids),
+                status="pending_accept",
+                reasoning=reasoning or "",
+                proposer_message=proposer_message[:300] if proposer_message else "",
+                force=force,
+            )
+            self.state.pending.append(trade)
+            self._save()
+            return trade
 
     async def collect_peer_commentary_async(
         self,

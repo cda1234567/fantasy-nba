@@ -667,11 +667,7 @@ def advance_day(
             print(f"[milestones] detection failed: {exc!r}", file=sys.stderr)
             traceback.print_exc()
 
-    # Trim game_logs to the last 3 weeks to keep the save payload bounded.
-    # _resolve_week() accumulates standings in-place so older logs are not needed.
-    keep_from_week = max(1, week - 2)
-    if len(season.game_logs) > 14 * len(draft.teams) * 10:
-        season.game_logs = [g for g in season.game_logs if g.week >= keep_from_week]
+    _trim_game_logs(season, draft, week)
 
     # Persist every day: endpoints re-load SeasonState from disk per request,
     # so skipping mid-week saves would pin current_day/current_week to the
@@ -684,6 +680,16 @@ def advance_day(
         "fp_by_team": {str(k): round(v, 2) for k, v in day_fp_by_team.items()},
     })
     return season
+
+
+def _trim_game_logs(season: SeasonState, draft: "DraftState", week: int) -> None:
+    # Keep the last 3 weeks; _resolve_week has already accumulated standings
+    # from older logs, so bounded retention is safe. Called from both regular
+    # advance_day and _sim_playoff_week — playoffs previously skipped this and
+    # the save payload grew unbounded across the 3-week bracket.
+    keep_from_week = max(1, week - 2)
+    if len(season.game_logs) > 14 * len(draft.teams) * 10:
+        season.game_logs = [g for g in season.game_logs if g.week >= keep_from_week]
 
 
 def _resolve_week(
@@ -918,6 +924,7 @@ def _sim_playoff_week(
 
     reg_weeks = _regular_weeks(settings)
     _resolve_week(draft, season, week, reg_weeks)
+    _trim_game_logs(season, draft, week)
     winners: list[int] = []
     for a, b in pairings:
         for m in season.schedule:

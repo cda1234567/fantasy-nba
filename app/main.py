@@ -57,15 +57,23 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.39"
+APP_VERSION = "0.5.40"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
-# LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
+# LEAGUE_ID resolution: active-league pointer wins over env. The env var
+# only seeds the initial pointer when no pointer file exists yet.
+# Prior priority (env > pointer) caused container restarts to clobber the
+# user's UI-selected league — e.g. switching to "my-league-3" in the UI
+# persisted the pointer, but on `docker compose up` the LEAGUE_ID=default
+# env rebound the global back to "default" until the user re-switched.
+_pointer_league = get_active_league(DATA_DIR, fallback=None)
 _env_league = os.getenv("LEAGUE_ID")
-if _env_league:
+if _pointer_league:
+    LEAGUE_ID = _pointer_league
+elif _env_league:
     LEAGUE_ID = _env_league
 else:
-    LEAGUE_ID = get_active_league(DATA_DIR, fallback="default")
+    LEAGUE_ID = "default"
 
 app = FastAPI(title="Fantasy NBA Draft Sim", version=APP_VERSION)
 app.include_router(injuries_router)
