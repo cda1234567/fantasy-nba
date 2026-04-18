@@ -373,6 +373,8 @@ def _set_lineups(
 
     # Run all AI decisions in parallel via ThreadPoolExecutor
     if ai_teams:
+        # Key by team.id (int) — Team is a pydantic BaseModel and not hashable
+        # by default, so using it as a dict key raises TypeError at runtime.
         futures_map: dict = {}
         with ThreadPoolExecutor(max_workers=min(8, len(ai_teams))) as ex:
             for t in ai_teams:
@@ -386,10 +388,11 @@ def _set_lineups(
                     injured_out,
                     season.ai_models.get(t.id, DEFAULT_MODEL_ID),
                 )
-                futures_map[fut] = t
-            # Collect results keyed by team so we can iterate in original order
-            results_map: dict = {futures_map[f]: f.result() for f in as_completed(futures_map)}
-        decisions = [results_map[t] for t in ai_teams]
+                futures_map[fut] = t.id
+            results_map: dict[int, dict] = {
+                futures_map[f]: f.result() for f in as_completed(futures_map)
+            }
+        decisions = [results_map[t.id] for t in ai_teams]
         for team, decision in zip(ai_teams, decisions):
             if decision.get("used_api"):
                 season.ai_calls_today += 1
@@ -668,8 +671,10 @@ def advance_day(
     if len(season.game_logs) > 14 * len(draft.teams) * 10:
         season.game_logs = [g for g in season.game_logs if g.week >= keep_from_week]
 
-    if _dirty or next_day % DAYS_PER_WEEK == 0:
-        storage.save_season(season.model_dump())
+    # Persist every day: endpoints re-load SeasonState from disk per request,
+    # so skipping mid-week saves would pin current_day/current_week to the
+    # last boundary and effectively freeze the season.
+    storage.save_season(season.model_dump())
     storage.append_log({
         "type": "day_advance",
         "day": next_day,

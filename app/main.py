@@ -39,7 +39,16 @@ from .season import (
     start_season as season_start,
 )
 from .injuries_route import router as injuries_router
-from .storage import Storage, resolve_data_dir
+from .storage import (
+    Storage,
+    resolve_data_dir,
+    list_leagues as storage_list_leagues,
+    create_league as storage_create_league,
+    delete_league as storage_delete_league,
+    get_active_league,
+    set_active_league,
+    _validate_league_id,
+)
 from .trades import TradeManager
 
 
@@ -48,13 +57,22 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.18"
+APP_VERSION = "0.5.21"
 
-LEAGUE_ID = os.getenv("LEAGUE_ID", "default")
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
+# LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
+_env_league = os.getenv("LEAGUE_ID")
+if _env_league:
+    LEAGUE_ID = _env_league
+else:
+    LEAGUE_ID = get_active_league(DATA_DIR, fallback="default")
 
 app = FastAPI(title="Fantasy NBA Draft Sim", version=APP_VERSION)
 app.include_router(injuries_router)
+
+# Lock guarding module-global reassignment during /api/leagues/switch.
+import threading as _threading
+_league_lock = _threading.Lock()
 
 storage = Storage(DATA_DIR, league_id=LEAGUE_ID)
 
@@ -63,23 +81,55 @@ storage = Storage(DATA_DIR, league_id=LEAGUE_ID)
 # ---------------------------------------------------------------------------
 import time as _time
 
-_saved_settings = storage.load_league_settings()
-if _saved_settings.setup_complete:
-    draft = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF, settings=_saved_settings)
-else:
-    draft = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF)
 
+def _build_draft_for(storage_obj: Storage) -> DraftState:
+    """Construct + restore a DraftState for a given storage (league)."""
+    settings = storage_obj.load_league_settings()
+    if settings.setup_complete:
+        d = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF, settings=settings)
+    else:
+        d = DraftState(PLAYERS_FILE, seed=int(_time.time()) & 0xFFFFFFFF)
+    snap = storage_obj.load_draft()
+    if snap:
+        try:
+            d.restore(snap)
+        except Exception as _exc:
+            import traceback as _tb, sys as _sys
+            print(f"[startup] draft.restore failed for league={storage_obj.league_id}: {_exc!r}", file=_sys.stderr)
+            _tb.print_exc()
+    return d
+
+
+draft = _build_draft_for(storage)
 ai_gm = AIGM(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
-# Restore draft from disk if present
-_initial_draft = storage.load_draft()
-if _initial_draft:
+
+def _switch_league(new_league_id: str) -> None:
+    """Reassign module-level storage + draft for the given league.
+
+    Safe under threadpool concurrency via _league_lock. After switching, the
+    active-league pointer is persisted so subsequent restarts default here.
+    """
+    global storage, draft, LEAGUE_ID
+    new_league_id = _validate_league_id(new_league_id)
+    leagues_root = (DATA_DIR / "leagues").resolve()
+    target = (leagues_root / new_league_id).resolve()
+    # Defense in depth: refuse anything that escapes leagues_root
+    if target == leagues_root or leagues_root not in target.parents:
+        raise ValueError("invalid league path")
+    if not target.is_dir():
+        raise ValueError(f"league '{new_league_id}' does not exist")
+    with _league_lock:
+        new_storage = Storage(DATA_DIR, league_id=new_league_id)
+        new_draft = _build_draft_for(new_storage)
+        storage = new_storage
+        draft = new_draft
+        LEAGUE_ID = new_league_id
     try:
-        draft.restore(_initial_draft)
+        set_active_league(DATA_DIR, new_league_id)
     except Exception as _exc:
-        import traceback as _tb, sys as _sys
-        print(f"[startup] draft.restore failed: {_exc!r}", file=_sys.stderr)
-        _tb.print_exc()
+        import sys as _sys
+        print(f"[switch] set_active_league failed: {_exc!r}", file=_sys.stderr)
 
 
 # ---------------------------------------------------------------------------
@@ -195,6 +245,59 @@ def health():
         "data_dir": str(DATA_DIR),
         "ai_enabled": ai_gm.enabled,
     }
+
+
+# ---------------------------------------------------------------------------
+# League management (multi-league)
+# ---------------------------------------------------------------------------
+class CreateLeagueRequest(BaseModel):
+    league_id: str
+    switch: bool = True  # immediately make this the active league
+
+
+class SwitchLeagueRequest(BaseModel):
+    league_id: str
+
+
+@app.get("/api/leagues/list")
+def leagues_list():
+    items = storage_list_leagues(DATA_DIR)
+    return {"leagues": items, "active": LEAGUE_ID}
+
+
+@app.post("/api/leagues/create")
+def leagues_create(req: CreateLeagueRequest):
+    try:
+        storage_create_league(DATA_DIR, req.league_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    if req.switch:
+        try:
+            _switch_league(req.league_id)
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+    return {"ok": True, "active": LEAGUE_ID}
+
+
+@app.post("/api/leagues/switch")
+def leagues_switch(req: SwitchLeagueRequest):
+    try:
+        _switch_league(req.league_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"ok": True, "active": LEAGUE_ID}
+
+
+@app.post("/api/leagues/delete")
+def leagues_delete(req: SwitchLeagueRequest):
+    # Refuse to delete the currently-active league (prevents orphaning globals)
+    if req.league_id == LEAGUE_ID:
+        raise HTTPException(400, "無法刪除當前使用中的聯盟,請先切換到其他聯盟")
+    try:
+        storage_delete_league(DATA_DIR, req.league_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return {"ok": True}
 
 
 # ---------------------------------------------------------------------------
@@ -479,6 +582,16 @@ def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
     _require_setup()
     if not draft.is_complete:
         raise HTTPException(400, "Draft is not complete")
+    # Refuse to silently wipe an existing season. Callers that want a fresh
+    # start must hit /api/season/reset first (explicit, Chinese-labelled in UI).
+    existing = _load_or_init_season()
+    if existing is not None and (
+        existing.champion is not None or int(existing.current_day or 0) > 0
+    ):
+        raise HTTPException(
+            409,
+            "賽季已存在，請先使用「重置賽季」清除後再開始。",
+        )
     settings = _current_settings()
     state = season_start(draft, storage, settings=settings)
     return state.model_dump()
@@ -601,9 +714,12 @@ def fa_claim(req: FAClaimRequest):
     if used >= HUMAN_DAILY_CLAIM_LIMIT:
         raise HTTPException(400, f"今日已用完 {HUMAN_DAILY_CLAIM_LIMIT} 次自由球員簽約配額")
 
-    # Execute swap
+    # Execute swap (keep drafted_ids in sync so dropped player returns to FA pool
+    # and claimed player disappears from FA pool)
     human.roster = [p for p in human.roster if p != req.drop_player_id]
     human.roster.append(req.add_player_id)
+    draft.drafted_ids.discard(req.drop_player_id)
+    draft.drafted_ids.add(req.add_player_id)
 
     import time as _t
     state.human_claims.append({

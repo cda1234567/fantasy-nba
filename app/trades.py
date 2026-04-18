@@ -163,6 +163,14 @@ class TradeManager:
             raise ValueError("Cannot trade with self")
         if not send_ids or not receive_ids:
             raise ValueError("Both sides must include at least one player")
+        if len(send_ids) != len(receive_ids):
+            raise ValueError("Trade sides must be equal length (no unbalanced trades)")
+        if len(set(send_ids)) != len(send_ids):
+            raise ValueError("Duplicate player id in send side")
+        if len(set(receive_ids)) != len(receive_ids):
+            raise ValueError("Duplicate player id in receive side")
+        if set(send_ids) & set(receive_ids):
+            raise ValueError("Same player cannot appear on both sides")
         # Enforce trade deadline if configured
         deadline = getattr(self._settings, "trade_deadline_week", None) if self._settings is not None else None
         if deadline is not None and current_week > int(deadline):
@@ -485,7 +493,10 @@ class TradeManager:
                         trade.status = "executed"
                         trade.executed_day = current_day
                         self._apply_swap(trade)
-                        self.state.season_executed_count += 1
+                        # _apply_swap may flip status back to "expired" if a
+                        # player has since moved — don't count those.
+                        if trade.status == "executed":
+                            self.state.season_executed_count += 1
                     self._move_to_history(trade)
                     resolved.append(trade)
             # Auto-expire pending_accept trades that have sat too long
@@ -501,12 +512,30 @@ class TradeManager:
         return resolved
 
     def _apply_swap(self, trade: TradeProposal) -> None:
-        """Swap players between rosters in the draft state and persist the draft."""
+        """Swap players between rosters in the draft state and persist the draft.
+
+        Re-validates ownership at execute time: a trade accepted earlier may
+        have referenced players that have since moved (e.g. a second trade
+        already shipped them out). Executing blindly here used to leave one
+        player on two rosters and another team with 14 players.
+        """
         sender = self.draft.teams[trade.from_team]
         receiver = self.draft.teams[trade.to_team]
 
         send_set = set(trade.send_player_ids)
         recv_set = set(trade.receive_player_ids)
+
+        sender_roster_set = set(sender.roster)
+        receiver_roster_set = set(receiver.roster)
+        missing_on_sender = send_set - sender_roster_set
+        missing_on_receiver = recv_set - receiver_roster_set
+        if missing_on_sender or missing_on_receiver:
+            trade.status = "expired"
+            trade.reasoning = (
+                (trade.reasoning or "")
+                + f" [自動撤銷：球員已不在隊伍名單中 {sorted(missing_on_sender | missing_on_receiver)}]"
+            )
+            return
 
         sender.roster = [pid for pid in sender.roster if pid not in send_set]
         sender.roster.extend(trade.receive_player_ids)

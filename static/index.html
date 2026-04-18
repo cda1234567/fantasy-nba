@@ -13,11 +13,41 @@
       <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
     </button>
     <h1 class="app-title">NBA Fantasy 模擬器</h1>
+    <div class="league-switcher" id="league-switcher">
+      <button class="lsw-btn" id="btn-league-switch" aria-haspopup="menu" aria-expanded="false" aria-controls="league-switch-menu" type="button">
+        <span class="lsw-label">聯盟</span>
+        <span class="lsw-current" id="lsw-current">—</span>
+        <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="lsw-menu" id="league-switch-menu" role="menu" hidden></div>
+    </div>
     <div class="header-status">
       <span class="conn-dot" id="conn-dot" aria-hidden="true"></span>
       <span class="conn-text" id="conn-text">連線中</span>
     </div>
   </header>
+
+  <dialog id="dlg-new-league" class="dialog new-league-dialog" aria-label="建立新聯盟">
+    <form method="dialog" class="dialog-inner small">
+      <header class="dialog-head">
+        <h2>建立新聯盟</h2>
+        <button type="submit" value="cancel" class="icon-btn" aria-label="關閉">
+          <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M4 4l10 10M14 4L4 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </header>
+      <section class="dialog-body">
+        <label class="new-league-field">
+          <span>聯盟 ID（僅限英數字 / - / _）</span>
+          <input type="text" id="new-league-id" maxlength="32" placeholder="例如 season2" autocomplete="off">
+        </label>
+        <p class="new-league-hint" id="new-league-hint">建立後會自動切換到新聯盟,並進入設定畫面。</p>
+      </section>
+      <footer class="dialog-foot">
+        <button type="submit" value="cancel" class="btn ghost">取消</button>
+        <button type="button" class="btn" id="btn-new-league-create">建立並切換</button>
+      </footer>
+    </form>
+  </dialog>
 
   <div class="layout">
     <nav class="side-nav" id="side-nav" role="navigation" aria-label="主選單">

@@ -465,7 +465,12 @@ class DraftState:
         self.rng = random.Random(self.seed)
         self.teams = [Team(**t) for t in data.get("teams", [])]
         self.picks = [Pick(**p) for p in data.get("picks", [])]
-        self.drafted_ids = {p.player_id for p in self.picks}
+        # Rosters are the source of truth — FA claims add to roster without
+        # creating picks, so rebuilding from picks alone loses those claims.
+        roster_ids: set[int] = set()
+        for t in self.teams:
+            roster_ids.update(t.roster)
+        self.drafted_ids = roster_ids | {p.player_id for p in self.picks}
         # Sync cached size values from restored teams
         self._num_teams = len(self.teams) if self.teams else NUM_TEAMS
         self._roster_size = (

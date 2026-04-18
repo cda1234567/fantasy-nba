@@ -836,36 +836,19 @@ async function renderDraftView(root) {
   const showHeadlines = state.leagueSettings?.show_offseason_headlines !== false;
   const seasonYear = state.leagueSettings?.season_year || '';
 
-  // Header summary
-  const totalPicks = d.num_teams * d.total_rounds;
-  const summary = d.is_complete
-    ? `選秀完成 — ${totalPicks}/${totalPicks} 順位`
-    : `順位 ${d.current_overall} / ${totalPicks} — 第${d.current_round}輪第${d.current_pick_in_round}順`;
-
-  const clockPanel = buildClockPanel(d);
+  const heroContainer = el('div', { id: 'draft-hero-container' }, buildDraftHero(d));
   const boardPanel = buildBoardPanel(d);
   const availablePanel = buildAvailablePanel(d, displayMode);
 
   const grid = el('div', { class: 'draft-grid' },
-    el('div', {},
-      clockPanel,
-      availablePanel,
-    ),
-    el('div', {},
-      el('div', { class: 'panel' },
-        el('div', { class: 'panel-head' },
-          el('h2', {}, '摘要'),
-          el('span', { class: 'pill' }, summary),
-        ),
-      ),
-      boardPanel,
-    ),
+    el('div', {}, availablePanel),
+    el('div', {}, boardPanel),
   );
 
   // Headlines placeholder container
   const headlinesContainer = el('div', { id: 'headlines-container' });
 
-  root.append(headlinesContainer, grid);
+  root.append(headlinesContainer, heroContainer, grid);
 
   wireAvailableFilters();
   renderAvailableTable(displayMode);
@@ -911,76 +894,145 @@ function scheduleDraftAutoAdvance() {
   }, 1500);
 }
 
+function categorizeHeadline(text) {
+  const t = String(text || '');
+  if (/新秀/.test(t))               return { key: 'rookie',   icon: '🎓', label: '新秀', tone: 'rookie' };
+  if (/告別賽場|謝幕|退役/.test(t)) return { key: 'retire',   icon: '👋', label: '退役', tone: 'retire' };
+  if (/續約/.test(t))               return { key: 'resign',   icon: '💼', label: '續約', tone: 'resign' };
+  if (/冠軍|奪冠|MVP/.test(t))      return { key: 'award',    icon: '🏆', label: '榮耀', tone: 'award' };
+  if (/震撼轉會|加盟|離開|交易|加入/.test(t))
+                                    return { key: 'transfer', icon: '🔄', label: '轉隊', tone: 'transfer' };
+  return                              { key: 'general',  icon: '📰', label: '頭條', tone: 'general' };
+}
+
 async function loadHeadlinesBanner(container, seasonYear) {
   const data = await apiSoft(`/api/seasons/${encodeURIComponent(seasonYear)}/headlines`);
   if (!data || !data.headlines || !data.headlines.length) return;
 
-  const headlines = data.headlines.slice(0, 10);
-  const banner = el('div', { class: 'headlines-banner' });
-  const head = el('button', {
-    type: 'button',
-    class: 'headlines-toggle',
-    'aria-expanded': 'true',
-    onclick: () => {
-      const body = banner.querySelector('.headlines-body');
-      const isOpen = head.getAttribute('aria-expanded') === 'true';
-      head.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
-      if (body) body.hidden = isOpen;
-      chevron.textContent = isOpen ? '▸' : '▾';
-    },
+  const items = data.headlines.slice(0, 12).map((h) => {
+    const text = typeof h === 'string' ? h : (h.text || h.headline || JSON.stringify(h));
+    return { text, ...categorizeHeadline(text) };
   });
-  const chevron = el('span', { class: 'headlines-chevron' }, '▾');
-  head.append(
-    el('span', { class: 'headlines-heading' }, `${escapeHtml(seasonYear)} 休賽期頭條`),
-    chevron,
+
+  const carousel = { idx: 0 };
+  const hero = el('section', { class: 'headlines-hero' });
+
+  const header = el('div', { class: 'hh-header' },
+    el('div', { class: 'hh-title' },
+      el('span', { class: 'hh-dot' }),
+      el('span', { class: 'hh-season' }, escapeHtml(seasonYear)),
+      el('span', { class: 'hh-label' }, '休賽期頭條'),
+    ),
+    el('div', { class: 'hh-count' }, `${items.length} 則`),
   );
 
-  const body = el('div', { class: 'headlines-body' });
-  const ul = el('ul', { class: 'headlines-list' });
-  for (const h of headlines) {
-    ul.append(el('li', {}, typeof h === 'string' ? h : (h.text || h.headline || JSON.stringify(h))));
+  const stage = el('div', { class: 'hh-stage' });
+  const prevBtn = el('button', { type: 'button', class: 'hh-nav prev', 'aria-label': '上一則',
+    onclick: () => { carousel.idx = (carousel.idx - 1 + items.length) % items.length; redraw(); },
+  }, '‹');
+  const nextBtn = el('button', { type: 'button', class: 'hh-nav next', 'aria-label': '下一則',
+    onclick: () => { carousel.idx = (carousel.idx + 1) % items.length; redraw(); },
+  }, '›');
+  const cardWrap = el('div', { class: 'hh-card-wrap' });
+  stage.append(prevBtn, cardWrap, nextBtn);
+
+  const dots = el('div', { class: 'hh-dots' });
+
+  hero.append(header, stage, dots);
+  container.append(hero);
+
+  function redraw() {
+    const it = items[carousel.idx];
+    cardWrap.innerHTML = '';
+    cardWrap.append(el('article', { class: `hh-card tone-${it.key}` },
+      el('div', { class: 'hh-cat' },
+        el('span', { class: 'hh-cat-icon' }, it.icon),
+        el('span', { class: 'hh-cat-label' }, it.label),
+      ),
+      el('div', { class: 'hh-text' }, it.text),
+      el('div', { class: 'hh-pager' }, `${carousel.idx + 1} / ${items.length}`),
+    ));
+    dots.innerHTML = '';
+    for (let i = 0; i < items.length; i++) {
+      dots.append(el('button', {
+        type: 'button',
+        class: `hh-dot-btn ${i === carousel.idx ? 'active' : ''}`,
+        'aria-label': `第 ${i + 1} 則`,
+        onclick: () => { carousel.idx = i; redraw(); },
+      }));
+    }
   }
-  body.append(ul);
-  banner.append(head, body);
-  container.append(banner);
+  redraw();
+}
+
+function buildDraftHero(d) {
+  const hero = el('section', { class: 'draft-hero' });
+  const totalPicks = d.num_teams * d.total_rounds;
+  const pct = Math.min(100, Math.max(0, ((d.current_overall - 1) / Math.max(1, totalPicks)) * 100));
+
+  if (d.is_complete) {
+    hero.classList.add('complete');
+    hero.append(
+      el('div', { class: 'dh-main' },
+        el('div', { class: 'dh-badge' }, '✅ 選秀完成'),
+        el('div', { class: 'dh-who' }, '所有順位已選完'),
+        el('div', { class: 'dh-sub' }, `${totalPicks} 順位全部完成。前往聯盟頁面開始賽季。`),
+        el('div', { class: 'dh-actions' },
+          el('a', { class: 'btn primary', href: '#league' }, '🏁 前往聯盟'),
+        ),
+      ),
+      el('div', { class: 'dh-progress' },
+        el('div', { class: 'dh-progress-fill', style: 'width: 100%' }),
+      ),
+    );
+    return hero;
+  }
+
+  const team  = d.teams[d.current_team_id];
+  const isYou = team?.is_human;
+  const persona = team?.gm_persona ? state.personas?.[team.gm_persona] : null;
+
+  if (isYou) hero.classList.add('you-turn');
+  else hero.classList.add('ai-turn');
+
+  // Left: pick counter
+  const picker = el('div', { class: 'dh-picker' },
+    el('div', { class: 'dh-picker-label' }, '總順位'),
+    el('div', { class: 'dh-picker-num' }, `#${d.current_overall}`),
+    el('div', { class: 'dh-picker-sub' }, `第 ${d.current_round} 輪 · 第 ${d.current_pick_in_round} 順`),
+  );
+
+  // Center: on the clock
+  const spotlight = el('div', { class: 'dh-main' },
+    el('div', { class: 'dh-badge' },
+      el('span', { class: 'dh-live-dot' }),
+      isYou ? '輪到你了' : '選秀進行中',
+    ),
+    el('div', { class: 'dh-who' }, isYou ? `🎯 ${team.name}（你）` : `🤖 ${team.name}`),
+    persona && !isYou ? el('div', { class: 'dh-persona' },
+      el('span', { class: 'dh-persona-tag' }, '👤 ' + (persona.name || team.gm_persona)),
+      el('span', { class: 'dh-persona-desc' }, persona.desc || ''),
+    ) : null,
+    isYou ? el('div', { class: 'dh-prompt' }, '請在下方「剩餘球員」選擇球員。') : null,
+    el('div', { class: 'dh-actions' },
+      el('button', { class: 'btn ghost', disabled: isYou, onclick: onAdvance }, '推進 AI 一手'),
+      el('button', { class: 'btn primary', disabled: isYou, onclick: onSimToMe }, '⏭ 模擬到我'),
+    ),
+  );
+
+  hero.append(
+    el('div', { class: 'dh-grid' }, picker, spotlight),
+    el('div', { class: 'dh-progress' },
+      el('div', { class: 'dh-progress-fill', style: `width: ${pct.toFixed(1)}%` }),
+      el('div', { class: 'dh-progress-label' }, `${d.current_overall - 1} / ${totalPicks} 順位已完成`),
+    ),
+  );
+  return hero;
 }
 
 function buildClockPanel(d) {
-  const panel = el('div', { class: 'panel' });
-  const head  = el('div', { class: 'panel-head' },
-    el('h2', {}, '輪到誰了'),
-  );
-  const body = el('div', { class: 'clock-card' });
-
-  if (d.is_complete) {
-    body.append(
-      el('div', { class: 'who' }, '選秀完成'),
-      el('div', { class: 'sub' }, '所有順位已完成。前往聯盟頁面開始賽季。'),
-      el('div', { class: 'clock-actions' },
-        el('a', { class: 'btn', href: '#league' }, '前往聯盟'),
-      ),
-    );
-  } else {
-    const team  = d.teams[d.current_team_id];
-    const isYou = team.is_human;
-    const persona = team.gm_persona ? state.personas[team.gm_persona] : null;
-    const subline = isYou
-      ? '請在下方選擇球員。'
-      : (persona ? persona.desc : 'AI 思考中...');
-
-    if (isYou) body.classList.add('you');
-    body.append(
-      el('div', { class: 'who' }, isYou ? '輪到你了' : `輪到 ${team.name}`),
-      el('div', { class: 'sub' }, `第 ${d.current_round} 輪，第 ${d.current_pick_in_round} 順（總第 #${d.current_overall}）。${subline}`),
-      el('div', { class: 'clock-actions' },
-        el('button', { class: 'btn ghost', disabled: isYou, onclick: onAdvance }, '推進 AI'),
-        el('button', { class: 'btn', disabled: isYou, onclick: onSimToMe }, '模擬到我'),
-      ),
-    );
-  }
-
-  panel.append(head, body);
-  return panel;
+  // Kept for back-compat; new pages should use buildDraftHero instead.
+  return buildDraftHero(d);
 }
 
 function buildAvailablePanel(d, displayMode) {
@@ -2011,9 +2063,41 @@ function renderStandingsSubtab(container) {
 // -------- Sub-tab: 聯盟 (Management) --------
 function renderManagementSubtab(container) {
   container.append(buildLeagueInfoPanel());
+  container.append(buildScoringWeightsPanel());
   container.append(buildMilestonesPanel());
   container.append(buildTeamsOverviewPanel());
   container.append(buildTradeSettingsPanel());
+}
+
+function buildScoringWeightsPanel() {
+  const s = state.leagueSettings || DEFAULT_SETTINGS;
+  const w = s.scoring_weights || { pts: 1.0, reb: 1.2, ast: 1.5, stl: 2.5, blk: 2.5, to: -1.0 };
+  const items = [
+    ['得分 PTS',  w.pts, 'pos'],
+    ['籃板 REB',  w.reb, 'pos'],
+    ['助攻 AST',  w.ast, 'pos'],
+    ['抄截 STL',  w.stl, 'pos'],
+    ['阻攻 BLK',  w.blk, 'pos'],
+    ['失誤 TO',   w.to,  (w.to < 0 ? 'neg' : 'pos')],
+  ];
+  const grid = el('div', { class: 'info-grid scoring-weights-grid' });
+  for (const [label, val, tone] of items) {
+    grid.append(el('div', { class: `info-item weight-${tone}` },
+      el('div', { class: 'info-label' }, label),
+      el('div', { class: 'info-value' }, (val >= 0 ? '+' : '') + Number(val).toFixed(1)),
+    ));
+  }
+  return el('div', { class: 'panel' },
+    el('div', { class: 'panel-head' },
+      el('h2', {}, '計分權重'),
+      el('button', {
+        type: 'button',
+        class: 'btn ghost small',
+        onclick: openLeagueSettings,
+      }, '調整'),
+    ),
+    el('div', { class: 'panel-body' }, grid),
+  );
 }
 
 // -------- Sub-tab: 動態 --------
@@ -2164,15 +2248,29 @@ function buildEnhancedStandingsPanel() {
 // -------- League info panel --------
 function buildLeagueInfoPanel() {
   const s = state.leagueSettings || DEFAULT_SETTINGS;
+  const teams = state.draft?.teams || [];
+  const myTeam = teams[s.player_team_index ?? 0];
+  const tradeDeadline = s.trade_deadline_week ?? Math.max(1, (s.regular_season_weeks || 20) - 3);
+  const DRAFT_MODE_LABELS = {
+    prev_full: '上季完整（含 FPPG）',
+    prev_no_fppg: '上季完整（不含 FPPG）',
+    current_full: '本季完整（劇透）',
+  };
   const infoPairs = [
-    ['聯盟名稱',  s.league_name || '我的聯盟'],
-    ['賽季年度',  s.season_year || '—'],
-    ['隊伍數',    `${s.num_teams || 8}`],
-    ['名單人數',  `${s.roster_size || 13}`],
-    ['每日先發',  `${s.starters_per_day || 10}`],
-    ['傷兵名額',  `${s.il_slots ?? 3}`],
-    ['例行賽',    `${s.regular_season_weeks || 20} 週`],
-    ['季後賽隊伍', `${s.playoff_teams || 6}`],
+    ['聯盟名稱',    s.league_name || '我的聯盟'],
+    ['賽季年度',    s.season_year || '—'],
+    ['你的隊伍',    myTeam ? myTeam.name : `#${s.player_team_index ?? 0}`],
+    ['隊伍數',      `${s.num_teams || 8}`],
+    ['名單人數',    `${s.roster_size || 13} 人`],
+    ['每日先發',    `${s.starters_per_day || 10} 人`],
+    ['傷兵名額',    `${s.il_slots ?? 3} 格`],
+    ['例行賽',      `${s.regular_season_weeks || 20} 週`],
+    ['季後賽隊伍',   `${s.playoff_teams || 6} 隊`],
+    ['交易截止',    `第 ${tradeDeadline} 週`],
+    ['選秀順序',    s.randomize_draft_order ? '隨機排列' : '依隊伍索引'],
+    ['選秀顯示',    DRAFT_MODE_LABELS[s.draft_display_mode] || s.draft_display_mode || '—'],
+    ['休賽期頭條',   (s.show_offseason_headlines !== false) ? '顯示' : '隱藏'],
+    ['LLM 路由',    s.use_openrouter ? 'OpenRouter（多模型）' : 'Anthropic 原生'],
   ];
 
   const grid = el('div', { class: 'info-grid' });
@@ -3885,6 +3983,152 @@ function bindGlobalUI() {
   // League settings dialog save button.
   const lsSaveBtn = $('#btn-league-settings-save');
   if (lsSaveBtn) lsSaveBtn.addEventListener('click', onSaveLeagueSettings);
+
+  // League switcher
+  const lswBtn = $('#btn-league-switch');
+  const lswMenu = $('#league-switch-menu');
+  if (lswBtn && lswMenu) {
+    lswBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hidden = lswMenu.hidden;
+      if (hidden) openLeagueSwitchMenu();
+      else closeLeagueSwitchMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (!lswMenu.hidden && !lswMenu.contains(e.target) && e.target !== lswBtn && !lswBtn.contains(e.target)) {
+        closeLeagueSwitchMenu();
+      }
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !lswMenu.hidden) closeLeagueSwitchMenu();
+    });
+  }
+
+  const newLeagueBtn = $('#btn-new-league-create');
+  if (newLeagueBtn) newLeagueBtn.addEventListener('click', onCreateLeague);
+}
+
+async function loadLeagues() {
+  try {
+    const data = await api('/api/leagues/list');
+    state.leagues = data.leagues || [];
+    state.activeLeague = data.active || 'default';
+  } catch (e) {
+    state.leagues = [];
+    state.activeLeague = 'default';
+  }
+  renderLeagueSwitcherLabel();
+}
+
+function renderLeagueSwitcherLabel() {
+  const cur = $('#lsw-current');
+  if (!cur) return;
+  const active = (state.leagues || []).find((l) => l.league_id === state.activeLeague);
+  const label = active ? (active.name || active.league_id) : (state.activeLeague || '—');
+  cur.textContent = label;
+  cur.title = state.activeLeague || '';
+}
+
+function openLeagueSwitchMenu() {
+  const menu = $('#league-switch-menu');
+  const btn = $('#btn-league-switch');
+  if (!menu || !btn) return;
+  const leagues = state.leagues || [];
+  const active = state.activeLeague;
+  const items = leagues.map((l) => {
+    const isActive = l.league_id === active;
+    const displayName = escapeHtml(l.name || l.league_id);
+    const idChip = l.name && l.name !== l.league_id ? `<span class="lsw-id">${escapeHtml(l.league_id)}</span>` : '';
+    return `
+      <div class="lsw-item ${isActive ? 'active' : ''}" role="menuitem">
+        <button type="button" class="lsw-pick" data-league="${escapeHtml(l.league_id)}" ${isActive ? 'disabled' : ''}>
+          <span class="lsw-check" aria-hidden="true">${isActive ? '✓' : ''}</span>
+          <span class="lsw-name">${displayName}</span>
+          ${idChip}
+          ${l.setup_complete ? '' : '<span class="lsw-tag">未設定</span>'}
+        </button>
+        ${isActive ? '' : `<button type="button" class="lsw-del" data-league="${escapeHtml(l.league_id)}" aria-label="刪除聯盟 ${displayName}" title="刪除">×</button>`}
+      </div>`;
+  }).join('');
+  menu.innerHTML = `
+    <div class="lsw-list">${items || '<div class="lsw-empty">尚無其他聯盟</div>'}</div>
+    <div class="lsw-foot">
+      <button type="button" class="lsw-new" id="btn-lsw-new">+ 建立新聯盟</button>
+    </div>
+  `;
+  menu.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+
+  menu.querySelectorAll('.lsw-pick').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      const lid = e.currentTarget.dataset.league;
+      if (lid) onSwitchLeague(lid);
+    });
+  });
+  menu.querySelectorAll('.lsw-del').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const lid = e.currentTarget.dataset.league;
+      if (lid) onDeleteLeague(lid);
+    });
+  });
+  const newBtn = $('#btn-lsw-new');
+  if (newBtn) newBtn.addEventListener('click', () => {
+    closeLeagueSwitchMenu();
+    const dlg = $('#dlg-new-league');
+    const inp = $('#new-league-id');
+    if (inp) inp.value = '';
+    try { dlg.showModal(); setTimeout(() => inp && inp.focus(), 50); } catch {}
+  });
+}
+
+function closeLeagueSwitchMenu() {
+  const menu = $('#league-switch-menu');
+  const btn = $('#btn-league-switch');
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+async function onSwitchLeague(leagueId) {
+  closeLeagueSwitchMenu();
+  try {
+    await api('/api/leagues/switch', { method: 'POST', body: JSON.stringify({ league_id: leagueId }) });
+    toast(`已切換到聯盟 ${leagueId}`, 'success', 2000);
+    // Full reload keeps rendering logic simple — every panel will re-fetch.
+    setTimeout(() => window.location.reload(), 150);
+  } catch (e) {
+    toast(`切換失敗：${e.message}`, 'error', 4000);
+  }
+}
+
+async function onCreateLeague() {
+  const inp = $('#new-league-id');
+  const lid = (inp && inp.value || '').trim();
+  if (!lid) { toast('請輸入聯盟 ID', 'warn', 2500); return; }
+  try {
+    await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, switch: true }) });
+    const dlg = $('#dlg-new-league');
+    if (dlg) dlg.close();
+    toast(`已建立並切換到聯盟 ${lid}`, 'success', 2000);
+    setTimeout(() => window.location.reload(), 200);
+  } catch (e) {
+    toast(`建立失敗：${e.message}`, 'error', 4000);
+  }
+}
+
+async function onDeleteLeague(leagueId) {
+  const confirmed = await confirmDialog('刪除聯盟', `確定刪除聯盟「${leagueId}」?此操作無法還原。`, '刪除');
+  if (!confirmed) return;
+  try {
+    await api('/api/leagues/delete', { method: 'POST', body: JSON.stringify({ league_id: leagueId }) });
+    toast(`已刪除聯盟 ${leagueId}`, 'success', 2000);
+    await loadLeagues();
+    // Refresh menu if open
+    const menu = $('#league-switch-menu');
+    if (menu && !menu.hidden) openLeagueSwitchMenu();
+  } catch (e) {
+    toast(`刪除失敗：${e.message}`, 'error', 4000);
+  }
 }
 
 async function init() {
@@ -3895,12 +4139,13 @@ async function init() {
     state.personas = {};
   }
 
-  // Load league status + settings + seasons list (best-effort)
+  // Load league status + settings + seasons list + leagues (best-effort)
   const [leagueStatus, leagueSettings, seasonsList] = await Promise.all([
     apiSoft('/api/league/status'),
     apiSoft('/api/league/settings'),
     apiSoft('/api/seasons/list'),
   ]);
+  await loadLeagues();
   state.leagueStatus   = leagueStatus;
   state.leagueSettings = leagueSettings;
   state.seasonsList    = seasonsList?.seasons || [];

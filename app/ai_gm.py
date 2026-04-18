@@ -531,12 +531,9 @@ class AIGM:
     ) -> Optional[dict]:
         """Given a trade the AI would reject, return a counter-offer dict 30% of the time.
 
-        The counter either:
-        - Swaps ONE of the requested players for a different roster player of similar FPPG, OR
-        - Asks for ONE extra player added to the sender's side (sweetener)
-
+        Swaps ONE requested player for a different AI-roster player of similar FPPG.
+        Always balanced (same player count on each side).
         Returns {"send_player_ids": [...], "receive_player_ids": [...]} or None.
-        Never chains (caller ensures counter_of is None before calling).
         """
         rng = random.Random(
             hash((getattr(draft_state, "seed", 0), to_team.id, id(trade), "counter"))
@@ -545,80 +542,41 @@ class AIGM:
         if rng.random() >= 0.30:
             return None
 
-        # from the AI's perspective: they are to_team
-        # Original: from_team sends send_player_ids, to_team gives receive_player_ids
-        # Counter direction: to_team (now proposer) sends modified receive_player_ids
-        #                    and asks from_team (now receiver) for modified send_player_ids
-
         ai_roster = [
             draft_state.players_by_id[pid]
             for pid in to_team.roster
             if pid in draft_state.players_by_id
         ]
-        sender_team = None
-        for t in draft_state.teams:
-            if t.id == trade.from_team:
-                sender_team = t
-                break
 
-        if sender_team is None:
+        if len(trade.receive_player_ids) == 0:
             return None
 
-        sender_roster = [
+        requested_players = [
             draft_state.players_by_id[pid]
-            for pid in sender_team.roster
+            for pid in trade.receive_player_ids
             if pid in draft_state.players_by_id
         ]
+        if not requested_players:
+            return None
 
-        # Strategy: 50/50 between swap-one vs add-sweetener
-        strategy = rng.choice(["swap", "sweetener"])
+        target = rng.choice(requested_players)
+        candidates = [
+            p for p in ai_roster
+            if p.id not in trade.receive_player_ids
+            and abs(p.fppg - target.fppg) / max(target.fppg, 0.1) <= 0.20
+        ]
+        if not candidates:
+            return None
 
-        if strategy == "swap" and len(trade.receive_player_ids) > 0:
-            # Replace one requested player with a similar-FPPG roster player
-            requested_players = [
-                draft_state.players_by_id[pid]
-                for pid in trade.receive_player_ids
-                if pid in draft_state.players_by_id
-            ]
-            if not requested_players:
-                strategy = "sweetener"
-            else:
-                target = rng.choice(requested_players)
-                # Find AI roster player NOT already in receive_player_ids with similar FPPG
-                candidates = [
-                    p for p in ai_roster
-                    if p.id not in trade.receive_player_ids
-                    and abs(p.fppg - target.fppg) / max(target.fppg, 0.1) <= 0.20
-                ]
-                if candidates:
-                    swap_in = rng.choice(candidates)
-                    new_receive = [
-                        pid if pid != target.id else swap_in.id
-                        for pid in trade.receive_player_ids
-                    ]
-                    return {
-                        "send_player_ids": list(trade.send_player_ids),
-                        "receive_player_ids": new_receive,
-                    }
-                else:
-                    strategy = "sweetener"
-
-        if strategy == "sweetener" and sender_roster:
-            # Ask the sender to add one extra player (lowest cost for sender = lowest fppg not in send_ids)
-            already_sending = set(trade.send_player_ids)
-            extras = sorted(
-                [p for p in sender_roster if p.id not in already_sending],
-                key=lambda p: p.fppg,
-            )
-            if extras:
-                extra = rng.choice(extras[:3])  # pick from bottom 3 fppg of sender
-                new_send = list(trade.send_player_ids) + [extra.id]
-                return {
-                    "send_player_ids": new_send,
-                    "receive_player_ids": list(trade.receive_player_ids),
-                }
-
-        return None
+        swap_in = rng.choice(candidates)
+        new_receive = [
+            pid if pid != target.id else swap_in.id
+            for pid in trade.receive_player_ids
+        ]
+        return {
+            "send_player_ids": list(trade.send_player_ids),
+            "receive_player_ids": new_receive,
+        }
 
     def decide_on_proposal_heuristic(
         self,

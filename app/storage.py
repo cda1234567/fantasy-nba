@@ -78,7 +78,18 @@ class Storage:
             return None
         try:
             return json.loads(path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError):
+        except json.JSONDecodeError:
+            # Preserve the corrupt file under a timestamped name so an
+            # atomic save by a caller doesn't silently wipe real data.
+            try:
+                backup = path.with_suffix(
+                    path.suffix + f".corrupt.{int(time.time())}"
+                )
+                path.rename(backup)
+            except OSError:
+                pass
+            return None
+        except OSError:
             return None
 
     # ----------------------------------------------------------------- draft
@@ -173,3 +184,120 @@ def resolve_data_dir(env_value: Optional[str], default: Path) -> Path:
     if env_value:
         return Path(env_value).expanduser().resolve()
     return default.resolve()
+
+
+# ---------------------------------------------------------------------------
+# Multi-league helpers (operate on the data_dir, not on a specific Storage)
+# ---------------------------------------------------------------------------
+def _leagues_root(data_dir: Path) -> Path:
+    return Path(data_dir) / "leagues"
+
+
+def _active_pointer_path(data_dir: Path) -> Path:
+    return Path(data_dir) / "active_league.json"
+
+
+def list_leagues(data_dir: Path) -> list[dict]:
+    """Return a list of {league_id, name, created_at, setup_complete} for every league dir."""
+    root = _leagues_root(data_dir)
+    if not root.exists():
+        return []
+    out: list[dict] = []
+    for sub in sorted(root.iterdir()):
+        if not sub.is_dir():
+            continue
+        lid = sub.name
+        # Read league_settings for display name
+        name = lid
+        setup_complete = False
+        created_at = 0.0
+        ls_path = sub / "league_settings.json"
+        if ls_path.exists():
+            try:
+                data = json.loads(ls_path.read_text(encoding="utf-8"))
+                name = data.get("league_name") or lid
+                setup_complete = bool(data.get("setup_complete"))
+            except Exception:
+                pass
+        settings_path = sub / "settings.json"
+        if settings_path.exists():
+            try:
+                data = json.loads(settings_path.read_text(encoding="utf-8"))
+                created_at = float(data.get("created_at") or 0.0)
+            except Exception:
+                pass
+        out.append({
+            "league_id": lid,
+            "name": name,
+            "created_at": created_at,
+            "setup_complete": setup_complete,
+        })
+    out.sort(key=lambda d: d.get("created_at") or 0.0)
+    return out
+
+
+def _validate_league_id(league_id: str) -> str:
+    """Validate and normalize a league_id. Raises ValueError on bad input.
+
+    Enforces allowed character set and an escape-proof path:
+    - non-empty, ≤ 64 chars
+    - only letters/digits/'-'/'_'
+    - resolved path must be inside leagues root (defense in depth)
+    """
+    lid = (league_id or "").strip()
+    if not lid:
+        raise ValueError("league_id required")
+    if len(lid) > 64:
+        raise ValueError("league_id too long (max 64 chars)")
+    if not all(c.isalnum() or c in ("-", "_") for c in lid):
+        raise ValueError("league_id may only contain letters, digits, '-', '_'")
+    return lid
+
+
+def create_league(data_dir: Path, league_id: str) -> None:
+    """Create a league directory if it does not already exist."""
+    lid = _validate_league_id(league_id)
+    target = _leagues_root(data_dir) / lid
+    if target.exists():
+        raise ValueError(f"league '{lid}' already exists")
+    target.mkdir(parents=True, exist_ok=False)
+
+
+def delete_league(data_dir: Path, league_id: str) -> None:
+    """Delete a league directory and everything in it."""
+    import shutil
+    lid = _validate_league_id(league_id)
+    root = _leagues_root(data_dir).resolve()
+    target = (root / lid).resolve()
+    # Defense in depth: refuse any target outside the leagues root
+    if target == root or root not in target.parents:
+        raise ValueError(f"invalid league path")
+    if not target.exists():
+        raise ValueError(f"league '{lid}' does not exist")
+    shutil.rmtree(target)
+
+
+def get_active_league(data_dir: Path, fallback: str = "default") -> str:
+    """Return the active league id from the pointer file, or fallback."""
+    path = _active_pointer_path(data_dir)
+    if not path.exists():
+        return fallback
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        lid = data.get("league_id")
+        if isinstance(lid, str) and lid:
+            return lid
+    except Exception:
+        pass
+    return fallback
+
+
+def set_active_league(data_dir: Path, league_id: str) -> None:
+    """Write the active-league pointer."""
+    path = _active_pointer_path(data_dir)
+    tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    tmp.write_text(
+        json.dumps({"league_id": league_id}, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    os.replace(tmp, path)
