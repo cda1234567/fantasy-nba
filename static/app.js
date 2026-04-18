@@ -1841,7 +1841,10 @@ function renderLeagueView(root) {
     return;
   }
 
-  if (!state.standings) {
+  // state.season is null when /api/season/standings returns the default shell
+  // (no rows) — i.e. the backend has no started season yet. state.standings is
+  // always an object, so checking !state.standings never fires.
+  if (!state.season) {
     root.append(
       el('div', { class: 'panel' },
         el('div', { class: 'panel-head' },
@@ -1857,7 +1860,7 @@ function renderLeagueView(root) {
         emptyState(
           '賽季尚未開始',
           '確認選秀後將建立例行賽 + 季後賽。AI 隊伍使用啟發式策略或 Claude（需設定 API 金鑰）。',
-          el('button', { class: 'btn', onclick: onSeasonStart }, '開始賽季'),
+          el('button', { class: 'btn primary', onclick: onSeasonStart }, '開始賽季'),
         ),
       ),
     );
