@@ -163,8 +163,9 @@ class TradeManager:
             raise ValueError("Cannot trade with self")
         if not send_ids or not receive_ids:
             raise ValueError("Both sides must include at least one player")
-        if len(send_ids) != len(receive_ids):
-            raise ValueError("Trade sides must be equal length (no unbalanced trades)")
+        # Unbalanced trades (2-for-1, 1-for-2, etc.) are allowed — AI GM
+        # evaluates them with roster-slot accounting in decide_trade. Human
+        # proposers should not be blocked at the proposal gate.
         if len(set(send_ids)) != len(send_ids):
             raise ValueError("Duplicate player id in send side")
         if len(set(receive_ids)) != len(receive_ids):
@@ -542,6 +543,29 @@ class TradeManager:
 
         receiver.roster = [pid for pid in receiver.roster if pid not in recv_set]
         receiver.roster.extend(trade.send_player_ids)
+
+        # Enforce roster cap for N-for-M trades: if either side exceeds
+        # roster_size, drop the lowest-FPPG bench player(s) to fit. The AI
+        # fairness check in decide_trade already priced this in with a
+        # replacement-level penalty.
+        roster_cap = self._settings.roster_size if self._settings is not None else 13
+        dropped: list[tuple[int, int]] = []  # (team_id, player_id)
+        for team in (sender, receiver):
+            while len(team.roster) > roster_cap:
+                worst_pid = min(
+                    team.roster,
+                    key=lambda pid: getattr(
+                        self.draft.players_by_id.get(pid), "fppg", 0.0
+                    ),
+                )
+                team.roster = [pid for pid in team.roster if pid != worst_pid]
+                dropped.append((team.id, worst_pid))
+        if dropped:
+            names = []
+            for tid, pid in dropped:
+                p = self.draft.players_by_id.get(pid)
+                names.append(f"T{tid}:{p.name if p else pid}")
+            trade.reasoning = (trade.reasoning or "") + f" [自動丟棄替補以符合名單上限: {', '.join(names)}]"
 
         try:
             self.storage.save_draft(self.draft.snapshot())
