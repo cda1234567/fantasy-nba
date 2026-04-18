@@ -3985,3 +3985,34 @@ table.board td.pulse-highlight {
 @media (max-width: 480px) {
   .matchup-week-nav .mwn-row .btn { min-height: 44px; min-width: 72px; }
 }
+
+/* Touch devices: suppress sticky :hover states that linger after tap.
+   Only hover-capable pointers keep background/border change on hover. */
+@media (hover: none) {
+  table.data tbody tr:hover,
+  #tbl-available.data tbody tr:hover,
+  #tbl-available.data tbody tr:nth-child(even):hover,
+  .nav-item:hover,
+  .tab-btn:hover,
+  .league-tab:hover,
+  .icon-btn:hover,
+  .headlines-toggle:hover,
+  .trade-hist-head:hover,
+  .modal-close:hover,
+  .recap-nav-btn:not(:disabled):hover,
+  .league-settings-btn:hover,
+  .week-cell:hover,
+  .drop-row:hover,
+  .hh-chip:hover,
+  .hh-nav:hover,
+  .lsw-btn:hover,
+  .lsw-new:hover,
+  .hero-matchup-panel:hover,
+  table.board td:not(.empty):not(.rnd):not(.current):hover {
+    background: inherit;
+    border-color: inherit;
+    color: inherit;
+    box-shadow: none;
+  }
+  /* Buttons: tap visually via :active, so :hover tweaks are left alone. */
+}
