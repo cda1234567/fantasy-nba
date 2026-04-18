@@ -2451,8 +2451,8 @@ async function loadInjuryReport(panel) {
         <th class="num">返場</th><th>說明</th>
       </tr></thead>
       <tbody>${actList.map((i) => {
-        const status = i.status === 'out' ? '<span class="pill danger">OUT</span>'
-                    : i.status === 'day_to_day' ? '<span class="pill warn">DTD</span>'
+        const status = i.status === 'out' ? '<span class="pill danger" title="傷停，無法上場">🏥 OUT</span>'
+                    : i.status === 'day_to_day' ? '<span class="pill warn" title="Day-to-Day 每日觀察">🤕 DTD</span>'
                     : '<span class="pill">?</span>';
         return `<tr>
           <td>${escapeHtml(i.player_name || `#${i.player_id}`)}</td>
@@ -2655,7 +2655,8 @@ function buildEnhancedStandingsPanel() {
       let streakHtml = '—';
       if (rec?.streak) {
         const kind = rec.streak.startsWith('W') ? 'win' : 'lose';
-        streakHtml = `<span class="streak-badge ${kind}">${rec.streak}</span>`;
+        const arrow = kind === 'win' ? '↑' : '↓';
+        streakHtml = `<span class="streak-badge ${kind}" title="${kind === 'win' ? '連勝' : '連敗'} ${rec.streak.slice(1)} 場">${arrow} ${rec.streak}</span>`;
       }
       const last5 = rec ? `${rec.last5.w}-${rec.last5.l}` : '—';
       const rank = r.rank ?? (i + 1);

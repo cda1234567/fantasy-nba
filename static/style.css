@@ -554,7 +554,16 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 .matchup-card .side.right { text-align: right; }
 .matchup-card .vs { color: var(--text-muted); font-size: 11px; letter-spacing: 0.1em; font-weight: 600; }
 .matchup-card.winner-left  .side.left .tm,
-.matchup-card.winner-right .side.right .tm { color: var(--success); }
+.matchup-card.winner-right .side.right .tm {
+  color: var(--success);
+  font-weight: 700;
+}
+.matchup-card.winner-left  .side.left .tm::before,
+.matchup-card.winner-right .side.right .tm::before {
+  content: '✓ ';
+  color: var(--success);
+  font-weight: 800;
+}
 
 .standings-row .rank { color: var(--text-muted); font-variant-numeric: tabular-nums; width: 28px; }
 .standings-row.you { background: rgba(63,185,80,0.06); }
