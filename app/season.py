@@ -847,6 +847,13 @@ def sim_to_playoffs(
         guard += 1
         if guard > reg_weeks * DAYS_PER_WEEK + 2:
             break
+    # Regular season complete — flip playoffs flag so UI surfaces the bracket CTA.
+    # advance_day only flips this on the NEXT day (when week > reg_weeks), which
+    # sim_to_playoffs never reaches because the loop exits at day=reg_weeks*7.
+    if season.champion is None and season.current_week >= reg_weeks and not season.is_playoffs:
+        season.is_playoffs = True
+        storage.save_season(season.model_dump())
+        storage.append_log({"type": "regular_season_end", "week": reg_weeks})
     return season
 
 

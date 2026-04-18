@@ -1,0 +1,177 @@
+{
+  "base_url": "http://127.0.0.1:3410",
+  "iters": 3,
+  "passed": 3,
+  "total": 3,
+  "elapsed_s": 80.65111420000903,
+  "results": [
+    {
+      "league_id": "stress-1776519887-0",
+      "ok": true,
+      "champion": 0,
+      "elapsed_s": 26.678250400000252,
+      "steps": [
+        {
+          "name": "create+switch",
+          "ok": true,
+          "detail": "league=stress-1776519887-0",
+          "elapsed_s": 0.03999160000239499
+        },
+        {
+          "name": "setup",
+          "ok": true,
+          "detail": "num_teams=8 reg_weeks=20",
+          "elapsed_s": 0.029046800002106465
+        },
+        {
+          "name": "draft",
+          "ok": true,
+          "detail": "picks=104",
+          "elapsed_s": 1.1171425999928033
+        },
+        {
+          "name": "season.start",
+          "ok": true,
+          "detail": "week=1 day=0",
+          "elapsed_s": 0.021754100001999177
+        },
+        {
+          "name": "sim.regseason",
+          "ok": true,
+          "detail": "week=20 is_playoffs=True",
+          "elapsed_s": 22.853100299995276
+        },
+        {
+          "name": "sim.playoffs",
+          "ok": true,
+          "detail": "champion_team_id=0 final_week=23",
+          "elapsed_s": 2.554563199999393
+        },
+        {
+          "name": "summary",
+          "ok": true,
+          "detail": "champ=0(\u6211\u7684\u968a\u4f0d) human_rank=1",
+          "elapsed_s": 0.017317300007562153
+        },
+        {
+          "name": "cleanup",
+          "ok": true,
+          "detail": "deleted",
+          "elapsed_s": 0.01078149999375455
+        }
+      ]
+    },
+    {
+      "league_id": "stress-1776519913-1",
+      "ok": true,
+      "champion": 0,
+      "elapsed_s": 27.16287349999766,
+      "steps": [
+        {
+          "name": "create+switch",
+          "ok": true,
+          "detail": "league=stress-1776519913-1",
+          "elapsed_s": 0.018705300011788495
+        },
+        {
+          "name": "setup",
+          "ok": true,
+          "detail": "num_teams=8 reg_weeks=20",
+          "elapsed_s": 0.029130299997632392
+        },
+        {
+          "name": "draft",
+          "ok": true,
+          "detail": "picks=104",
+          "elapsed_s": 1.1311075999983586
+        },
+        {
+          "name": "season.start",
+          "ok": true,
+          "detail": "week=1 day=0",
+          "elapsed_s": 0.025463700003456324
+        },
+        {
+          "name": "sim.regseason",
+          "ok": true,
+          "detail": "week=20 is_playoffs=True",
+          "elapsed_s": 23.34033219999401
+        },
+        {
+          "name": "sim.playoffs",
+          "ok": true,
+          "detail": "champion_team_id=0 final_week=23",
+          "elapsed_s": 2.566304799998761
+        },
+        {
+          "name": "summary",
+          "ok": true,
+          "detail": "champ=0(\u6211\u7684\u968a\u4f0d) human_rank=1",
+          "elapsed_s": 0.016660099994624034
+        },
+        {
+          "name": "cleanup",
+          "ok": true,
+          "detail": "deleted",
+          "elapsed_s": 0.008322000008774921
+        }
+      ]
+    },
+    {
+      "league_id": "stress-1776519941-2",
+      "ok": true,
+      "champion": 0,
+      "elapsed_s": 26.22747870000603,
+      "steps": [
+        {
+          "name": "create+switch",
+          "ok": true,
+          "detail": "league=stress-1776519941-2",
+          "elapsed_s": 0.04272179999679793
+        },
+        {
+          "name": "setup",
+          "ok": true,
+          "detail": "num_teams=8 reg_weeks=20",
+          "elapsed_s": 0.025182400000630878
+        },
+        {
+          "name": "draft",
+          "ok": true,
+          "detail": "picks=104",
+          "elapsed_s": 1.0429914999986067
+        },
+        {
+          "name": "season.start",
+          "ok": true,
+          "detail": "week=1 day=0",
+          "elapsed_s": 0.02185589999135118
+        },
+        {
+          "name": "sim.regseason",
+          "ok": true,
+          "detail": "week=20 is_playoffs=True",
+          "elapsed_s": 22.438452999995206
+        },
+        {
+          "name": "sim.playoffs",
+          "ok": true,
+          "detail": "champion_team_id=0 final_week=23",
+          "elapsed_s": 2.5995461999991676
+        },
+        {
+          "name": "summary",
+          "ok": true,
+          "detail": "champ=0(\u6211\u7684\u968a\u4f0d) human_rank=1",
+          "elapsed_s": 0.017800600006012246
+        },
+        {
+          "name": "cleanup",
+          "ok": true,
+          "detail": "deleted",
+          "elapsed_s": 0.00789700000314042
+        }
+      ]
+    }
+  ]
+}
