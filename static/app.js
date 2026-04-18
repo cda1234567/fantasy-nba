@@ -1970,6 +1970,8 @@ function renderLeagueView(root) {
 
   // Yahoo-style structure: hero banner + control bar + sub-tabs + sub-content.
   root.append(buildLeagueHero());
+  const todo = buildLeagueTodoCard();
+  if (todo) root.append(todo);
   root.append(buildLeagueControlBar());
   root.append(buildLeagueSubTabs());
 
@@ -2020,6 +2022,61 @@ function buildLeagueHero() {
       userBlock,
     ),
   );
+}
+
+function buildLeagueTodoCard() {
+  const items = [];
+  const pendingTrades = (state.tradesRequireAttention || []).length;
+  if (pendingTrades > 0) {
+    items.push({
+      icon: '🔄',
+      text: `有 ${pendingTrades} 筆交易等你回應`,
+      action: () => {
+        state.leagueSubTab = 'trades';
+        state.tradesSubtabFilter = 'pending';
+        render();
+      },
+      cta: '查看',
+    });
+  }
+  const humanId = state.draft?.human_team_id;
+  const myStanding = (state.standings?.standings || []).find(
+    (r) => r.is_human || r.team_id === humanId,
+  );
+  const streak = myStanding?.streak || '';
+  if (streak.startsWith('L') && Number(streak.slice(1)) >= 3) {
+    items.push({
+      icon: '📉',
+      text: `連敗中（${streak}）— 考慮調整陣容或主動提出交易`,
+      action: () => {
+        state.leagueSubTab = 'management';
+        render();
+      },
+      cta: '調整',
+    });
+  }
+  if (!items.length) return null;
+
+  const card = el('div', { class: 'league-todo-card panel' },
+    el('div', { class: 'todo-head' },
+      el('span', { 'aria-hidden': 'true' }, '📌'),
+      el('span', {}, '今日建議'),
+    ),
+  );
+  const list = el('ul', { class: 'todo-list' });
+  for (const it of items) {
+    const li = el('li', { class: 'todo-item' },
+      el('span', { class: 'todo-icon', 'aria-hidden': 'true' }, it.icon),
+      el('span', { class: 'todo-text' }, it.text),
+      el('button', {
+        type: 'button', class: 'btn small ghost todo-cta',
+        onclick: it.action,
+      }, it.cta),
+    );
+    list.append(li);
+  }
+  card.append(list);
+  return card;
 }
 
 function buildLeagueControlBar() {
