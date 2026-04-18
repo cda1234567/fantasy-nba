@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.25"
+APP_VERSION = "0.5.26"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -101,8 +101,18 @@ async def _security_and_cache_headers(request, call_next):
     )
     if request.method == "GET":
         path = request.url.path
-        if path.startswith("/api/") and path not in ("/api/health",):
+        # Only cache endpoints whose content does not reflect mutable league
+        # state. Caching /api/leagues/list or /api/league/settings caused the
+        # UI to show a stale "active league" label for up to 10s after a
+        # create/switch (v0.5.25 regression).
+        CACHEABLE = (
+            "/api/players",
+            "/api/personas",
+        )
+        if any(path == p or path.startswith(p + "/") or path.startswith(p + "?") for p in CACHEABLE):
             response.headers.setdefault("Cache-Control", "private, max-age=10")
+        elif path.startswith("/api/"):
+            response.headers.setdefault("Cache-Control", "no-store")
     return response
 
 # Lock guarding module-global reassignment during /api/leagues/switch.
