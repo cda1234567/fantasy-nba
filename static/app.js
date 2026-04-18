@@ -1782,13 +1782,13 @@ async function onOpenSignDialog(addPlayerId) {
   const rows = roster
     .slice()
     .sort((a, b) => (a.fppg || 0) - (b.fppg || 0))
-    .map((p) => `<label class="drop-row"><input type="radio" name="drop-pid" value="${p.id}"> <span class="pn">${escapeHtml(p.name)}</span> <span class="ppos">${escapeHtml(p.pos || '')}</span> <span class="pfp muted">FPPG ${(p.fppg ?? 0).toFixed(1)}</span></label>`)
+    .map((p, i) => `<label class="drop-row${i === 0 ? ' suggested' : ''}"><input type="radio" name="drop-pid" value="${p.id}"${i === 0 ? ' checked' : ''}> <span class="pn">${escapeHtml(p.name)}</span> <span class="ppos">${escapeHtml(p.pos || '')}</span> <span class="pfp muted">FPPG ${(p.fppg ?? 0).toFixed(1)}</span>${i === 0 ? ' <span class="drop-suggest-tag">建議</span>' : ''}</label>`)
     .join('');
 
   const body = `
     <div class="sign-dialog-body">
       <div class="sign-add">簽入：<strong>${escapeHtml(addPlayer.name)}</strong> <span class="muted">${escapeHtml(addPlayer.pos || '')} · FPPG ${(addPlayer.fppg ?? 0).toFixed(1)}</span></div>
-      <div class="sign-hint">選擇一名要釋出的球員：</div>
+      <div class="sign-hint">選擇一名要釋出的球員（已預選 FPPG 最低者）：</div>
       <div class="sign-drop-list">${rows}</div>
     </div>
   `;
@@ -3236,8 +3236,11 @@ function buildTradeThread(trade) {
   const msgs = Array.isArray(trade.messages) ? trade.messages : [];
   const humanId = state.draft?.human_team_id ?? 0;
   const isParty = trade.from_team === humanId || trade.to_team === humanId;
-  const isOpen = trade.status === 'pending_accept';
-  if (!msgs.length && !(isParty && isOpen)) return null;
+  // Chat remains usable as long as the trade isn't fully finalized —
+  // rejected/countered/expired trades still accept follow-up questions so
+  // the user can ask "why?" or counter-propose verbally.
+  const chatOpen = !['executed', 'accepted', 'vetoed'].includes(trade.status);
+  if (!msgs.length && !(isParty && chatOpen)) return null;
   const wrap = el('div', { class: 'trade-thread' });
   if (msgs.length) {
     wrap.append(el('div', { class: 'tt-head' }, '訊息'));
@@ -3252,10 +3255,13 @@ function buildTradeThread(trade) {
     }
     wrap.append(list);
   }
-  if (isParty && isOpen) {
+  if (isParty && chatOpen) {
+    const placeholder = trade.status === 'pending_accept'
+      ? '跟對方聊兩句…'
+      : '追問 AI 為什麼，或提議新條件…';
     const input = el('input', {
       type: 'text', class: 'tt-input',
-      placeholder: '跟對方聊兩句…',
+      placeholder,
       maxlength: 300,
     });
     const send = el('button', {
@@ -4323,11 +4329,29 @@ async function onSimToPlayoffs() {
   const ok = await confirmDialog('模擬到季後賽？', '執行所有剩餘例行賽週次，可能需要一點時間。', '執行');
   if (!ok) return;
   return once('sim-to-playoffs', () => mutate(async () => {
-    await api('/api/season/sim-to-playoffs', { method: 'POST' });
-    await refreshState();
-    refreshLogs();
-    render();
+    const busy = showBusyOverlay('正在模擬剩餘例行賽，這可能需要 10–30 秒...');
+    try {
+      await api('/api/season/sim-to-playoffs', { method: 'POST' });
+      await refreshState();
+      refreshLogs();
+      render();
+    } finally {
+      busy.remove();
+    }
   }, '例行賽模擬完成'));
+}
+
+function showBusyOverlay(message) {
+  const existing = document.querySelector('.busy-overlay');
+  if (existing) existing.remove();
+  const node = el('div', { class: 'busy-overlay', role: 'status', 'aria-live': 'polite' },
+    el('div', { class: 'busy-box' },
+      el('div', { class: 'busy-spinner' }),
+      el('div', { class: 'busy-msg' }, message),
+    ),
+  );
+  document.body.appendChild(node);
+  return node;
 }
 
 async function onSimPlayoffs() {

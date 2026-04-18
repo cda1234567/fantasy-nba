@@ -1533,6 +1533,7 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
   padding: var(--sp-2) var(--sp-3);
   max-height: 48vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 .propose-side-title {
   font-size: 11px;
@@ -2310,9 +2311,13 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
   overflow-x: hidden;
 }
 .activity-summary {
-  white-space: nowrap;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.45;
+  word-break: break-word;
 }
 
 @media (max-width: 480px) {
@@ -3752,4 +3757,81 @@ table.board th.rnd {
   .dh-live-dot {
     animation: none;
   }
+}
+
+/* Busy overlay for long-running operations */
+.busy-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(2px);
+}
+.busy-box {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--sp-4) var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 240px;
+  max-width: 90vw;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+}
+.busy-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: busy-spin 0.8s linear infinite;
+}
+.busy-msg {
+  color: var(--text);
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.4;
+}
+@keyframes busy-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .busy-spinner { animation: none; border-top-color: var(--accent); }
+}
+
+/* FA sign: drop selection rows with pre-selection affordance */
+.drop-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 8px 10px;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius-sm, 6px);
+  margin-bottom: 6px;
+  cursor: pointer;
+  background: var(--bg);
+  font-size: 13px;
+}
+.drop-row:hover { background: var(--panel); }
+.drop-row input[type="radio"] { accent-color: var(--accent); margin: 0; }
+.drop-row .pn { color: var(--text); font-weight: 500; }
+.drop-row .ppos { color: var(--text-muted); font-size: 11px; }
+.drop-row .pfp { font-variant-numeric: tabular-nums; margin-left: auto; }
+.drop-row.suggested {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.08);
+}
+.drop-suggest-tag {
+  background: #f59e0b;
+  color: #0b1020;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  letter-spacing: 0.02em;
 }

@@ -438,7 +438,12 @@ class TradeManager:
             trade = self._find(trade_id)
             if trade is None:
                 raise ValueError("Unknown trade_id")
-            if trade.status != "pending_accept":
+            # Allow follow-up chat on rejected/countered/expired trades so the
+            # thread doesn't die once the AI turns down a proposal. Only block
+            # truly-finalized states (executed trades can't be renegotiated,
+            # accepted trades are waiting in the veto window and shouldn't
+            # receive new traffic).
+            if trade.status in ("executed", "accepted", "vetoed"):
                 raise ValueError(f"Trade is not open for messaging (status={trade.status})")
             if from_team not in (trade.from_team, trade.to_team):
                 raise ValueError("Only the two trade parties can send messages")
@@ -464,7 +469,7 @@ class TradeManager:
                 with _TRADES_WRITE_LOCK:
                     self.state = self._load()
                     fresh = self._find(trade_id)
-                    if fresh is not None and fresh.status == "pending_accept":
+                    if fresh is not None and fresh.status not in ("executed", "accepted", "vetoed"):
                         fresh.messages.append(TradeMessage(
                             from_team=target_team, body=str(reply)[:300],
                             ts=time.time(), kind="user",
