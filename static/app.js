@@ -1213,18 +1213,9 @@ async function renderAvailableTable(displayMode) {
     canDraft,
     displayMode: mode,
   });
-  // Delegated click handler on the table survives innerHTML replacement and
-  // guarantees the button (or any descendant) fires onDraftPlayer even if the
-  // re-render swaps DOM nodes mid-click. Attach once per table instance.
-  if (!tbl.dataset.draftDelegated) {
-    tbl.dataset.draftDelegated = '1';
-    tbl.addEventListener('click', (ev) => {
-      const btn = ev.target.closest && ev.target.closest('button[data-draft]');
-      if (!btn || btn.disabled) return;
-      ev.preventDefault();
-      onDraftPlayer(parseInt(btn.dataset.draft, 10));
-    });
-  }
+  // Note: draft button clicks handled by document-level delegation in
+  // bindGlobalUI(). Do not attach a per-table listener here to avoid
+  // double-firing onDraftPlayer.
 }
 
 function renderPlayersTable(players, { withDraft = false, canDraft = false, withSign = false, displayMode = 'current_full' } = {}) {
@@ -3991,6 +3982,18 @@ function renderSummaryOverlay(s) {
 function bindGlobalUI() {
   // Nav + tabs: use href hash natively. Just render on hashchange.
   window.addEventListener('hashchange', render);
+
+  // Safety net: document-level delegation for draft buttons. Survives any
+  // DOM rebuild inside #main-view; complements the per-table handler so a
+  // human click always fires even during mid-render races.
+  document.addEventListener('click', (ev) => {
+    const btn = ev.target && ev.target.closest && ev.target.closest('button[data-draft]');
+    if (!btn || btn.disabled) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    const pid = parseInt(btn.dataset.draft, 10);
+    if (Number.isFinite(pid)) onDraftPlayer(pid);
+  });
 
   // Hamburger → settings.
   $('#btn-menu').addEventListener('click', () => {
