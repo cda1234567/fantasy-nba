@@ -366,6 +366,22 @@ class AIGM:
         cp_give_fp = _side_fppg(list(trade.receive_player_ids), draft_state)
         cp_get_fp = _side_fppg(list(trade.send_player_ids), draft_state)
 
+        # Roster-slot accounting for N-for-M trades: a slot imbalance is worth
+        # ~replacement-level FPPG (~8). Receiving more than giving forces a
+        # bench drop (that freed slot is worth replacement value, so it
+        # cancels out part of the "get" side); giving more than receiving
+        # opens a slot that can be filled via FA (worth replacement FPPG).
+        # Without this, a 2-for-1 star trade always fails the fairness check
+        # because two bench players summed dwarf one star even when the
+        # realized roster value is close.
+        replacement_fppg = 8.0
+        n_cp_get = len(trade.send_player_ids)
+        n_cp_give = len(trade.receive_player_ids)
+        if n_cp_get > n_cp_give:
+            cp_get_fp = max(0.0, cp_get_fp - replacement_fppg * (n_cp_get - n_cp_give))
+        elif n_cp_give > n_cp_get:
+            cp_give_fp = max(0.0, cp_give_fp - replacement_fppg * (n_cp_give - n_cp_get))
+
         if cp_give_fp <= 0.01:
             return True, "counterparty gives nothing of value"
 
@@ -379,7 +395,8 @@ class AIGM:
 
         reasoning = (
             f"{persona}: give={cp_give_fp:.1f} get={cp_get_fp:.1f} "
-            f"penalty={penalty:.3f} threshold={threshold} -> {'accept' if accept else 'reject'}"
+            f"slots={n_cp_give}->{n_cp_get} "
+            f"penalty={penalty:.3f} threshold={threshold:.3f} -> {'accept' if accept else 'reject'}"
         )
 
         # LLM path: if enabled, try to get AI decision with proposer_message

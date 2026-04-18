@@ -2104,9 +2104,82 @@ function renderStandingsSubtab(container) {
 function renderManagementSubtab(container) {
   container.append(buildLeagueInfoPanel());
   container.append(buildScoringWeightsPanel());
+  container.append(buildInjuryReportPanel());
   container.append(buildMilestonesPanel());
   container.append(buildTeamsOverviewPanel());
   container.append(buildTradeSettingsPanel());
+}
+
+function buildInjuryReportPanel() {
+  const panel = el('div', { class: 'panel', id: 'panel-injuries' },
+    el('div', { class: 'panel-head' },
+      el('h2', {}, '🏥 傷兵名單'),
+      el('span', { class: 'badge', id: 'injury-count-badge' }, '—'),
+    ),
+    el('div', { class: 'panel-body', id: 'injury-report-body' },
+      el('div', { class: 'empty-state' }, '載入中…'),
+    ),
+  );
+  // Fire & forget; will repaint when data arrives.
+  loadInjuryReport(panel).catch(() => {
+    const body = panel.querySelector('#injury-report-body');
+    if (body) { body.innerHTML = ''; body.append(el('div', { class: 'empty-state' }, '讀取傷兵資料失敗')); }
+  });
+  return panel;
+}
+
+async function loadInjuryReport(panel) {
+  const body = panel.querySelector('#injury-report-body');
+  const badge = panel.querySelector('#injury-count-badge');
+  const [active, history] = await Promise.all([
+    apiSoft('/api/injuries/active'),
+    apiSoft('/api/injuries/history?limit=30'),
+  ]);
+  body.innerHTML = '';
+
+  const actList = (active && active.active) || [];
+  const hist    = (history && history.history) || [];
+  badge.textContent = actList.length ? `${actList.length} 人` : '0';
+
+  if (!actList.length) {
+    body.append(el('div', { class: 'empty-state' }, '目前沒有傷兵'));
+  } else {
+    const tbl = el('table', { class: 'data injury-table' });
+    tbl.innerHTML = `
+      <thead><tr>
+        <th>球員</th><th>NBA</th><th>隊伍</th><th>狀態</th>
+        <th class="num">返場</th><th>說明</th>
+      </tr></thead>
+      <tbody>${actList.map((i) => {
+        const status = i.status === 'out' ? '<span class="pill danger">OUT</span>'
+                    : i.status === 'day_to_day' ? '<span class="pill warn">DTD</span>'
+                    : '<span class="pill">?</span>';
+        return `<tr>
+          <td>${escapeHtml(i.player_name || `#${i.player_id}`)}</td>
+          <td>${escapeHtml(i.nba_team || '')}</td>
+          <td>${escapeHtml(i.fantasy_team_name || '自由球員')}</td>
+          <td>${status}</td>
+          <td class="num">${i.return_in_days} 天</td>
+          <td>${escapeHtml(i.note || '')}</td>
+        </tr>`;
+      }).join('')}</tbody>`;
+    body.append(tbl);
+  }
+
+  if (hist.length) {
+    const recent = hist.slice().reverse().slice(0, 10);
+    body.append(el('div', { class: 'injury-history-head' }, `近期傷病紀錄（共 ${hist.length} 筆）`));
+    const hl = el('ul', { class: 'injury-history-list' });
+    for (const h of recent) {
+      const tag = h.status === 'healthy' ? '💪 康復' : (h.status === 'out' ? '🏥 傷退' : '🤕 DTD');
+      hl.append(el('li', {},
+        el('span', { class: 'ih-tag' }, tag),
+        el('span', { class: 'ih-name' }, ` ${h.player_name || '#' + h.player_id} `),
+        el('span', { class: 'ih-note muted' }, h.note || ''),
+      ));
+    }
+    body.append(hl);
+  }
 }
 
 function buildScoringWeightsPanel() {
@@ -2642,7 +2715,7 @@ function openWeekDialog(weekNum, matchups, isPlayoff) {
     body.append(el('div', { class: 'empty-state' }, '本週無對戰。'));
   } else {
     for (const m of matchups) {
-      body.append(buildMatchupDetail(m));
+      body.append(buildMatchupDetail(m, { allowDrill: true }));
     }
   }
   try { dlg.showModal(); } catch { /* dialog unsupported */ }
@@ -2655,11 +2728,11 @@ function openMatchupDialog(week, m) {
   $('#matchup-title').textContent = `第 ${week} 週 — ${a} vs ${b}`;
   const body = $('#matchup-body');
   body.innerHTML = '';
-  body.append(buildMatchupDetail(m));
+  body.append(buildMatchupDetail(m, { allowDrill: true }));
   try { dlg.showModal(); } catch { /* dialog unsupported */ }
 }
 
-function buildMatchupDetail(m) {
+function buildMatchupDetail(m, opts = {}) {
   const scoreA = m.score_a ?? m.home_score ?? m.home_points;
   const scoreB = m.score_b ?? m.away_score ?? m.away_points;
   const teamA  = m.team_a ?? m.home_team_id;
@@ -2681,7 +2754,92 @@ function buildMatchupDetail(m) {
       <div class="score">${played ? fmtStat(scoreB) : '-'}</div>
     </div>
   `;
+  if (played && opts.allowDrill && m.week != null && teamA != null && teamB != null) {
+    const breakdown = el('div', { class: 'matchup-breakdown', id: `mb-${m.week}-${teamA}-${teamB}` },
+      el('div', { class: 'mb-loading' }, '載入逐日數據中…'),
+    );
+    wrap.append(breakdown);
+    loadMatchupBreakdown(m.week, teamA, teamB, breakdown).catch(() => {
+      breakdown.innerHTML = '';
+      breakdown.append(el('div', { class: 'empty-state' }, '讀取逐日數據失敗'));
+    });
+  }
   return wrap;
+}
+
+async function loadMatchupBreakdown(week, teamA, teamB, container) {
+  const data = await apiSoft(`/api/season/matchup-detail?week=${week}&team_a=${teamA}&team_b=${teamB}`);
+  container.innerHTML = '';
+  if (!data) {
+    container.append(el('div', { class: 'empty-state' }, '無法取得對戰數據'));
+    return;
+  }
+  if (data.logs_trimmed || ((data.players_a || []).length === 0 && (data.players_b || []).length === 0)) {
+    container.append(el('div', { class: 'mb-notice' }, '舊週逐日資料已清理，僅保留比分'));
+    return;
+  }
+  container.append(buildMatchupDaysTable(data));
+}
+
+function buildMatchupDaysTable(data) {
+  // Group logs by day; each day shows players from both sides with FP.
+  const byDay = new Map(); // day -> { a:[], b:[] }
+  for (const g of (data.players_a || [])) {
+    if (!byDay.has(g.day)) byDay.set(g.day, { a: [], b: [] });
+    byDay.get(g.day).a.push(g);
+  }
+  for (const g of (data.players_b || [])) {
+    if (!byDay.has(g.day)) byDay.set(g.day, { a: [], b: [] });
+    byDay.get(g.day).b.push(g);
+  }
+  const days = Array.from(byDay.keys()).sort((x, y) => x - y);
+
+  const wrap = el('div', { class: 'mb-wrap' });
+  const header = el('div', { class: 'mb-header' },
+    el('span', { class: 'mb-team' }, escapeHtml(data.team_a_name)),
+    el('span', { class: 'mb-vs' }, 'vs'),
+    el('span', { class: 'mb-team' }, escapeHtml(data.team_b_name)),
+  );
+  wrap.append(header);
+
+  for (const day of days) {
+    const group = byDay.get(day);
+    const dayFpA = group.a.reduce((s, g) => s + (g.fp || 0), 0);
+    const dayFpB = group.b.reduce((s, g) => s + (g.fp || 0), 0);
+    const dayBox = el('div', { class: 'mb-day' },
+      el('div', { class: 'mb-day-head' },
+        el('span', { class: 'mb-day-label' }, `Day ${day}`),
+        el('span', { class: 'mb-day-totals' },
+          `${fmtStat(dayFpA)}  —  ${fmtStat(dayFpB)}`),
+      ),
+      el('div', { class: 'mb-day-body' },
+        buildMbSide(group.a),
+        buildMbSide(group.b),
+      ),
+    );
+    wrap.append(dayBox);
+  }
+  return wrap;
+}
+
+function buildMbSide(rows) {
+  const side = el('div', { class: 'mb-side' });
+  if (!rows.length) {
+    side.append(el('div', { class: 'mb-empty' }, '—'));
+    return side;
+  }
+  rows.sort((a, b) => (b.fp || 0) - (a.fp || 0));
+  for (const r of rows) {
+    const line = el('div', { class: 'mb-row' + (r.played ? '' : ' mb-dnp') },
+      el('span', { class: 'mb-pname' }, `${escapeHtml(r.player_name)}`),
+      el('span', { class: 'mb-pfp' }, r.played ? fmtStat(r.fp) : 'DNP'),
+    );
+    if (r.played) {
+      line.title = `PTS ${r.pts} / REB ${r.reb} / AST ${r.ast} / STL ${r.stl} / BLK ${r.blk} / TO ${r.to}`;
+    }
+    side.append(line);
+  }
+  return side;
 }
 
 // ================================================================ TRADES (Wave E)

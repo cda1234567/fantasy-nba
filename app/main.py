@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.37"
+APP_VERSION = "0.5.38"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -1184,6 +1184,73 @@ def season_week_recap(week: int = Query(..., ge=1)):
         "closest_game": closest_game,
         "human_matchup": human_matchup,
         "human_top_performer": human_top,
+        "logs_trimmed": logs_trimmed,
+    }
+
+
+@app.get("/api/season/matchup-detail")
+def season_matchup_detail(week: int = Query(..., ge=1), team_a: int = Query(...), team_b: int = Query(...)):
+    """Per-player per-day logs for a single matchup. Used by the matchup-detail
+    dialog to show 'day X: player Y scored Z FP'. Only covers weeks still in
+    game_logs (last ~3 weeks); older matchups return empty players with
+    logs_trimmed=True and the UI falls back to the final score only.
+    """
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        raise HTTPException(409, "賽季尚未開始")
+
+    players_by_id = {p.id: p for p in draft.players}
+    teams_by_id = {t.id: t for t in draft.teams}
+    matchup = next(
+        (m for m in state.schedule
+         if m.week == week and {m.team_a, m.team_b} == {team_a, team_b}),
+        None,
+    )
+    if matchup is None:
+        raise HTTPException(404, f"Week {week} {team_a}-vs-{team_b} not found")
+
+    def _player_rows(tid: int):
+        rows = [g for g in state.game_logs if g.week == week and g.team_id == tid]
+        rows.sort(key=lambda g: (g.day, -g.fp))
+        out = []
+        for g in rows:
+            p = players_by_id.get(g.player_id)
+            out.append({
+                "day": g.day,
+                "player_id": g.player_id,
+                "player_name": p.name if p else f"#{g.player_id}",
+                "pos": p.pos if p else "",
+                "played": bool(g.played),
+                "fp": round(float(g.fp), 1),
+                "pts": round(float(g.pts), 1),
+                "reb": round(float(g.reb), 1),
+                "ast": round(float(g.ast), 1),
+                "stl": round(float(g.stl), 1),
+                "blk": round(float(g.blk), 1),
+                "to": round(float(g.to), 1),
+            })
+        return out
+
+    rows_a = _player_rows(team_a)
+    rows_b = _player_rows(team_b)
+    logs_trimmed = (not rows_a and not rows_b) and (state.current_week - week > 2)
+
+    def _tname(tid: int) -> str:
+        t = teams_by_id.get(tid)
+        return t.name if t else f"T{tid}"
+
+    return {
+        "week": week,
+        "team_a": team_a,
+        "team_a_name": _tname(team_a),
+        "team_b": team_b,
+        "team_b_name": _tname(team_b),
+        "score_a": round(float(matchup.score_a), 2),
+        "score_b": round(float(matchup.score_b), 2),
+        "winner": matchup.winner,
+        "complete": bool(matchup.complete),
+        "players_a": rows_a,
+        "players_b": rows_b,
         "logs_trimmed": logs_trimmed,
     }
 
