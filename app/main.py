@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.45"
+APP_VERSION = "0.5.46"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -583,7 +583,20 @@ def get_team(team_id: int):
         slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
         assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
 
-    bench = [pid for pid in team.roster if pid not in assigned_ids and pid not in injured_out]
+    # Bench = non-slot players, including injured ones so they remain visible
+    # on the roster (with a badge) rather than silently disappearing.
+    bench = [pid for pid in team.roster if pid not in assigned_ids]
+
+    injuries_map: dict[int, dict] = {}
+    if season is not None:
+        for pid in team.roster:
+            inj = season.injuries.get(pid)
+            if inj is not None and inj.status != "healthy":
+                injuries_map[pid] = {
+                    "status": inj.status,
+                    "return_in_days": inj.return_in_days,
+                    "note": inj.note,
+                }
 
     return {
         "team": team.model_dump(),
@@ -591,8 +604,9 @@ def get_team(team_id: int):
         "totals": draft.team_totals(team_id),
         "persona_desc": GM_PERSONAS[team.gm_persona]["desc"] if team.gm_persona else None,
         "lineup_slots": slot_rows,   # [{slot, player_id|None}, ...]
-        "bench": bench,              # roster ids not in any slot
+        "bench": bench,              # roster ids not in any slot (includes injured)
         "injured_out": sorted(injured_out & set(team.roster)),
+        "injuries": injuries_map,    # pid -> {status, return_in_days, note}
         "has_lineup_override": has_override,
     }
 

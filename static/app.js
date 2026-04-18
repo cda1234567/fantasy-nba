@@ -1105,11 +1105,26 @@ async function onDraftDisplayModeChange(e) {
 }
 
 function buildBoardPanel(d) {
+  const head = el('div', { class: 'panel-head' }, el('h2', {}, '蛇形選秀板'));
+  if (!d.is_complete) {
+    head.append(el('button', {
+      type: 'button', class: 'btn ghost small', id: 'btn-jump-current-pick',
+      onclick: jumpToCurrentPick,
+    }, '跳到目前回合 ↓'));
+  }
   const panel = el('div', { class: 'panel' },
-    el('div', { class: 'panel-head' }, el('h2', {}, '蛇形選秀板')),
+    head,
     el('div', { class: 'board-wrap' }, buildBoardTable(d)),
   );
   return panel;
+}
+
+function jumpToCurrentPick() {
+  const cur = document.querySelector('table.board td.current');
+  if (!cur) return;
+  cur.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  cur.classList.add('pulse-highlight');
+  setTimeout(() => cur.classList.remove('pulse-highlight'), 1500);
 }
 
 function buildBoardTable(d) {
@@ -1225,7 +1240,17 @@ async function renderAvailableTable(displayMode) {
   // double-firing onDraftPlayer.
 }
 
-function renderPlayersTable(players, { withDraft = false, canDraft = false, withSign = false, displayMode = 'current_full' } = {}) {
+function injuryBadgeHtml(inj) {
+  if (!inj || inj.status === 'healthy') return '';
+  const cls = inj.status === 'out' ? 'inj-out' : 'inj-dtd';
+  const label = inj.status === 'out' ? 'OUT' : 'DTD';
+  const days = inj.return_in_days > 0 ? ` ${inj.return_in_days}d` : '';
+  const note = inj.note ? ` (${inj.note})` : '';
+  const title = `${label}${days}${note}`.trim();
+  return ` <span class="inj-badge ${cls}" title="${escapeHtml(title)}">🏥 ${label}${days}</span>`;
+}
+
+function renderPlayersTable(players, { withDraft = false, canDraft = false, withSign = false, displayMode = 'current_full', injuries = null } = {}) {
   const isPrevFull   = displayMode === 'prev_full';
   const isPrevNoFppg = displayMode === 'prev_no_fppg';
   const showAction   = withDraft || withSign;
@@ -1281,7 +1306,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
@@ -1308,7 +1333,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
@@ -1329,7 +1354,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
         ? `<td class="act"><button class="btn small btn-sign" data-player-id="${p.id}">簽入</button></td>`
         : '';
       return `<tr>
-        <td class="name">${escapeHtml(p.name)}</td>
+        <td class="name">${escapeHtml(p.name)}${injuries ? injuryBadgeHtml(injuries[p.id]) : ''}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
         <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
         <td class="hidden-m num meta">${p.age}</td>
@@ -1397,21 +1422,23 @@ async function renderTeamBody() {
     container.innerHTML = `<div class="empty-state"><h3>錯誤</h3><p>${escapeHtml(e.message)}</p></div>`;
     return;
   }
-  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out, has_lineup_override } = data;
+  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out, injuries, has_lineup_override } = data;
   const playerById = new Map(players.map((p) => [p.id, p]));
   const injSet = new Set(injured_out || []);
+  const injuriesMap = injuries || {};
   const isHuman = !!team.is_human;
 
   const slotRows = (lineup_slots || []).map((s, idx) => {
     const p = s.player_id != null ? playerById.get(s.player_id) : null;
     const injured = p && injSet.has(p.id);
+    const injBadge = p ? injuryBadgeHtml(injuriesMap[p.id]) : '';
     const changeBtn = isHuman
       ? `<td class="slot-change"><button class="btn small ghost lineup-change-btn" data-slot-idx="${idx}" data-slot="${s.slot}" data-current="${s.player_id ?? ''}">換</button></td>`
       : '';
     return `<tr class="slot-row${injured ? ' injured' : ''}">
       <td class="slot-label"><span class="slot-badge slot-${s.slot}">${s.slot}</span></td>
       ${p
-        ? `<td class="slot-name">${escapeHtml(p.name)}</td>
+        ? `<td class="slot-name">${escapeHtml(p.name)}${injBadge}</td>
            <td class="slot-pos hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
            <td class="num slot-fppg">${fppg(p.fppg)}</td>
            <td class="slot-team hidden-m">${escapeHtml(p.team)}</td>`
@@ -1461,7 +1488,7 @@ async function renderTeamBody() {
       : ''}
     ${benchPlayers.length
       ? `<div class="panel-head bench-head"><h2>板凳 (${benchPlayers.length})</h2></div>
-         <div class="table-wrap"><table class="data players-table responsive">${renderPlayersTable(benchPlayers)}</table></div>`
+         <div class="table-wrap"><table class="data players-table responsive">${renderPlayersTable(benchPlayers, { injuries: injuriesMap })}</table></div>`
       : players.length === 0
         ? `<div class="empty-state"><p>尚未選入任何球員。</p></div>`
         : ''}
@@ -2081,8 +2108,8 @@ function renderMyTradesBody(body) {
 }
 
 function buildMyTradeCard(trade, humanId) {
-  const fromName = teamName(trade.from_team) || `T${trade.from_team}`;
-  const toName = teamName(trade.to_team) || `T${trade.to_team}`;
+  const fromName = teamName(trade.from_team) || `隊伍 ${trade.from_team}`;
+  const toName = teamName(trade.to_team) || `隊伍 ${trade.to_team}`;
   const outgoing = trade.from_team === humanId;
   const direction = outgoing ? `→ ${toName}` : `← ${fromName}`;
   const week = trade.proposed_week ?? '?';
@@ -2154,10 +2181,20 @@ function openProposeTradeModal() {
 }
 
 // -------- Sub-tab: 對戰 --------
+function rerenderMatchupSubtab(container) {
+  container.innerHTML = '';
+  renderMatchupSubtab(container);
+}
+
 function renderMatchupSubtab(container) {
   container.append(buildCalendarPanel(state.standings));
 
-  const week = currentWeekNumber();
+  const currentWk = currentWeekNumber() || 1;
+  // Remember which week the user chose so switching tabs / refreshes retain it.
+  if (state.matchupViewWeek == null) state.matchupViewWeek = currentWk;
+  const week = Math.max(1, state.matchupViewWeek);
+  const regularWeeks = state.standings?.regular_weeks || 14;
+  const maxWeek = Math.max(currentWk, regularWeeks);
   const allMatchups = matchupsForWeek(week);
   const humanId = state.draft?.human_team_id;
   const userMatchup = allMatchups.find(
@@ -2165,6 +2202,34 @@ function renderMatchupSubtab(container) {
         || (m.team_b ?? m.away_team_id) === humanId,
   );
   const otherMatchups = allMatchups.filter((m) => m !== userMatchup);
+
+  // Week navigation header — prev / current-jump / next.
+  const weekLabel = week > regularWeeks ? `季後賽 W${week}` : `第 ${week} 週`;
+  const navPanel = el('div', { class: 'panel matchup-week-nav' },
+    el('div', { class: 'mwn-row' },
+      el('button', {
+        type: 'button', class: 'btn small ghost',
+        disabled: week <= 1,
+        onclick: () => { state.matchupViewWeek = week - 1; rerenderMatchupSubtab(container); },
+      }, '◀ 上週'),
+      el('span', { class: 'mwn-label' },
+        weekLabel,
+        week === currentWk ? el('span', { class: 'pill success' }, '本週') : null,
+      ),
+      el('button', {
+        type: 'button', class: 'btn small ghost',
+        disabled: week >= maxWeek,
+        onclick: () => { state.matchupViewWeek = week + 1; rerenderMatchupSubtab(container); },
+      }, '下週 ▶'),
+    ),
+    week !== currentWk
+      ? el('button', {
+          type: 'button', class: 'btn small link-btn',
+          onclick: () => { state.matchupViewWeek = currentWk; rerenderMatchupSubtab(container); },
+        }, `回到本週（第 ${currentWk} 週）`)
+      : null,
+  );
+  container.append(navPanel);
 
   if (userMatchup) {
     container.append(buildHeroMatchupCard(userMatchup, week, humanId));
@@ -2181,7 +2246,7 @@ function renderMatchupSubtab(container) {
   } else if (!userMatchup) {
     container.append(
       el('div', { class: 'panel' },
-        el('div', { class: 'panel-head' }, el('h2', {}, `第 ${week} 週對戰`)),
+        el('div', { class: 'panel-head' }, el('h2', {}, `${weekLabel}對戰`)),
         el('div', { class: 'panel-body' }, el('div', { class: 'empty-state' }, '本週尚無對戰資料。')),
       ),
     );
@@ -3435,8 +3500,8 @@ function renderTradeHistoryBody(body) {
 }
 
 function buildTradeHistoryRow(trade) {
-  const fromName = teamName(trade.from_team) || `T${trade.from_team}`;
-  const toName   = teamName(trade.to_team)   || `T${trade.to_team}`;
+  const fromName = teamName(trade.from_team) || `隊伍 ${trade.from_team}`;
+  const toName   = teamName(trade.to_team)   || `隊伍 ${trade.to_team}`;
   const week     = trade.proposed_week ?? '?';
   const day      = trade.executed_day ?? trade.proposed_day ?? '?';
   const nSend    = (trade.send_player_ids || []).length;
@@ -3489,17 +3554,20 @@ function buildTradeHistoryRow(trade) {
   // so the user doesn't have to expand to know what happened.
   if (!expanded) {
     let preview = '';
+    let fullText = '';
     if (trade.status === 'rejected' && trade.reasoning && trade.reasoning !== 'human') {
-      preview = String(trade.reasoning)
+      fullText = String(trade.reasoning)
         .replace(/^human\s*｜\s*/, '')
-        .replace(/^拒絕原因：/, '拒絕：');
+        .replace(/^拒絕原因：/, '');
+      preview = `拒絕：${fullText}`;
     } else if (Array.isArray(trade.messages) && trade.messages.length) {
       const last = trade.messages[trade.messages.length - 1];
       const name = teamName(last.from_team) || `#${last.from_team}`;
-      preview = `${name}：${last.body || ''}`;
+      fullText = last.body || '';
+      preview = `${name}：${fullText}`;
     }
     if (preview) {
-      row.append(el('div', { class: 'trade-hist-preview' }, preview));
+      row.append(el('div', { class: 'trade-hist-preview', title: fullText }, preview));
     }
   }
   if (expanded) {
@@ -3885,7 +3953,8 @@ async function onSubmitProposeTrade() {
         const tr = (state.tradesHistory || []).find((t) => t.id === newId);
         if (tr && tr.status !== 'pending_accept') reportDecision(tr);
       };
-      setTimeout(() => { pollDecision().catch(() => {}); }, 3000);
+      setTimeout(() => { pollDecision().catch(() => {}); }, 1200);
+      setTimeout(() => { pollDecision().catch(() => {}); }, 3500);
       setTimeout(() => { pollDecision().catch(() => {}); }, 10000);
     } catch (e) {
       console.warn('[trade-propose] failed', e);

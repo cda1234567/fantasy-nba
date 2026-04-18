@@ -2405,7 +2405,10 @@ table.data tr.row-current td { background: rgba(88,166,255,0.08); }
   .recap-grid { grid-template-columns: 1fr; }
   .recap-card { font-size: 13px; padding: 8px; }
   .modal-box, .recap-dialog { padding: 10px; }
-  .btn-primary, .btn-secondary, .recap-nav-btn { width: 100%; margin-bottom: 4px; }
+  .btn-primary, .btn-secondary, .recap-nav-btn {
+    width: 100%; margin-bottom: 4px; min-height: 44px;
+    font-size: 14px; padding: 10px 12px;
+  }
   .activity-ticker-item { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
@@ -3834,4 +3837,74 @@ table.board th.rnd {
   padding: 2px 6px;
   border-radius: 10px;
   letter-spacing: 0.02em;
+}
+
+/* Injury badge on roster rows */
+.inj-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  letter-spacing: 0.02em;
+  margin-left: 4px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.inj-badge.inj-out {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+.inj-badge.inj-dtd {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+/* Jump-to-current-pick pulse highlight */
+@keyframes pulse-highlight-kf {
+  0%   { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.8); }
+  70%  { box-shadow: 0 0 0 12px rgba(88, 166, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+}
+table.board td.pulse-highlight {
+  animation: pulse-highlight-kf 1.2s ease-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  table.board td.pulse-highlight { animation: none; outline: 3px solid var(--accent); }
+}
+
+#btn-jump-current-pick {
+  margin-left: auto;
+}
+
+/* Matchup subtab week navigation */
+.matchup-week-nav {
+  padding: var(--sp-2) var(--sp-3);
+}
+.matchup-week-nav .mwn-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.matchup-week-nav .mwn-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.matchup-week-nav .btn.link-btn {
+  background: transparent;
+  color: var(--accent);
+  text-decoration: underline;
+  padding: 4px 0;
+  margin-top: 4px;
+  font-size: 12px;
+}
+@media (max-width: 480px) {
+  .matchup-week-nav .mwn-row .btn { min-height: 44px; min-width: 72px; }
 }
