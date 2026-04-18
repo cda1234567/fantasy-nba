@@ -1084,11 +1084,13 @@ async function onDraftDisplayModeChange(e) {
   const newMode = e.target.value;
   state.draftDisplayMode = newMode;
   renderAvailableTable(newMode);
-  // Persist to league settings (best-effort; ignore errors so UI stays snappy)
+  // Persist delta only — server rejects full payloads once setup_complete=true
+  // because they contain immutable fields like roster_size/num_teams.
   try {
-    const cur = state.leagueSettings || {};
-    const payload = { ...cur, draft_display_mode: newMode };
-    await api('/api/league/settings', { method: 'POST', body: JSON.stringify(payload) });
+    await api('/api/league/settings', {
+      method: 'POST',
+      body: JSON.stringify({ draft_display_mode: newMode }),
+    });
     if (state.leagueSettings) state.leagueSettings.draft_display_mode = newMode;
   } catch (err) {
     console.warn('save draft_display_mode failed', err);

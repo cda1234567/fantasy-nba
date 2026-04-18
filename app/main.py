@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.23"
+APP_VERSION = "0.5.24"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution priority: env LEAGUE_ID > active-league pointer > "default"
@@ -69,6 +69,41 @@ else:
 
 app = FastAPI(title="Fantasy NBA Draft Sim", version=APP_VERSION)
 app.include_router(injuries_router)
+
+
+@app.middleware("http")
+async def _security_and_cache_headers(request, call_next):
+    """Round-2 hardening: CSP/HSTS/XFO/XCTO + per-route cache hints.
+
+    - Security headers sent on every response (defense-in-depth; origin behind
+      Cloudflare but these travel end-to-end).
+    - Light caching for read-only /api/* endpoints to reduce polling cost. Only
+      GETs are cached; any query string (e.g. league_id) is part of the URL so
+      no manual Vary needed beyond the defaults.
+    """
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("X-Frame-Options", "DENY")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains",
+    )
+    response.headers.setdefault(
+        "Content-Security-Policy",
+        "default-src 'self'; "
+        "script-src 'self'; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "connect-src 'self'; "
+        "base-uri 'self'; "
+        "frame-ancestors 'none'",
+    )
+    if request.method == "GET":
+        path = request.url.path
+        if path.startswith("/api/") and path not in ("/api/health",):
+            response.headers.setdefault("Cache-Control", "private, max-age=10")
+    return response
 
 # Lock guarding module-global reassignment during /api/leagues/switch.
 import threading as _threading
@@ -102,6 +137,36 @@ def _build_draft_for(storage_obj: Storage) -> DraftState:
 
 draft = _build_draft_for(storage)
 ai_gm = AIGM(api_key=os.getenv("ANTHROPIC_API_KEY"))
+
+
+def _repair_legacy_league_names() -> None:
+    """One-time migration for pre-v0.5.23 leagues where league_settings.json
+    was never pre-seeded. If a league's stored ``league_name`` differs from
+    its directory name AND matches the default "我的聯盟", assume the name
+    was never customised and overwrite with the directory name. Legacy rows
+    that carry a deliberately chosen display name are left alone.
+    """
+    try:
+        leagues_root = (DATA_DIR / "leagues")
+        if not leagues_root.exists():
+            return
+        for sub in leagues_root.iterdir():
+            if not sub.is_dir():
+                continue
+            lid = sub.name
+            s = Storage(DATA_DIR, league_id=lid)
+            ls = s.load_league_settings()
+            if ls.league_name in ("我的聯盟", "", None) or (
+                ls.league_name != lid and not ls.setup_complete
+            ):
+                ls.league_name = lid
+                s.save_league_settings(ls)
+    except Exception as _exc:
+        import sys as _sys
+        print(f"[startup] legacy league-name repair failed: {_exc!r}", file=_sys.stderr)
+
+
+_repair_legacy_league_names()
 
 
 def _switch_league(new_league_id: str) -> None:
@@ -359,7 +424,7 @@ def patch_league_settings(body: dict[str, Any]):
         if forbidden:
             raise HTTPException(
                 400,
-                f"Cannot change {sorted(forbidden)} after league setup is complete",
+                f"聯盟設定完成後無法變更欄位：{sorted(forbidden)}",
             )
     updated = settings.model_copy(update=body)
     storage.save_league_settings(updated)
