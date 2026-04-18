@@ -3067,12 +3067,73 @@ function buildTradeCard(trade) {
     parts.push(el('div', { class: 'veto-vote-count' }, `否決票：${votes} / 3`));
   }
 
+  // Chat thread (pending trades: both parties can negotiate)
+  const thread = buildTradeThread(trade);
+  if (thread) parts.push(thread);
+
   // Action buttons
   const actions = buildTradeActions(trade);
   if (actions) parts.push(actions);
 
   card.append(...parts);
   return card;
+}
+
+function buildTradeThread(trade) {
+  const msgs = Array.isArray(trade.messages) ? trade.messages : [];
+  const humanId = state.draft?.human_team_id ?? 0;
+  const isParty = trade.from_team === humanId || trade.to_team === humanId;
+  const isOpen = trade.status === 'pending_accept';
+  if (!msgs.length && !(isParty && isOpen)) return null;
+  const wrap = el('div', { class: 'trade-thread' });
+  if (msgs.length) {
+    wrap.append(el('div', { class: 'tt-head' }, '訊息'));
+    const list = el('div', { class: 'tt-list' });
+    for (const m of msgs) {
+      const mine = m.from_team === humanId;
+      const name = teamName(m.from_team) || `#${m.from_team}`;
+      list.append(el('div', { class: `tt-msg ${mine ? 'mine' : 'other'} ${m.kind || 'user'}` },
+        el('div', { class: 'tt-meta' }, name),
+        el('div', { class: 'tt-body' }, m.body || ''),
+      ));
+    }
+    wrap.append(list);
+  }
+  if (isParty && isOpen) {
+    const input = el('input', {
+      type: 'text', class: 'tt-input',
+      placeholder: '跟對方聊兩句…',
+      maxlength: 300,
+    });
+    const send = el('button', {
+      type: 'button', class: 'btn small',
+      onclick: () => onSendTradeMessage(trade.id, input),
+    }, '送出');
+    input.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter') { ev.preventDefault(); send.click(); }
+    });
+    wrap.append(el('div', { class: 'tt-input-row' }, input, send));
+  }
+  return wrap;
+}
+
+async function onSendTradeMessage(tradeId, input) {
+  const body = (input.value || '').trim();
+  if (!body) return;
+  input.disabled = true;
+  try {
+    const data = await apiSoft(`/api/trades/${tradeId}/message`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ body }),
+    });
+    if (data) {
+      input.value = '';
+      refreshTrades();
+    }
+  } finally {
+    input.disabled = false;
+  }
 }
 
 function buildTradeStatusBadge(trade) {

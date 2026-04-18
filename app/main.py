@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.41"
+APP_VERSION = "0.5.42"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -1404,6 +1404,10 @@ class TradeVetoRequest(BaseModel):
     team_id: int
 
 
+class TradeMessageRequest(BaseModel):
+    body: str
+
+
 @app.get("/api/trades/pending")
 def trades_pending():
     mgr = _trade_manager()
@@ -1601,4 +1605,30 @@ def trades_cancel(trade_id: str):
         "from_team": result.from_team,
         "day": season.current_day,
     })
+    return result.model_dump()
+
+
+@app.post("/api/trades/{trade_id}/message")
+def trades_message(trade_id: str, req: TradeMessageRequest):
+    """Append a chat message from the human to an open trade thread.
+
+    Only pending_accept trades accept messages. When the human writes to an
+    AI counterparty, the AI replies inline via LLM and both messages land in
+    the same response. This gives real-time negotiation UX.
+    """
+    season = _require_season()
+    settings = _current_settings()
+    mgr = TradeManager(
+        storage, draft, season,
+        settings=settings if settings.setup_complete else None,
+    )
+    try:
+        result = mgr.add_message(
+            trade_id=trade_id,
+            from_team=draft.human_team_id,
+            body=req.body,
+            ai_gm=ai_gm,
+        )
+    except ValueError as e:
+        raise HTTPException(400, str(e))
     return result.model_dump()

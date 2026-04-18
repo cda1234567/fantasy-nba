@@ -16,6 +16,7 @@ Lifecycle:
 from __future__ import annotations
 
 import threading
+import time
 import uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Any, Literal, Optional
@@ -73,6 +74,13 @@ def _urgency_multiplier(
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
+class TradeMessage(BaseModel):
+    from_team: int          # team_id of sender, or -1 for system/AI narrator
+    body: str
+    ts: float = 0.0
+    kind: Literal["user", "ai_reason", "system"] = "user"
+
+
 class TradeProposal(BaseModel):
     id: str
     proposed_week: int
@@ -92,6 +100,7 @@ class TradeProposal(BaseModel):
     peer_commentary: list[dict] = Field(default_factory=list)
     force_executed: bool = False
     counter_of: Optional[str] = None
+    messages: list[TradeMessage] = Field(default_factory=list)
 
 
 class TradesState(BaseModel):
@@ -224,6 +233,14 @@ class TradeManager:
                 proposer_message=proposer_message[:300] if proposer_message else "",
                 force=force,
             )
+            # Seed the chat thread with the proposer's opening message so the
+            # counter-party can reply into the same conversation.
+            opening = (proposer_message or "").strip()
+            if opening:
+                trade.messages.append(TradeMessage(
+                    from_team=from_team, body=opening[:300],
+                    ts=time.time(), kind="user",
+                ))
             self.state.pending.append(trade)
             self._save()
             return trade
@@ -346,14 +363,15 @@ class TradeManager:
         trade.counterparty_decided_day = current_day
         if not accept:
             trade.status = "rejected"
-            # Surface the AI's reason so the human sees WHY it was rejected,
-            # not just a terse "rejected" status. The stored reasoning may
-            # already contain the proposer's note; append the decision reason.
             if reason:
                 clean = reason.strip()[:200]
                 if clean:
                     prior = (trade.reasoning or "").strip()
                     trade.reasoning = f"{prior} ｜ 拒絕原因：{clean}" if prior else f"拒絕原因：{clean}"
+                    trade.messages.append(TradeMessage(
+                        from_team=counterparty_id, body=clean,
+                        ts=time.time(), kind="ai_reason",
+                    ))
             self._move_to_history(trade)
             self._save()
             return trade
@@ -395,6 +413,64 @@ class TradeManager:
                 return trade
 
         self._save()
+        return trade
+
+    def add_message(
+        self,
+        trade_id: str,
+        from_team: int,
+        body: str,
+        ai_gm: Optional[Any] = None,
+    ) -> TradeProposal:
+        """Append a chat message to an open trade thread.
+
+        Allowed on pending_accept trades only. If the counterparty is an AI
+        team and ai_gm is provided, the AI generates a short reply using the
+        full message thread as context. The reply is appended as a second
+        message; the trade stays pending_accept — this is negotiation, not
+        a decision.
+        """
+        body_clean = (body or "").strip()
+        if not body_clean:
+            raise ValueError("訊息不可為空")
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            trade = self._find(trade_id)
+            if trade is None:
+                raise ValueError("Unknown trade_id")
+            if trade.status != "pending_accept":
+                raise ValueError(f"Trade is not open for messaging (status={trade.status})")
+            if from_team not in (trade.from_team, trade.to_team):
+                raise ValueError("Only the two trade parties can send messages")
+            trade.messages.append(TradeMessage(
+                from_team=from_team, body=body_clean[:300],
+                ts=time.time(), kind="user",
+            ))
+            self._save()
+            target_team = trade.to_team if from_team == trade.from_team else trade.from_team
+            target_is_ai = not self.draft.teams[target_team].is_human
+
+        # AI reply happens outside the lock — LLM call is slow and we don't
+        # want to block other trade mutations while waiting on the network.
+        if target_is_ai and ai_gm is not None:
+            try:
+                reply = ai_gm.chat_on_trade(trade, self.draft, target_team, self._settings)
+            except Exception as exc:
+                import traceback, sys
+                print(f"[trades] chat_on_trade failed: {exc!r}", file=sys.stderr)
+                traceback.print_exc()
+                reply = None
+            if reply:
+                with _TRADES_WRITE_LOCK:
+                    self.state = self._load()
+                    fresh = self._find(trade_id)
+                    if fresh is not None and fresh.status == "pending_accept":
+                        fresh.messages.append(TradeMessage(
+                            from_team=target_team, body=str(reply)[:300],
+                            ts=time.time(), kind="user",
+                        ))
+                        self._save()
+                        trade = fresh
         return trade
 
     def auto_decide_ai(
