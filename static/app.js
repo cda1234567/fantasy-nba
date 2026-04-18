@@ -4069,6 +4069,17 @@ function bindGlobalUI() {
 
   const newLeagueBtn = $('#btn-new-league-create');
   if (newLeagueBtn) newLeagueBtn.addEventListener('click', onCreateLeague);
+  // Enter in the league-ID field submits "建立並切換" instead of the form's
+  // default action (which would just close the dialog via method="dialog").
+  const newLeagueInput = $('#new-league-id');
+  if (newLeagueInput) {
+    newLeagueInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onCreateLeague();
+      }
+    });
+  }
 }
 
 async function loadLeagues() {
