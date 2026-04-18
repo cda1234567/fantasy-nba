@@ -19,7 +19,7 @@
         <span class="lsw-current" id="lsw-current">—</span>
         <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
-      <div class="lsw-menu" id="league-switch-menu" role="menu" hidden></div>
+      <div class="lsw-menu" id="league-switch-menu" role="menu" aria-labelledby="btn-league-switch" hidden></div>
     </div>
     <div class="header-status">
       <span class="conn-dot" id="conn-dot" aria-hidden="true"></span>
@@ -83,7 +83,7 @@
           <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M13 8a5 5 0 1 1-1.5-3.5L13 3v4h-4" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
       </div>
-      <ul class="log-list" id="log-list"></ul>
+      <ul class="log-list" id="log-list" aria-live="polite" aria-relevant="additions" aria-label="最新活動"></ul>
     </aside>
   </div>
 

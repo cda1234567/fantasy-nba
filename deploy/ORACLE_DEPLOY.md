@@ -2,11 +2,10 @@
 
 ## Prerequisites
 
-- Oracle VM at 168.138.203.245 already runs stock dashboard (port 3400) via Docker + Watchtower + Caddy
+- Oracle VM at 168.138.203.245 already runs stock dashboard (port 3400) via Docker + Caddy
 - GitHub repo `cda1234567/fantasy-nba` must exist and have been pushed to `main` (CI builds `ghcr.io/cda1234567/fantasy-nba:latest`)
   - Create at https://github.com/new — name it `fantasy-nba`, set to public or private
 - Cloudflare DNS: wildcard `*.cda1234567.com` → Oracle IP already configured (same as stock)
-- Watchtower already running on Oracle (picks up any container with `com.centurylinklabs.watchtower.enable=true` label)
 
 ---
 
@@ -58,8 +57,6 @@ services:
     env_file:
       - .env.server
     restart: unless-stopped
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"
 EOF
 ```
 
@@ -146,14 +143,22 @@ If `*.cda1234567.com` wildcard is not set, add:
 
 ---
 
-## Auto-updates via Watchtower
+## Manual deploy on push
 
-Future pushes to the `main` branch will:
-1. Trigger GitHub Actions → build + push `ghcr.io/cda1234567/fantasy-nba:latest`
-2. Watchtower (already running on Oracle) polls ghcr.io every ~5 minutes
-3. Detects new digest → pulls and recreates the `fantasy-nba` container automatically
+Pushes to `main` trigger GitHub Actions to build + push `ghcr.io/cda1234567/fantasy-nba:latest`.
+After CI is green, deploy on the Oracle VM with:
 
-No manual intervention needed after initial deploy.
+```bash
+# One-shot manual deploy
+ssh -i ~/.ssh/oracle_vm.key ubuntu@168.138.203.245 "cd ~/fantasy && docker compose -f docker-compose.server.yml pull && docker compose -f docker-compose.server.yml up -d"
+
+# Or use the helper script (pushes, waits for CI, deploys, verifies /api/health)
+./deploy/push.ps1
+```
+
+> **Note:** Watchtower still runs on the VM for the stock dashboard. The fantasy-nba compose
+> file no longer carries `com.centurylinklabs.watchtower.enable`, so Watchtower ignores it.
+> Do not `docker stop watchtower` — that would break auto-updates for the stock dashboard too.
 
 ---
 

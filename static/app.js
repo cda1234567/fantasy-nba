@@ -1024,7 +1024,7 @@ function buildDraftHero(d) {
   );
 
   // Center: on the clock
-  const spotlight = el('div', { class: 'dh-main' },
+  const spotlight = el('div', { class: 'dh-main', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
     el('div', { class: 'dh-badge' },
       el('span', { class: 'dh-live-dot' }),
       isYou ? '輪到你了' : '選秀進行中',
@@ -1921,11 +1921,17 @@ function buildLeagueHero() {
 function buildLeagueControlBar() {
   const pendingCount = state.standings?.pending_count ?? 0;
   const champion = state.standings?.champion;
+  const isPlayoffs = !!state.standings?.is_playoffs;
+  // Regular season finished but playoff bracket not yet played. Daily/weekly
+  // advance endpoints are no-ops here, so we must redirect the user to the
+  // bracket sim instead of leaving them stranded on dead buttons.
+  const awaitingBracket = isPlayoffs && champion == null;
+  const deadTitle = awaitingBracket ? '例行賽已結束，請開打季後賽' : null;
   return el('div', { class: 'panel league-controls' },
     el('div', { class: 'panel-head' },
       el('div', { class: 'actions' },
-        el('button', { class: 'btn ghost', onclick: onAdvanceDay }, '推進一天'),
-        el('button', { class: 'btn ghost', onclick: onAdvanceWeek }, '推進一週'),
+        el('button', { class: 'btn ghost', onclick: onAdvanceDay, disabled: awaitingBracket || champion != null, title: deadTitle }, '推進一天'),
+        el('button', { class: 'btn ghost', onclick: onAdvanceWeek, disabled: awaitingBracket || champion != null, title: deadTitle }, '推進一週'),
         el('button', { class: 'btn ghost', onclick: () => { const w = currentWeekNumber() - 1; if (w >= 1) onShowWeekRecap(w); else toast('尚無已完成週次', 'info'); } }, '📅 週報'),
         el('button', {
           id: 'btn-propose-trade',
@@ -1934,7 +1940,11 @@ function buildLeagueControlBar() {
         }, pendingCount
           ? ['發起交易', el('span', { class: 'btn-badge' }, String(pendingCount))]
           : '發起交易'),
-        el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽'),
+        awaitingBracket
+          ? el('button', { class: 'btn primary', onclick: onSimPlayoffs }, '🏆 開打季後賽')
+          : (champion == null
+              ? el('button', { class: 'btn', onclick: onSimToPlayoffs }, '模擬到季後賽')
+              : null),
         champion != null
           ? el('button', { class: 'btn primary', onclick: onShowSummary }, '🏆 賽季總結')
           : null,

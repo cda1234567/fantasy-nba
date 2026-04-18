@@ -9,5 +9,3 @@ services:
     env_file:
       - .env.server
     restart: unless-stopped
-    labels:
-      - "com.centurylinklabs.watchtower.enable=true"

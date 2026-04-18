@@ -329,6 +329,19 @@ class DraftState:
             "fppg_rank": self._fppg_rank,
         }
 
+        # Positional need: count how many of each base position (PG/SG/SF/PF/C)
+        # the team already rosters. Dual-eligible players count toward all their
+        # positions. Used below to nudge AI away from stacking the same slot.
+        from .season import _player_positions as _parse_pos
+        pos_counts = {"PG": 0, "SG": 0, "SF": 0, "PF": 0, "C": 0}
+        for pid in team.roster:
+            existing = self.players_by_id.get(pid)
+            if not existing:
+                continue
+            for ps in _parse_pos(existing.pos):
+                if ps in pos_counts:
+                    pos_counts[ps] += 1
+
         # Score every available player; tiebreak with seeded random jitter.
         scored = []
         for p in available:
@@ -339,6 +352,20 @@ class DraftState:
                 ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, p.fppg)
 
             s = scorer(p, ctx)
+
+            # Positional need bonus (skip for BPA — it's the ignore-position persona)
+            if persona != "bpa":
+                cand_pos = _parse_pos(p.pos) or set()
+                if cand_pos:
+                    # Use the weakest slot the player can fill so dual-eligible
+                    # players score against their scarcest position.
+                    min_count = min(pos_counts.get(ps, 0) for ps in cand_pos)
+                    if min_count == 0:
+                        s += 3.0
+                    elif min_count == 1:
+                        s += 1.0
+                    elif min_count >= 3:
+                        s -= 2.0
 
             # --- AI judgment adjustments ---
             # Age regression

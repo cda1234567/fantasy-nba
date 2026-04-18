@@ -53,4 +53,8 @@ FastAPI + vanilla JS/CSS. ~165 players seeded.
 
 See `deploy/ORACLE_DEPLOY.md` for full Oracle Cloud deployment instructions.
 
-CI: push to `main` → GitHub Actions builds `ghcr.io/cda1234567/fantasy-nba:latest` → Watchtower auto-updates Oracle.
+CI: push to `main` → GitHub Actions builds `ghcr.io/cda1234567/fantasy-nba:latest`. Deploy manually on Oracle:
+
+```bash
+ssh oracle "cd ~/fantasy && docker compose -f docker-compose.server.yml pull && docker compose -f docker-compose.server.yml up -d"
+```
