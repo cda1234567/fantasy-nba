@@ -1684,6 +1684,7 @@ function openLineupModal(data) {
           el('input', { type: 'checkbox', id: 'chk-today-only' }),
           '僅今日鎖定',
         ),
+        el('button', { class: 'btn ghost', id: 'btn-auto-lineup', title: '依 FPPG 自動挑選健康球員' }, '一鍵最佳'),
         el('button', { class: 'btn', id: 'btn-save-lineup' }, '儲存先發'),
         el('button', { class: 'btn ghost', id: 'btn-cancel-lineup' }, '取消'),
       ),
@@ -1713,6 +1714,32 @@ function openLineupModal(data) {
   $('#close-lineup-modal').addEventListener('click', () => modal.remove());
   $('#btn-cancel-lineup').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  $('#btn-auto-lineup').addEventListener('click', () => {
+    const healthy = players
+      .filter(p => !injSet.has(p.id))
+      .sort((a, b) => (b.fppg || 0) - (a.fppg || 0))
+      .slice(0, targetCount)
+      .map(p => p.id);
+    selected = new Set(healthy);
+    const tbody = modal.querySelector('#lineup-full-tbl tbody');
+    if (tbody) tbody.innerHTML = renderRows();
+    modal.querySelectorAll('.lineup-check').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const pid = Number(cb.dataset.pid);
+        if (cb.checked) {
+          if (selected.size >= targetCount) { cb.checked = false; return; }
+          selected.add(pid);
+        } else {
+          selected.delete(pid);
+        }
+        cb.closest('tr').classList.toggle('row-selected', cb.checked);
+        refreshCount();
+      });
+    });
+    refreshCount();
+    toast(`已套用 FPPG 最佳陣容（${selected.size} 人）`, 'success');
+  });
 
   $('#btn-save-lineup').addEventListener('click', async () => {
     if (selected.size !== targetCount) {
