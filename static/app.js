@@ -80,6 +80,7 @@ const state = {
   draftAutoTimer: null,         // setTimeout id for auto AI pick
   draftAutoBusy: false,         // lock to prevent overlapping auto picks
   leagueSubTab: 'matchup',      // Yahoo-style sub-tab: matchup | standings | management | activity
+  activityFilter: 'all',        // all | trade | fa | injury | milestone
 };
 
 const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup'];
@@ -1255,9 +1256,11 @@ function injuryBadgeHtml(inj) {
   if (!inj || inj.status === 'healthy') return '';
   const cls = inj.status === 'out' ? 'inj-out' : 'inj-dtd';
   const label = inj.status === 'out' ? 'OUT' : 'DTD';
+  const desc = inj.status === 'out' ? '傷停（無法上場）' : 'Day-to-Day 每日觀察';
   const days = inj.return_in_days > 0 ? ` ${inj.return_in_days}d` : '';
-  const note = inj.note ? ` (${inj.note})` : '';
-  const title = `${label}${days}${note}`.trim();
+  const daysText = inj.return_in_days > 0 ? `，預計 ${inj.return_in_days} 天後復出` : '';
+  const note = inj.note ? `：${inj.note}` : '';
+  const title = `${label} ${desc}${daysText}${note}`.trim();
   return ` <span class="inj-badge ${cls}" title="${escapeHtml(title)}">🏥 ${label}${days}</span>`;
 }
 
@@ -1274,10 +1277,10 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
     head = `<thead><tr>
       <th>球員</th><th>位置</th><th>球隊</th>
       <th class="num">年齡</th>
-      <th class="num">PTS</th><th class="num">REB</th>
-      <th class="num">AST</th><th class="num">STL</th>
-      <th class="num">BLK</th><th class="num">TO</th>
-      <th class="num">出賽</th>
+      <th class="num" title="每場得分 Points">PTS</th><th class="num" title="每場籃板 Rebounds">REB</th>
+      <th class="num" title="每場助攻 Assists">AST</th><th class="num" title="每場抄截 Steals">STL</th>
+      <th class="num" title="每場阻攻 Blocks">BLK</th><th class="num" title="每場失誤 Turnovers">TO</th>
+      <th class="num" title="出賽場次 Games Played">出賽</th>
       ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   } else if (isPrevFull) {
@@ -1285,8 +1288,8 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
     head = `<thead><tr>
       <th>球員</th><th>位置</th><th>球隊</th>
       <th class="num">年齡</th>
-      <th class="num">上季FPPG</th>
-      <th class="num">出賽</th>
+      <th class="num" title="上季每場幻想分數（加權綜合指標）">上季FPPG</th>
+      <th class="num" title="上季出賽場次">出賽</th>
       ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   } else {
@@ -1294,11 +1297,11 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
     head = `<thead><tr>
       <th>球員</th><th>位置</th><th>球隊</th>
       <th class="num">年齡</th>
-      <th class="num">FPPG</th>
-      <th class="num">PTS</th><th class="num">REB</th>
-      <th class="num">AST</th><th class="num">STL</th>
-      <th class="num">BLK</th><th class="num">TO</th>
-      <th class="num">出賽</th>
+      <th class="num" title="Fantasy Points Per Game：每場幻想分數，綜合 PTS+REB+AST+STL+BLK 加權扣除 TO">FPPG</th>
+      <th class="num" title="每場得分 Points">PTS</th><th class="num" title="每場籃板 Rebounds">REB</th>
+      <th class="num" title="每場助攻 Assists">AST</th><th class="num" title="每場抄截 Steals">STL</th>
+      <th class="num" title="每場阻攻 Blocks">BLK</th><th class="num" title="每場失誤 Turnovers">TO</th>
+      <th class="num" title="出賽場次 Games Played">出賽</th>
       ${showAction ? '<th></th>' : ''}
     </tr></thead>`;
   }
@@ -2495,8 +2498,37 @@ function buildScoringWeightsPanel() {
 
 // -------- Sub-tab: 動態 --------
 function renderActivitySubtab(container) {
+  const FILTERS = [
+    ['all', '全部'],
+    ['trade', '🔄 交易'],
+    ['fa', '📝 自由市場'],
+    ['injury', '🏥 傷病'],
+    ['milestone', '🌟 里程碑'],
+  ];
+  const chips = el('div', { class: 'activity-filter-chips', role: 'tablist', 'aria-label': '動態類別篩選' });
+  for (const [key, label] of FILTERS) {
+    chips.append(el('button', {
+      type: 'button',
+      class: `chip ${state.activityFilter === key ? 'active' : ''}`,
+      role: 'tab',
+      'aria-selected': state.activityFilter === key ? 'true' : 'false',
+      onclick: () => {
+        state.activityFilter = key;
+        chips.querySelectorAll('.chip').forEach((b) => {
+          const isActive = b.dataset.key === key;
+          b.classList.toggle('active', isActive);
+          b.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
+        renderActivityTicker();
+      },
+      'data-key': key,
+    }, label));
+  }
   const activityPanel = el('div', { class: 'panel activity-ticker', id: 'panel-activity' },
-    el('div', { class: 'panel-head' }, el('h2', {}, '📋 動態消息')),
+    el('div', { class: 'panel-head' },
+      el('h2', {}, '📋 動態消息'),
+      chips,
+    ),
     el('div', { class: 'activity-ticker-body', id: 'activity-ticker-body' },
       el('div', { class: 'empty-state' }, '載入中...'),
     ),
@@ -2836,14 +2868,29 @@ function buildTradeSettingsPanel() {
   );
 }
 
+function _activityCategory(type) {
+  if (!type) return 'other';
+  if (type.startsWith('trade_')) return 'trade';
+  if (type.startsWith('fa_')) return 'fa';
+  if (type.startsWith('injury_')) return 'injury';
+  if (type.startsWith('milestone_') || type === 'champion') return 'milestone';
+  return 'other';
+}
+
 async function renderActivityTicker() {
   const body = document.getElementById('activity-ticker-body');
   if (!body) return;
   try {
-    const data = await apiSoft('/api/season/activity?limit=20');
-    const items = data?.activity || [];
+    const data = await apiSoft('/api/season/activity?limit=50');
+    let items = data?.activity || [];
+    const flt = state.activityFilter || 'all';
+    if (flt !== 'all') {
+      items = items.filter((it) => _activityCategory(it.type) === flt);
+    }
+    items = items.slice(0, 20);
     if (!items.length) {
-      body.innerHTML = '<div class="empty-state">暫無動態。</div>';
+      const msg = flt === 'all' ? '暫無動態。' : '此類別暫無動態。';
+      body.innerHTML = `<div class="empty-state">${msg}</div>`;
       return;
     }
     const EMOJI = {
@@ -3358,7 +3405,10 @@ function buildTradeCard(trade) {
   // Veto vote count (for accepted trades)
   if (trade.status === 'accepted') {
     const votes = (trade.veto_votes || []).length;
-    parts.push(el('div', { class: 'veto-vote-count' }, `否決票：${votes} / 3`));
+    parts.push(el('div', {
+      class: 'veto-vote-count',
+      title: 'Veto（否決）：其他 GM 投票表決，達 3 票即撤銷交易。窗口 2 天內。',
+    }, `否決票：${votes} / 3`));
   }
 
   // Chat thread (pending trades: both parties can negotiate)
