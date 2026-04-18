@@ -1123,12 +1123,29 @@ function buildBoardPanel(d) {
       type: 'button', class: 'btn ghost small', id: 'btn-jump-current-pick',
       onclick: jumpToCurrentPick,
     }, '跳到目前回合 ↓'));
+    head.append(el('button', {
+      type: 'button', class: 'btn ghost small', id: 'btn-jump-my-next',
+      onclick: jumpToMyNextPick,
+      title: '捲動到你隊伍下一個尚未選走的順位',
+    }, '跳至我的下次 →'));
   }
   const panel = el('div', { class: 'panel' },
     head,
     el('div', { class: 'board-wrap' }, buildBoardTable(d)),
   );
   return panel;
+}
+
+function jumpToMyNextPick() {
+  const cells = document.querySelectorAll('table.board td.you-cell.empty');
+  if (!cells.length) {
+    toast('你已無剩餘選秀順位', 'info');
+    return;
+  }
+  const target = cells[0];
+  target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+  target.classList.add('pulse-highlight');
+  setTimeout(() => target.classList.remove('pulse-highlight'), 1500);
 }
 
 function jumpToCurrentPick() {
