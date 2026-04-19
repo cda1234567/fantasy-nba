@@ -693,6 +693,54 @@ table.board .psub { display: block; color: var(--text-muted); font-size: 10px; m
 
 .confirm-body { margin: 0; color: var(--text); }
 
+/* ----------- trade-result dialog (顯眼的交易結果彈窗) ----------- */
+.trade-result-dialog .dialog-inner { min-width: 320px; max-width: 440px; }
+.trade-result-dialog .trade-result-head {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-4) var(--sp-3);
+  border-bottom: 1px solid var(--border-muted);
+  border-left: 4px solid var(--accent);
+}
+.trade-result-dialog .trade-result-icon {
+  font-size: 36px;
+  line-height: 1;
+  animation: tr-pop 0.4s ease-out;
+}
+@keyframes tr-pop {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.trade-result-dialog h2 {
+  font-size: 18px !important;
+  font-weight: 700;
+  margin: 0;
+}
+.trade-result-body {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.55;
+  word-break: break-word;
+}
+.trade-result-meta {
+  margin: var(--sp-2) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  background: rgba(88,166,255,0.06);
+  border-left: 3px solid var(--border);
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.trade-result-dialog.kind-ok   .trade-result-head { border-left-color: var(--good, #3fb950); }
+.trade-result-dialog.kind-warn .trade-result-head { border-left-color: var(--warn, #d29922); }
+.trade-result-dialog.kind-bad  .trade-result-head { border-left-color: var(--danger, #f85149); }
+.trade-result-dialog.kind-info .trade-result-head { border-left-color: var(--accent); }
+.trade-result-dialog .dialog-foot #trade-result-ok { min-width: 88px; }
+
 .matchup-dialog .dialog-inner { min-width: 320px; max-width: 640px; }
 .matchup-detail {
   display: grid;

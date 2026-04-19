@@ -144,6 +144,23 @@
     </form>
   </dialog>
 
+  <dialog id="dlg-trade-result" class="dialog trade-result-dialog" role="dialog" aria-modal="true" aria-labelledby="trade-result-title">
+    <form method="dialog" class="dialog-inner small">
+      <header class="dialog-head trade-result-head">
+        <div class="trade-result-icon" id="trade-result-icon" aria-hidden="true">📋</div>
+        <h2 id="trade-result-title">交易結果</h2>
+      </header>
+      <section class="dialog-body">
+        <p id="trade-result-body" class="trade-result-body"></p>
+        <p id="trade-result-meta" class="trade-result-meta" hidden></p>
+      </section>
+      <footer class="dialog-foot">
+        <button type="submit" value="view" class="btn ghost" id="trade-result-view" hidden>查看交易串</button>
+        <button type="submit" value="ok" class="btn" id="trade-result-ok">知道了</button>
+      </footer>
+    </form>
+  </dialog>
+
   <dialog id="dlg-confirm" class="dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
     <form method="dialog" class="dialog-inner small">
       <header class="dialog-head">

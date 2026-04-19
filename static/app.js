@@ -179,6 +179,39 @@ function toast(message, kind = 'info', ms = 3000) {
   }, effectiveMs);
 }
 
+// ---------------------------------------------------------------- trade-result modal
+// Prominent result dialog for 提出交易 outcomes — toast was easy to miss.
+// Tracks which trade IDs already triggered a dialog so the 1.2s/3.5s/10s polls
+// don't stack duplicates.
+const _tradeResultShown = new Set();
+function showTradeResult({ title, body, kind = 'info', meta = '', onView = null, dedupeKey = null }) {
+  if (dedupeKey != null) {
+    if (_tradeResultShown.has(dedupeKey)) return;
+    _tradeResultShown.add(dedupeKey);
+  }
+  const dlg = $('#dlg-trade-result');
+  if (!dlg) {
+    const fallbackKind = kind === 'bad' ? 'warn' : kind === 'ok' ? 'success' : 'info';
+    toast(`${title}${body ? '：' + body : ''}`, fallbackKind, 6000);
+    return;
+  }
+  const icons = { ok: '✅', warn: '⚠️', bad: '❌', info: '💬' };
+  $('#trade-result-icon').textContent = icons[kind] || '📋';
+  $('#trade-result-title').textContent = title;
+  $('#trade-result-body').textContent = body || '';
+  const metaEl = $('#trade-result-meta');
+  if (meta) { metaEl.textContent = meta; metaEl.hidden = false; } else { metaEl.hidden = true; }
+  dlg.className = `dialog trade-result-dialog kind-${kind}`;
+  const viewBtn = $('#trade-result-view');
+  viewBtn.hidden = !onView;
+  const handler = () => {
+    dlg.removeEventListener('close', handler);
+    if (dlg.returnValue === 'view' && onView) { try { onView(); } catch {} }
+  };
+  dlg.addEventListener('close', handler);
+  try { dlg.showModal(); } catch {}
+}
+
 // ---------------------------------------------------------------- confirm modal
 function confirmDialog(title, body, okLabel = '確定') {
   return new Promise((resolve) => {
@@ -4131,7 +4164,8 @@ async function onSubmitProposeTrade() {
           force,
         }),
       });
-      toast(force ? '交易已強制執行' : '交易已發起,等 AI 回覆中...', 'success');
+      // Close propose modal FIRST so any subsequent result dialog isn't hidden
+      // behind it. (User reported having to press 取消 before seeing the result.)
       $('#trade-propose').close();
       const newId = created && created.id;
       if (newId) {
@@ -4145,15 +4179,30 @@ async function onSubmitProposeTrade() {
       render();
       await afterTradeMutation();
       if (newId) scrollToHistoryTrade(newId).catch(() => {});
+      if (force) {
+        showTradeResult({
+          title: '交易已強制執行',
+          body: '已跳過 AI 審核，球員名單已更新。',
+          kind: 'ok',
+          dedupeKey: newId ? `force-${newId}` : null,
+          onView: newId ? () => scrollToHistoryTrade(newId).catch(() => {}) : null,
+        });
+      } else {
+        toast('交易已發起,等 AI 回覆中...', 'success');
+      }
       const reportDecision = (tr) => {
         if (!tr) return;
+        const key = `${tr.id}-${tr.status}`;
+        const onView = () => scrollToHistoryTrade(tr.id).catch(() => {});
         if (tr.status === 'rejected' && tr.reasoning && tr.reasoning !== 'human') {
           const reason = String(tr.reasoning).replace(/^human\s*｜\s*/, '').replace(/^拒絕原因：/, '');
-          toast(`AI 拒絕：${reason.slice(0, 80)}`, 'warn');
+          showTradeResult({ title: 'AI 拒絕了你的提案', body: reason, kind: 'bad', dedupeKey: key, onView });
         } else if (tr.status === 'accepted') {
-          toast('AI 接受 — 進入否決期', 'success');
+          showTradeResult({ title: 'AI 接受你的提案！', body: '已進入否決期，其他隊伍可投票否決。若無人否決會自動生效。', kind: 'ok', dedupeKey: key, onView });
         } else if (tr.status === 'countered') {
-          toast('AI 提出還價，請查看', 'info');
+          showTradeResult({ title: 'AI 提出還價', body: '對方開出新條件，點「查看交易串」看看吧。', kind: 'warn', dedupeKey: key, onView });
+        } else if (tr.status === 'executed') {
+          showTradeResult({ title: '交易已生效', body: '球員已完成交換，記得調整先發陣容。', kind: 'ok', dedupeKey: key, onView });
         }
       };
       const pollDecision = async () => {
@@ -4167,7 +4216,13 @@ async function onSubmitProposeTrade() {
       setTimeout(() => { pollDecision().catch(() => {}); }, 10000);
     } catch (e) {
       console.warn('[trade-propose] failed', e);
-      toast(e.message || '提案失敗', 'error');
+      // Close propose modal so the error dialog isn't hidden behind it.
+      try { $('#trade-propose').close(); } catch {}
+      showTradeResult({
+        title: '提案失敗',
+        body: e.message || '無法送出交易提案，請稍後再試。',
+        kind: 'bad',
+      });
     } finally {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '送出提案'; }
     }
