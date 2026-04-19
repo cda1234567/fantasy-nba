@@ -18,6 +18,13 @@
   [hidden] { display: none !important; }
   .mono { font-family: var(--mono); font-feature-settings: var(--feat-num); }
   .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); font-weight: 600; font-family: var(--mono); }
+  .skel { background: linear-gradient(90deg, var(--card, #1c1c1c) 0%, var(--line, #2a2a2a) 50%, var(--card, #1c1c1c) 100%); background-size: 200% 100%; animation: skel 1.2s infinite; border-radius: 8px; }
+  @keyframes skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .skel-row { height: 14px; margin: 8px 0; }
+  .err-panel { padding: 20px; border: 1px solid var(--bad, #f87171); border-radius: 10px; background: rgba(248,113,113,0.06); color: var(--ink); margin: 16px 0; }
+  .err-panel h3 { color: var(--bad, #f87171); margin-bottom: 8px; font-size: var(--fs-md); }
+  .err-panel pre { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin: 8px 0 12px; white-space: pre-wrap; word-break: break-all; }
+  .empty-state { padding: 32px 20px; text-align: center; color: var(--ink-3); font-size: var(--fs-sm); }
 </style>
 </head>
 <body>
@@ -46,9 +53,9 @@
       <button class="icon-btn" title="設定">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
-      <button class="me-chip">
-        <div class="av sm" data-grad="1">CW</div>
-        <span class="me-chip-name">Chen W.</span>
+      <button class="me-chip" id="me-chip">
+        <div class="av sm" data-grad="1">ME</div>
+        <span class="me-chip-name">—</span>
       </button>
     </div>
   </header>
@@ -81,168 +88,14 @@
 <!-- ===================== TOASTS ===================== -->
 <div class="toast-stack" id="toasts"></div>
 
-<!-- ===================== DATA + APP ===================== -->
+<!-- ===================== APP ===================== -->
 <script>
-/* Fantasy NBA v2 — data */
-window.DATA = {
-  me: { id: 'me', name: 'Chen W.', team: '肉圓幫', initials: 'CW', grad: 1 },
-  league: { name: '絕地爆米花盃', size: 12, week: 14, totalWeeks: 21, phase: 'regular', draftDone: true, playoffStartWeek: 18 },
-
-  standings: [
-    { r:1, team:'爆米花特攻', owner:'Alex', w:11, l:2, pf:1432, streak:'W4', you:false },
-    { r:2, team:'吸管神', owner:'Ben', w:10, l:3, pf:1401, streak:'W2', you:false },
-    { r:3, team:'肉圓幫', owner:'Chen W.', w:9, l:4, pf:1385, streak:'W3', you:true },
-    { r:4, team:'蛋塔軍團', owner:'Diana', w:8, l:5, pf:1370, streak:'L1', you:false },
-    { r:5, team:'珍奶兄弟', owner:'Eric', w:8, l:5, pf:1360, streak:'W1', you:false },
-    { r:6, team:'滷肉飯派', owner:'Fiona', w:7, l:6, pf:1342, streak:'W1', you:false },
-    { r:7, team:'臭豆腐隊', owner:'Gary', w:6, l:7, pf:1298, streak:'L2', you:false },
-    { r:8, team:'鹽酥雞團', owner:'Hana', w:6, l:7, pf:1289, streak:'L1', you:false },
-    { r:9, team:'小籠包', owner:'Ivan', w:5, l:8, pf:1270, streak:'L3', you:false },
-    { r:10, team:'牛肉麵友', owner:'Jay', w:4, l:9, pf:1251, streak:'W1', you:false },
-    { r:11, team:'刈包戰神', owner:'Kelly', w:3, l:10, pf:1210, streak:'L5', you:false },
-    { r:12, team:'夜市之光', owner:'Leo', w:2, l:11, pf:1180, streak:'L2', you:false },
-  ],
-
-  roster: [
-    { slot:'PG', name:'Luka Dončić', pos:'PG', grad:2, team:'DAL', form:[1,1,1,1,1], proj:52.1, status:'hot', game:'vs PHX · 今晚' },
-    { slot:'SG', name:'Devin Booker', pos:'SG', grad:3, team:'PHX', form:[1,1,0,1,1], proj:41.2, status:'ok', game:'@ DAL · 今晚' },
-    { slot:'SF', name:'Jayson Tatum', pos:'SF', grad:4, team:'BOS', form:[1,1,1,1,0], proj:44.7, status:'hot', game:'vs MIA · 明' },
-    { slot:'PF', name:'Giannis A.', pos:'PF', grad:5, team:'MIL', form:[1,1,0,0,1], proj:48.5, status:'ok', game:'@ CLE · 明' },
-    { slot:'C',  name:'Nikola Jokić', pos:'C',  grad:6, team:'DEN', form:[1,1,1,1,1], proj:55.3, status:'hot', game:'vs LAL · 今晚' },
-    { slot:'G',  name:'Tyrese Haliburton', pos:'PG', grad:7, team:'IND', form:[0,1,1,1,0], proj:38.4, status:'warm', game:'休息日' },
-    { slot:'F',  name:'Kawhi Leonard', pos:'SF', grad:8, team:'LAC', form:[0,0,-1,1,1], proj:35.2, status:'warm', game:'出賽存疑' },
-    { slot:'UTIL', name:'Anthony Edwards', pos:'SG', grad:1, team:'MIN', form:[1,1,1,0,1], proj:43.1, status:'hot', game:'@ OKC · 明' },
-    { slot:'BN', name:'Anfernee Simons', pos:'SG', grad:2, team:'POR', form:[0,1,0,1,1], proj:32.0, status:'warm' },
-    { slot:'BN', name:'Jalen Brunson', pos:'PG', grad:3, team:'NYK', form:[1,1,1,1,1], proj:41.8, status:'hot' },
-    { slot:'BN', name:'Pascal Siakam', pos:'PF', grad:4, team:'IND', form:[1,0,1,0,1], proj:34.5, status:'warm' },
-    { slot:'IR', name:'Kristaps Porziņģis', pos:'C', grad:5, team:'BOS', form:[-1,-1,-1,0,0], proj:0, status:'injured' },
-  ],
-
-  matchup: {
-    week: 14,
-    you:   { team:'肉圓幫', score:412.4, proj:520, played:5, total:8, grad:1 },
-    them:  { team:'珍奶兄弟', score:386.1, proj:495, played:5, total:8, grad:7, owner:'Eric' }
-  },
-
-  // Action queue — "今天該做什麼"
-  actions: [
-    { id:'a1', urgency:'high', ic:'syringe', title:'Porziņģis 今晚出賽存疑', sub:'建議把 Jokić 上先發、Porziņģis 移到 BN', cta:'調整先發', time:'18:30 鎖定' },
-    { id:'a2', urgency:'high', ic:'trade', title:'Eric 提出交易提案', sub:'用他的 Siakam + Quickley 換你的 Simons + Porziņģis', cta:'審視提案', time:'12 小時內回覆' },
-    { id:'a3', urgency:'med', ic:'waiver', title:'自由球員熱潮', sub:'Scottie Barnes (TOR) 本週三場、你的 F 位有空缺', cta:'撿人', time:'週三 03:00 截止' },
-    { id:'a4', urgency:'med', ic:'schedule', title:'下週 Haliburton 只有 2 場', sub:'考慮把他坐板凳，上 Brunson（4 場）', cta:'看排程', time:'下週五 18:30' },
-    { id:'a5', urgency:'done', ic:'check', title:'本週先發已送出', sub:'週一 03:15 已鎖定 · Jokić、Luka、Tatum 先發', cta:'查看', time:'' },
-  ],
-
-  news: [
-    { kind:'injury', title:'Porziņģis 背部緊繃、今晚出賽存疑', meta:'BOS · 30 分鐘前', flash:true },
-    { kind:'heat', title:'Jokić 連 5 場 50+，本季 MVP 賠率跳升', meta:'DEN · 1 小時前' },
-    { kind:'quote', quote:'這禮拜我很強勢，你們都要小心。', attrib:'Alex · 爆米花特攻', meta:'聯盟 · 2 小時前' },
-    { kind:'league', title:'Ben 剛把 Ayton 丟到自由球員', meta:'吸管神 · 3 小時前' },
-    { kind:'milestone', title:'Luka 生涯第 50 次大三元', meta:'DAL · 昨晚' },
-    { kind:'matchup', title:'你與 Eric 差 26 分，還有 3 場比賽', meta:'第 14 週 · 剛更新' },
-    { kind:'quote', quote:'我覺得 Edwards 該進先發 All-Star。', attrib:'你的上週訪談', meta:'聯盟 · 昨天' },
-    { kind:'league', title:'Diana 撿走了 Coby White', meta:'蛋塔軍團 · 昨天' },
-  ],
-
-  // Draft recommendations (first-round opening pick)
-  draftState: {
-    round: 1, pickOverall: 8, pickInRound: 8, timeLeft: 47,
-    roster: { PG:0, SG:0, SF:0, PF:0, C:0, total:0 },
-    needs: [
-      { pos:'PG', need:'high',  filled:0, target:2 },
-      { pos:'SG', need:'med',   filled:0, target:2 },
-      { pos:'SF', need:'high',  filled:0, target:2 },
-      { pos:'PF', need:'med',   filled:0, target:2 },
-      { pos:'C',  need:'high',  filled:0, target:2 },
-      { pos:'BN', need:'low',   filled:0, target:4 },
-    ],
-    recos: [
-      { rank:1, top:true, name:'Shai Gilgeous-Alexander', pos:'PG', team:'OKC', grad:1,
-        fit:94, reasons:['填補你最缺的 PG 位','本季助攻+出手量皆上升','首輪唯一連續三年 上升的後衛'] },
-      { rank:2, top:false, name:'Anthony Davis', pos:'C', team:'LAL', grad:5,
-        fit:88, reasons:['你 C 位也缺','多類別貢獻：籃板、阻攻','健康是風險，但產能無敵'] },
-      { rank:3, top:false, name:'Jaylen Brown', pos:'SF', team:'BOS', grad:4,
-        fit:82, reasons:['SF 位置需求高','穩定上場 34 分鐘','與你下輪可能選到的 PF 組合佳'] },
-    ]
-  },
-
-  // Trade conversations
-  tradeThreads: [
-    { id:'t1', with:'Eric', team:'珍奶兄弟', grad:7, persona:'aggressive', fit:'high',
-      preview:'你的 Simons 我真的很想要…',
-      unread:true, time:'12 分鐘前',
-      msgs:[
-        { from:'them', time:'今早 10:15', text:'兄弟我注意你隊上 PG 太多，Simons 來我這好嗎' },
-        { from:'me',   time:'今早 10:22', text:'你打算給什麼？' },
-        { from:'them', time:'今早 10:25', text:'Siakam + Quickley 給你 Simons + Porziņģis' },
-        { type:'proposal', id:'#2041', from:'Eric',
-          mine:[{n:'A. Simons',p:'SG'},{n:'K. Porziņģis',p:'C'}],
-          theirs:[{n:'P. Siakam',p:'PF'},{n:'I. Quickley',p:'PG'}] },
-        { from:'them', time:'12 分鐘前', text:'我給你加一個次輪 pick，這樣好嗎' },
-      ]},
-    { id:'t2', with:'Alex', team:'爆米花特攻', grad:2, persona:'calm', fit:'mid',
-      preview:'我這週不交易，先謝了。', unread:false, time:'昨天',
-      msgs:[
-        { from:'me', time:'昨天 14:02', text:'你的 Tatum 有興趣交易嗎？' },
-        { from:'them', time:'昨天 14:30', text:'我這週不交易，先謝了。' },
-      ]},
-    { id:'t3', with:'Diana', team:'蛋塔軍團', grad:4, persona:'numbers', fit:'mid',
-      preview:'給我數據我再評估。', unread:false, time:'2 天前',
-      msgs:[
-        { from:'me', time:'2 天前', text:'有意思交易 Brunson 嗎' },
-        { from:'them', time:'2 天前', text:'給我數據我再評估。' },
-      ]},
-    { id:'t4', with:'Ben', team:'吸管神', grad:3, persona:'hype', fit:'low',
-      preview:'（已讀不回）', unread:false, time:'3 天前', msgs:[
-        { from:'me', time:'3 天前', text:'Haliburton 交易?' }
-      ]},
-  ],
-
-  // Free agents
-  freeAgents: [
-    { name:'Scottie Barnes', pos:'SF', team:'TOR', grad:4, form:[1,1,1,1,0], owned:62, trend:'up', note:'本週 3 場、F 位熱門撿角' },
-    { name:'Coby White', pos:'SG', team:'CHI', grad:2, form:[1,1,0,1,1], owned:48, trend:'up', note:'上場時間穩定 34 分鐘' },
-    { name:'Naz Reid', pos:'C', team:'MIN', grad:5, form:[1,0,1,1,0], owned:44, trend:'flat', note:'KAT 復出後角色存疑' },
-    { name:'Jaden Ivey', pos:'PG', team:'DET', grad:7, form:[0,1,1,1,1], owned:35, trend:'up', note:'連 4 場 25+ 表現' },
-    { name:'Klay Thompson', pos:'SG', team:'DAL', grad:6, form:[1,0,0,1,1], owned:70, trend:'down', note:'上場時間被限制' },
-    { name:'Bobby Portis', pos:'PF', team:'MIL', grad:4, form:[1,1,1,0,1], owned:52, trend:'flat', note:'穩定的 PF 替補' },
-  ],
-
-  // Season schedule — 21 weeks
-  schedule: [
-    { w:1, score:'98-112', result:'L', opp:'Alex' },
-    { w:2, score:'121-110', result:'W', opp:'Ben' },
-    { w:3, score:'105-99', result:'W', opp:'Diana' },
-    { w:4, score:'88-92', result:'L', opp:'Eric' },
-    { w:5, score:'115-102', result:'W', opp:'Fiona' },
-    { w:6, score:'110-107', result:'W', opp:'Gary' },
-    { w:7, score:'94-98', result:'L', opp:'Hana' },
-    { w:8, score:'118-109', result:'W', opp:'Ivan' },
-    { w:9, score:'121-116', result:'W', opp:'Jay' },
-    { w:10, score:'109-99', result:'W', opp:'Kelly' },
-    { w:11, score:'89-102', result:'L', opp:'Leo' },
-    { w:12, score:'113-108', result:'W', opp:'Alex' },
-    { w:13, score:'117-104', result:'W', opp:'Ben' },
-    { w:14, score:'412-386', result:'current', opp:'Eric' },
-    { w:15, score:'—', result:'future', opp:'Gary' },
-    { w:16, score:'—', result:'future', opp:'Fiona' },
-    { w:17, score:'—', result:'future', opp:'Ben' },
-    { w:18, score:'—', result:'playoff', opp:'QF' },
-    { w:19, score:'—', result:'playoff', opp:'SF' },
-    { w:20, score:'—', result:'playoff', opp:'F' },
-    { w:21, score:'—', result:'playoff', opp:'F' },
-  ],
-};
-
-</script>
-<script>
-/* Fantasy NBA v2 — app.js
- * Hash router, nav, views. All views rendered as innerHTML strings.
+/* Fantasy NBA v2 — app.js (API-driven)
+ * Hash router, nav, views. All views are async and call FastAPI.
  */
 (() => {
-  const D = window.DATA;
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $ = (sel, root=document) => [...root.querySelectorAll(sel)];
+  const $  = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
   const h = (tag, attrs={}, ...kids) => {
     const el = document.createElement(tag);
     Object.entries(attrs).forEach(([k,v]) => {
@@ -254,6 +107,60 @@ window.DATA = {
     kids.flat().forEach(k => el.append(k instanceof Node ? k : document.createTextNode(k)));
     return el;
   };
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  // ========================================================
+  // CACHE + LOADERS
+  // ========================================================
+  const cache = new Map();
+  async function get(url, ttl=10000){
+    const now = Date.now();
+    const c = cache.get(url);
+    if (c && (now - c.t) < ttl) return c.v;
+    const r = await fetch(url);
+    if (!r.ok) {
+      let body = '';
+      try { body = await r.text(); } catch(_){}
+      const err = new Error(url + ' ' + r.status);
+      err.status = r.status; err.body = body;
+      throw err;
+    }
+    const v = await r.json();
+    cache.set(url, {t: now, v});
+    return v;
+  }
+  function invalidate(prefix){
+    for (const k of [...cache.keys()]) if (k.startsWith(prefix)) cache.delete(k);
+  }
+
+  const loaders = {
+    me:            () => get('/api/me'),
+    league:        () => get('/api/league/settings'),
+    leagueStatus:  () => get('/api/league/status'),
+    homeBrief:     () => get('/api/home/brief'),
+    homeActions:   () => get('/api/home/actions'),
+    standings:     () => get('/api/season/standings'),
+    schedule:      () => get('/api/season/schedule'),
+    matchup:       (w) => get('/api/season/matchup?week=' + w),
+    matchupDetail: (w, a, b) => get('/api/season/matchup-detail?week=' + w + '&team_a=' + a + '&team_b=' + b),
+    team:          (id) => get('/api/teams/' + id),
+    players:       () => get('/api/players?limit=500'),
+    draftState:    () => get('/api/state'),
+    draftRecos:    () => get('/api/draft/recommendations?limit=6'),
+    tradesPending: () => get('/api/trades/pending'),
+    tradesHistory: () => get('/api/trades/history'),
+    faStatus:      () => get('/api/fa/claim-status'),
+    news:          () => get('/api/news/feed?limit=30'),
+    categoryOdds:  (tradeId) => get('/api/trades/' + encodeURIComponent(tradeId) + '/category-odds'),
+  };
+
+  // Tolerant fetchers — swallow 404/409/4xx that mean "season not started"
+  async function tryGet(loaderFn, fallback) {
+    try { return await loaderFn(); }
+    catch(e){ return fallback; }
+  }
 
   // ---------- SVG icon helpers ----------
   const ic = (paths, s=16) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
@@ -280,30 +187,129 @@ window.DATA = {
   };
 
   // ========================================================
-  // NAV
+  // AVATAR / FORM HELPERS
   // ========================================================
-  function renderNav() {
-    const phase = D.league.phase; // regular
-    const draftDone = D.league.draftDone;
+  const initials = (name) => {
+    if (!name) return '—';
+    const parts = String(name).trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '—';
+    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
+    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  };
+  const gradFor = (key) => {
+    // Hash any id/name into 1..8 for the gradient variants.
+    if (typeof key === 'number' && Number.isFinite(key)) return ((Math.abs(key) % 8) + 1);
+    const s = String(key || '');
+    let hash = 0;
+    for (let i=0;i<s.length;i++) hash = (hash * 31 + s.charCodeAt(i)) | 0;
+    return ((Math.abs(hash) % 8) + 1);
+  };
+  const av = (name, grad, sizeCls='') =>
+    `<div class="av ${sizeCls}" data-grad="${grad}">${esc(initials(name))}</div>`;
+
+  // Convert a form array (entries in {-1,0,1} or a proxy) into spark blocks.
+  // Server returns form[5] already in this shape via /api/teams/{id}.
+  const formBlocks = (form) => {
+    const f = Array.isArray(form) ? form.slice(-5) : [];
+    while (f.length < 5) f.unshift(0);
+    return f.map(v => `<div class="spark ${v===1?'hot':v===-1?'cold':'warm'}"></div>`).join('');
+  };
+
+  // Status chip color class for a player status like 'healthy'|'questionable'|'out'|'day-to-day'|'hot'|...
+  const statusClass = (s) => {
+    if (!s) return '';
+    const x = String(s).toLowerCase();
+    if (x === 'out' || x === 'injured') return 'bad';
+    if (x === 'questionable' || x === 'day-to-day' || x === 'dtd' || x === 'warm') return '';
+    if (x === 'hot' || x === 'healthy') return 'good';
+    return '';
+  };
+
+  // Approximate a narrative snippet from form[5] (no raw FPPG shown).
+  const narrativeFromForm = (form) => {
+    const f = Array.isArray(form) ? form.filter(v => typeof v === 'number') : [];
+    if (!f.length) return '資料不足';
+    const hot = f.filter(v => v === 1).length;
+    const cold = f.filter(v => v === -1).length;
+    if (hot >= 4) return '近況火熱';
+    if (hot >= 3) return '手感穩定';
+    if (cold >= 3) return '狀態低迷';
+    if (cold >= 2) return '手感冷卻';
+    return '平均表現';
+  };
+
+  // ========================================================
+  // SKELETONS + ERROR CARDS
+  // ========================================================
+  function skeleton(route){
+    const rows = (n=4) => Array.from({length:n}).map(() => `<div class="skel skel-row" style="width:${60+Math.random()*40}%"></div>`).join('');
+    const block = (h=120) => `<div class="skel" style="height:${h}px;margin:8px 0"></div>`;
+    if (route === 'home')      return `<div class="view-head"><div class="view-title-block">${rows(1)}${rows(2)}</div></div>${block(180)}${block(140)}${block(220)}`;
+    if (route === 'matchup')   return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(220)}${block(280)}`;
+    if (route === 'roster')    return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(340)}`;
+    if (route === 'draft')     return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(160)}${block(240)}`;
+    if (route === 'trade')     return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(460)}`;
+    if (route === 'fa')        return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(380)}`;
+    if (route === 'schedule')  return `<div class="view-head"><div class="view-title-block">${rows(1)}</div></div>${block(220)}`;
+    if (route === 'standings') return `<div class="view-head"><div class="view-title-block">${rows(1)}</div></div>${block(420)}`;
+    if (route === 'news')      return `<div class="view-head"><div class="view-title-block">${rows(1)}</div></div>${block(420)}`;
+    return `<div class="view-head"><div class="view-title-block">${rows(2)}</div></div>${block(240)}`;
+  }
+  function errorCard(err){
+    const msg = err && err.message ? err.message : String(err || '未知錯誤');
+    const body = err && err.body ? err.body : '';
+    return `<div class="err-panel">
+      <h3>載入失敗</h3>
+      <div>無法取得後端資料。API 可能未就緒或賽季尚未開始。</div>
+      <pre>${esc(msg)}${body ? '\n\n' + esc(body).slice(0,400) : ''}</pre>
+      <button class="btn sm" id="err-retry">重試</button>
+    </div>`;
+  }
+  function emptyCard(text){
+    return `<div class="card card-pad empty-state">${esc(text)}</div>`;
+  }
+
+  // ========================================================
+  // NAV + TABBAR (async)
+  // ========================================================
+  async function renderNav() {
+    const route = currentRoute();
+    const [league, status, pending, me] = await Promise.all([
+      tryGet(loaders.league, {league_name:'聯盟', num_teams:8, regular_season_weeks:21}),
+      tryGet(loaders.leagueStatus, {setup_complete:false, regular_season_weeks:21}),
+      tryGet(loaders.tradesPending, {pending:[]}),
+      tryGet(loaders.me, {name:'', team_id:0, current_week:0}),
+    ]);
+
+    const draftDone = !!(status && status.setup_complete);
+    const unread = Array.isArray(pending.pending) ? pending.pending.filter(t => t.to_team === me.team_id && t.status === 'pending_accept').length : 0;
+
+    // Header league-switch name
+    const leagueSwitch = $('.league-switch span:nth-child(2)');
+    if (leagueSwitch) leagueSwitch.textContent = `${league.league_name || '聯盟'} · ${league.num_teams || 8}人`;
+    // Me chip
+    const meChip = $('#me-chip');
+    if (meChip && me && me.name) {
+      meChip.querySelector('.av').textContent = initials(me.name);
+      meChip.querySelector('.av').setAttribute('data-grad', gradFor(me.team_id));
+      meChip.querySelector('.me-chip-name').textContent = me.name;
+    }
 
     const items = [
       { group:'主要' },
       { id:'home',     label:'今日',     icon:I.home, shortcut:'G H' },
       { id:'matchup',  label:'對戰',     icon:I.match, shortcut:'G M' },
       { id:'roster',   label:'球隊',     icon:I.roster, shortcut:'G R' },
-
       { group:'賽事' },
       { id:'draft',    label:'選秀廳',   icon:I.draft, dot:!draftDone, demoted:draftDone },
-      { id:'trade',    label:'交易',     icon:I.trade, badge: D.tradeThreads.filter(t=>t.unread).length || null },
+      { id:'trade',    label:'交易',     icon:I.trade, badge: unread || null },
       { id:'fa',       label:'自由球員', icon:I.fa },
       { id:'schedule', label:'排程',     icon:I.schedule },
-
       { group:'聯盟' },
       { id:'standings',label:'排名',     icon:I.league },
       { id:'news',     label:'動態',     icon:I.chat },
     ];
 
-    const route = currentRoute();
     const nav = $('#nav');
     nav.innerHTML = '';
     items.forEach(it => {
@@ -321,217 +327,204 @@ window.DATA = {
       nav.append(a);
     });
 
-    // Season progress card
-    const pct = Math.round(D.league.week / D.league.totalWeeks * 100);
+    const totalWeeks = league.regular_season_weeks || status.regular_season_weeks || 21;
+    const week = me.current_week || 0;
+    const pct = totalWeeks > 0 ? Math.round(Math.min(100, (week / totalWeeks) * 100)) : 0;
     const season = h('div', {class:'nav-season'});
     season.innerHTML = `
       <div class="nav-season-label">本季進度</div>
-      <div class="nav-season-name">2024-25 · 例行賽</div>
+      <div class="nav-season-name">${esc(league.season_year || '2025-26')} · ${draftDone ? '例行賽' : '選秀階段'}</div>
       <div class="nav-season-track"><div class="nav-season-fill" style="width:${pct}%"></div></div>
-      <div class="nav-season-meta"><span>W${D.league.week} / ${D.league.totalWeeks}</span><span>${pct}%</span></div>`;
+      <div class="nav-season-meta"><span>W${week} / ${totalWeeks}</span><span>${pct}%</span></div>`;
     nav.append(season);
 
-    // Mobile tabbar (5 items)
+    // Mobile tabbar
     const tabbar = $('#tabbar');
     const tabs = ['home','matchup','roster','trade','standings'];
     const labels = {home:'今日',matchup:'對戰',roster:'球隊',trade:'交易',standings:'排名'};
+    const tabIcon = {home:I.home, matchup:I.match, roster:I.roster, trade:I.trade, standings:I.league};
     tabbar.innerHTML = '';
     tabs.forEach(t => {
       const btn = h('a', {class:'tab-btn', href:'#/'+t, 'aria-current': route===t?'page':null});
-      btn.innerHTML = `${I[t] || I.home}<span>${labels[t]}</span>`;
+      btn.innerHTML = `${tabIcon[t] || I.home}<span>${labels[t]}</span>`;
       tabbar.append(btn);
     });
   }
 
   // ========================================================
-  // RIGHT RAIL — differs by route
+  // RIGHT RAIL (async, route-dependent)
   // ========================================================
-  function renderRail() {
+  async function renderRail() {
     const route = currentRoute();
     const rail = $('#rail');
-    if (['home','standings','schedule','news'].includes(route)) {
-      rail.innerHTML = renderNewsFeed();
-      return;
+    try {
+      if (['home','standings','schedule','news'].includes(route)) { rail.innerHTML = await renderNewsFeed(); return; }
+      if (route === 'roster' || route === 'matchup')              { rail.innerHTML = await renderMatchupMini(); return; }
+      if (route === 'trade')                                      { rail.innerHTML = await renderTradeSidebar(); return; }
+      if (route === 'draft')                                      { rail.innerHTML = await renderDraftBoard(); return; }
+      if (route === 'fa')                                         { rail.innerHTML = await renderWaiverBudget(); return; }
+      rail.innerHTML = await renderNewsFeed();
+    } catch(e) {
+      rail.innerHTML = `<div class="rail-section"><div class="rail-head"><span>側欄</span></div>${errorCard(e)}</div>`;
     }
-    if (route === 'roster' || route === 'matchup') {
-      rail.innerHTML = renderMatchupMini();
-      return;
-    }
-    if (route === 'trade') {
-      rail.innerHTML = renderTradeSidebar();
-      return;
-    }
-    if (route === 'draft') {
-      rail.innerHTML = renderDraftBoard();
-      return;
-    }
-    if (route === 'fa') {
-      rail.innerHTML = renderWaiverBudget();
-      return;
-    }
-    rail.innerHTML = renderNewsFeed();
   }
 
-  function renderNewsFeed() {
-    const kindIcon = {
-      injury:'🩹', heat:'🔥', league:'📎', quote:'"', milestone:'★', matchup:'⚔'
-    };
-    const items = D.news.map(n => {
-      if (n.kind === 'quote') {
-        return `<div class="news-item ${n.flash?'flash':''}">
-          <div class="news-dot" data-kind="${n.kind}">${kindIcon[n.kind]}</div>
-          <div class="news-body">
-            <div class="news-quote">${n.quote}</div>
-            <div class="news-attrib">— ${n.attrib}</div>
-            <div class="news-meta">${n.meta}</div>
-          </div></div>`;
-      }
-      return `<div class="news-item ${n.flash?'flash':''}">
-        <div class="news-dot" data-kind="${n.kind}">${kindIcon[n.kind]}</div>
-        <div class="news-body">
-          <div class="news-title">${n.title}</div>
-          <div class="news-meta">${n.meta}</div>
-        </div></div>`;
-    }).join('');
+  async function renderNewsFeed() {
+    const data = await tryGet(loaders.news, {feed:[]});
+    const feed = Array.isArray(data.feed) ? data.feed : (Array.isArray(data) ? data : []);
+    const kindIcon = { injury:'🩹', heat:'🔥', league:'📎', quote:'"', milestone:'★', matchup:'⚔' };
+    const items = feed.length === 0
+      ? `<div class="empty-state">尚無動態</div>`
+      : feed.map(n => {
+          const k = n.kind || 'league';
+          if (k === 'quote' && n.quote) {
+            return `<div class="news-item ${n.flash?'flash':''}">
+              <div class="news-dot" data-kind="${esc(k)}">${kindIcon[k]||'·'}</div>
+              <div class="news-body">
+                <div class="news-quote">${esc(n.quote)}</div>
+                <div class="news-attrib">— ${esc(n.attrib || '')}</div>
+                <div class="news-meta">${esc(n.meta || '')}</div>
+              </div></div>`;
+          }
+          return `<div class="news-item ${n.flash?'flash':''}">
+            <div class="news-dot" data-kind="${esc(k)}">${kindIcon[k]||'·'}</div>
+            <div class="news-body">
+              <div class="news-title">${esc(n.title || '')}</div>
+              <div class="news-meta">${esc(n.meta || '')}</div>
+            </div></div>`;
+        }).join('');
     return `<div class="rail-section">
       <div class="rail-head"><span class="live-lamp">LIVE</span><span>聯盟動態</span></div>
       <div class="news-feed">${items}</div>
     </div>`;
   }
 
-  function renderMatchupMini() {
-    const m = D.matchup;
-    const youPct = m.you.score / (m.you.score + m.them.score) * 100;
+  async function renderMatchupMini() {
+    const [me, brief] = await Promise.all([
+      tryGet(loaders.me, {name:'', team_id:0}),
+      tryGet(loaders.homeBrief, {matchup:null, brief:'', week:0}),
+    ]);
+    const m = brief.matchup;
+    if (!m) {
+      return `<div class="rail-section"><div class="rail-head"><span>本週對戰</span></div>
+        ${emptyCard('尚無本週對戰資料（賽季可能未開始）')}</div>`;
+    }
+    const sum = (m.my_score + m.opp_score) || 1;
+    const youPct = (m.my_score / sum) * 100;
     return `<div class="rail-section">
       <div class="rail-head"><span>本週對戰</span><span class="mono" style="margin-left:auto;color:var(--ink-3)">W${m.week}</span></div>
       <div class="card card-pad">
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
           <div>
             <div class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase">你</div>
-            <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${m.you.team}</div>
+            <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${esc(me.name || '我的隊伍')}</div>
           </div>
-          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--good);letter-spacing:-0.02em">${m.you.score}</div>
+          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--good);letter-spacing:-0.02em">${m.my_score}</div>
         </div>
         <div class="matchup-progress-track"><div class="mpt-you" style="width:${youPct}%"></div><div class="mpt-them" style="width:${100-youPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px">
           <div>
-            <div class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase">對手 · ${m.them.owner}</div>
-            <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${m.them.team}</div>
+            <div class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase">對手</div>
+            <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${esc(m.opp_name || '對手')}</div>
           </div>
-          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--ink-2);letter-spacing:-0.02em">${m.them.score}</div>
+          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--ink-2);letter-spacing:-0.02em">${m.opp_score}</div>
         </div>
         <div style="border-top:1px solid var(--line-soft);margin-top:var(--s-4);padding-top:var(--s-3);display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--ink-3)">
-          <span>已打 ${m.you.played}/${m.you.total} 場</span>
-          <span>預估終局 <b class="mono" style="color:var(--good)">${m.you.proj}</b></span>
+          <span>${m.complete ? '已結算' : '進行中'}</span>
+          <span>${esc(brief.brief || '')}</span>
         </div>
-      </div>
-    </div>
-    <div class="rail-section">
-      <div class="rail-head"><span>本週建議</span></div>
-      <div class="card card-pad" style="font-size:var(--fs-sm);line-height:1.6;color:var(--ink-2)">
-        <b style="color:var(--ink)">關鍵三件事</b><br/>
-        · 把 Jokić 確認先發（DEN vs LAL）<br/>
-        · Porziņģis 出賽存疑，備胎 Simons<br/>
-        · Eric 剩 Brunson 沒打，小心他週末追上
       </div>
     </div>`;
   }
 
-  function renderTradeSidebar() {
-    const verdict = `
-      <div class="tl-verdict">
-        <div class="tl-verdict-head">AI 判決 · <b>建議接受</b></div>
-        <div>Siakam 多類別產能穩定，補你 PF 空缺；Quickley 上場時間本月爆衝。Porziņģis 健康風險你本來就難承受。</div>
-      </div>`;
-    const bars = [
-      ['得分', 0.42, 0.58],
-      ['籃板', 0.38, 0.62],
-      ['助攻', 0.55, 0.45],
-      ['阻攻', 0.48, 0.52],
-      ['效率', 0.44, 0.56],
-    ].map(([label, mine, theirs]) => `
-      <div class="tl-bar">
-        <div class="l">${(mine*100).toFixed(0)}</div>
+  async function renderTradeSidebar() {
+    const pending = await tryGet(loaders.tradesPending, {pending:[]});
+    const list = Array.isArray(pending.pending) ? pending.pending : [];
+    const active = list.find(t => t.id === activeThread) || list[0];
+
+    let odds = null;
+    if (active) {
+      odds = await tryGet(() => loaders.categoryOdds(active.id), null);
+    }
+
+    const bars = odds && odds.categories ? Object.entries(odds.categories).map(([cat, d]) => {
+      const total = Math.max(0.001, Math.abs(d.send) + Math.abs(d.receive));
+      const mine = Math.abs(d.send) / total;
+      const theirs = Math.abs(d.receive) / total;
+      const CAT_LABEL = {pts:'得分', reb:'籃板', ast:'助攻', stl:'抄截', blk:'阻攻', to:'失誤'};
+      return `<div class="tl-bar">
+        <div class="l">${d.send.toFixed(1)}</div>
         <div class="tl-bar-track">
           <div class="tl-bar-mine" style="width:${mine*100}%"></div>
           <div class="tl-bar-theirs" style="width:${theirs*100}%"></div>
         </div>
-        <div class="r">${(theirs*100).toFixed(0)}</div>
+        <div class="r">${d.receive.toFixed(1)}</div>
       </div>
-      <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em">${label}</div>
-    `).join('');
+      <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em">${esc(CAT_LABEL[cat] || cat)}</div>`;
+    }).join('') : '';
+
+    const verdict = odds ? `<div class="tl-verdict">
+        <div class="tl-verdict-head">AI 判決 · <b>${odds.fp_delta_per_game > 0 ? '建議接受' : odds.fp_delta_per_game < 0 ? '建議拒絕' : '中性'}</b></div>
+        <div>預估每場得分差距 ${odds.fp_delta_per_game > 0 ? '+' : ''}${odds.fp_delta_per_game.toFixed(2)}。</div>
+      </div>` : '<div class="tl-verdict"><div class="tl-verdict-head">尚無交易分析</div><div>請選擇交易提案以查看五類別影響。</div></div>';
 
     return `<div class="rail-section">
-      <div class="rail-head"><span>AI 交易分析</span><span class="pill accent" style="margin-left:auto">#2041</span></div>
+      <div class="rail-head"><span>AI 交易分析</span>${active ? `<span class="pill accent" style="margin-left:auto">#${esc(active.id.slice(-4))}</span>`:''}</div>
       ${verdict}
     </div>
     <div class="rail-section">
-      <div class="rail-head"><span>五類別勝率預測</span></div>
+      <div class="rail-head"><span>類別影響</span></div>
       <div class="card card-pad">
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);text-transform:uppercase;color:var(--ink-3);margin-bottom:8px"><span style="color:var(--bad)">我方</span><span style="color:var(--good)">對方</span></div>
-        ${bars}
+        ${bars || '<div class="empty-state">尚無交易資料</div>'}
       </div>
     </div>`;
   }
 
-  function renderDraftBoard() {
+  async function renderDraftBoard() {
+    const state = await tryGet(loaders.draftState, null);
+    if (!state) {
+      return `<div class="rail-section"><div class="rail-head"><span>選秀順位</span></div>${emptyCard('選秀尚未開始')}</div>`;
+    }
+    const teams = Array.isArray(state.teams) ? state.teams : [];
+    const currentId = state.current_team_id;
+    const rows = teams.map((t, i) => {
+      const isMe = t.id === state.human_team_id;
+      const isOnClock = t.id === currentId;
+      const rosterSize = Array.isArray(t.roster) ? t.roster.length : 0;
+      return `<div style="display:grid;grid-template-columns:24px 1fr 1fr;gap:8px;padding:6px 8px;border-radius:6px;${isMe?'background:var(--accent-14)':''}${isOnClock?';box-shadow:inset 0 0 0 1px var(--accent)':''}">
+        <span class="mono" style="color:var(--ink-3);font-size:11px">${i+1}</span>
+        <span style="${isMe?'color:var(--accent-hi);font-weight:600':''}">${esc(t.name)}</span>
+        <span class="mono" style="font-size:11px;color:var(--ink-2);text-align:right">${isOnClock?'選擇中…':(rosterSize + ' 人')}</span>
+      </div>`;
+    }).join('');
     return `<div class="rail-section">
-      <div class="rail-head"><span>選秀順位</span></div>
+      <div class="rail-head"><span>選秀順位</span><span class="mono" style="margin-left:auto;color:var(--ink-3)">R${state.current_round} · P${state.current_overall}</span></div>
       <div class="card card-pad" style="font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px">
-        ${[
-          ['1','Alex','P. Banchero',true],
-          ['2','Ben','V. Wembanyama',true],
-          ['3','Diana','T. Haliburton',true],
-          ['4','Eric','L. Dončić',true],
-          ['5','Fiona','J. Tatum',true],
-          ['6','Gary','G. Antetokounmpo',true],
-          ['7','Hana','A. Edwards',true],
-          ['8','你',null,false,true],
-          ['9','Ivan',null,false],
-          ['10','Jay',null,false],
-          ['11','Kelly',null,false],
-          ['12','Leo',null,false],
-        ].map(([p,n,pk,done,me]) => `
-          <div style="display:grid;grid-template-columns:24px 1fr 1fr;gap:8px;padding:6px 8px;border-radius:6px;${me?'background:var(--accent-14)':''}">
-            <span class="mono" style="color:var(--ink-3);font-size:11px">${p}</span>
-            <span style="${me?'color:var(--accent-hi);font-weight:600':''}">${n}</span>
-            <span class="mono" style="font-size:11px;color:${done?'var(--ink-2)':'var(--ink-4)'};text-align:right">${pk || (me?'選擇中…':'—')}</span>
-          </div>
-        `).join('')}
+        ${rows || '<div class="empty-state">—</div>'}
       </div>
     </div>`;
   }
 
-  function renderWaiverBudget() {
+  async function renderWaiverBudget() {
+    const fa = await tryGet(loaders.faStatus, {budget:100, used_today:0, limit:3, remaining:3, day:0});
+    const pct = Math.max(0, Math.min(100, (fa.budget / 100) * 100));
     return `<div class="rail-section">
       <div class="rail-head"><span>本季 Waiver 預算</span></div>
       <div class="card card-pad">
-        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:-0.02em">\$67 <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ \$100</span></div>
-        <div style="height:4px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:67%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 \$33</span><span>剩 7 週</span></div>
+        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:-0.02em">\$${fa.budget} <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ \$100</span></div>
+        <div style="height:4px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 \$${100 - fa.budget}</span><span>今日剩 ${fa.remaining} 次</span></div>
       </div>
     </div>
     <div class="rail-section">
-      <div class="rail-head"><span>聯盟最近撿角</span></div>
+      <div class="rail-head"><span>每日配額</span></div>
       <div class="card card-pad" style="font-size:var(--fs-sm);line-height:1.7;color:var(--ink-2)">
-        · Diana 撿走 <b style="color:var(--ink)">Coby White</b> (\$12)<br/>
-        · Alex 丟了 <b style="color:var(--ink)">R. Holmes</b><br/>
-        · Ben 撿走 <b style="color:var(--ink)">Brandon Miller</b> (\$8)
+        · 今日已用 <b style="color:var(--ink)">${fa.used_today} / ${fa.limit}</b> 次<br/>
+        · FAAB 預算每季固定 <b style="color:var(--ink)">\$100</b><br/>
+        · 週三 03:00 處理認領
       </div>
     </div>`;
   }
-
-  // ========================================================
-  // AVATAR HELPER
-  // ========================================================
-  const initials = (name) => {
-    if (!name) return '';
-    const parts = name.split(/\s+/).filter(Boolean);
-    if (parts.length === 1) return parts[0].slice(0,2).toUpperCase();
-    return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
-  };
-  const av = (name, grad, sizeCls='') =>
-    `<div class="av ${sizeCls}" data-grad="${grad}">${initials(name)}</div>`;
 
   // ========================================================
   // VIEWS
@@ -539,42 +532,94 @@ window.DATA = {
   const views = {};
 
   // ---------- HOME ----------
-  views.home = () => {
-    const { you, them, week } = D.matchup;
-    const leadPct = Math.min(100, (you.score / (you.score + them.score)) * 100);
-    const leading = you.score > them.score;
+  views.home = async () => {
+    const [me, brief, actionsData, standings] = await Promise.all([
+      loaders.me(),
+      tryGet(loaders.homeBrief, {brief:'', matchup:null, record:{w:0,l:0}, week:0}),
+      tryGet(loaders.homeActions, {actions:[]}),
+      tryGet(loaders.standings, {standings:[]}),
+    ]);
 
-    const actions = D.actions.map(a => {
-      const iconMap = {syringe:I.syringe, trade:I.trade, waiver:I.waiver, schedule:I.schedule, check:I.check};
-      return `<div class="action-item" data-urgency="${a.urgency}" data-action="${a.id}">
+    const record = me.record || {w:0,l:0,pf:0,pa:0};
+    const wk = me.current_week || brief.week || 0;
+    const actions = Array.isArray(actionsData.actions) ? actionsData.actions : [];
+    const standList = Array.isArray(standings.standings) ? standings.standings : [];
+    const myRank = standList.findIndex(s => s.team_id === me.team_id) + 1;
+
+    const iconMap = {syringe:I.syringe, trade:I.trade, waiver:I.waiver, schedule:I.schedule, check:I.check};
+    const actionsHtml = actions.length === 0 ? emptyCard('暫無待辦事項') : actions.map(a => `
+      <div class="action-item" data-urgency="${esc(a.urgency)}" data-action="${esc(a.id)}">
         <div class="ai-ic">${iconMap[a.ic] || I.sparkle}</div>
         <div>
-          <div class="ai-title">${a.title}</div>
-          <div class="ai-sub">${a.sub}</div>
+          <div class="ai-title">${esc(a.title)}</div>
+          <div class="ai-sub">${esc(a.sub || '')}</div>
         </div>
         <div class="ai-cta">
-          ${a.time ? `<span class="ai-time">${a.time}</span>` : ''}
-          ${a.urgency !== 'done' ? `<button class="btn sm ghost">${a.cta} ${I.arrow}</button>` : `<span class="pill good"><span class="dot"></span>完成</span>`}
+          ${a.time ? `<span class="ai-time">${esc(a.time)}</span>` : ''}
+          ${a.urgency !== 'done' ? `<button class="btn sm ghost">${esc(a.cta || '查看')} ${I.arrow}</button>` : `<span class="pill good"><span class="dot"></span>完成</span>`}
+        </div>
+      </div>`).join('');
+    const todoCount = actions.filter(a => a.urgency !== 'done').length;
+
+    // Matchup card (may be null if season not started)
+    const m = brief.matchup;
+    let matchupCard;
+    if (m) {
+      const sum = (m.my_score + m.opp_score) || 1;
+      const leadPct = (m.my_score / sum) * 100;
+      const leading = m.my_score > m.opp_score;
+      matchupCard = `<div class="matchup-card">
+        <div class="matchup-head">
+          <h3>本週對戰</h3>
+          <span class="wk">${m.complete ? '已結算' : '進行中'}</span>
+        </div>
+        <div class="matchup-body">
+          <div class="matchup-side you ${leading?'winning':'losing'}">
+            <div class="matchup-team">${av(me.name, gradFor(me.team_id), 'sm')}<span>${esc(me.name || '我方')} · 你</span></div>
+            <div class="matchup-score mono">${m.my_score}</div>
+          </div>
+          <div class="matchup-vs mono">VS</div>
+          <div class="matchup-side them ${leading?'losing':'winning'}">
+            <div class="matchup-team"><span>${esc(m.opp_name || '對手')}</span>${av(m.opp_name, gradFor(m.opp_team_id), 'sm')}</div>
+            <div class="matchup-score mono">${m.opp_score}</div>
+          </div>
+        </div>
+        <div class="matchup-progress">
+          <div class="matchup-progress-track">
+            <div class="mpt-you" style="width:${leadPct}%"></div>
+            <div class="mpt-them" style="width:${100-leadPct}%"></div>
+          </div>
+          <div class="matchup-progress-meta"><span>${leadPct.toFixed(0)}%</span><span>差距 ${Math.abs(m.my_score - m.opp_score).toFixed(1)}</span><span>${(100-leadPct).toFixed(0)}%</span></div>
         </div>
       </div>`;
-    }).join('');
+    } else {
+      matchupCard = `<div class="matchup-card"><div class="matchup-head"><h3>本週對戰</h3></div>${emptyCard('賽季尚未開始或本週尚無對戰')}</div>`;
+    }
+
+    // Mini standings (top 4)
+    const miniStand = standList.slice(0,4).map((s,i) => `
+      <div style="display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:10px 20px;${i<3?'border-bottom:1px solid var(--line-soft)':''}">
+        <span class="mono" style="color:var(--ink-3);font-size:11px">${i+1}</span>
+        <div style="display:flex;align-items:center;gap:10px">${av(s.name, gradFor(s.team_id), 'sm')}<span style="${s.team_id===me.team_id?'color:var(--accent-hi);font-weight:600':'font-weight:500'};font-size:var(--fs-sm)">${esc(s.name)}${s.team_id===me.team_id?' <span class="pill accent" style="margin-left:6px">你</span>':''}</span></div>
+        <span class="mono" style="color:var(--ink-2);font-size:var(--fs-sm)">${s.w}–${s.l}</span>
+      </div>`).join('');
 
     return `
       <div class="home-head">
         <div>
-          <div class="home-greet">早安 Chen W. <span class="muted">— 第 ${week} 週，你有 4 件事可以做。</span></div>
+          <div class="home-greet">哈囉 ${esc(me.name || '教練')} <span class="muted">— 第 ${wk} 週，你有 ${todoCount} 件事可以做。</span></div>
         </div>
-        <div class="home-date mono">WED · 03.12 · 例行賽第 14 週</div>
+        <div class="home-date mono">W${wk} · ${me.league_name || ''}</div>
       </div>
 
       <section class="sitrep">
         <div class="sitrep-primary">
           <div class="sitrep-eyebrow">
-            <span class="phase-ribbon">第 14 週 · 例行賽</span>
-            <span class="week">距離季後賽 4 週</span>
+            <span class="phase-ribbon">第 ${wk} 週</span>
+            ${myRank ? `<span class="week">目前第 ${myRank} 名</span>` : ''}
           </div>
-          <div class="sitrep-headline">你本週<span class="em"> 領先 26 分</span>，但還有<br/>3 場比賽會改變結局。</div>
-          <div class="sitrep-sub">Jokić 今晚出戰 LAL，Luka 對位 Booker 是關鍵對決。Eric 手上還有 Brunson 沒打，他會在週末追上——如果你的先發陣容沒調整。</div>
+          <div class="sitrep-headline">${esc(brief.brief || '歡迎回到聯盟')}</div>
+          <div class="sitrep-sub">戰績 ${record.w}–${record.l} · 總得分 ${record.pf} · 失分 ${record.pa}。</div>
           <div class="sitrep-ctas">
             <a href="#/matchup" class="btn">進入對戰 ${I.arrow}</a>
             <a href="#/roster" class="btn ghost">調整先發</a>
@@ -584,106 +629,173 @@ window.DATA = {
         <div class="sitrep-aside">
           <div class="metric-card">
             <div class="mc-label">本季戰績</div>
-            <div class="mc-value">9–4 <span class="mc-unit">· 第 3 名</span></div>
-            <div class="mc-delta">▲ W3 連勝中</div>
+            <div class="mc-value">${record.w}–${record.l}${myRank?` <span class="mc-unit">· 第 ${myRank} 名</span>`:''}</div>
+            <div class="mc-delta">總得分 ${record.pf}</div>
           </div>
           <div class="metric-card">
-            <div class="mc-label">本週預估終局</div>
-            <div class="mc-value">${you.proj} <span class="mc-unit">vs ${them.proj}</span></div>
-            <div class="mc-delta">領先 ${(you.proj - them.proj).toFixed(0)} · 勝率 72%</div>
+            <div class="mc-label">FAAB 預算</div>
+            <div class="mc-value">\$${me.budget} <span class="mc-unit">/ \$100</span></div>
+            <div class="mc-delta">本週 W${wk}</div>
           </div>
           <div class="metric-card">
-            <div class="mc-label">排名軌跡</div>
-            <div class="mc-value">→ 第 2</div>
-            <div class="mc-delta neutral">目前第 3、若本週贏將擠下 Ben</div>
+            <div class="mc-label">聯盟</div>
+            <div class="mc-value">${esc(me.league_name || '—')}</div>
+            <div class="mc-delta neutral">${me.num_teams || '—'} 人</div>
           </div>
         </div>
       </section>
 
       <section class="action-queue">
-        <h2>今日該做什麼 <span class="count">${D.actions.filter(a=>a.urgency!=='done').length} 項待辦</span></h2>
-        <div class="action-list">${actions}</div>
+        <h2>今日該做什麼 <span class="count">${todoCount} 項待辦</span></h2>
+        <div class="action-list">${actionsHtml}</div>
       </section>
 
       <section class="home-split">
-        <div class="matchup-card">
-          <div class="matchup-head">
-            <h3>本週對戰</h3>
-            <span class="wk">已打 ${you.played}/${you.total} 場</span>
-          </div>
-          <div class="matchup-body">
-            <div class="matchup-side you ${leading?'winning':'losing'}">
-              <div class="matchup-team">${av(D.me.name, you.grad, 'sm')}<span>肉圓幫 · 你</span></div>
-              <div class="matchup-score mono">${you.score}</div>
-              <div class="matchup-projection mono">proj · ${you.proj}</div>
-            </div>
-            <div class="matchup-vs mono">VS</div>
-            <div class="matchup-side them ${leading?'losing':'winning'}">
-              <div class="matchup-team"><span>${them.team} · Eric</span>${av('Eric', them.grad, 'sm')}</div>
-              <div class="matchup-score mono">${them.score}</div>
-              <div class="matchup-projection mono">proj · ${them.proj}</div>
-            </div>
-          </div>
-          <div class="matchup-progress">
-            <div class="matchup-progress-track">
-              <div class="mpt-you" style="width:${leadPct}%"></div>
-              <div class="mpt-them" style="width:${100-leadPct}%"></div>
-            </div>
-            <div class="matchup-progress-meta"><span>${leadPct.toFixed(0)}%</span><span>差距 ${Math.abs(you.score-them.score).toFixed(1)}</span><span>${(100-leadPct).toFixed(0)}%</span></div>
-          </div>
-        </div>
-
+        ${matchupCard}
         <div class="card">
           <div class="card-header">
-            <h3>本週關鍵球員</h3>
-            <span class="sub">你隊上表現最強的三位</span>
+            <h3>聯盟前段班</h3>
+            <span class="sub">當前排名 · 前 4 名</span>
           </div>
           <div style="display:flex;flex-direction:column">
-            ${D.roster.filter(p=>p.status==='hot').slice(0,3).map(p => `
-              <div style="display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line-soft)">
-                ${av(p.name, p.grad)}
-                <div>
-                  <div style="font-weight:500;font-size:var(--fs-sm)">${p.name}</div>
-                  <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:2px">${p.team} · ${p.game || ''}</div>
-                </div>
-                <div style="text-align:right">
-                  <div class="mono" style="font-weight:700;color:var(--good)">${p.proj}</div>
-                  <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase">預估</div>
-                </div>
-              </div>`).join('')}
+            ${miniStand || emptyCard('尚無排名資料')}
           </div>
         </div>
       </section>
     `;
   };
 
-  // ---------- ROSTER ----------
-  views.roster = () => {
-    const byZone = { STARTERS: [], BN: [], IR: [] };
-    D.roster.forEach(p => {
-      if (p.slot === 'BN') byZone.BN.push(p);
-      else if (p.slot === 'IR') byZone.IR.push(p);
-      else byZone.STARTERS.push(p);
-    });
+  // ---------- MATCHUP ----------
+  views.matchup = async () => {
+    const me = await loaders.me();
+    const wk = me.current_week || 0;
+    if (!wk) {
+      return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">對戰</span><div class="view-title">本週對戰</div></div></div>${emptyCard('賽季尚未開始')}`;
+    }
+    const matchData = await tryGet(() => loaders.matchup(wk), {matchups:[]});
+    const mine = (matchData.matchups || []).find(m => m.team_a === me.team_id || m.team_b === me.team_id);
+    if (!mine) {
+      return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">第 ${wk} 週</span><div class="view-title">本週對戰</div></div></div>${emptyCard('找不到你的本週對戰')}`;
+    }
+    const isA = mine.team_a === me.team_id;
+    const myScore = isA ? mine.score_a : mine.score_b;
+    const oppScore = isA ? mine.score_b : mine.score_a;
+    const oppId = isA ? mine.team_b : mine.team_a;
 
-    const renderSlot = (p) => `
-      <div class="slot">
-        <span class="slot-label">${p.slot}</span>
-        ${av(p.name, p.grad)}
+    // Detailed logs (last ~3 weeks only, may 404 for older)
+    const detail = await tryGet(() => loaders.matchupDetail(wk, mine.team_a, mine.team_b), null);
+    const myPlayers  = detail ? (isA ? detail.players_a : detail.players_b) : [];
+    const oppPlayers = detail ? (isA ? detail.players_b : detail.players_a) : [];
+    const myTeamName = detail ? (isA ? detail.team_a_name : detail.team_b_name) : me.name;
+    const oppTeamName = detail ? (isA ? detail.team_b_name : detail.team_a_name) : ('T' + oppId);
+
+    const sum = (myScore + oppScore) || 1;
+    const myPct = (myScore / sum) * 100;
+
+    // Aggregate by player (sum fp across days shown)
+    const aggregate = (rows) => {
+      const map = new Map();
+      for (const r of (rows || [])) {
+        const key = r.player_id;
+        if (!map.has(key)) map.set(key, {player_id:key, name:r.player_name, pos:r.pos, fp:0, games:0});
+        const agg = map.get(key);
+        agg.fp += (r.fp || 0);
+        if (r.played) agg.games += 1;
+      }
+      return [...map.values()].sort((a,b) => b.fp - a.fp);
+    };
+    const myAgg  = aggregate(myPlayers);
+    const oppAgg = aggregate(oppPlayers);
+
+    const renderRow = (p) => `
+      <div style="display:grid;grid-template-columns:40px 40px 1fr auto;gap:14px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line-soft)">
+        <span class="pos-tag" data-pos="${esc(p.pos || '')}">${esc(p.pos || '')}</span>
+        ${av(p.name, gradFor(p.player_id))}
         <div>
-          <div class="slot-name">${p.name}</div>
-          <div class="slot-team">${p.team} · ${p.game || '—'}</div>
+          <div style="font-weight:500;font-size:var(--fs-sm)">${esc(p.name)}</div>
+          <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:2px">出賽 ${p.games}</div>
         </div>
-        <div class="slot-form">${p.form.map(f => `<div class="spark ${f===1?'hot':f===0?'warm':'cold'}"></div>`).join('')}</div>
-        <div class="slot-proj">${p.proj || '—'}</div>
+        <div class="mono" style="font-weight:700;min-width:48px;text-align:right;color:var(--ink)">${p.fp.toFixed(1)}</div>
       </div>`;
 
     return `
       <div class="view-head">
         <div class="view-title-block">
+          <span class="eyebrow">第 ${wk} 週 · ${mine.complete ? '已結算' : '例行賽'}</span>
+          <div class="view-title">${esc(myTeamName)} vs ${esc(oppTeamName)}</div>
+          <div class="view-sub">${mine.complete ? `最終 ${myScore} - ${oppScore}` : '進行中'}</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:var(--s-5)">
+        <div class="matchup-body" style="padding:var(--s-7) var(--s-8)">
+          <div class="matchup-side you ${myScore>=oppScore?'winning':'losing'}">
+            <div class="matchup-team">${av(me.name, gradFor(me.team_id), 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">${esc(myTeamName)}</span></div>
+            <div class="matchup-score mono" style="color:var(--good);font-size:var(--fs-4xl)">${myScore.toFixed(1)}</div>
+          </div>
+          <div class="matchup-vs mono" style="font-size:var(--fs-xl)">VS</div>
+          <div class="matchup-side them ${myScore>=oppScore?'losing':'winning'}">
+            <div class="matchup-team">${av(oppTeamName, gradFor(oppId), 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">${esc(oppTeamName)}</span></div>
+            <div class="matchup-score mono" style="font-size:var(--fs-4xl)">${oppScore.toFixed(1)}</div>
+          </div>
+        </div>
+        <div class="matchup-progress" style="padding:0 var(--s-8) var(--s-6)">
+          <div class="matchup-progress-track"><div class="mpt-you" style="width:${myPct.toFixed(1)}%"></div><div class="mpt-them" style="width:${(100-myPct).toFixed(1)}%"></div></div>
+          <div class="matchup-progress-meta">
+            <span>${myPct.toFixed(0)}%</span>
+            <span>差距 ${Math.abs(myScore - oppScore).toFixed(1)}</span>
+            <span>${(100-myPct).toFixed(0)}%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3>${esc(myTeamName)} 本週貢獻</h3><span class="sub">${detail ? '依 FP 排序' : '舊週已壓縮'}</span></div>
+        <div>${myAgg.length ? myAgg.map(renderRow).join('') : emptyCard('此週球員日誌已壓縮')}</div>
+      </div>
+
+      <div class="card" style="margin-top:var(--s-5)">
+        <div class="card-header"><h3>${esc(oppTeamName)} 本週貢獻</h3><span class="sub">對手</span></div>
+        <div>${oppAgg.length ? oppAgg.map(renderRow).join('') : emptyCard('此週球員日誌已壓縮')}</div>
+      </div>
+    `;
+  };
+
+  // ---------- ROSTER ----------
+  views.roster = async () => {
+    const me = await loaders.me();
+    const team = await tryGet(() => loaders.team(me.team_id), null);
+    if (!team) return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">球隊</span><div class="view-title">陣容</div></div></div>${emptyCard('無法載入陣容')}`;
+
+    const playersById = new Map((team.players || []).map(p => [p.id, p]));
+    const lineupSlots = team.lineup_slots || [];
+    const starters = lineupSlots.map(s => ({slot: s.slot, p: playersById.get(s.player_id)})).filter(x => x.p);
+    const benchIds = team.bench || [];
+    const injuredOut = new Set(team.injured_out || []);
+    const bench = benchIds.filter(id => !injuredOut.has(id)).map(id => playersById.get(id)).filter(Boolean);
+    const ir = [...injuredOut].map(id => playersById.get(id)).filter(Boolean);
+
+    const renderSlot = (p, slotLabel) => {
+      const form = p.form || [];
+      return `
+      <div class="slot">
+        <span class="slot-label">${esc(slotLabel || p.pos)}</span>
+        ${av(p.name, p.grad || gradFor(p.id))}
+        <div>
+          <div class="slot-name">${esc(p.name)}</div>
+          <div class="slot-team">${esc(p.team)} · ${esc(narrativeFromForm(form))}</div>
+        </div>
+        <div class="slot-form">${formBlocks(form)}</div>
+        <div class="slot-proj">${(p.fppg != null ? p.fppg.toFixed(1) : '—')}</div>
+      </div>`;
+    };
+
+    return `
+      <div class="view-head">
+        <div class="view-title-block">
           <span class="eyebrow">球隊管理</span>
-          <div class="view-title">肉圓幫 · 陣容</div>
-          <div class="view-sub">12 人名單 · 5 傷兵位 · 調整截止於 週三 03:00</div>
+          <div class="view-title">${esc(team.team.name)} · 陣容</div>
+          <div class="view-sub">${(team.players || []).length} 人名單 · 先發 ${starters.length} 人 · 板凳 ${bench.length} · 傷兵 ${ir.length}</div>
         </div>
         <div class="view-actions">
           <div class="segmented"><button aria-pressed="true">本週</button><button>下週</button></div>
@@ -692,252 +804,267 @@ window.DATA = {
       </div>
 
       <div style="margin-bottom:var(--s-6)">
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">先發 · 8 人</div>
-        <div class="roster-grid">${byZone.STARTERS.map(renderSlot).join('')}</div>
+        <div class="eyebrow" style="margin-bottom:var(--s-3)">先發 · ${starters.length} 人</div>
+        <div class="roster-grid">${starters.map(s => renderSlot(s.p, s.slot)).join('') || emptyCard('尚未設定先發')}</div>
       </div>
 
       <div style="margin-bottom:var(--s-6)">
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">板凳 · ${byZone.BN.length} 人</div>
-        <div class="roster-grid">${byZone.BN.map(renderSlot).join('')}</div>
+        <div class="eyebrow" style="margin-bottom:var(--s-3)">板凳 · ${bench.length} 人</div>
+        <div class="roster-grid">${bench.map(p => renderSlot(p, 'BN')).join('') || emptyCard('板凳為空')}</div>
       </div>
 
       <div>
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">傷兵名單 · ${byZone.IR.length} 人</div>
-        <div class="roster-grid">${byZone.IR.map(renderSlot).join('')}</div>
-      </div>
-    `;
-  };
-
-  // ---------- MATCHUP ----------
-  views.matchup = () => {
-    const { you, them } = D.matchup;
-    const stars = D.roster.filter(p => ['PG','SG','SF','PF','C','G','F','UTIL'].includes(p.slot));
-    return `
-      <div class="view-head">
-        <div class="view-title-block">
-          <span class="eyebrow">第 14 週 · 例行賽</span>
-          <div class="view-title">肉圓幫 vs 珍奶兄弟</div>
-          <div class="view-sub">已打 5/8 場 · 週日 18:30 結算</div>
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:var(--s-5)">
-        <div class="matchup-body" style="padding:var(--s-7) var(--s-8)">
-          <div class="matchup-side you winning">
-            <div class="matchup-team">${av('Chen', you.grad, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">肉圓幫</span></div>
-            <div class="matchup-score mono" style="color:var(--good);font-size:var(--fs-4xl)">${you.score}</div>
-          </div>
-          <div class="matchup-vs mono" style="font-size:var(--fs-xl)">VS</div>
-          <div class="matchup-side them losing">
-            <div class="matchup-team">${av('Eric', them.grad, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">珍奶兄弟</span></div>
-            <div class="matchup-score mono" style="font-size:var(--fs-4xl)">${them.score}</div>
-          </div>
-        </div>
-        <div class="matchup-progress" style="padding:0 var(--s-8) var(--s-6)">
-          <div class="matchup-progress-track"><div class="mpt-you" style="width:${(you.score/(you.score+them.score)*100).toFixed(1)}%"></div><div class="mpt-them" style="width:${(them.score/(you.score+them.score)*100).toFixed(1)}%"></div></div>
-          <div class="matchup-progress-meta">
-            <span>已打 ${you.played}/${you.total} · 預估 ${you.proj}</span>
-            <span>領先 ${(you.score-them.score).toFixed(1)} · 勝率 72%</span>
-            <span>對手預估 ${them.proj}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header"><h3>本週球員貢獻</h3><span class="sub">依出場數排序</span></div>
-        <div>${stars.map((p,i) => `
-          <div style="display:grid;grid-template-columns:36px 40px 1fr auto auto;gap:16px;align-items:center;padding:14px 20px;${i<stars.length-1?'border-bottom:1px solid var(--line-soft)':''}">
-            <span class="pos-tag" data-pos="${p.slot}">${p.slot}</span>
-            ${av(p.name, p.grad)}
-            <div>
-              <div style="font-weight:500;font-size:var(--fs-sm)">${p.name}</div>
-              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);margin-top:2px">${p.team} · ${p.game || '—'}</div>
-            </div>
-            <div class="slot-form">${p.form.map(f => `<div class="spark ${f===1?'hot':f===0?'warm':'cold'}"></div>`).join('')}</div>
-            <div class="mono" style="font-weight:700;min-width:48px;text-align:right;color:var(--ink)">${p.proj}</div>
-          </div>`).join('')}
-        </div>
+        <div class="eyebrow" style="margin-bottom:var(--s-3)">傷兵名單 · ${ir.length} 人</div>
+        <div class="roster-grid">${ir.map(p => renderSlot(p, 'IR')).join('') || emptyCard('無傷兵')}</div>
       </div>
     `;
   };
 
   // ---------- STANDINGS ----------
-  views.standings = () => `
-    <div class="view-head">
-      <div class="view-title-block">
-        <span class="eyebrow">聯盟</span>
-        <div class="view-title">排名 · 絕地爆米花盃</div>
-        <div class="view-sub">第 14 週 · 前 6 名進季後賽 · 後 2 名直接抽下季選秀籤</div>
+  views.standings = async () => {
+    const [stand, me] = await Promise.all([
+      tryGet(loaders.standings, {standings:[]}),
+      tryGet(loaders.me, {team_id:-1}),
+    ]);
+    const rows = Array.isArray(stand.standings) ? stand.standings : [];
+    const regWeeks = stand.regular_weeks || 21;
+    const cw = stand.current_week || 0;
+    if (!rows.length) return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">聯盟</span><div class="view-title">排名</div></div></div>${emptyCard('賽季尚未開始')}`;
+    return `
+      <div class="view-head">
+        <div class="view-title-block">
+          <span class="eyebrow">聯盟</span>
+          <div class="view-title">排名</div>
+          <div class="view-sub">第 ${cw} 週 · 例行賽 ${regWeeks} 週</div>
+        </div>
       </div>
-      <div class="view-actions">
-        <div class="segmented"><button aria-pressed="true">整體</button><button>東區</button><button>西區</button></div>
-      </div>
-    </div>
-    <div class="card">
-      <table class="standings-table">
-        <thead><tr><th>名次</th><th>隊伍</th><th class="num">戰績</th><th class="num">總得分</th><th class="num">連勝</th><th class="num">趨勢</th></tr></thead>
-        <tbody>${D.standings.map(s => `
-          <tr class="${s.you?'you':''} ${s.r<=6?'playoff':''}">
-            <td><span class="rank-medal" data-rank="${s.r}">${s.r}</span></td>
-            <td><div style="display:flex;align-items:center;gap:10px">${av(s.team, ((s.r-1)%8)+1, 'sm')}<div><div style="font-weight:500">${s.team}${s.you?' <span class="pill accent" style="margin-left:6px">你</span>':''}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${s.owner}</div></div></div></td>
-            <td class="num"><b>${s.w}–${s.l}</b></td>
-            <td class="num">${s.pf}</td>
-            <td class="num"><span class="streak ${s.streak[0].toLowerCase()}">${s.streak}</span></td>
-            <td class="num" style="color:var(--ink-3)">${s.r <= 3 ? '▲' : s.r >= 10 ? '▼' : '—'}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`;
+      <div class="card">
+        <table class="standings-table">
+          <thead><tr><th>名次</th><th>隊伍</th><th class="num">戰績</th><th class="num">總得分</th><th class="num">失分</th><th class="num">差</th></tr></thead>
+          <tbody>${rows.map((s,i) => {
+            const rank = i + 1;
+            const youRow = s.team_id === me.team_id;
+            const diff = (s.pf - s.pa).toFixed(1);
+            return `<tr class="${youRow?'you':''} ${rank<=Math.ceil(rows.length/2)?'playoff':''}">
+              <td><span class="rank-medal" data-rank="${rank}">${rank}</span></td>
+              <td><div style="display:flex;align-items:center;gap:10px">${av(s.name, gradFor(s.team_id), 'sm')}<div><div style="font-weight:500">${esc(s.name)}${youRow?' <span class="pill accent" style="margin-left:6px">你</span>':''}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${esc(s.persona || (s.is_human?'Human':'AI'))}</div></div></div></td>
+              <td class="num"><b>${s.w}–${s.l}</b></td>
+              <td class="num">${s.pf}</td>
+              <td class="num">${s.pa}</td>
+              <td class="num" style="color:${s.pf>=s.pa?'var(--good)':'var(--bad)'}">${s.pf>=s.pa?'+':''}${diff}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  };
 
   // ---------- DRAFT ----------
-  views.draft = () => {
-    const ds = D.draftState;
-    const needs = ds.needs.map(n => `
+  views.draft = async () => {
+    const [state, recosData] = await Promise.all([
+      tryGet(loaders.draftState, null),
+      tryGet(loaders.draftRecos, {is_complete:false, needs:[], recos:[]}),
+    ]);
+    if (!state) return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">選秀廳</span><div class="view-title">選秀</div></div></div>${emptyCard('選秀尚未初始化')}`;
+    if (state.is_complete || recosData.is_complete) {
+      return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">選秀廳</span><div class="view-title">選秀完成</div><div class="view-sub">全部 ${state.total_rounds} 輪已結束 · 可前往球隊頁查看名單</div></div></div>${emptyCard('選秀已結束')}`;
+    }
+
+    const needs = (recosData.needs || []).map(n => `
       <div class="need-cell ${n.need==='high'?'short':''}">
-        <div class="np">${n.pos}</div>
+        <div class="np">${esc(n.pos)}</div>
         <div class="nc">${n.filled}/${n.target}</div>
       </div>`).join('');
 
-    const recos = ds.recos.map(r => `
+    const recos = (recosData.recos || []).map(r => `
       <div class="reco-card ${r.top?'top':''}">
         <div class="reco-player">
-          ${av(r.name, r.grad, 'lg')}
+          ${av(r.name, gradFor(r.player_id), 'lg')}
           <div>
-            <div class="reco-name">${r.name}</div>
-            <div class="reco-meta"><span class="pos-tag" data-pos="${r.pos}">${r.pos}</span><span>${r.team}</span><span>·</span><span>ADP 第 ${r.rank+6} 順位</span></div>
+            <div class="reco-name">${esc(r.name)}</div>
+            <div class="reco-meta"><span class="pos-tag" data-pos="${esc(r.pos)}">${esc(r.pos)}</span><span>${esc(r.team)}</span><span>·</span><span>建議排名 #${r.rank}</span></div>
           </div>
         </div>
         <div class="reco-fit">
           <span class="score">${r.fit}<small>/100</small></span>
           <span class="label">陣容適配分</span>
         </div>
-        <div class="reco-reasons">${r.reasons.map(x => `<div class="reco-r"><span class="bullet">◆</span>${x}</div>`).join('')}</div>
+        <div class="reco-reasons">${(r.reasons || []).map(x => `<div class="reco-r"><span class="bullet">◆</span>${esc(x)}</div>`).join('')}</div>
         <div class="reco-actions">
-          <button class="btn" data-reco="${r.name}">選他 ${I.arrow}</button>
+          <button class="btn" data-reco-id="${r.player_id}" data-reco-name="${esc(r.name)}">選他 ${I.arrow}</button>
           <button class="btn ghost">略過</button>
         </div>
       </div>`).join('');
 
+    // Available pool (top 10)
+    const players = await tryGet(loaders.players, []);
+    const pool = (Array.isArray(players) ? players : []).slice(0, 10);
+    const poolRows = pool.map((p, i) => `
+      <tr>
+        <td><span class="mono" style="color:var(--ink-3);font-size:11px">${i+1}</span></td>
+        <td><div style="display:flex;align-items:center;gap:10px">${av(p.name, gradFor(p.id), 'sm')}<span>${esc(p.name)}</span></div></td>
+        <td><span class="pos-tag" data-pos="${esc(p.pos)}">${esc(p.pos)}</span></td>
+        <td>${esc(p.team)}</td>
+        <td class="num mono">${(p.fppg || 0).toFixed(1)}</td>
+        <td class="num"><button class="btn sm ghost" data-reco-id="${p.id}" data-reco-name="${esc(p.name)}">選</button></td>
+      </tr>`).join('');
+
     return `
       <div class="view-head">
         <div class="view-title-block">
-          <span class="eyebrow">選秀廳 · 第 ${ds.round} 輪</span>
-          <div class="view-title">你的第 ${ds.pickOverall} 順位</div>
+          <span class="eyebrow">選秀廳 · 第 ${recosData.round} 輪</span>
+          <div class="view-title">整體第 ${recosData.pick_overall} 順位</div>
         </div>
       </div>
 
       <div class="draft-top">
         <div class="draft-clock">
           <div class="dc-eyebrow">
-            <span class="live">LIVE · 第 ${ds.round} 輪 第 ${ds.pickInRound} 順位</span>
-            <span class="pick-num">你的第 1 支籤</span>
+            <span class="live">LIVE · 第 ${recosData.round} 輪 第 ${recosData.pick_in_round} 順位</span>
+            <span class="pick-num">${recosData.on_clock ? '你的回合' : '等待中…'}</span>
           </div>
-          <h2>剩 ${ds.timeLeft} 秒</h2>
-          <div class="dc-sub">前 7 順位已選走前段球星。根據你聯盟設定（9 類別）與位置缺口，以下是我們的建議。</div>
+          <h2>${recosData.on_clock ? '輪到你選了' : '對手思考中'}</h2>
+          <div class="dc-sub">根據你聯盟設定與位置缺口，以下是建議人選（由 FPPG + 位置稀缺度計算）。</div>
         </div>
         <div class="needs-strip">
           <div class="needs-head">目前陣容缺口</div>
-          <div class="needs-grid">${needs}</div>
+          <div class="needs-grid">${needs || emptyCard('—')}</div>
         </div>
       </div>
 
-      <div class="reco-grid">${recos}</div>
+      <div class="reco-grid">${recos || emptyCard('尚無建議')}</div>
 
       <div class="card">
-        <div class="card-header"><h3>可選球員（前 10 名）</h3><span class="sub">依 ADP 排序 · 灰色代表已被選走</span></div>
+        <div class="card-header"><h3>可選球員（前 10 名）</h3><span class="sub">依 FPPG 排序</span></div>
         <table class="standings-table">
-          <tbody>${[
-            ['P. Banchero','PF','ORL',1,true],
-            ['V. Wembanyama','C','SAS',2,true],
-            ['T. Haliburton','PG','IND',3,true],
-            ['L. Dončić','PG','DAL',4,true],
-            ['J. Tatum','SF','BOS',5,true],
-            ['G. Antetokounmpo','PF','MIL',6,true],
-            ['A. Edwards','SG','MIN',7,true],
-            ['SGA','PG','OKC',8,false],
-            ['A. Davis','C','LAL',9,false],
-            ['J. Brown','SF','BOS',10,false],
-          ].map(([n,p,t,r,taken], i) => `
-            <tr style="${taken?'opacity:0.4':''}">
-              <td><span class="mono" style="color:var(--ink-3);font-size:11px">${r}</span></td>
-              <td><div style="display:flex;align-items:center;gap:10px">${av(n, (i%8)+1, 'sm')}<span style="${taken?'text-decoration:line-through':''}">${n}</span></div></td>
-              <td><span class="pos-tag" data-pos="${p}">${p}</span></td>
-              <td>${t}</td>
-              <td class="num">${taken ? '<span style="color:var(--ink-3)">已選走</span>' : '<button class="btn sm ghost">選</button>'}</td>
-            </tr>`).join('')}</tbody>
+          <tbody>${poolRows || '<tr><td colspan="6"><div class="empty-state">池內無球員</div></td></tr>'}</tbody>
         </table>
       </div>
     `;
   };
 
   // ---------- TRADE ----------
-  let activeThread = 't1';
-  views.trade = () => {
-    const thread = D.tradeThreads.find(t => t.id === activeThread) || D.tradeThreads[0];
+  let activeThread = null;
+  views.trade = async () => {
+    const [me, pendingData, historyData] = await Promise.all([
+      loaders.me(),
+      tryGet(loaders.tradesPending, {pending:[]}),
+      tryGet(loaders.tradesHistory, {history:[]}),
+    ]);
+    const pending = pendingData.pending || [];
+    const history = historyData.history || [];
+    const threads = [...pending, ...history];
+    if (activeThread == null && threads.length > 0) activeThread = threads[0].id;
+    const thread = threads.find(t => t.id === activeThread) || threads[0] || null;
 
-    const threadList = D.tradeThreads.map(t => `
-      <div class="ts-row ${t.id===activeThread?'active':''}" data-thread="${t.id}">
-        ${av(t.with, t.grad)}
+    const otherTeamOf = (t) => (t.from_team === me.team_id ? t.to_team : t.from_team);
+    const threadList = threads.map(t => {
+      const otherId = otherTeamOf(t);
+      const isUnread = t.status === 'pending_accept' && t.to_team === me.team_id;
+      const preview = (t.messages && t.messages.length > 0) ? (t.messages[t.messages.length-1].body || '') : (t.proposer_message || (t.status || ''));
+      return `<div class="ts-row ${t.id===activeThread?'active':''}" data-thread="${esc(t.id)}">
+        ${av('T'+otherId, gradFor(otherId))}
         <div>
-          <div class="ts-name">${t.with} · ${t.team}</div>
-          <div class="ts-preview">${t.preview}</div>
-          <div class="ts-fit ${t.fit==='mid'?'mid':t.fit==='low'?'low':''}">Fit · ${t.fit}</div>
+          <div class="ts-name">隊伍 #${otherId}</div>
+          <div class="ts-preview">${esc(preview.slice(0,60))}</div>
+          <div class="ts-fit ${t.status==='executed'?'':'mid'}">${esc(t.status)}</div>
         </div>
-        <div class="ts-time">${t.time}</div>
-      </div>`).join('');
-
-    const msgs = thread.msgs.map(m => {
-      if (m.type === 'proposal') {
-        return `<div class="proposal">
-          <div class="proposal-head"><span>交易提案 <span class="proposal-id">${m.id}</span></span><span>${m.from} 提出</span></div>
-          <div class="prop-sides">
-            <div class="prop-side">
-              <div class="prop-side-head">他給你</div>
-              <ul>${m.theirs.map(p => `<li><span class="pn">${p.n}</span><span class="pos-tag" data-pos="${p.p}">${p.p}</span></li>`).join('')}</ul>
-            </div>
-            <div class="prop-arrow">${I.arrow}</div>
-            <div class="prop-side mine">
-              <div class="prop-side-head">你給他</div>
-              <ul>${m.mine.map(p => `<li><span class="pn">${p.n}</span><span class="pos-tag" data-pos="${p.p}">${p.p}</span></li>`).join('')}</ul>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;justify-content:center;margin-top:6px"><button class="btn sm">接受</button><button class="btn sm ghost">還價</button><button class="btn sm subtle">拒絕</button></div>
-        </div>`;
-      }
-      return `<div class="bubble-row ${m.from}">
-        <div class="bubble ${m.from}">${m.text}</div>
-        <div class="bubble-meta">${m.time}</div>
+        <div class="ts-time">${isUnread?'未讀':'已讀'}</div>
       </div>`;
     }).join('');
 
+    if (!thread) {
+      return `
+        <div class="view-head">
+          <div class="view-title-block">
+            <span class="eyebrow">交易中心</span>
+            <div class="view-title">尚無交易</div>
+            <div class="view-sub">發起一筆交易以開始對話</div>
+          </div>
+          <div class="view-actions"><button class="btn">發起交易 ${I.plus}</button></div>
+        </div>
+        ${emptyCard('目前沒有任何交易紀錄')}
+      `;
+    }
+
+    const otherId = otherTeamOf(thread);
+    const mineIds = thread.from_team === me.team_id ? thread.send_player_ids : thread.receive_player_ids;
+    const theirIds = thread.from_team === me.team_id ? thread.receive_player_ids : thread.send_player_ids;
+
+    // Messages (TradeMessage list: from_team/body/ts/kind)
+    const msgs = (thread.messages || []).map(m => {
+      const mine = m.from_team === me.team_id;
+      if (m.kind === 'system') {
+        return `<div class="bubble-row them"><div class="bubble them" style="background:var(--line-soft);color:var(--ink-3);font-style:italic">${esc(m.body)}</div></div>`;
+      }
+      return `<div class="bubble-row ${mine?'me':'them'}">
+        <div class="bubble ${mine?'me':'them'}">${esc(m.body)}</div>
+        <div class="bubble-meta">${esc(m.kind || 'user')}</div>
+      </div>`;
+    }).join('');
+
+    // Proposal panel
+    const proposal = `<div class="proposal">
+      <div class="proposal-head"><span>交易提案 <span class="proposal-id">#${esc(thread.id.slice(-6))}</span></span><span>隊伍 #${thread.from_team} 提出</span></div>
+      <div class="prop-sides">
+        <div class="prop-side">
+          <div class="prop-side-head">他給你</div>
+          <ul>${theirIds.map(pid => `<li><span class="pn">Player #${pid}</span></li>`).join('')}</ul>
+        </div>
+        <div class="prop-arrow">${I.arrow}</div>
+        <div class="prop-side mine">
+          <div class="prop-side-head">你給他</div>
+          <ul>${mineIds.map(pid => `<li><span class="pn">Player #${pid}</span></li>`).join('')}</ul>
+        </div>
+      </div>
+      ${thread.status === 'pending_accept' && thread.to_team === me.team_id
+        ? `<div style="display:flex;gap:8px;justify-content:center;margin-top:6px"><button class="btn sm" data-trade-accept="${esc(thread.id)}">接受</button><button class="btn sm subtle" data-trade-reject="${esc(thread.id)}">拒絕</button></div>`
+        : `<div style="text-align:center;color:var(--ink-3);font-size:var(--fs-xs);margin-top:6px">狀態：${esc(thread.status)}</div>`}
+    </div>`;
+
+    // Category odds (inline in main analysis panel)
+    const odds = await tryGet(() => loaders.categoryOdds(thread.id), null);
+    const CAT_LABEL = {pts:'得分', reb:'籃板', ast:'助攻', stl:'抄截', blk:'阻攻', to:'失誤'};
+    const catBars = odds && odds.categories ? Object.entries(odds.categories).map(([cat, d]) => {
+      const total = Math.max(0.001, Math.abs(d.send) + Math.abs(d.receive));
+      const a = Math.abs(d.send) / total;
+      const b = Math.abs(d.receive) / total;
+      return `<div class="tl-bar"><div class="l">${d.send.toFixed(1)}</div><div class="tl-bar-track"><div class="tl-bar-mine" style="width:${a*100}%"></div><div class="tl-bar-theirs" style="width:${b*100}%"></div></div><div class="r">${d.receive.toFixed(1)}</div></div>
+      <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase">${esc(CAT_LABEL[cat] || cat)}</div>`;
+    }).join('') : '';
+
+    const unreadCount = pending.filter(t => t.to_team === me.team_id && t.status === 'pending_accept').length;
     return `
       <div class="view-head">
         <div class="view-title-block">
           <span class="eyebrow">交易中心</span>
-          <div class="view-title">你與 ${thread.with} 的對話</div>
-          <div class="view-sub">${D.tradeThreads.filter(t=>t.unread).length} 則未讀 · 截止 本週四 23:59</div>
+          <div class="view-title">你與隊伍 #${otherId} 的對話</div>
+          <div class="view-sub">${unreadCount} 則待處理 · 歷史 ${history.length} 筆</div>
         </div>
         <div class="view-actions"><button class="btn">發起交易 ${I.plus}</button></div>
       </div>
 
       <div class="trade-grid">
         <div class="trade-sidebar">
-          <div class="ts-head"><h3>對話列表</h3></div>
-          <div class="ts-list">${threadList}</div>
+          <div class="ts-head"><h3>交易列表</h3></div>
+          <div class="ts-list">${threadList || emptyCard('尚無交易')}</div>
         </div>
 
         <div class="trade-chat">
           <div class="tc-head">
-            ${av(thread.with, thread.grad)}
+            ${av('T'+otherId, gradFor(otherId))}
             <div>
-              <div style="font-weight:600;font-size:var(--fs-sm)">${thread.with} · ${thread.team}</div>
-              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.05em">Persona · ${thread.persona}</div>
+              <div style="font-weight:600;font-size:var(--fs-sm)">隊伍 #${otherId}</div>
+              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.05em">狀態 · ${esc(thread.status)}</div>
             </div>
-            <span class="pill accent" style="margin-left:auto">Fit · ${thread.fit}</span>
+            <span class="pill accent" style="margin-left:auto">W${thread.proposed_week}</span>
           </div>
-          <div class="tc-body" id="chat-body">${msgs}</div>
+          <div class="tc-body" id="chat-body">
+            ${proposal}
+            ${msgs}
+          </div>
           <div class="tc-composer">
-            <input type="text" placeholder="輸入訊息…（AI 會模擬 ${thread.with} 回覆）" id="chat-input"/>
+            <input type="text" placeholder="輸入訊息…" id="chat-input" data-trade-id="${esc(thread.id)}"/>
             <button class="btn" id="chat-send">${I.send}</button>
           </div>
         </div>
@@ -945,18 +1072,10 @@ window.DATA = {
         <div class="trade-ledger">
           <div class="tl-head"><h3>AI 交易分析</h3></div>
           <div class="tl-body">
-            <div class="tl-verdict"><div class="tl-verdict-head">結論 · <b>建議接受</b></div>
-            <div>Siakam 穩定的多類別產能會補你 PF 的空缺；他一週出賽 4 場、你下週表格只有 2 場空。</div></div>
+            ${odds ? `<div class="tl-verdict"><div class="tl-verdict-head">FP 差 · <b>${odds.fp_delta_per_game>0?'+':''}${odds.fp_delta_per_game.toFixed(2)}</b></div><div>每場得分變化（從你角度）。</div></div>` : '<div class="tl-verdict"><div class="tl-verdict-head">無分析</div></div>'}
             <div class="tl-section">
-              <h4>五類別勝率</h4>
-              ${[['得分',0.42,0.58],['籃板',0.38,0.62],['助攻',0.55,0.45],['阻攻',0.48,0.52],['效率',0.44,0.56]]
-                .map(([l,a,b]) => `
-                  <div class="tl-bar"><div class="l">${(a*100).toFixed(0)}</div><div class="tl-bar-track"><div class="tl-bar-mine" style="width:${a*100}%"></div><div class="tl-bar-theirs" style="width:${b*100}%"></div></div><div class="r">${(b*100).toFixed(0)}</div></div>
-                  <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase">${l}</div>`).join('')}
-            </div>
-            <div class="tl-section">
-              <h4>風險</h4>
-              <div class="tl-verdict risk"><div class="tl-verdict-head">注意 · <b>KP 健康</b></div><div>你把傷兵 Porziņģis 送出的時機得抓好——他下週若復出會影響交易觀感。</div></div>
+              <h4>五類別影響</h4>
+              ${catBars || '<div class="empty-state">無資料</div>'}
             </div>
           </div>
         </div>
@@ -965,92 +1084,143 @@ window.DATA = {
   };
 
   // ---------- FA ----------
-  views.fa = () => `
-    <div class="view-head">
-      <div class="view-title-block">
-        <span class="eyebrow">自由球員 · Waivers</span>
-        <div class="view-title">自由球員市場</div>
-        <div class="view-sub">週三 03:00 處理認領 · 你剩 \$67 Waiver 預算</div>
+  views.fa = async () => {
+    const [me, team, fa, players] = await Promise.all([
+      loaders.me(),
+      tryGet(() => loaders.team(null), null).catch(() => null), // placeholder
+      tryGet(loaders.faStatus, {budget:100, used_today:0, limit:3, remaining:3}),
+      tryGet(loaders.players, []),
+    ]);
+    // Team via real me.team_id (can't await within Promise.all easily without me resolved first, so refetch)
+    const myTeam = await tryGet(() => loaders.team(me.team_id), null);
+
+    // /api/players with available=true returns only un-drafted. Server default is available=true.
+    const pool = Array.isArray(players) ? players : [];
+
+    return `
+      <div class="view-head">
+        <div class="view-title-block">
+          <span class="eyebrow">自由球員 · Waivers</span>
+          <div class="view-title">自由球員市場</div>
+          <div class="view-sub">FAAB 剩 \$${fa.budget} · 今日剩 ${fa.remaining}/${fa.limit} 次認領</div>
+        </div>
+        <div class="view-actions"><div class="segmented"><button aria-pressed="true">熱門</button><button>全部</button></div></div>
       </div>
-      <div class="view-actions"><div class="segmented"><button aria-pressed="true">熱門</button><button>全部</button><button>本週多賽</button></div></div>
-    </div>
 
-    <div class="fa-search-bar">
-      ${I.fa}
-      <input type="text" placeholder="搜尋球員、隊伍、位置…"/>
-      <span class="kbd">⌘K</span>
-    </div>
+      <div class="fa-search-bar">
+        ${I.fa}
+        <input type="text" placeholder="搜尋球員、隊伍、位置…" id="fa-search"/>
+        <span class="kbd">⌘K</span>
+      </div>
 
-    <div class="card">
-      <table class="standings-table">
-        <thead><tr><th>球員</th><th>位置</th><th>近況</th><th class="num">持有率</th><th class="num">趨勢</th><th>備註</th><th></th></tr></thead>
-        <tbody>${D.freeAgents.map(p => `
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:10px">${av(p.name, p.grad, 'sm')}<div><div style="font-weight:500">${p.name}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${p.team}</div></div></div></td>
-            <td><span class="pos-tag" data-pos="${p.pos}">${p.pos}</span></td>
-            <td><div class="slot-form">${p.form.map(f => `<div class="spark ${f===1?'hot':f===0?'warm':'cold'}"></div>`).join('')}</div></td>
-            <td class="num">${p.owned}%</td>
-            <td class="num"><span class="pill ${p.trend==='up'?'good':p.trend==='down'?'bad':''}">${p.trend==='up'?'↑':p.trend==='down'?'↓':'→'}</span></td>
-            <td style="color:var(--ink-2);font-size:var(--fs-xs)">${p.note}</td>
-            <td><button class="btn sm">認領</button></td>
-          </tr>`).join('')}</tbody>
-      </table>
-    </div>`;
+      <div class="card">
+        <table class="standings-table">
+          <thead><tr><th>球員</th><th>位置</th><th class="num">FPPG</th><th class="num">年齡</th><th class="num">上場</th><th>狀態</th><th></th></tr></thead>
+          <tbody>${pool.slice(0,50).map(p => {
+            const injStatus = p.injury ? p.injury.status : 'healthy';
+            return `<tr>
+              <td><div style="display:flex;align-items:center;gap:10px">${av(p.name, gradFor(p.id), 'sm')}<div><div style="font-weight:500">${esc(p.name)}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${esc(p.team)}</div></div></div></td>
+              <td><span class="pos-tag" data-pos="${esc(p.pos)}">${esc(p.pos)}</span></td>
+              <td class="num mono">${(p.fppg || 0).toFixed(1)}</td>
+              <td class="num">${p.age}</td>
+              <td class="num">${(p.mpg || 0).toFixed(1)}</td>
+              <td><span class="pill ${statusClass(injStatus)}">${esc(injStatus)}</span></td>
+              <td><button class="btn sm" data-fa-claim="${p.id}" ${fa.remaining<=0?'disabled':''}>認領</button></td>
+            </tr>`;
+          }).join('') || '<tr><td colspan="7"><div class="empty-state">池內無球員</div></td></tr>'}</tbody>
+        </table>
+      </div>`;
+  };
 
   // ---------- SCHEDULE ----------
-  views.schedule = () => `
-    <div class="view-head">
-      <div class="view-title-block">
-        <span class="eyebrow">整季排程</span>
-        <div class="view-title">2024-25 · 21 週</div>
-        <div class="view-sub">13 場已打、3 場待打、4 場季後賽</div>
-      </div>
-    </div>
-    <div class="week-grid">${D.schedule.map(w => {
-      const cls = w.result === 'W' ? 'won' : w.result === 'L' ? 'lost'
-        : w.result === 'current' ? 'current' : w.result === 'playoff' ? 'playoff' : 'future';
-      return `<div class="week-cell ${cls}">
-        <div class="wn">W${w.w}</div>
-        <div class="wscore">${w.score}</div>
-        <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono);margin-top:4px">${w.opp}</div>
-      </div>`;
-    }).join('')}</div>
+  views.schedule = async () => {
+    const [me, schedData] = await Promise.all([
+      loaders.me(),
+      tryGet(loaders.schedule, {schedule:[]}),
+    ]);
+    const all = Array.isArray(schedData.schedule) ? schedData.schedule : [];
+    const mine = all.filter(m => m.team_a === me.team_id || m.team_b === me.team_id);
+    mine.sort((a,b) => a.week - b.week);
+    const cw = me.current_week || 0;
 
-    <div style="margin-top:var(--s-7)" class="card card-pad">
-      <div style="display:flex;gap:var(--s-5);flex-wrap:wrap;align-items:center;font-size:var(--fs-xs);color:var(--ink-3)">
-        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(74,222,128,0.3)"></span>勝</span>
-        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(248,113,113,0.2)"></span>敗</span>
-        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--accent-14);box-shadow:inset 0 0 0 1px var(--accent)"></span>本週</span>
-        <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;border:1px dashed var(--pg)"></span>季後賽</span>
+    if (!mine.length) {
+      return `<div class="view-head"><div class="view-title-block"><span class="eyebrow">整季排程</span><div class="view-title">排程</div></div></div>${emptyCard('尚無排程（賽季未開始）')}`;
+    }
+
+    const won = mine.filter(m => m.complete && ((m.team_a===me.team_id && m.score_a>m.score_b) || (m.team_b===me.team_id && m.score_b>m.score_a))).length;
+    const lost = mine.filter(m => m.complete).length - won;
+    const future = mine.filter(m => !m.complete && m.week > cw).length;
+
+    return `
+      <div class="view-head">
+        <div class="view-title-block">
+          <span class="eyebrow">整季排程</span>
+          <div class="view-title">你的 ${mine.length} 週賽程</div>
+          <div class="view-sub">${won} 勝 ${lost} 敗 · ${future} 場待打</div>
+        </div>
       </div>
-    </div>`;
+      <div class="week-grid">${mine.map(m => {
+        const isA = m.team_a === me.team_id;
+        const myScore = isA ? m.score_a : m.score_b;
+        const oppScore = isA ? m.score_b : m.score_a;
+        const oppId = isA ? m.team_b : m.team_a;
+        let cls = 'future';
+        let scoreStr = '—';
+        if (m.complete) {
+          cls = myScore > oppScore ? 'won' : 'lost';
+          scoreStr = `${myScore.toFixed(0)}-${oppScore.toFixed(0)}`;
+        } else if (m.week === cw) {
+          cls = 'current';
+          scoreStr = `${myScore.toFixed(0)}-${oppScore.toFixed(0)}`;
+        }
+        return `<div class="week-cell ${cls}" data-week="${m.week}">
+          <div class="wn">W${m.week}</div>
+          <div class="wscore">${scoreStr}</div>
+          <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono);margin-top:4px">vs T${oppId}</div>
+        </div>`;
+      }).join('')}</div>
+
+      <div style="margin-top:var(--s-7)" class="card card-pad">
+        <div style="display:flex;gap:var(--s-5);flex-wrap:wrap;align-items:center;font-size:var(--fs-xs);color:var(--ink-3)">
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(74,222,128,0.3)"></span>勝</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(248,113,113,0.2)"></span>敗</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:var(--accent-14);box-shadow:inset 0 0 0 1px var(--accent)"></span>本週</span>
+          <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;border:1px dashed var(--pg)"></span>未來</span>
+        </div>
+      </div>`;
+  };
 
   // ---------- NEWS ----------
-  views.news = () => {
+  views.news = async () => {
+    const data = await tryGet(loaders.news, {feed:[]});
+    const feed = Array.isArray(data.feed) ? data.feed : (Array.isArray(data) ? data : []);
     const kindLabel = {injury:'傷兵',heat:'熱議',league:'聯盟',quote:'引言',milestone:'里程碑',matchup:'對戰'};
+    const kindIcon  = {injury:'🩹',heat:'🔥',league:'📎',quote:'"',milestone:'★',matchup:'⚔'};
     return `
       <div class="view-head">
         <div class="view-title-block">
           <span class="eyebrow">聯盟動態</span>
           <div class="view-title">News Feed</div>
-          <div class="view-sub">球員即時消息 + 聯盟內部對話</div>
+          <div class="view-sub">${feed.length} 則消息</div>
         </div>
         <div class="view-actions">
           <div class="segmented"><button aria-pressed="true">全部</button><button>傷兵</button><button>熱議</button><button>引言</button></div>
         </div>
       </div>
       <div class="card">
-        ${D.news.concat(D.news).map((n,i) => `
-          <div style="display:grid;grid-template-columns:32px 80px 1fr;gap:var(--s-4);padding:var(--s-4) var(--s-5);${i<15?'border-bottom:1px solid var(--line-soft)':''}">
-            <div class="news-dot" data-kind="${n.kind}">${({injury:'🩹',heat:'🔥',league:'📎',quote:'"',milestone:'★',matchup:'⚔'})[n.kind]}</div>
-            <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em;padding-top:6px">${kindLabel[n.kind]}</div>
+        ${feed.length === 0 ? `<div class="empty-state">尚無動態</div>` : feed.map((n,i) => {
+          const k = n.kind || 'league';
+          return `<div style="display:grid;grid-template-columns:32px 80px 1fr;gap:var(--s-4);padding:var(--s-4) var(--s-5);${i<feed.length-1?'border-bottom:1px solid var(--line-soft)':''}">
+            <div class="news-dot" data-kind="${esc(k)}">${kindIcon[k]||'·'}</div>
+            <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em;padding-top:6px">${esc(kindLabel[k]||k)}</div>
             <div>
-              ${n.kind === 'quote'
-                ? `<div class="news-quote" style="font-size:var(--fs-md)">${n.quote}</div><div class="news-attrib">— ${n.attrib}</div>`
-                : `<div style="font-size:var(--fs-md);font-weight:500">${n.title}</div>`}
-              <div class="news-meta" style="margin-top:6px">${n.meta}</div>
+              ${k === 'quote' && n.quote
+                ? `<div class="news-quote" style="font-size:var(--fs-md)">${esc(n.quote)}</div><div class="news-attrib">— ${esc(n.attrib || '')}</div>`
+                : `<div style="font-size:var(--fs-md);font-weight:500">${esc(n.title || '')}</div>`}
+              <div class="news-meta" style="margin-top:6px">${esc(n.meta || '')}</div>
             </div>
-          </div>`).join('')}
+          </div>`;
+        }).join('')}
       </div>`;
   };
 
@@ -1058,63 +1228,145 @@ window.DATA = {
   // ROUTER
   // ========================================================
   function currentRoute() {
-    const h = (location.hash || '#/home').replace(/^#\/?/, '');
-    return h || 'home';
+    const hh = (location.hash || '#/home').replace(/^#\/?/, '');
+    return hh || 'home';
   }
 
-  function mount() {
+  async function mount() {
     const r = currentRoute();
     const view = views[r] || views.home;
     const main = $('#main');
-    main.innerHTML = view();
+    main.innerHTML = skeleton(r);
+    try {
+      const html = await view();
+      main.innerHTML = html;
+    } catch (e) {
+      console.error('view error', e);
+      main.innerHTML = errorCard(e);
+    }
     main.scrollTop = 0;
     window.scrollTo(0, 0);
-    renderNav();
-    renderRail();
+    try { await renderNav(); } catch(e){ console.error('nav', e); }
+    try { await renderRail(); } catch(e){ console.error('rail', e); }
     bindViewEvents();
   }
 
   function bindViewEvents() {
+    // Error-retry button
+    const retry = $('#err-retry');
+    if (retry) retry.addEventListener('click', () => { invalidate('/api/'); mount(); });
+
     // Trade thread clicks
-    $('.ts-row[data-thread]').forEach(row => {
+    $$('.ts-row[data-thread]').forEach(row => {
       row.addEventListener('click', () => {
         activeThread = row.dataset.thread;
         mount();
       });
     });
-    // Action item: go to relevant page
-    $('.action-item').forEach(el => {
+
+    // Action item: navigate to relevant route by id prefix
+    $$('.action-item').forEach(el => {
       el.addEventListener('click', () => {
-        const id = el.dataset.action;
-        if (id === 'a1') location.hash = '#/roster';
-        else if (id === 'a2') { activeThread = 't1'; location.hash = '#/trade'; }
-        else if (id === 'a3') location.hash = '#/fa';
-        else if (id === 'a4') location.hash = '#/schedule';
+        const id = el.dataset.action || '';
+        if (id.startsWith('trade-'))   { activeThread = id.slice('trade-'.length); location.hash = '#/trade'; }
+        else if (id.startsWith('inj-')) location.hash = '#/roster';
+        else if (id.startsWith('fa-'))  location.hash = '#/fa';
+        else if (id === 'lineup-unset') location.hash = '#/roster';
       });
     });
+
     // Draft pick
-    $('button[data-reco]').forEach(btn => {
-      btn.addEventListener('click', () => toast(`已選擇 ${btn.dataset.reco}`, 'success'));
+    $$('button[data-reco-id]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const pid = btn.dataset.recoId;
+        const pname = btn.dataset.recoName;
+        try {
+          const r = await fetch('/api/draft/pick', {
+            method:'POST',
+            headers:{'content-type':'application/json'},
+            body: JSON.stringify({player_id: Number(pid)}),
+          });
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast(`已選擇 ${pname}`, 'success');
+          invalidate('/api/');
+          mount();
+        } catch(e) {
+          toast('選秀失敗：' + e.message, 'error');
+        }
+      });
     });
-    // Chat send
+
+    // Trade accept/reject
+    $$('button[data-trade-accept]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.tradeAccept;
+        try {
+          const r = await fetch(`/api/trades/${encodeURIComponent(id)}/accept`, {method:'POST'});
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast('已接受交易', 'success');
+          invalidate('/api/trades'); invalidate('/api/teams'); invalidate('/api/me');
+          mount();
+        } catch(e) { toast('接受失敗：' + e.message, 'error'); }
+      });
+    });
+    $$('button[data-trade-reject]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.dataset.tradeReject;
+        try {
+          const r = await fetch(`/api/trades/${encodeURIComponent(id)}/reject`, {method:'POST'});
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast('已拒絕交易', 'success');
+          invalidate('/api/trades'); mount();
+        } catch(e) { toast('拒絕失敗：' + e.message, 'error'); }
+      });
+    });
+
+    // FA claim (simple: auto-drop last bench player; real app would prompt)
+    $$('button[data-fa-claim]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const addId = Number(btn.dataset.faClaim);
+        try {
+          const me = await loaders.me();
+          const team = await loaders.team(me.team_id);
+          const bench = team.bench || [];
+          if (!bench.length) { toast('板凳無球員可放走', 'error'); return; }
+          const dropId = bench[bench.length - 1];
+          const r = await fetch('/api/fa/claim', {
+            method:'POST',
+            headers:{'content-type':'application/json'},
+            body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid: 1}),
+          });
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast('認領成功', 'success');
+          invalidate('/api/'); mount();
+        } catch(e) { toast('認領失敗：' + e.message, 'error'); }
+      });
+    });
+
+    // Schedule week click -> navigate to matchup (current week only supported today)
+    $$('.week-cell[data-week]').forEach(el => {
+      el.addEventListener('click', () => { location.hash = '#/matchup'; });
+    });
+
+    // Trade chat send
     const sendBtn = $('#chat-send');
     if (sendBtn) {
-      const doSend = () => {
+      const doSend = async () => {
         const input = $('#chat-input');
-        const t = (input.value || '').trim();
-        if (!t) return;
-        const body = $('#chat-body');
-        body.insertAdjacentHTML('beforeend', `<div class="bubble-row me"><div class="bubble me">${t}</div><div class="bubble-meta">剛剛</div></div>`);
-        input.value = '';
-        body.scrollTop = body.scrollHeight;
-        // simulate reply
-        body.insertAdjacentHTML('beforeend', `<div class="typing"><div class="d"></div><div class="d"></div><div class="d"></div></div>`);
-        body.scrollTop = body.scrollHeight;
-        setTimeout(() => {
-          body.querySelector('.typing')?.remove();
-          body.insertAdjacentHTML('beforeend', `<div class="bubble-row them"><div class="bubble them">嗯…讓我想想。這邊我覺得可能要你再加一點。</div><div class="bubble-meta">剛剛</div></div>`);
-          body.scrollTop = body.scrollHeight;
-        }, 1200);
+        const tradeId = input && input.dataset ? input.dataset.tradeId : null;
+        const text = (input && input.value || '').trim();
+        if (!text || !tradeId) return;
+        try {
+          const r = await fetch(`/api/trades/${encodeURIComponent(tradeId)}/message`, {
+            method:'POST',
+            headers:{'content-type':'application/json'},
+            body: JSON.stringify({body: text}),
+          });
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          input.value = '';
+          invalidate('/api/trades');
+          mount();
+        } catch(e) { toast('訊息送出失敗：' + e.message, 'error'); }
       };
       sendBtn.addEventListener('click', doSend);
       $('#chat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
@@ -1126,19 +1378,17 @@ window.DATA = {
   // ========================================================
   const cmdItems = [
     { group:'跳頁' },
-    { icon:I.home, label:'今日總覽', hash:'#/home' },
-    { icon:I.match, label:'本週對戰', hash:'#/matchup' },
-    { icon:I.roster, label:'我的陣容', hash:'#/roster' },
-    { icon:I.trade, label:'交易中心', hash:'#/trade' },
-    { icon:I.fa, label:'自由球員', hash:'#/fa' },
-    { icon:I.draft, label:'選秀廳', hash:'#/draft' },
-    { icon:I.league, label:'聯盟排名', hash:'#/standings' },
+    { icon:I.home,     label:'今日總覽', hash:'#/home' },
+    { icon:I.match,    label:'本週對戰', hash:'#/matchup' },
+    { icon:I.roster,   label:'我的陣容', hash:'#/roster' },
+    { icon:I.trade,    label:'交易中心', hash:'#/trade' },
+    { icon:I.fa,       label:'自由球員', hash:'#/fa' },
+    { icon:I.draft,    label:'選秀廳',   hash:'#/draft' },
+    { icon:I.league,   label:'聯盟排名', hash:'#/standings' },
     { icon:I.schedule, label:'整季排程', hash:'#/schedule' },
-    { icon:I.chat, label:'聯盟動態', hash:'#/news' },
+    { icon:I.chat,     label:'聯盟動態', hash:'#/news' },
     { group:'動作' },
-    { icon:I.plus, label:'發起新交易', action:() => { activeThread='t1'; location.hash='#/trade'; } },
-    { icon:I.sparkle, label:'建議本週最佳陣容', action:() => { location.hash='#/roster'; toast('已根據你的 9 類別聯盟設定計算最佳陣容'); } },
-    { icon:I.waiver, label:'撿角：Scottie Barnes', action:() => toast('已提交認領：Scottie Barnes (\$5)') },
+    { icon:I.sparkle,  label:'重新整理資料', action:() => { invalidate('/api/'); mount(); toast('已重新整理'); } },
   ];
 
   function openCmd() {
@@ -1150,20 +1400,19 @@ window.DATA = {
   function renderCmdList(q) {
     const filter = (q || '').toLowerCase();
     const list = $('#cmdk-list');
-    const sel = 0;
     let html = ''; let idx = 0;
     cmdItems.forEach(it => {
-      if (it.group) { html += `<div class="cmdk-group">${it.group}</div>`; return; }
+      if (it.group) { html += `<div class="cmdk-group">${esc(it.group)}</div>`; return; }
       if (filter && !it.label.toLowerCase().includes(filter)) return;
-      html += `<div class="cmdk-item" data-idx="${idx}" ${idx===sel?'aria-selected=true':''}>
-        ${it.icon}<span>${it.label}</span>${it.hash?`<span class="kbd">↵</span>`:''}
+      html += `<div class="cmdk-item" data-idx="${idx}" ${idx===0?'aria-selected=true':''}>
+        ${it.icon}<span>${esc(it.label)}</span>${it.hash?`<span class="kbd">↵</span>`:''}
       </div>`;
       idx++;
     });
     list.innerHTML = html || '<div style="padding:24px;text-align:center;color:var(--ink-3);font-size:var(--fs-sm)">沒有符合的項目</div>';
 
     const matches = cmdItems.filter(it => !it.group && (!filter || it.label.toLowerCase().includes(filter)));
-    $('.cmdk-item', list).forEach((el, i) => {
+    $$('.cmdk-item', list).forEach((el, i) => {
       el.addEventListener('click', () => {
         const it = matches[i];
         if (it.hash) location.hash = it.hash;
@@ -1193,7 +1442,7 @@ window.DATA = {
   // ========================================================
   function toast(text, kind='success') {
     const el = h('div', {class:'toast' + (kind==='error'?' error':'')});
-    el.innerHTML = `<span class="t-ic">${I.check}</span><div>${text}</div>`;
+    el.innerHTML = `<span class="t-ic">${I.check}</span><div>${esc(text)}</div>`;
     $('#toasts').append(el);
     setTimeout(() => { el.style.transition = 'opacity 200ms'; el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }, 2800);
   }
