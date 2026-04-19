@@ -20,10 +20,20 @@
   .shell-rail { display: none; }
 }
 @media (max-width: 860px) {
-  .app { grid-template-columns: 1fr; grid-template-rows: var(--shell-header) 1fr var(--shell-tabbar);
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--shell-header) 1fr var(--shell-tabbar);
     grid-template-areas: "header" "main" "tabbar"; }
   .shell-nav { display: none; }
-  .shell-main { padding-bottom: var(--s-4); }
+  .shell-main { padding-bottom: calc(var(--shell-tabbar) + var(--s-4)); min-width: 0; }
+  .shell-header { padding: 0 var(--s-3); gap: var(--s-3); min-width: 0; }
+  .shell-header > * { min-width: 0; }
+  .cmd-trigger { min-width: 0; flex: 1 1 auto; padding: 7px 10px; }
+  .cmd-trigger .ct-text { display: none; }
+  .cmd-trigger .kbd { display: none; }
+  .me-chip-name { display: none; }
+  .brand-name .sub { display: none; }
+  .league-switch { max-width: 160px; overflow: hidden; white-space: nowrap; }
+  .league-switch span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+  body { overflow-x: hidden; }
 }
 
 /* ---- Header ---- */

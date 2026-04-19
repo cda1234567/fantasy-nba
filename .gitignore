@@ -13,3 +13,9 @@ tests/screenshots/
 tests/run_output.log
 tests/run_report.json
 tests/qa_*_run.log
+
+.qa/v2-visual/node_modules/
+.qa/v2-visual/shots*/
+.qa/v2-visual/.qa/
+.qa/v2-visual/*_results.json
+.qa/v2-visual/package*.json
