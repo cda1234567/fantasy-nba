@@ -1306,6 +1306,8 @@
     const gen = ++mountGen;
     const r = currentRoute();
     clearRouteTimers();
+    if (r !== 'roster') rosterWeekOffset = 0;
+    if (r !== 'trade') activeThread = null;
     const mbd = document.getElementById('modal-bd');
     if (mbd) mbd.classList.remove('open');
     const lmenu = document.getElementById('league-menu');
@@ -1332,6 +1334,17 @@
     bindViewEvents();
   }
 
+  async function withBusy(btn, fn) {
+    if (!btn || btn.disabled) return;
+    btn.disabled = true;
+    btn.setAttribute('aria-busy', 'true');
+    try { return await fn(); }
+    finally {
+      btn.disabled = false;
+      btn.removeAttribute('aria-busy');
+    }
+  }
+
   function bindViewEvents() {
     // Error-retry button
     const retry = $('#err-retry');
@@ -1350,25 +1363,28 @@
       el.addEventListener('click', async (e) => {
         const id = el.dataset.action || '';
         // Fix #1: FA action items — intercept button click to direct-claim
-        if (id.startsWith('fa-') && e.target.closest('button')) {
+        const faBtn = e.target.closest('button');
+        if (id.startsWith('fa-') && faBtn) {
           e.stopPropagation();
           const addId = Number(id.slice('fa-'.length));
           if (!Number.isFinite(addId) || addId <= 0) { location.hash = '#/fa'; return; }
-          try {
-            const me = await loaders.me();
-            const team = await loaders.team(me.team_id);
-            const bench = team.bench || [];
-            if (!bench.length) { toast('板凳無球員可放走', 'error'); return; }
-            const dropId = bench[bench.length - 1];
-            const r = await fetch('/api/fa/claim', {
-              method:'POST',
-              headers:{'content-type':'application/json'},
-              body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid: 1}),
-            });
-            if (!r.ok) throw new Error((await r.text()).slice(0,200));
-            toast('認領成功', 'success');
-            invalidate('/api/'); mount();
-          } catch(err) { toast('認領失敗：' + err.message, 'error'); }
+          await withBusy(faBtn, async () => {
+            try {
+              const me = await loaders.me();
+              const team = await loaders.team(me.team_id);
+              const bench = team.bench || [];
+              if (!bench.length) { toast('板凳無球員可放走', 'error'); return; }
+              const dropId = bench[bench.length - 1];
+              const r = await fetch('/api/fa/claim', {
+                method:'POST',
+                headers:{'content-type':'application/json'},
+                body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid: 1}),
+              });
+              if (!r.ok) throw new Error((await r.text()).slice(0,200));
+              toast('認領成功', 'success');
+              invalidate('/api/'); mount();
+            } catch(err) { toast('認領失敗：' + err.message, 'error'); }
+          });
           return;
         }
         if (id.startsWith('trade-'))   { activeThread = id.slice('trade-'.length); location.hash = '#/trade'; }
@@ -1380,7 +1396,7 @@
 
     // Draft pick
     $$('button[data-reco-id]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => withBusy(btn, async () => {
         const pid = btn.dataset.recoId;
         const pname = btn.dataset.recoName;
         try {
@@ -1396,12 +1412,12 @@
         } catch(e) {
           toast('選秀失敗：' + e.message, 'error');
         }
-      });
+      }));
     });
 
     // Trade accept/reject
     $$('button[data-trade-accept]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => withBusy(btn, async () => {
         const id = btn.dataset.tradeAccept;
         try {
           const r = await fetch(`/api/trades/${encodeURIComponent(id)}/accept`, {method:'POST'});
@@ -1410,10 +1426,10 @@
           invalidate('/api/trades'); invalidate('/api/teams'); invalidate('/api/me');
           mount();
         } catch(e) { toast('接受失敗：' + e.message, 'error'); }
-      });
+      }));
     });
     $$('button[data-trade-reject]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => withBusy(btn, async () => {
         const id = btn.dataset.tradeReject;
         try {
           const r = await fetch(`/api/trades/${encodeURIComponent(id)}/reject`, {method:'POST'});
@@ -1421,12 +1437,12 @@
           toast('已拒絕交易', 'success');
           invalidate('/api/trades'); mount();
         } catch(e) { toast('拒絕失敗：' + e.message, 'error'); }
-      });
+      }));
     });
 
     // FA claim (simple: auto-drop last bench player; real app would prompt)
     $$('button[data-fa-claim]').forEach(btn => {
-      btn.addEventListener('click', async () => {
+      btn.addEventListener('click', () => withBusy(btn, async () => {
         const addId = Number(btn.dataset.faClaim);
         try {
           const me = await loaders.me();
@@ -1443,7 +1459,7 @@
           toast('認領成功', 'success');
           invalidate('/api/'); mount();
         } catch(e) { toast('認領失敗：' + e.message, 'error'); }
-      });
+      }));
     });
 
     // Schedule week click -> navigate to matchup with week query
@@ -1480,7 +1496,7 @@
     // Roster: best lineup auto-suggest
     const bestBtn = $('#roster-best-lineup');
     if (bestBtn) {
-      bestBtn.addEventListener('click', async () => {
+      bestBtn.addEventListener('click', () => withBusy(bestBtn, async () => {
         try {
           const me = await loaders.me();
           const team = await loaders.team(me.team_id);
@@ -1517,7 +1533,7 @@
           toast('已套用最佳陣容', 'success');
           invalidate('/api/teams'); invalidate('/api/season'); mount();
         } catch(e) { toast('套用失敗：' + e.message, 'error'); }
-      });
+      }));
     }
 
     // Roster: player slot click -> open player modal
@@ -2122,7 +2138,8 @@
     });
 
     $$('[data-tb-close]', $('#modal-card')).forEach(b => b.addEventListener('click', closeModal));
-    $('#tb-submit').addEventListener('click', async () => {
+    const submitBtn = $('#tb-submit');
+    submitBtn.addEventListener('click', () => withBusy(submitBtn, async () => {
       const oid = Number(oppSel.value);
       if (!oid) { toast('請選擇對手隊伍', 'error'); return; }
       const send = $$('[data-tb-mine]:checked').map(x => Number(x.dataset.tbMine));
@@ -2140,7 +2157,7 @@
         closeModal();
         invalidate('/api/trades'); mount();
       } catch(e) { toast('送出失敗：' + e.message, 'error'); }
-    });
+    }));
   }
 
   // ========================================================
