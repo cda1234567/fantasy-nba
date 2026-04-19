@@ -9,7 +9,7 @@ from typing import Any, Optional
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 try:
     from dotenv import load_dotenv  # type: ignore
@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.5.59"
+APP_VERSION = "0.6.0"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -311,6 +311,50 @@ def _require_setup() -> None:
     settings = _current_settings()
     if not settings.setup_complete:
         raise HTTPException(409, "聯盟尚未設定,請先完成設定")
+
+
+def _player_form_5(pid: int, season: Optional[SeasonState]) -> list[int]:
+    """Recent 5 game log entries for a player: 1=fp>=25, 0=played, -1=DNP.
+
+    Ordered newest-first (last entry in game_logs wins for ties).
+    """
+    if season is None:
+        return []
+    rows = [g for g in season.game_logs if g.player_id == pid]
+    if not rows:
+        return []
+    rows.sort(key=lambda g: (g.week, g.day))
+    recent = rows[-5:]
+    out: list[int] = []
+    for g in recent:
+        if not getattr(g, "played", False):
+            out.append(-1)
+        elif float(g.fp) >= 25:
+            out.append(1)
+        else:
+            out.append(0)
+    return out
+
+
+def _player_status(
+    pid: int, season: Optional[SeasonState], form: list[int]
+) -> str:
+    """Derive a coarse status label from injuries + recent form."""
+    if season is not None:
+        inj = season.injuries.get(pid)
+        if inj is not None and inj.status != "healthy":
+            return "injured"
+    if not form:
+        return "ok"
+    hot_count = sum(1 for v in form if v == 1)
+    dnp_count = sum(1 for v in form if v == -1)
+    if hot_count >= 4:
+        return "hot"
+    if hot_count >= 2:
+        return "warm"
+    if dnp_count >= 2:
+        return "cold"
+    return "ok"
 
 
 # ---------------------------------------------------------------------------
@@ -574,10 +618,16 @@ def get_team(team_id: int):
     if team_id < 0 or team_id >= draft._num_teams:
         raise HTTPException(404, "Unknown team_id")
     team = draft.teams[team_id]
-    players = [draft.players_by_id[pid].model_dump() for pid in team.roster]
-
     # Attach injury status + compute slot assignment for the 10 starters.
     season = _load_or_init_season()
+    players = []
+    for pid in team.roster:
+        row = draft.players_by_id[pid].model_dump()
+        form = _player_form_5(pid, season)
+        row["form"] = form
+        row["status"] = _player_status(pid, season, form)
+        row["grad"] = (pid % 8) + 1
+        players.append(row)
     injured_out: set[int] = set()
     if season is not None:
         injured_out = {pid for pid, inj in season.injuries.items() if inj.status == "out"}
@@ -797,6 +847,7 @@ def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
 class FAClaimRequest(BaseModel):
     drop_player_id: int
     add_player_id: int
+    bid: int = Field(0, ge=0, le=200)  # FAAB $ bid amount
 
 
 HUMAN_DAILY_CLAIM_LIMIT = 3
@@ -807,14 +858,25 @@ def fa_claim_status():
     """Return how many claims the human team has used today and the limit."""
     state = _load_or_init_season()
     if state is None or not state.started:
-        return {"used_today": 0, "limit": HUMAN_DAILY_CLAIM_LIMIT, "day": 0, "remaining": HUMAN_DAILY_CLAIM_LIMIT}
+        return {
+            "used_today": 0,
+            "limit": HUMAN_DAILY_CLAIM_LIMIT,
+            "day": 0,
+            "remaining": HUMAN_DAILY_CLAIM_LIMIT,
+            "budget": 100,
+        }
     today = state.current_day
     used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
+    human_team_id = draft.human_team_id
+    budget = 100
+    if human_team_id is not None:
+        budget = int(state.waiver_budgets.get(human_team_id, 100))
     return {
         "used_today": used,
         "limit": HUMAN_DAILY_CLAIM_LIMIT,
         "day": today,
         "remaining": max(0, HUMAN_DAILY_CLAIM_LIMIT - used),
+        "budget": budget,
     }
 
 
@@ -842,6 +904,11 @@ def fa_claim(req: FAClaimRequest):
     if used >= HUMAN_DAILY_CLAIM_LIMIT:
         raise HTTPException(400, f"今日已用完 {HUMAN_DAILY_CLAIM_LIMIT} 次自由球員簽約配額")
 
+    # FAAB budget check
+    budget = int(state.waiver_budgets.get(human.id, 100))
+    if req.bid > budget:
+        raise HTTPException(400, f"FAAB 預算不足（剩 ${budget}）")
+
     # Execute swap (keep drafted_ids in sync so dropped player returns to FA pool
     # and claimed player disappears from FA pool)
     human.roster = [p for p in human.roster if p != req.drop_player_id]
@@ -849,11 +916,15 @@ def fa_claim(req: FAClaimRequest):
     draft.drafted_ids.discard(req.drop_player_id)
     draft.drafted_ids.add(req.add_player_id)
 
+    # Deduct FAAB
+    state.waiver_budgets[human.id] = budget - req.bid
+
     import time as _t
     state.human_claims.append({
         "day": today,
         "drop": req.drop_player_id,
         "add": req.add_player_id,
+        "bid": req.bid,
         "ts": int(_t.time()),
     })
 
@@ -880,6 +951,7 @@ def fa_claim(req: FAClaimRequest):
         "add": req.add_player_id,
         "drop_name": drop_name,
         "add_name": add_name,
+        "bid": req.bid,
         "day": today,
     })
 
@@ -888,6 +960,7 @@ def fa_claim(req: FAClaimRequest):
         "drop": drop_name,
         "add": add_name,
         "remaining": HUMAN_DAILY_CLAIM_LIMIT - (used + 1),
+        "budget_remaining": state.waiver_budgets.get(human.id, 100),
     }
 
 
@@ -1665,3 +1738,442 @@ def trades_message(trade_id: str, req: TradeMessageRequest):
     except ValueError as e:
         raise HTTPException(400, str(e))
     return result.model_dump()
+
+
+# ---------------------------------------------------------------------------
+# v2 UI API: dashboard + home + recommendations + news
+# ---------------------------------------------------------------------------
+@app.get("/api/me")
+def api_me():
+    """Player dashboard summary for v2 UI home screen."""
+    settings = _current_settings()
+    human_id = draft.human_team_id
+    team = draft.teams[human_id] if human_id is not None and 0 <= human_id < len(draft.teams) else None
+    name = team.name if team else ""
+    state = _load_or_init_season()
+    record = {"w": 0, "l": 0, "pf": 0.0, "pa": 0.0}
+    budget = 100
+    current_week = 0
+    current_day = 0
+    if state is not None and human_id is not None:
+        s = state.standings.get(human_id, {"w": 0, "l": 0, "pf": 0, "pa": 0})
+        record = {
+            "w": int(s.get("w", 0)),
+            "l": int(s.get("l", 0)),
+            "pf": round(float(s.get("pf", 0.0)), 2),
+            "pa": round(float(s.get("pa", 0.0)), 2),
+        }
+        budget = int(state.waiver_budgets.get(human_id, 100))
+        current_week = int(state.current_week or 0)
+        current_day = int(state.current_day or 0)
+    return {
+        "team_id": human_id,
+        "name": name,
+        "record": record,
+        "budget": budget,
+        "current_week": current_week,
+        "current_day": current_day,
+        "league_name": settings.league_name,
+        "num_teams": settings.num_teams,
+    }
+
+
+@app.get("/api/home/brief")
+def api_home_brief():
+    """Narrative brief + current-week matchup for the v2 home screen."""
+    human_id = draft.human_team_id
+    state = _load_or_init_season()
+    if state is None or not state.started:
+        return {
+            "brief": "賽季尚未開始，完成選秀後即可展開。",
+            "matchup": None,
+            "record": {"w": 0, "l": 0},
+            "week": 0,
+        }
+
+    week = int(state.current_week or 0)
+    s = state.standings.get(human_id, {"w": 0, "l": 0})
+    record = {"w": int(s.get("w", 0)), "l": int(s.get("l", 0))}
+
+    matchup_obj = None
+    brief = ""
+    if human_id is not None and week > 0:
+        m = next(
+            (m for m in state.schedule if m.week == week and (m.team_a == human_id or m.team_b == human_id)),
+            None,
+        )
+        if m is not None:
+            if m.team_a == human_id:
+                my_score = round(float(m.score_a), 2)
+                opp_score = round(float(m.score_b), 2)
+                opp_id = m.team_b
+            else:
+                my_score = round(float(m.score_b), 2)
+                opp_score = round(float(m.score_a), 2)
+                opp_id = m.team_a
+            opp_team = draft.teams[opp_id] if 0 <= opp_id < len(draft.teams) else None
+            opp_name = opp_team.name if opp_team else f"T{opp_id}"
+            matchup_obj = {
+                "week": week,
+                "my_score": my_score,
+                "opp_score": opp_score,
+                "opp_name": opp_name,
+                "opp_team_id": opp_id,
+                "complete": bool(m.complete),
+            }
+            if m.complete:
+                outcome = "勝" if my_score > opp_score else ("敗" if my_score < opp_score else "平")
+                brief = f"本週對 {opp_name} {outcome} {my_score}-{opp_score}。戰績 {record['w']}-{record['l']}。"
+            else:
+                diff = round(abs(my_score - opp_score), 2)
+                lead = "領先" if my_score >= opp_score else "落後"
+                brief = f"第 {week} 週對 {opp_name}，目前 {my_score} vs {opp_score}，{lead} {diff} 分。"
+    if not brief:
+        brief = f"目前戰績 {record['w']}-{record['l']}，第 {week} 週進行中。" if week else "賽季尚未開始，完成選秀後即可展開。"
+
+    return {
+        "brief": brief,
+        "matchup": matchup_obj,
+        "record": record,
+        "week": week,
+    }
+
+
+@app.get("/api/home/actions")
+def api_home_actions():
+    """Prioritized action items for the v2 home screen."""
+    actions: list[dict] = []
+    human_id = draft.human_team_id
+    state = _load_or_init_season()
+
+    # Pending trades awaiting human decision
+    try:
+        mgr = _trade_manager()
+        for t in mgr.pending():
+            if t.to_team == human_id and t.status == "pending_accept":
+                sender = draft.teams[t.from_team].name if 0 <= t.from_team < len(draft.teams) else f"T{t.from_team}"
+                actions.append({
+                    "id": f"trade-{t.id}",
+                    "urgency": "high",
+                    "ic": "trade",
+                    "title": f"{sender} 的交易提案",
+                    "sub": f"送出 {len(t.send_player_ids)} 人 / 收到 {len(t.receive_player_ids)} 人",
+                    "cta": "前往交易",
+                    "time": "",
+                })
+    except Exception:
+        pass
+
+    # Injured players on human roster
+    if state is not None and human_id is not None and 0 <= human_id < len(draft.teams):
+        human_team = draft.teams[human_id]
+        for pid in human_team.roster:
+            inj = state.injuries.get(pid)
+            if inj is not None and inj.status != "healthy":
+                p = draft.players_by_id.get(pid)
+                pname = p.name if p else f"#{pid}"
+                actions.append({
+                    "id": f"inj-{pid}",
+                    "urgency": "high",
+                    "ic": "syringe",
+                    "title": f"{pname} 受傷 ({inj.status})",
+                    "sub": f"預計 {inj.return_in_days} 天回歸",
+                    "cta": "調整陣容",
+                    "time": "",
+                })
+
+        # Top 3 FAs by fppg
+        on_any_roster = {pid for t in draft.teams for pid in t.roster}
+        fa_pool = [p for p in draft.players if p.id not in on_any_roster]
+        fa_pool.sort(key=lambda p: float(getattr(p, "fppg", 0.0) or 0.0), reverse=True)
+        for p in fa_pool[:3]:
+            actions.append({
+                "id": f"fa-{p.id}",
+                "urgency": "med",
+                "ic": "waiver",
+                "title": f"FA 推薦：{p.name}",
+                "sub": f"FPPG {round(float(p.fppg or 0.0), 1)} · {p.pos}",
+                "cta": "簽約",
+                "time": "",
+            })
+
+        # Lineup not set
+        if not state.lineup_overrides.get(human_id):
+            actions.append({
+                "id": "lineup-unset",
+                "urgency": "med",
+                "ic": "schedule",
+                "title": "先發未設",
+                "sub": "使用自動派發中",
+                "cta": "自訂先發",
+                "time": "",
+            })
+
+    if not actions:
+        actions.append({
+            "id": "all-done",
+            "urgency": "done",
+            "ic": "check",
+            "title": "一切就緒",
+            "sub": "暫無待辦事項",
+            "cta": "",
+            "time": "",
+        })
+
+    return {"actions": actions}
+
+
+@app.get("/api/trades/{trade_id}/category-odds")
+def api_trade_category_odds(trade_id: str):
+    """Category impact analysis for a specific trade (from human's perspective)."""
+    mgr = _trade_manager()
+    trade = mgr._find(trade_id)
+    if trade is None:
+        raise HTTPException(404, "Unknown trade_id")
+
+    CATS = ("pts", "reb", "ast", "stl", "blk", "to")
+
+    def _sum(pids: list[int]) -> dict[str, float]:
+        totals = {c: 0.0 for c in CATS}
+        for pid in pids:
+            p = draft.players_by_id.get(pid)
+            if p is None:
+                continue
+            for c in CATS:
+                totals[c] += float(getattr(p, c, 0.0) or 0.0)
+        return totals
+
+    send_totals = _sum(trade.send_player_ids)
+    recv_totals = _sum(trade.receive_player_ids)
+
+    settings = _current_settings()
+    weights = settings.scoring_weights or {}
+    fp_delta = 0.0
+    cats_out: dict[str, dict] = {}
+    for c in CATS:
+        delta = round(recv_totals[c] - send_totals[c], 2)
+        favorable = (delta < 0) if c == "to" else (delta > 0)
+        cats_out[c] = {
+            "delta": delta,
+            "favorable": bool(favorable),
+            "send": round(send_totals[c], 2),
+            "receive": round(recv_totals[c], 2),
+        }
+        fp_delta += (recv_totals[c] - send_totals[c]) * float(weights.get(c, 0.0))
+
+    return {
+        "trade_id": trade.id,
+        "from_team": trade.from_team,
+        "to_team": trade.to_team,
+        "categories": cats_out,
+        "fp_delta_per_game": round(fp_delta, 2),
+    }
+
+
+@app.get("/api/draft/recommendations")
+def api_draft_recommendations(limit: int = Query(3, ge=1, le=20)):
+    """Draft reco: top N fits for the human team's next pick."""
+    if draft.is_complete:
+        return {"is_complete": True, "recos": [], "needs": []}
+
+    rnd, pos_in_round, team_id = draft.current_pointers()
+    num_teams = draft._num_teams
+    pick_overall = draft.current_overall
+    on_clock = team_id == draft.human_team_id
+
+    human_id = draft.human_team_id
+    human_roster: list[int] = []
+    if human_id is not None and 0 <= human_id < len(draft.teams):
+        human_roster = list(draft.teams[human_id].roster)
+
+    # Position counts via season._player_positions
+    from .season import _player_positions as _pp
+    POSITIONS = ["PG", "SG", "SF", "PF", "C"]
+    TARGET = 2
+    pos_counts: dict[str, int] = {p: 0 for p in POSITIONS}
+    for pid in human_roster:
+        player = draft.players_by_id.get(pid)
+        if player is None:
+            continue
+        for pos_key in _pp(player.pos):
+            if pos_key in pos_counts:
+                pos_counts[pos_key] += 1
+
+    needs = []
+    for p in POSITIONS:
+        filled = pos_counts[p]
+        if filled == 0:
+            need_level = "high"
+        elif filled == 1:
+            need_level = "med"
+        else:
+            need_level = "low"
+        needs.append({"pos": p, "filled": filled, "target": TARGET, "need": need_level})
+
+    # Score available players
+    available = draft.available_players()
+    def _score(p) -> tuple[float, list[str]]:
+        fppg = float(getattr(p, "fppg", 0.0) or 0.0)
+        score = fppg
+        reasons: list[str] = []
+
+        # Find least-filled position this candidate covers
+        cand_positions = _pp(p.pos)
+        relevant_counts = [pos_counts[pk] for pk in cand_positions if pk in pos_counts]
+        min_cover = min(relevant_counts) if relevant_counts else TARGET
+        if min_cover == 0:
+            score += 3
+            weakest = next((pk for pk in cand_positions if pk in pos_counts and pos_counts[pk] == 0), None)
+            if weakest:
+                reasons.append(f"補足最缺位置 {weakest}")
+        elif min_cover == 1:
+            score += 1
+
+        # Age penalty
+        age = int(getattr(p, "age", 0) or 0)
+        if age >= 33:
+            score -= 2
+
+        reasons.append(f"本季 FPPG {round(fppg, 1)}")
+        if 0 < age <= 25:
+            reasons.append("年輕耐操")
+        elif age <= 28:
+            reasons.append("當打之年")
+
+        return score, reasons[:3]
+
+    scored = []
+    for p in available:
+        sc, rs = _score(p)
+        scored.append((sc, rs, p))
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    recos = []
+    for i, (sc, rs, p) in enumerate(scored[:limit]):
+        fit = min(99, int(50 + sc * 0.5))
+        recos.append({
+            "rank": i + 1,
+            "top": i == 0,
+            "name": p.name,
+            "pos": p.pos,
+            "team": p.team,
+            "player_id": p.id,
+            "fit": fit,
+            "fppg": round(float(p.fppg or 0.0), 2),
+            "reasons": rs,
+        })
+
+    return {
+        "is_complete": False,
+        "round": rnd,
+        "pick_overall": pick_overall,
+        "pick_in_round": pos_in_round,
+        "on_clock": on_clock,
+        "needs": needs,
+        "recos": recos,
+    }
+
+
+@app.get("/api/news/feed")
+def api_news_feed(limit: int = Query(30, ge=1, le=100)):
+    """Aggregated news/activity feed for the v2 news screen."""
+    state = _load_or_init_season()
+    feed: list[dict] = []
+    human_id = draft.human_team_id
+
+    def _team_name(tid: int) -> str:
+        if 0 <= tid < len(draft.teams):
+            return draft.teams[tid].name
+        return f"T{tid}"
+
+    # Current injuries
+    if state is not None:
+        for pid, inj in state.injuries.items():
+            if inj.status == "healthy":
+                continue
+            p = draft.players_by_id.get(pid)
+            pname = p.name if p else f"#{pid}"
+            w = int(state.current_week or 0)
+            d = int(state.current_day or 0)
+            feed.append({
+                "kind": "injury",
+                "title": f"{pname} {inj.status}",
+                "meta": f"預計 {inj.return_in_days} 天回歸",
+                "ts": (w * 7) + d,
+                "flash": inj.status == "out",
+            })
+
+    # Activity log (last 50)
+    try:
+        log_rows = storage.load_log(limit=50)
+    except Exception:
+        log_rows = []
+
+    for e in log_rows:
+        t = e.get("type", "")
+        w = int(e.get("week", 0) or 0)
+        d = int(e.get("day", 0) or 0)
+        ts = (w * 7) + d
+        if t == "trade_executed":
+            feed.append({
+                "kind": "league",
+                "title": f"{_team_name(e.get('from_team', -1))} ↔ {_team_name(e.get('to_team', -1))} 交易成交",
+                "meta": f"W{w}",
+                "ts": ts,
+            })
+        elif t == "fa_claim":
+            feed.append({
+                "kind": "league",
+                "title": f"{_team_name(e.get('team_id', -1))} 簽下 {e.get('add_name', '?')}",
+                "meta": f"放走 {e.get('drop_name', '?')}",
+                "ts": ts,
+            })
+        elif t == "milestone_blowout":
+            feed.append({
+                "kind": "heat",
+                "title": f"{_team_name(e.get('winner', -1))} 大勝 {_team_name(e.get('loser', -1))}",
+                "meta": f"+{e.get('diff', '?')} · W{w}",
+                "ts": ts,
+            })
+        elif t == "milestone_top_performer":
+            feed.append({
+                "kind": "milestone",
+                "title": f"{e.get('player_name', '?')} 單週 {e.get('fp', '?')} 分",
+                "meta": f"{_team_name(e.get('team_id', -1))} · W{w}",
+                "ts": ts,
+            })
+        elif t == "champion":
+            feed.append({
+                "kind": "milestone",
+                "title": f"{_team_name(e.get('team_id', -1))} 奪冠",
+                "meta": "賽季結束",
+                "ts": ts,
+            })
+
+    # Current-week own matchup
+    if state is not None and human_id is not None:
+        week = int(state.current_week or 0)
+        if week > 0:
+            m = next(
+                (m for m in state.schedule
+                 if m.week == week and (m.team_a == human_id or m.team_b == human_id)),
+                None,
+            )
+            if m is not None:
+                if m.team_a == human_id:
+                    my_score = round(float(m.score_a), 2)
+                    opp_score = round(float(m.score_b), 2)
+                    opp_id = m.team_b
+                else:
+                    my_score = round(float(m.score_b), 2)
+                    opp_score = round(float(m.score_a), 2)
+                    opp_id = m.team_a
+                feed.append({
+                    "kind": "matchup",
+                    "title": f"W{week} vs {_team_name(opp_id)}",
+                    "meta": f"{my_score} - {opp_score}",
+                    "ts": 9999,
+                })
+
+    feed.sort(key=lambda x: int(x.get("ts", 0)), reverse=True)
+    return {"feed": feed[:limit]}

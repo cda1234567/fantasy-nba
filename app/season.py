@@ -274,6 +274,8 @@ def start_season(
         lineups={},
         ai_calls_today=0,
     )
+    # Seed FAAB budgets: $100 per team at season start
+    state.waiver_budgets = {t.id: 100 for t in draft.teams}
     # Assign LLM models to AI teams — sample without replacement so every AI GM
     # gets a distinct model when the pool is large enough, avoiding the case
     # where most teams land on the same cheap model by RNG luck.

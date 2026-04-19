@@ -178,6 +178,8 @@ class SeasonState(BaseModel):
     lineup_override_today_only: dict[int, bool] = Field(default_factory=dict)
     # Pending alerts for the UI: cleared-override notifications
     lineup_override_alerts: list[dict] = Field(default_factory=list)
+    # FAAB waiver budget per team (team_id -> $ remaining). Default $100/team/season.
+    waiver_budgets: dict[int, int] = Field(default_factory=dict)
 
 
 class Injury(BaseModel):
