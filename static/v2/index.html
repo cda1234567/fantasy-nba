@@ -831,7 +831,7 @@
     const renderSlot = (p, slotLabel) => {
       const form = p.form || [];
       return `
-      <div class="slot" data-player-id="${p.id}">
+      <div class="slot player-card" data-player-id="${p.id}" data-player="${p.id}">
         <span class="slot-label">${esc(slotLabel || p.pos)}</span>
         ${av(p.name, p.grad || gradFor(p.id))}
         <div>
@@ -1977,10 +1977,10 @@
   // ========================================================
   // MODAL helpers
   // ========================================================
-  function openModal(innerHtml, wide=false) {
+  function openModal(innerHtml, wide=false, extraClass='') {
     const bd = $('#modal-bd');
     const card = $('#modal-card');
-    card.className = 'modal-card' + (wide ? ' wide' : '');
+    card.className = 'modal-card modal' + (wide ? ' wide' : '') + (extraClass ? ' ' + extraClass : '');
     card.innerHTML = innerHtml;
     bd.classList.add('open');
   }
@@ -2103,7 +2103,7 @@
         <button class="btn subtle" data-tb-close>取消</button>
         <button class="btn" id="tb-submit">送出提案</button>
       </div>
-    `, true);
+    `, true, 'trade-builder');
 
     const oppSel = $('#tb-opponent');
     oppSel.addEventListener('change', async () => {
