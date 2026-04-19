@@ -1041,7 +1041,7 @@
             <div class="view-title">尚無交易</div>
             <div class="view-sub">發起一筆交易以開始對話</div>
           </div>
-          <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易 ${I.plus}</button></div>
+          <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易提案 ${I.plus}</button></div>
         </div>
         ${emptyCard('目前沒有任何交易紀錄')}
       `;
@@ -1101,7 +1101,7 @@
           <div class="view-title">你與隊伍 #${otherId} 的對話</div>
           <div class="view-sub">${unreadCount} 則待處理 · 歷史 ${history.length} 筆</div>
         </div>
-        <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易 ${I.plus}</button></div>
+        <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易提案 ${I.plus}</button></div>
       </div>
 
       <div class="trade-grid">
@@ -1306,6 +1306,10 @@
     const gen = ++mountGen;
     const r = currentRoute();
     clearRouteTimers();
+    const mbd = document.getElementById('modal-bd');
+    if (mbd) mbd.classList.remove('open');
+    const lmenu = document.getElementById('league-menu');
+    if (lmenu) lmenu.classList.remove('open');
     const view = views[r] || views.home;
     const main = $('#main');
     main.innerHTML = skeleton(r);
