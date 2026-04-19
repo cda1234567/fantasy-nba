@@ -25,6 +25,15 @@
   .err-panel h3 { color: var(--bad, #f87171); margin-bottom: 8px; font-size: var(--fs-md); }
   .err-panel pre { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin: 8px 0 12px; white-space: pre-wrap; word-break: break-all; }
   .empty-state { padding: 32px 20px; text-align: center; color: var(--ink-3); font-size: var(--fs-sm); }
+  .cmdk-item[aria-selected="true"] { background: var(--accent-14, rgba(79,140,255,0.14)); outline: 1px solid var(--accent, #4f8cff); }
+  .cmdk-item mark { background: transparent; color: var(--accent-hi, #8ab4ff); font-weight: 600; }
+  .cmdk-item .cmdk-meta { margin-left: auto; font-size: 10px; color: var(--ink-3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
+  .live-pulse { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-family: var(--mono); color: var(--good, #4ade80); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .live-pulse::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--good, #4ade80); box-shadow: 0 0 0 0 rgba(74,222,128,0.5); animation: livePulse 1.6s infinite; }
+  @keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 70%{box-shadow:0 0 0 6px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
+  .draft-clock-timer { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 8px; }
+  .draft-clock-timer.expired { color: var(--bad, #f87171); animation: clockFlash 1s infinite; }
+  @keyframes clockFlash { 0%,100%{opacity:1} 50%{opacity:0.35} }
 </style>
 </head>
 <body>
@@ -110,6 +119,19 @@
   const esc = (s) => String(s == null ? '' : s)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+
+  // ========================================================
+  // POLLING TIMERS (per-route; cleared on mount)
+  // ========================================================
+  const activeTimers = { tradePoll: null, draftPoll: null, draftClock: null };
+  let aiAdvancing = false;
+  let draftClockResetAt = 0; // ms epoch when current pick arrived
+  let draftClockLastPick = null;
+  function clearRouteTimers() {
+    if (activeTimers.tradePoll)  { clearInterval(activeTimers.tradePoll);  activeTimers.tradePoll  = null; }
+    if (activeTimers.draftPoll)  { clearInterval(activeTimers.draftPoll);  activeTimers.draftPoll  = null; }
+    if (activeTimers.draftClock) { clearInterval(activeTimers.draftClock); activeTimers.draftClock = null; }
+  }
 
   // ========================================================
   // CACHE + LOADERS
@@ -921,9 +943,10 @@
         <div class="draft-clock">
           <div class="dc-eyebrow">
             <span class="live">LIVE · 第 ${recosData.round} 輪 第 ${recosData.pick_in_round} 順位</span>
-            <span class="pick-num">${recosData.on_clock ? '你的回合' : '等待中…'}</span>
+            <span class="pick-num" id="draft-clock-status">${recosData.on_clock ? '你的回合' : 'LIVE · 對手思考中'}</span>
           </div>
           <h2>${recosData.on_clock ? '輪到你選了' : '對手思考中'}</h2>
+          <div class="draft-clock-timer" id="draft-clock-timer" ${recosData.on_clock ? '' : 'hidden'}>01:30</div>
           <div class="dc-sub">根據你聯盟設定與位置缺口，以下是建議人選（由 FPPG + 位置稀缺度計算）。</div>
         </div>
         <div class="needs-strip">
@@ -1037,7 +1060,7 @@
     return `
       <div class="view-head">
         <div class="view-title-block">
-          <span class="eyebrow">交易中心</span>
+          <span class="eyebrow">交易中心 <span class="live-pulse" id="trade-live">LIVE</span></span>
           <div class="view-title">你與隊伍 #${otherId} 的對話</div>
           <div class="view-sub">${unreadCount} 則待處理 · 歷史 ${history.length} 筆</div>
         </div>
@@ -1236,6 +1259,7 @@
   async function mount() {
     const gen = ++mountGen;
     const r = currentRoute();
+    clearRouteTimers();
     const view = views[r] || views.home;
     const main = $('#main');
     main.innerHTML = skeleton(r);
@@ -1378,13 +1402,192 @@
       sendBtn.addEventListener('click', doSend);
       $('#chat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
     }
+
+    // Kick off route-specific polling after DOM is mounted
+    const r = currentRoute();
+    if (r === 'trade') startTradePoll();
+    if (r === 'draft') startDraftPoll();
   }
 
   // ========================================================
-  // CMD-K palette
+  // TRADE POLLING
   // ========================================================
-  const cmdItems = [
-    { group:'跳頁' },
+  function tradeSnapshotKey(pending, history) {
+    // Minimal structural key: thread id + status + last message ts/body
+    const pickTail = (t) => {
+      const msgs = Array.isArray(t.messages) ? t.messages : [];
+      const last = msgs.length ? msgs[msgs.length-1] : null;
+      return { id:t.id, st:t.status, n:msgs.length, lt:last ? (last.ts || last.body || '') : '' };
+    };
+    return JSON.stringify({
+      p: (pending || []).map(pickTail),
+      h: (history || []).map(pickTail),
+    });
+  }
+
+  function startTradePoll() {
+    if (activeTimers.tradePoll) clearInterval(activeTimers.tradePoll);
+    const livePill = $('#trade-live');
+    if (livePill) livePill.style.display = '';
+    // Seed snapshot from current cache so we only react to future changes
+    (async () => {
+      try {
+        const [pendingData, historyData] = await Promise.all([
+          tryGet(loaders.tradesPending, {pending:[]}),
+          tryGet(loaders.tradesHistory, {history:[]}),
+        ]);
+        window.__tradeSnap = tradeSnapshotKey(pendingData.pending || [], historyData.history || []);
+      } catch(_){}
+    })();
+
+    activeTimers.tradePoll = setInterval(async () => {
+      if (document.visibilityState !== 'visible') return;
+      if (currentRoute() !== 'trade') {
+        clearInterval(activeTimers.tradePoll);
+        activeTimers.tradePoll = null;
+        return;
+      }
+      try {
+        invalidate('/api/trades/');
+        const [pendingData, historyData] = await Promise.all([
+          tryGet(loaders.tradesPending, {pending:[]}),
+          tryGet(loaders.tradesHistory, {history:[]}),
+        ]);
+        const pending = pendingData.pending || [];
+        const history = historyData.history || [];
+        const key = tradeSnapshotKey(pending, history);
+        if (key !== window.__tradeSnap) {
+          // Detect new message in currently-open thread to toast
+          try {
+            const prev = window.__tradeSnap ? JSON.parse(window.__tradeSnap) : {p:[], h:[]};
+            const prevAll = [...(prev.p||[]), ...(prev.h||[])];
+            const curAll = [...pending, ...history];
+            const active = curAll.find(t => t.id === activeThread);
+            if (active) {
+              const prevActive = prevAll.find(t => t.id === active.id);
+              const prevN = prevActive ? prevActive.n : 0;
+              const curN = Array.isArray(active.messages) ? active.messages.length : 0;
+              if (curN > prevN) {
+                const last = active.messages[curN-1];
+                const me = await tryGet(loaders.me, {team_id:-1});
+                if (last && last.from_team !== me.team_id && last.kind !== 'system') {
+                  toast('新訊息');
+                }
+              }
+            }
+          } catch(_){}
+          window.__tradeSnap = key;
+          mount();
+        }
+      } catch(_) { /* silent */ }
+    }, 5000);
+  }
+
+  // ========================================================
+  // DRAFT POLLING + CLOCK
+  // ========================================================
+  function fmtClock(sec) {
+    const s = Math.max(0, Math.ceil(sec));
+    const mm = String(Math.floor(s/60)).padStart(2,'0');
+    const ss = String(s%60).padStart(2,'0');
+    return `${mm}:${ss}`;
+  }
+
+  function startDraftClock() {
+    if (activeTimers.draftClock) clearInterval(activeTimers.draftClock);
+    const el = $('#draft-clock-timer');
+    if (!el) return;
+    const DURATION = 90; // seconds synthetic
+    activeTimers.draftClock = setInterval(() => {
+      const elNow = $('#draft-clock-timer');
+      if (!elNow) { clearInterval(activeTimers.draftClock); activeTimers.draftClock = null; return; }
+      const elapsed = (Date.now() - draftClockResetAt) / 1000;
+      const remaining = DURATION - elapsed;
+      if (remaining <= 0) {
+        elNow.textContent = '00:00 超時';
+        elNow.classList.add('expired');
+      } else {
+        elNow.textContent = fmtClock(remaining);
+        elNow.classList.remove('expired');
+      }
+    }, 250);
+  }
+
+  function startDraftPoll() {
+    if (activeTimers.draftPoll) clearInterval(activeTimers.draftPoll);
+    // Initialize clock for current pick
+    (async () => {
+      try {
+        const state = await tryGet(loaders.draftState, null);
+        if (state && !state.is_complete) {
+          const isHuman = state.current_team_id === state.human_team_id;
+          draftClockLastPick = state.current_overall;
+          draftClockResetAt = Date.now();
+          if (isHuman) startDraftClock();
+        }
+      } catch(_){}
+    })();
+
+    activeTimers.draftPoll = setInterval(async () => {
+      if (document.visibilityState !== 'visible') return;
+      if (currentRoute() !== 'draft') {
+        clearInterval(activeTimers.draftPoll);
+        activeTimers.draftPoll = null;
+        return;
+      }
+      try {
+        invalidate('/api/state');
+        const state = await tryGet(loaders.draftState, null);
+        if (!state) return;
+        if (state.is_complete) {
+          clearInterval(activeTimers.draftPoll);
+          activeTimers.draftPoll = null;
+          if (activeTimers.draftClock) { clearInterval(activeTimers.draftClock); activeTimers.draftClock = null; }
+          invalidate('/api/');
+          mount();
+          return;
+        }
+        const isHuman = state.current_team_id === state.human_team_id;
+        const statusEl = $('#draft-clock-status');
+        if (statusEl) statusEl.textContent = isHuman ? '你的回合' : 'LIVE · 對手思考中';
+
+        // Detect pick change
+        if (state.current_overall !== draftClockLastPick) {
+          draftClockLastPick = state.current_overall;
+          draftClockResetAt = Date.now();
+          if (isHuman) {
+            // Human on clock: stop auto-advance, reset clock, re-render for fresh recos
+            if (activeTimers.draftClock) { clearInterval(activeTimers.draftClock); activeTimers.draftClock = null; }
+            invalidate('/api/');
+            mount();
+            return;
+          } else {
+            invalidate('/api/');
+            mount();
+            return;
+          }
+        }
+
+        // If AI is on clock and no advance in flight, fire ai-advance
+        if (!isHuman && !aiAdvancing) {
+          aiAdvancing = true;
+          try {
+            const r = await fetch('/api/draft/ai-advance', {method:'POST'});
+            if (r.ok) {
+              invalidate('/api/');
+              // don't re-mount immediately; next tick will notice current_overall change
+            }
+          } catch(_){}
+          finally { aiAdvancing = false; }
+        }
+      } catch(_) { /* silent */ }
+    }, 2000);
+  }
+
+  // ========================================================
+  // CMD-K palette — dynamic search over nav / players / teams / actions
+  // ========================================================
+  const navItems = [
     { icon:I.home,     label:'今日總覽', hash:'#/home' },
     { icon:I.match,    label:'本週對戰', hash:'#/matchup' },
     { icon:I.roster,   label:'我的陣容', hash:'#/roster' },
@@ -1394,49 +1597,189 @@
     { icon:I.league,   label:'聯盟排名', hash:'#/standings' },
     { icon:I.schedule, label:'整季排程', hash:'#/schedule' },
     { icon:I.chat,     label:'聯盟動態', hash:'#/news' },
-    { group:'動作' },
-    { icon:I.sparkle,  label:'重新整理資料', action:() => { invalidate('/api/'); mount(); toast('已重新整理'); } },
   ];
+
+  const cmdActions = [
+    { icon:I.sparkle, label:'重新整理資料', action: () => { invalidate('/api/'); mount(); toast('已重新整理'); } },
+    { icon:I.arrow,   label:'跳到下一週',   action: async () => {
+        if (!confirm('確定要跳到下一週嗎？')) return;
+        try {
+          const r = await fetch('/api/season/advance-week', {method:'POST', headers:{'content-type':'application/json'}, body:'{}'});
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast('已推進一週', 'success');
+          invalidate('/api/'); mount();
+        } catch(e) { toast('推進失敗：' + e.message, 'error'); }
+      } },
+    { icon:I.alert,   label:'重設賽季',     action: async () => {
+        if (!confirm('確定要重設賽季？所有進度將清除。')) return;
+        try {
+          const r = await fetch('/api/season/reset', {method:'POST', headers:{'content-type':'application/json'}, body:'{}'});
+          if (!r.ok) throw new Error((await r.text()).slice(0,200));
+          toast('賽季已重設', 'success');
+          invalidate('/api/'); mount();
+        } catch(e) { toast('重設失敗：' + e.message, 'error'); }
+      } },
+  ];
+
+  // Highlight matched substring with <mark>
+  const highlight = (label, filter) => {
+    if (!filter) return esc(label);
+    const i = label.toLowerCase().indexOf(filter);
+    if (i < 0) return esc(label);
+    return esc(label.slice(0, i)) + '<mark>' + esc(label.slice(i, i + filter.length)) + '</mark>' + esc(label.slice(i + filter.length));
+  };
+
+  async function cmdSearch(q) {
+    const filter = (q || '').trim().toLowerCase();
+    const out = [];
+    if (!filter) {
+      out.push({group:'跳頁'}, ...navItems);
+      out.push({group:'動作'}, ...cmdActions);
+      return out;
+    }
+    // Fetch sources concurrently (cached via loaders)
+    const [playersRes, standRes] = await Promise.all([
+      tryGet(loaders.players, []),
+      tryGet(loaders.standings, {standings:[]}),
+    ]);
+    const players = Array.isArray(playersRes) ? playersRes : [];
+    const stand = Array.isArray(standRes) ? standRes : (Array.isArray(standRes.standings) ? standRes.standings : []);
+
+    const navMatches = navItems.filter(i => i.label.toLowerCase().includes(filter));
+    const playerMatches = players
+      .filter(p => p && p.name && p.name.toLowerCase().includes(filter))
+      .slice(0, 8)
+      .map(p => ({
+        icon: I.roster,
+        label: `${p.name} · ${p.pos || ''} · ${p.team || ''}`,
+        raw: p.name,
+        type: 'player',
+        player: p,
+      }));
+    const teamMatches = stand
+      .filter(t => t && t.name && t.name.toLowerCase().includes(filter))
+      .slice(0, 5)
+      .map(t => ({
+        icon: I.league,
+        label: `${t.name} · ${t.w}-${t.l}`,
+        raw: t.name,
+        type: 'team',
+        team: t,
+      }));
+    const actMatches = cmdActions.filter(a => a.label.toLowerCase().includes(filter));
+
+    if (navMatches.length)    out.push({group:'跳頁'},  ...navMatches);
+    if (playerMatches.length) out.push({group:'球員'},  ...playerMatches);
+    if (teamMatches.length)   out.push({group:'隊伍'},  ...teamMatches);
+    if (actMatches.length)    out.push({group:'動作'},  ...actMatches);
+    return out;
+  }
+
+  let cmdSelIdx = 0;
+  let cmdCurrentItems = []; // flat list of selectable items (no groups)
+  let cmdDebounceId = null;
 
   function openCmd() {
     const bd = $('#cmdk-bd'); bd.classList.add('open');
     $('#cmdk-q').value = ''; $('#cmdk-q').focus();
+    cmdSelIdx = 0;
     renderCmdList('');
   }
   function closeCmd() { $('#cmdk-bd').classList.remove('open'); }
-  function renderCmdList(q) {
-    const filter = (q || '').toLowerCase();
+
+  async function renderCmdList(q) {
+    const filter = (q || '').trim().toLowerCase();
     const list = $('#cmdk-list');
+    const results = await cmdSearch(q);
+    cmdCurrentItems = results.filter(it => !it.group);
+    if (cmdSelIdx >= cmdCurrentItems.length) cmdSelIdx = 0;
+
     let html = ''; let idx = 0;
-    cmdItems.forEach(it => {
+    results.forEach(it => {
       if (it.group) { html += `<div class="cmdk-group">${esc(it.group)}</div>`; return; }
-      if (filter && !it.label.toLowerCase().includes(filter)) return;
-      html += `<div class="cmdk-item" data-idx="${idx}" ${idx===0?'aria-selected=true':''}>
-        ${it.icon}<span>${esc(it.label)}</span>${it.hash?`<span class="kbd">↵</span>`:''}
+      const selected = idx === cmdSelIdx;
+      const labelSrc = it.raw || it.label;
+      // Only highlight the raw segment if present; otherwise fall back to full label
+      const labelHtml = it.raw ? highlight(it.label, filter) : highlight(it.label, filter);
+      const tail = it.hash ? '<span class="kbd">↵</span>' : (it.type ? `<span class="cmdk-meta">${esc(it.type === 'player' ? '球員' : it.type === 'team' ? '隊伍' : '')}</span>` : '');
+      html += `<div class="cmdk-item" data-idx="${idx}" ${selected?'aria-selected="true"':''}>
+        ${it.icon || ''}<span>${labelHtml}</span>${tail}
       </div>`;
       idx++;
     });
     list.innerHTML = html || '<div style="padding:24px;text-align:center;color:var(--ink-3);font-size:var(--fs-sm)">沒有符合的項目</div>';
 
-    const matches = cmdItems.filter(it => !it.group && (!filter || it.label.toLowerCase().includes(filter)));
     $$('.cmdk-item', list).forEach((el, i) => {
-      el.addEventListener('click', () => {
-        const it = matches[i];
-        if (it.hash) location.hash = it.hash;
-        if (it.action) it.action();
-        closeCmd();
+      el.addEventListener('click', () => activateCmdItem(cmdCurrentItems[i]));
+      el.addEventListener('mousemove', () => {
+        if (cmdSelIdx !== i) { cmdSelIdx = i; updateCmdSelection(); }
       });
     });
   }
 
+  function updateCmdSelection() {
+    $$('.cmdk-item', $('#cmdk-list')).forEach((el, i) => {
+      if (i === cmdSelIdx) el.setAttribute('aria-selected', 'true');
+      else el.removeAttribute('aria-selected');
+    });
+    const sel = $('.cmdk-item[aria-selected="true"]', $('#cmdk-list'));
+    if (sel && sel.scrollIntoView) sel.scrollIntoView({ block: 'nearest' });
+  }
+
+  async function activateCmdItem(it) {
+    if (!it) return;
+    if (it.hash) { location.hash = it.hash; closeCmd(); return; }
+    if (it.action) { closeCmd(); it.action(); return; }
+    if (it.type === 'team' && it.team) {
+      location.hash = '#/standings';
+      closeCmd();
+      toast(`排名中找到 ${it.team.name}`);
+      return;
+    }
+    if (it.type === 'player' && it.player) {
+      const p = it.player;
+      try {
+        const me = await tryGet(loaders.me, {team_id:-1});
+        // /api/players with default available=true -> this player is FA if in pool
+        // Simplest rule: players endpoint returned it → FA (available). Go to FA.
+        location.hash = '#/fa';
+        closeCmd();
+        toast(`${p.name} · ${p.team || ''} · 自由球員`);
+      } catch(e) {
+        location.hash = '#/fa';
+        closeCmd();
+      }
+      return;
+    }
+    closeCmd();
+  }
+
   $('#cmd-open').addEventListener('click', openCmd);
   $('#cmdk-bd').addEventListener('click', e => { if (e.target.id === 'cmdk-bd') closeCmd(); });
-  $('#cmdk-q').addEventListener('input', e => renderCmdList(e.target.value));
+  $('#cmdk-q').addEventListener('input', e => {
+    const v = e.target.value;
+    if (cmdDebounceId) clearTimeout(cmdDebounceId);
+    cmdDebounceId = setTimeout(() => { cmdSelIdx = 0; renderCmdList(v); }, 150);
+  });
   $('#cmdk-q').addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeCmd();
+    if (e.key === 'Escape') { closeCmd(); return; }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!cmdCurrentItems.length) return;
+      cmdSelIdx = (cmdSelIdx + 1) % cmdCurrentItems.length;
+      updateCmdSelection();
+      return;
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!cmdCurrentItems.length) return;
+      cmdSelIdx = (cmdSelIdx - 1 + cmdCurrentItems.length) % cmdCurrentItems.length;
+      updateCmdSelection();
+      return;
+    }
     if (e.key === 'Enter') {
-      const first = $('.cmdk-item', $('#cmdk-list'));
-      if (first) first.click();
+      e.preventDefault();
+      activateCmdItem(cmdCurrentItems[cmdSelIdx]);
     }
   });
   document.addEventListener('keydown', e => {
