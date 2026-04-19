@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.6.0"
+APP_VERSION = "0.6.1"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -223,6 +223,21 @@ def index():
     html = html.replace('/static/app.js', f'/static/app.js?v={APP_VERSION}')
     html = html.replace('/static/style.css', f'/static/style.css?v={APP_VERSION}')
     html = html.replace('{{APP_VERSION}}', APP_VERSION)
+    return HTMLResponse(html)
+
+
+@app.get("/v2", include_in_schema=False)
+@app.get("/v2/", include_in_schema=False)
+def index_v2():
+    """Serve v2 Linear/Arc-style UI. Coexists with legacy / until verified.
+
+    The prototype HTML inlines both data.js and app.js — only the two
+    external CSS files (tokens.css, shell.css) need path rewriting so the
+    browser fetches them from /static/v2/ instead of the /v2 route.
+    """
+    html = (STATIC_DIR / "v2" / "index.html").read_text(encoding="utf-8")
+    html = html.replace('href="tokens.css"', f'href="/static/v2/tokens.css?v={APP_VERSION}"')
+    html = html.replace('href="shell.css"', f'href="/static/v2/shell.css?v={APP_VERSION}"')
     return HTMLResponse(html)
 
 

@@ -1,0 +1,196 @@
+/* Fantasy NBA v2 — Linear/Arc-inspired tokens
+ * Keeps FPPG data system & GitHub-dark base, but gives space & rhythm.
+ * More negative space, softer elevation, scoped motion.
+ */
+
+:root {
+  /* ---------- Surface (deeper, more separation) ---------- */
+  --bg:          #0b0d12;   /* deeper than v1 — lets elevated surfaces breathe */
+  --bg-alt:      #0f1218;   /* full-bleed section alt */
+  --surface:     #141821;   /* elevated cards */
+  --surface-2:   #1a1f2b;   /* nested inside surface */
+  --surface-3:   #222836;   /* hover on surface */
+  --line:        #242a38;   /* primary hairline */
+  --line-soft:   #1b2030;   /* quiet hairline */
+  --line-strong: #2f374a;   /* emphasized edge */
+
+  /* ---------- Ink ---------- */
+  --ink:       #e8ebf0;    /* primary */
+  --ink-2:     #a7aec0;    /* secondary */
+  --ink-3:     #6b7388;    /* tertiary / meta */
+  --ink-4:     #4a5268;    /* disabled */
+
+  /* ---------- Accent: indigo-blue (slightly cooler than v1 #58a6ff) ---------- */
+  --accent:      #6b8fff;
+  --accent-hi:   #8ea7ff;
+  --accent-lo:   #3f5fd9;
+  --accent-ink:  #080e1f;
+  --accent-08:   rgba(107,143,255,0.08);
+  --accent-14:   rgba(107,143,255,0.14);
+  --accent-22:   rgba(107,143,255,0.22);
+
+  /* ---------- Semantic (muted, less "bootstrap" ---------- */
+  --good:      #4ade80;   /* wins, positive */
+  --good-bg:   rgba(74,222,128,0.1);
+  --bad:       #f87171;
+  --bad-bg:    rgba(248,113,113,0.1);
+  --warn:      #fbbf24;
+  --warn-bg:   rgba(251,191,36,0.1);
+
+  /* ---------- Position palette (softer, desaturated) ---------- */
+  --pg: #a78bfa;   /* purple */
+  --sg: #60a5fa;   /* blue */
+  --sf: #4ade80;   /* green */
+  --pf: #fbbf24;   /* amber */
+  --c:  #f87171;   /* red */
+
+  /* ---------- Phase colors (for nav + state ribbons) ---------- */
+  --phase-draft:   #4ade80;
+  --phase-regular: #6b8fff;
+  --phase-playoff: #a78bfa;
+
+  /* ---------- Type (Inter fallback via system stack) ---------- */
+  --sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont,
+          "SF Pro Text", "Segoe UI", Roboto,
+          "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --display: "Inter", ui-sans-serif, -apple-system, sans-serif;  /* tighten via feature-settings */
+
+  /* Tracking */
+  --feat-text: "cv11","ss01","ss03";   /* cleaner Inter forms */
+  --feat-num:  "tnum","cv11";
+
+  /* ---------- Type scale (generous: 11-13-15-17-22-28-40-56) ---------- */
+  --fs-micro: 11px;
+  --fs-xs:    12px;
+  --fs-sm:    13px;
+  --fs-md:    15px;   /* BODY — was 14 in v1 */
+  --fs-lg:    17px;
+  --fs-xl:    22px;
+  --fs-2xl:   28px;
+  --fs-3xl:   40px;
+  --fs-4xl:   56px;   /* scoreboards only */
+
+  --lh-tight:  1.15;
+  --lh-snug:   1.3;
+  --lh-base:   1.55;
+  --lh-relax:  1.7;
+
+  /* ---------- Spacing (8-based — doubled from v1's density) ---------- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  12px;
+  --s-4:  16px;
+  --s-5:  20px;
+  --s-6:  24px;
+  --s-7:  32px;
+  --s-8:  40px;
+  --s-9:  56px;
+  --s-10: 80px;
+
+  /* ---------- Radii (softer) ---------- */
+  --r-xs:  4px;
+  --r-sm:  6px;
+  --r:     10px;       /* default: panels, cards */
+  --r-lg:  14px;       /* hero cards */
+  --r-xl:  20px;       /* modals */
+  --r-pill: 999px;
+
+  /* ---------- Elevation (Linear-style — very subtle) ---------- */
+  --e-1: 0 1px 2px rgba(0,0,0,0.3), 0 0 0 1px var(--line-soft);
+  --e-2: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 1px var(--line);
+  --e-3: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px var(--line-strong);
+  --e-focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  /* ---------- Shell metrics ---------- */
+  --shell-header: 56px;
+  --shell-nav:    232px;   /* wider — room for labels + shortcuts */
+  --shell-rail:   320px;   /* right rail for news / log */
+  --shell-tabbar: 64px;
+
+  /* ---------- Motion ---------- */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 520ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);     /* Linear's classic */
+  --ease-in:  cubic-bezier(0.5, 0, 0.75, 0);
+  --ease-std: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------- Gradients (player avatars, hero moments) ---------- */
+  --av-1: linear-gradient(135deg, #6b8fff 0%, #a78bfa 100%);
+  --av-2: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
+  --av-3: linear-gradient(135deg, #fbbf24 0%, #f87171 100%);
+  --av-4: linear-gradient(135deg, #f472b6 0%, #a78bfa 100%);
+  --av-5: linear-gradient(135deg, #60a5fa 0%, #4ade80 100%);
+  --av-6: linear-gradient(135deg, #f87171 0%, #fb923c 100%);
+  --av-7: linear-gradient(135deg, #a78bfa 0%, #60a5fa 100%);
+  --av-8: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
+}
+
+/* ============================================================
+ * Base — reset + sane defaults with Linear-flavoured type rendering
+ * ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: var(--fs-md)/var(--lh-base) var(--sans);
+  font-feature-settings: var(--feat-text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.005em;
+}
+
+h1, h2, h3, h4, h5 { margin: 0; font-weight: 600; line-height: var(--lh-snug); letter-spacing: -0.015em; }
+h1 { font-size: var(--fs-2xl); letter-spacing: -0.02em; }
+h2 { font-size: var(--fs-xl); }
+h3 { font-size: var(--fs-lg); }
+h4 { font-size: var(--fs-md); }
+
+p { margin: 0; }
+
+a { color: var(--accent); text-decoration: none; transition: color var(--dur-1) var(--ease-std); }
+a:hover { color: var(--accent-hi); }
+
+code, kbd, .mono, .num {
+  font-family: var(--mono);
+  font-feature-settings: var(--feat-num);
+}
+
+::selection { background: var(--accent-22); color: var(--ink); }
+
+button { font: inherit; color: inherit; }
+
+.eyebrow {
+  font-size: var(--fs-micro);
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.num-display {
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scroll surfaces — muted scrollbar */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--line); border-radius: 999px; border: 2px solid var(--bg); }
+*::-webkit-scrollbar-thumb:hover { background: var(--line-strong); }
+
+/* Focus ring — keyboard only */
+:focus { outline: none; }
+:focus-visible { box-shadow: var(--e-focus) !important; border-radius: var(--r-sm); }
