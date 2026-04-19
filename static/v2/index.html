@@ -1085,14 +1085,14 @@
 
   // ---------- FA ----------
   views.fa = async () => {
-    const [me, team, fa, players] = await Promise.all([
+    const [me, fa, players] = await Promise.all([
       loaders.me(),
-      tryGet(() => loaders.team(null), null).catch(() => null), // placeholder
       tryGet(loaders.faStatus, {budget:100, used_today:0, limit:3, remaining:3}),
       tryGet(loaders.players, []),
     ]);
-    // Team via real me.team_id (can't await within Promise.all easily without me resolved first, so refetch)
-    const myTeam = await tryGet(() => loaders.team(me.team_id), null);
+    const myTeam = (me && me.team_id != null)
+      ? await tryGet(() => loaders.team(me.team_id), null)
+      : null;
 
     // /api/players with available=true returns only un-drafted. Server default is available=true.
     const pool = Array.isArray(players) ? players : [];
@@ -1232,22 +1232,29 @@
     return hh || 'home';
   }
 
+  let mountGen = 0;
   async function mount() {
+    const gen = ++mountGen;
     const r = currentRoute();
     const view = views[r] || views.home;
     const main = $('#main');
     main.innerHTML = skeleton(r);
     try {
       const html = await view();
+      if (gen !== mountGen) return; // superseded by a newer mount
       main.innerHTML = html;
     } catch (e) {
+      if (gen !== mountGen) return;
       console.error('view error', e);
       main.innerHTML = errorCard(e);
     }
+    if (gen !== mountGen) return;
     main.scrollTop = 0;
     window.scrollTo(0, 0);
     try { await renderNav(); } catch(e){ console.error('nav', e); }
+    if (gen !== mountGen) return;
     try { await renderRail(); } catch(e){ console.error('rail', e); }
+    if (gen !== mountGen) return;
     bindViewEvents();
   }
 
