@@ -15,27 +15,8 @@
     "nav main rail";
   min-height: 100vh;
 }
-@media (max-width: 1280px) {
-  .app { grid-template-columns: var(--shell-nav) 1fr; grid-template-areas: "header header" "nav main"; }
-  .shell-rail { display: none; }
-}
-@media (max-width: 860px) {
-  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--shell-header) 1fr var(--shell-tabbar);
-    grid-template-areas: "header" "main" "tabbar"; }
-  .shell-nav { display: none; }
-  .shell-main { padding-bottom: calc(var(--shell-tabbar) + var(--s-4)); min-width: 0; }
-  .shell-header { padding: 0 var(--s-3); gap: var(--s-2); min-width: 0; overflow: hidden; }
-  .shell-header > * { min-width: 0; }
-  .cmd-trigger { min-width: 0; flex: 1 1 40px; padding: 7px 10px; margin-left: auto; }
-  .cmd-trigger .ct-text { display: none; }
-  .cmd-trigger .kbd { display: none; }
-  .me-chip { flex: 0 0 auto; }
-  .me-chip-name { display: none; }
-  .brand-name .sub { display: none; }
-  .brand-name { font-size: var(--fs-sm); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .league-switch { display: none; }
-  body { overflow-x: hidden; }
-}
+/* responsive breakpoints live at the end of the file so they can override
+   the base rules defined below. see file tail. */
 
 /* ---- Header ---- */
 .shell-header {
@@ -828,3 +809,27 @@
 }
 .toast .t-ic { flex-shrink: 0; width: 18px; height: 18px; margin-top: 2px; color: var(--good); }
 .toast.error .t-ic { color: var(--bad); }
+
+/* ========== Shell responsive breakpoints (end-of-file so they win cascade) ========== */
+@media (max-width: 1280px) {
+  .app { grid-template-columns: var(--shell-nav) 1fr; grid-template-areas: "header header" "nav main"; }
+  .shell-rail { display: none; }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: var(--shell-header) 1fr var(--shell-tabbar);
+    grid-template-areas: "header" "main" "tabbar"; }
+  .shell-nav { display: none; }
+  .shell-main { padding-bottom: calc(var(--shell-tabbar) + var(--s-4)); min-width: 0; }
+  .shell-header { padding: 0 var(--s-3); gap: var(--s-2); min-width: 0; overflow: hidden; }
+  .shell-header > * { min-width: 0; }
+  .header-actions { min-width: 0; gap: var(--s-2); flex: 0 0 auto; }
+  .cmd-trigger { min-width: 0; flex: 1 1 40px; padding: 7px 10px; margin-left: auto; }
+  .cmd-trigger .ct-text { display: none; }
+  .cmd-trigger .kbd { display: none; }
+  .me-chip { flex: 0 0 auto; }
+  .me-chip-name { display: none; }
+  .brand-name .sub { display: none; }
+  .brand-name { font-size: var(--fs-sm); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .league-switch { display: none; }
+  body { overflow-x: hidden; }
+}
