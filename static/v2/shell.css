@@ -24,15 +24,16 @@
     grid-template-areas: "header" "main" "tabbar"; }
   .shell-nav { display: none; }
   .shell-main { padding-bottom: calc(var(--shell-tabbar) + var(--s-4)); min-width: 0; }
-  .shell-header { padding: 0 var(--s-3); gap: var(--s-3); min-width: 0; }
+  .shell-header { padding: 0 var(--s-3); gap: var(--s-2); min-width: 0; overflow: hidden; }
   .shell-header > * { min-width: 0; }
-  .cmd-trigger { min-width: 0; flex: 1 1 auto; padding: 7px 10px; }
+  .cmd-trigger { min-width: 0; flex: 1 1 40px; padding: 7px 10px; margin-left: auto; }
   .cmd-trigger .ct-text { display: none; }
   .cmd-trigger .kbd { display: none; }
+  .me-chip { flex: 0 0 auto; }
   .me-chip-name { display: none; }
   .brand-name .sub { display: none; }
-  .league-switch { max-width: 160px; overflow: hidden; white-space: nowrap; }
-  .league-switch span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; }
+  .brand-name { font-size: var(--fs-sm); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .league-switch { display: none; }
   body { overflow-x: hidden; }
 }
 
