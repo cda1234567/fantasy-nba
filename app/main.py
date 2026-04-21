@@ -226,6 +226,8 @@ def index():
     html = (STATIC_DIR / "v2" / "index.html").read_text(encoding="utf-8")
     html = html.replace('href="tokens.css"', f'href="/static/v2/tokens.css?v={APP_VERSION}"')
     html = html.replace('href="shell.css"', f'href="/static/v2/shell.css?v={APP_VERSION}"')
+    html = html.replace('src="data.js"', f'src="/static/v2/data.js?v={APP_VERSION}"')
+    html = html.replace('src="app.js"', f'src="/static/v2/app.js?v={APP_VERSION}"')
     return HTMLResponse(html)
 
 
