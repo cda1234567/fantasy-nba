@@ -3,7 +3,7 @@
  */
 (() => {
   const D = {};  // replaces window.DATA - will be populated from API
-  const API = 'http://127.0.0.1:3410';
+  const API = '';
 
   async function api(path, opts = {}) {
     const res = await fetch(API + path, {
@@ -1161,7 +1161,7 @@
       advDay.addEventListener('click', async () => {
         advDay.disabled = true;
         try {
-          const res = await fetch('http://127.0.0.1:3410/api/season/advance-day', { method: 'POST' });
+          const res = await fetch('/api/season/advance-day', { method: 'POST' });
           if (res.ok) {
             toast('已推進一天', 'success');
             await refreshData();
@@ -1180,7 +1180,7 @@
       advWeek.addEventListener('click', async () => {
         advWeek.disabled = true;
         try {
-          const res = await fetch('http://127.0.0.1:3410/api/season/advance-week', {
+          const res = await fetch('/api/season/advance-week', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ use_ai: false })
@@ -1413,7 +1413,7 @@
               balanced: { pts:1.0, reb:1.0, ast:1.0, stl:1.5, blk:1.5, to:-1.0 },
             };
             const scoring = scoringPresets[$('#nl-scoring-seg [aria-pressed="true"]')?.dataset.val || 'default'];
-            const res = await fetch('http://127.0.0.1:3410/api/league/setup', {
+            const res = await fetch('/api/league/setup', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
