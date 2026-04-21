@@ -359,6 +359,18 @@
             <div class="mc-value">→ 第 2</div>
             <div class="mc-delta neutral">目前第 3、若本週贏將擠下 Ben</div>
           </div>
+          <div class="metric-card">
+            <div class="mc-label">類別優勢</div>
+            <div class="mc-value" style="font-size:var(--fs-md);line-height:1.5">${(() => {
+              const cb = D.matchup.catBreakdown;
+              const wins = cb.filter(r => r.cat === 'TO' ? r.you < r.them : r.you > r.them);
+              const tags = cb.map(r => {
+                const win = r.cat === 'TO' ? r.you < r.them : r.you > r.them;
+                return `<span style="color:${win ? 'var(--good)' : 'var(--ink-3)'};font-family:var(--mono);font-size:var(--fs-xs)">${r.cat}${win ? '✓' : '✗'}</span>`;
+              }).join(' ');
+              return tags + `<div style="margin-top:4px;font-family:var(--mono);font-size:var(--fs-sm);font-weight:700">${wins.length}/6 領先</div>`;
+            })()}</div>
+          </div>
         </div>
       </section>
 
@@ -420,25 +432,72 @@
   };
 
   // ---------- ROSTER ----------
+  const SLOT_ORDER = ['PG','SG','SF','PF','C','G','F','UTIL','BN','IR'];
+  let rosterSort = { key: 'slot', dir: 'asc' };
+  const DAY_LABELS = ['一','二','三','四','五','六','日'];
+
   views.roster = () => {
-    const byZone = { STARTERS: [], BN: [], IR: [] };
-    D.roster.forEach(p => {
-      if (p.slot === 'BN') byZone.BN.push(p);
-      else if (p.slot === 'IR') byZone.IR.push(p);
-      else byZone.STARTERS.push(p);
+    const sorted = [...D.roster].sort((a, b) => {
+      const av2 = (p) => {
+        if (rosterSort.key === 'slot') { const i = SLOT_ORDER.indexOf(p.slot); return i === -1 ? 99 : i; }
+        if (rosterSort.key === 'proj') return p.proj || 0;
+        return (p.avg && p.avg[rosterSort.key] != null) ? p.avg[rosterSort.key] : -Infinity;
+      };
+      return rosterSort.dir === 'desc' ? av2(b) - av2(a) : av2(a) - av2(b);
     });
 
-    const renderSlot = (p) => `
-      <div class="slot">
-        <span class="slot-label">${p.slot}</span>
-        ${av(p.name, p.grad)}
-        <div>
-          <div class="slot-name">${p.name}</div>
-          <div class="slot-team">${p.team} · ${p.game || '—'}</div>
-        </div>
-        <div class="slot-form">${p.form.map(f => `<div class="spark ${f===1?'hot':f===0?'warm':'cold'}"></div>`).join('')}</div>
-        <div class="slot-proj">${p.proj || '—'}</div>
-      </div>`;
+    const statCols = ['proj','pts','reb','ast','stl','blk','to'];
+    const statLabel = { proj:'PROJ', pts:'PTS', reb:'REB', ast:'AST', stl:'STL', blk:'BLK', to:'TO' };
+
+    const thStyle = 'padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);text-align:right;white-space:nowrap;cursor:pointer;user-select:none;';
+    const thActive = 'color:var(--accent-hi);';
+
+    const headers = statCols.map(k => {
+      const active = rosterSort.key === k;
+      const arrow = active ? (rosterSort.dir === 'desc' ? ' ↓' : ' ↑') : '';
+      return `<th data-sort="${k}" style="${thStyle}${active ? thActive : ''}">${statLabel[k]}${arrow}</th>`;
+    }).join('');
+
+    const dayHeader = DAY_LABELS.map(d =>
+      `<th style="${thStyle}text-align:center;">${d}</th>`
+    ).join('');
+
+    const rows = sorted.map(p => {
+      const zoneTag = p.slot === 'BN' ? 'BN' : p.slot === 'IR' ? 'IR' : '';
+      const slotBg = p.slot === 'IR' ? 'background:var(--bad-bg);' : p.slot === 'BN' ? 'background:var(--surface-2);' : '';
+      const statCells = statCols.map(k => {
+        if (k === 'proj') {
+          return `<td style="text-align:right;font-family:var(--mono);font-weight:700;font-size:var(--fs-sm);color:var(--ink)">${p.proj || '—'}</td>`;
+        }
+        const val = p.avg ? p.avg[k] : null;
+        return `<td style="text-align:right;font-family:var(--mono);font-size:var(--fs-xs);color:var(--ink-2)">${val != null ? val.toFixed(1) : '—'}</td>`;
+      }).join('');
+      const dayCells = DAY_LABELS.map((_, i) => {
+        const on = p.days && p.days[i];
+        return `<td style="text-align:center;padding:8px 4px;">
+          <span style="display:inline-block;width:18px;height:18px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;line-height:18px;${on ? 'background:var(--accent);color:var(--accent-ink);' : 'background:var(--surface-2);color:var(--ink-4);'}">${DAY_LABELS[i]}</span>
+        </td>`;
+      }).join('');
+      return `<tr style="${slotBg}">
+        <td style="padding:10px 10px;white-space:nowrap;">
+          <span style="font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);margin-right:6px">${p.slot}</span>
+        </td>
+        <td style="padding:10px 6px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            ${av(p.name, p.grad, 'sm')}
+            <div>
+              <div style="font-weight:500;font-size:var(--fs-sm)">${p.name}</div>
+              <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono)">${p.team} · ${p.game || '休'}</div>
+            </div>
+          </div>
+        </td>
+        <td style="padding:8px 10px;">
+          <div class="slot-form">${p.form.map(f => `<div class="spark ${f===1?'hot':f===0?'warm':'cold'}"></div>`).join('')}</div>
+        </td>
+        ${dayCells}
+        ${statCells}
+      </tr>`;
+    }).join('');
 
     return `
       <div class="view-head">
@@ -453,19 +512,19 @@
         </div>
       </div>
 
-      <div style="margin-bottom:var(--s-6)">
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">先發 · 8 人</div>
-        <div class="roster-grid">${byZone.STARTERS.map(renderSlot).join('')}</div>
-      </div>
-
-      <div style="margin-bottom:var(--s-6)">
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">板凳 · ${byZone.BN.length} 人</div>
-        <div class="roster-grid">${byZone.BN.map(renderSlot).join('')}</div>
-      </div>
-
-      <div>
-        <div class="eyebrow" style="margin-bottom:var(--s-3)">傷兵名單 · ${byZone.IR.length} 人</div>
-        <div class="roster-grid">${byZone.IR.map(renderSlot).join('')}</div>
+      <div class="card" style="overflow-x:auto;">
+        <table class="standings-table" style="min-width:820px;">
+          <thead>
+            <tr>
+              <th style="padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);">位置</th>
+              <th style="padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);">球員</th>
+              <th style="padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);">近況</th>
+              ${dayHeader}
+              ${headers}
+            </tr>
+          </thead>
+          <tbody id="roster-tbody">${rows}</tbody>
+        </table>
       </div>
     `;
   };
@@ -503,6 +562,29 @@
             <span>對手預估 ${them.proj}</span>
           </div>
         </div>
+      </div>
+
+      <div class="card" style="margin-bottom:var(--s-5);">
+        <div class="card-header"><h3>類別分項</h3><span class="sub">本週累計 · 贏的那方亮色</span></div>
+        <table class="standings-table">
+          <thead><tr>
+            <th>類別</th>
+            <th class="num" style="color:var(--accent-hi)">你 · 肉圓幫</th>
+            <th class="num">對手 · 珍奶兄弟</th>
+          </tr></thead>
+          <tbody>
+            ${D.matchup.catBreakdown.map(r => {
+              // For TO, lower is better
+              const youWins = r.cat === 'TO' ? r.you < r.them : r.you > r.them;
+              const themWins = r.cat === 'TO' ? r.them < r.you : r.them > r.you;
+              return `<tr>
+                <td><span style="font-family:var(--mono);font-weight:700;font-size:var(--fs-xs);padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--ink-2)">${r.cat}</span></td>
+                <td class="num" style="font-family:var(--mono);font-weight:700;${youWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.you.toFixed(1)}</td>
+                <td class="num" style="font-family:var(--mono);${themWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.them.toFixed(1)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
       </div>
 
       <div class="card">
@@ -837,6 +919,36 @@
   }
 
   function bindViewEvents() {
+    // Roster sort — click th[data-sort] to sort, re-render tbody only
+    $$('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (rosterSort.key === key) {
+          rosterSort.dir = rosterSort.dir === 'desc' ? 'asc' : 'desc';
+        } else {
+          rosterSort.key = key;
+          rosterSort.dir = 'desc';
+        }
+        // Re-render only the tbody to avoid full mount()
+        const tbody = document.getElementById('roster-tbody');
+        if (!tbody) return;
+        // Re-run the roster view and extract its tbody content
+        const tmp = document.createElement('div');
+        tmp.innerHTML = views.roster();
+        const newTbody = tmp.querySelector('#roster-tbody');
+        if (newTbody) tbody.innerHTML = newTbody.innerHTML;
+        // Refresh headers
+        const newTable = tmp.querySelector('table');
+        const oldTable = tbody.closest('table');
+        if (newTable && oldTable) {
+          const oldThead = oldTable.querySelector('thead');
+          const newThead = newTable.querySelector('thead');
+          if (oldThead && newThead) oldThead.innerHTML = newThead.innerHTML;
+        }
+        bindViewEvents();
+      });
+    });
+
     // Trade thread clicks
     $$('.ts-row[data-thread]').forEach(row => {
       row.addEventListener('click', () => {
@@ -866,15 +978,29 @@
         const t = (input.value || '').trim();
         if (!t) return;
         const body = $('#chat-body');
-        body.insertAdjacentHTML('beforeend', `<div class="bubble-row me"><div class="bubble me">${t}</div><div class="bubble-meta">剛剛</div></div>`);
+        body.append(
+          h('div', {class:'bubble-row me'},
+            h('div', {class:'bubble me'}, t),
+            h('div', {class:'bubble-meta'}, '剛剛')
+          )
+        );
         input.value = '';
         body.scrollTop = body.scrollHeight;
         // simulate reply
-        body.insertAdjacentHTML('beforeend', `<div class="typing"><div class="d"></div><div class="d"></div><div class="d"></div></div>`);
+        body.append(
+          h('div', {class:'typing'},
+            h('div', {class:'d'}), h('div', {class:'d'}), h('div', {class:'d'})
+          )
+        );
         body.scrollTop = body.scrollHeight;
         setTimeout(() => {
           body.querySelector('.typing')?.remove();
-          body.insertAdjacentHTML('beforeend', `<div class="bubble-row them"><div class="bubble them">嗯…讓我想想。這邊我覺得可能要你再加一點。</div><div class="bubble-meta">剛剛</div></div>`);
+          body.append(
+            h('div', {class:'bubble-row them'},
+              h('div', {class:'bubble them'}, '嗯…讓我想想。這邊我覺得可能要你再加一點。'),
+              h('div', {class:'bubble-meta'}, '剛剛')
+            )
+          );
           body.scrollTop = body.scrollHeight;
         }, 1200);
       };

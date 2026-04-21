@@ -14,10 +14,10 @@
   html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: var(--fs-md); line-height: var(--lh-base); font-feature-settings: var(--feat-text); -webkit-font-smoothing: antialiased; }
   button, input { font-family: inherit; color: inherit; }
   a { color: inherit; text-decoration: none; }
-  h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; letter-spacing: -0.01em; }
+  h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; letter-spacing: 0; }
   [hidden] { display: none !important; }
   .mono { font-family: var(--mono); font-feature-settings: var(--feat-num); }
-  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-3); font-weight: 600; font-family: var(--mono); }
+  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0; color: var(--ink-3); font-weight: 600; font-family: var(--mono); }
   .skel { background: linear-gradient(90deg, var(--card, #1c1c1c) 0%, var(--line, #2a2a2a) 50%, var(--card, #1c1c1c) 100%); background-size: 200% 100%; animation: skel 1.2s infinite; border-radius: 8px; }
   @keyframes skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
   .skel-row { height: 14px; margin: 8px 0; }
@@ -27,11 +27,11 @@
   .empty-state { padding: 32px 20px; text-align: center; color: var(--ink-3); font-size: var(--fs-sm); }
   .cmdk-item[aria-selected="true"] { background: var(--accent-14, rgba(79,140,255,0.14)); outline: 1px solid var(--accent, #4f8cff); }
   .cmdk-item mark { background: transparent; color: var(--accent-hi, #8ab4ff); font-weight: 600; }
-  .cmdk-item .cmdk-meta { margin-left: auto; font-size: 10px; color: var(--ink-3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.06em; }
-  .live-pulse { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-family: var(--mono); color: var(--good, #4ade80); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .cmdk-item .cmdk-meta { margin-left: auto; font-size: 10px; color: var(--ink-3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0; }
+  .live-pulse { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-family: var(--mono); color: var(--good, #4ade80); text-transform: uppercase; letter-spacing: 0; font-weight: 600; }
   .live-pulse::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--good, #4ade80); box-shadow: 0 0 0 0 rgba(74,222,128,0.5); animation: livePulse 1.6s infinite; }
   @keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 70%{box-shadow:0 0 0 6px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
-  .draft-clock-timer { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 8px; }
+  .draft-clock-timer { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: 0; margin-top: 8px; }
   .draft-clock-timer.expired { color: var(--bad, #f87171); animation: clockFlash 1s infinite; }
   @keyframes clockFlash { 0%,100%{opacity:1} 50%{opacity:0.35} }
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 80; display: none; align-items: center; justify-content: center; animation: fadeIn 180ms ease; }
@@ -77,13 +77,13 @@
       <span class="kbd">⌘K</span>
     </button>
     <div class="header-actions">
-      <button class="icon-btn" data-badge="3" title="通知">
+      <button class="icon-btn" id="notifications-btn" title="通知" aria-label="通知">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
       </button>
-      <button class="icon-btn" title="設定">
+      <button class="icon-btn" id="settings-btn" title="設定" aria-label="設定">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
-      <button class="me-chip" id="me-chip">
+      <button class="me-chip" id="me-chip" title="我的球隊" aria-label="我的球隊">
         <div class="av sm" data-grad="1">ME</div>
         <span class="me-chip-name">—</span>
       </button>
@@ -156,6 +156,9 @@
   let aiAdvancing = false;
   let draftClockResetAt = 0; // ms epoch when current pick arrived
   let draftClockLastPick = null;
+  let faMode = 'hot';
+  let newsFilter = 'all';
+  const skippedRecos = new Set();
   function clearRouteTimers() {
     if (activeTimers.tradePoll)  { clearInterval(activeTimers.tradePoll);  activeTimers.tradePoll  = null; }
     if (activeTimers.draftPoll)  { clearInterval(activeTimers.draftPoll);  activeTimers.draftPoll  = null; }
@@ -198,6 +201,7 @@
     matchupDetail: (w, a, b) => get('/api/season/matchup-detail?week=' + w + '&team_a=' + a + '&team_b=' + b),
     team:          (id) => get('/api/teams/' + id),
     players:       () => get('/api/players?limit=500'),
+    allPlayers:    () => get('/api/players?available=false&limit=500'),
     draftState:    () => get('/api/state'),
     draftRecos:    () => get('/api/draft/recommendations?limit=6'),
     tradesPending: () => get('/api/trades/pending'),
@@ -325,15 +329,23 @@
   // ========================================================
   async function renderNav() {
     const route = currentRoute();
-    const [league, status, pending, me] = await Promise.all([
+    const [league, status, pending, actionsData, me] = await Promise.all([
       tryGet(loaders.league, {league_name:'聯盟', num_teams:8, regular_season_weeks:21}),
       tryGet(loaders.leagueStatus, {setup_complete:false, regular_season_weeks:21}),
       tryGet(loaders.tradesPending, {pending:[]}),
+      tryGet(loaders.homeActions, {actions:[]}),
       tryGet(loaders.me, {name:'', team_id:0, current_week:0}),
     ]);
 
     const draftDone = !!(status && status.setup_complete);
     const unread = Array.isArray(pending.pending) ? pending.pending.filter(t => t.to_team === me.team_id && t.status === 'pending_accept').length : 0;
+    const actionCount = Array.isArray(actionsData.actions) ? actionsData.actions.filter(a => a.urgency !== 'done').length : 0;
+    const notificationCount = unread + actionCount;
+    const notificationBtn = $('#notifications-btn');
+    if (notificationBtn) {
+      if (notificationCount > 0) notificationBtn.setAttribute('data-badge', String(Math.min(notificationCount, 9)));
+      else notificationBtn.removeAttribute('data-badge');
+    }
 
     // Header league-switch name
     const leagueSwitch = $('.league-switch span:nth-child(2)');
@@ -470,7 +482,7 @@
             <div class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase">你</div>
             <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${esc(me.name || '我的隊伍')}</div>
           </div>
-          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--good);letter-spacing:-0.02em">${m.my_score}</div>
+          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--good);letter-spacing:0">${m.my_score}</div>
         </div>
         <div class="matchup-progress-track"><div class="mpt-you" style="width:${youPct}%"></div><div class="mpt-them" style="width:${100-youPct}%"></div></div>
         <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:12px">
@@ -478,7 +490,7 @@
             <div class="mono" style="font-size:11px;color:var(--ink-3);text-transform:uppercase">對手</div>
             <div style="font-size:var(--fs-md);font-weight:600;margin-top:2px">${esc(m.opp_name || '對手')}</div>
           </div>
-          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--ink-2);letter-spacing:-0.02em">${m.opp_score}</div>
+          <div class="mono" style="font-size:var(--fs-2xl);font-weight:700;color:var(--ink-2);letter-spacing:0">${m.opp_score}</div>
         </div>
         <div style="border-top:1px solid var(--line-soft);margin-top:var(--s-4);padding-top:var(--s-3);display:flex;justify-content:space-between;font-size:var(--fs-xs);color:var(--ink-3)">
           <span>${m.complete ? '已結算' : '進行中'}</span>
@@ -511,7 +523,7 @@
         </div>
         <div class="r">${d.receive.toFixed(1)}</div>
       </div>
-      <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em">${esc(CAT_LABEL[cat] || cat)}</div>`;
+      <div style="font-size:10px;color:var(--ink-3);margin:-4px 0 8px;text-align:center;font-family:var(--mono);text-transform:uppercase;letter-spacing:0">${esc(CAT_LABEL[cat] || cat)}</div>`;
     }).join('') : '';
 
     const verdict = odds ? `<div class="tl-verdict">
@@ -562,7 +574,7 @@
     return `<div class="rail-section">
       <div class="rail-head"><span>本季 Waiver 預算</span></div>
       <div class="card card-pad">
-        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:-0.02em">\$${fa.budget} <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ \$100</span></div>
+        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:0">\$${fa.budget} <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ \$100</span></div>
         <div style="height:4px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div></div>
         <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 \$${100 - fa.budget}</span><span>今日剩 ${fa.remaining} 次</span></div>
       </div>
@@ -935,7 +947,8 @@
         <div class="nc">${n.filled}/${n.target}</div>
       </div>`).join('');
 
-    const recos = (recosData.recos || []).map(r => `
+    const visibleRecos = (recosData.recos || []).filter(r => !skippedRecos.has(String(r.player_id)));
+    const recos = visibleRecos.map(r => `
       <div class="reco-card ${r.top?'top':''}">
         <div class="reco-player">
           ${av(r.name, gradFor(r.player_id), 'lg')}
@@ -951,7 +964,7 @@
         <div class="reco-reasons">${(r.reasons || []).map(x => `<div class="reco-r"><span class="bullet">◆</span>${esc(x)}</div>`).join('')}</div>
         <div class="reco-actions">
           <button class="btn" data-reco-id="${r.player_id}" data-reco-name="${esc(r.name)}">選他 ${I.arrow}</button>
-          <button class="btn ghost">略過</button>
+          <button class="btn ghost" data-reco-skip="${r.player_id}" data-reco-name="${esc(r.name)}">略過</button>
         </div>
       </div>`).join('');
 
@@ -1006,10 +1019,12 @@
   // ---------- TRADE ----------
   let activeThread = null;
   views.trade = async () => {
-    const [me, pendingData, historyData] = await Promise.all([
+    const [me, pendingData, historyData, standings, draftData] = await Promise.all([
       loaders.me(),
       tryGet(loaders.tradesPending, {pending:[]}),
       tryGet(loaders.tradesHistory, {history:[]}),
+      tryGet(loaders.standings, {standings:[]}),
+      tryGet(loaders.draftState, {teams:[]}),
     ]);
     const pending = pendingData.pending || [];
     const history = historyData.history || [];
@@ -1017,15 +1032,35 @@
     if (activeThread == null && threads.length > 0) activeThread = threads[0].id;
     const thread = threads.find(t => t.id === activeThread) || threads[0] || null;
 
+    const teamRows = Array.isArray(standings.standings) ? standings.standings : [];
+    const draftTeams = Array.isArray(draftData.teams) ? draftData.teams : [];
+    const myDraftTeam = draftTeams.find(t => t.id === me.team_id) || null;
+    const fallbackTeams = draftTeams
+      .filter(t => t.id !== me.team_id)
+      .map(t => ({team_id:t.id, name:t.name, roster:t.roster || []}));
+    const tradeOpponents = teamRows.length
+      ? teamRows.filter(t => t.team_id !== me.team_id)
+      : fallbackTeams;
+    const myRosterReady = (myDraftTeam?.roster || []).length > 0;
+    const opponentRosterReady = tradeOpponents.some(t => !Array.isArray(t.roster) || t.roster.length > 0);
+    const tradeDisabledReason =
+      !myRosterReady ? '完成選秀後可發起交易'
+      : !opponentRosterReady ? '目前沒有可交易對手'
+      : '';
+    const proposeButton = `<button class="btn" id="trade-propose-btn" ${tradeDisabledReason ? 'disabled' : ''} title="${esc(tradeDisabledReason || '發起交易提案')}">發起交易提案 ${I.plus}</button>`;
+    const teamName = (tid) => {
+      const row = teamRows.find(t => t.team_id === tid);
+      return row ? row.name : `隊伍 #${tid}`;
+    };
     const otherTeamOf = (t) => (t.from_team === me.team_id ? t.to_team : t.from_team);
     const threadList = threads.map(t => {
       const otherId = otherTeamOf(t);
       const isUnread = t.status === 'pending_accept' && t.to_team === me.team_id;
       const preview = (t.messages && t.messages.length > 0) ? (t.messages[t.messages.length-1].body || '') : (t.proposer_message || (t.status || ''));
       return `<div class="ts-row ${t.id===activeThread?'active':''}" data-thread="${esc(t.id)}">
-        ${av('T'+otherId, gradFor(otherId))}
+        ${av(teamName(otherId), gradFor(otherId))}
         <div>
-          <div class="ts-name">隊伍 #${otherId}</div>
+          <div class="ts-name">${esc(teamName(otherId))}</div>
           <div class="ts-preview">${esc(preview.slice(0,60))}</div>
           <div class="ts-fit ${t.status==='executed'?'':'mid'}">${esc(t.status)}</div>
         </div>
@@ -1041,7 +1076,7 @@
             <div class="view-title">尚無交易</div>
             <div class="view-sub">發起一筆交易以開始對話</div>
           </div>
-          <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易提案 ${I.plus}</button></div>
+          <div class="view-actions">${proposeButton}</div>
         </div>
         ${emptyCard('目前沒有任何交易紀錄')}
       `;
@@ -1050,6 +1085,22 @@
     const otherId = otherTeamOf(thread);
     const mineIds = thread.from_team === me.team_id ? thread.send_player_ids : thread.receive_player_ids;
     const theirIds = thread.from_team === me.team_id ? thread.receive_player_ids : thread.send_player_ids;
+    const [myTradeTeam, otherTradeTeam, allPlayers] = await Promise.all([
+      tryGet(() => loaders.team(me.team_id), null),
+      tryGet(() => loaders.team(otherId), null),
+      tryGet(loaders.allPlayers, []),
+    ]);
+    const playerById = new Map();
+    for (const p of (Array.isArray(allPlayers) ? allPlayers : [])) playerById.set(p.id, p);
+    for (const t of [myTradeTeam, otherTradeTeam]) {
+      for (const p of (t?.players || [])) playerById.set(p.id, p);
+    }
+    const playerLine = (pid) => {
+      const p = playerById.get(pid);
+      return p
+        ? `<li><span class="pn">${esc(p.name)}</span><span class="pos-tag" data-pos="${esc(p.pos)}">${esc(p.pos)}</span></li>`
+        : `<li><span class="pn">未知球員 #${pid}</span></li>`;
+    };
 
     // Messages (TradeMessage list: from_team/body/ts/kind)
     const msgs = (thread.messages || []).map(m => {
@@ -1065,16 +1116,16 @@
 
     // Proposal panel
     const proposal = `<div class="proposal">
-      <div class="proposal-head"><span>交易提案 <span class="proposal-id">#${esc(thread.id.slice(-6))}</span></span><span>隊伍 #${thread.from_team} 提出</span></div>
+      <div class="proposal-head"><span>交易提案 <span class="proposal-id">#${esc(thread.id.slice(-6))}</span></span><span>${esc(teamName(thread.from_team))} 提出</span></div>
       <div class="prop-sides">
         <div class="prop-side">
           <div class="prop-side-head">他給你</div>
-          <ul>${theirIds.map(pid => `<li><span class="pn">Player #${pid}</span></li>`).join('')}</ul>
+          <ul>${theirIds.map(playerLine).join('')}</ul>
         </div>
         <div class="prop-arrow">${I.arrow}</div>
         <div class="prop-side mine">
           <div class="prop-side-head">你給他</div>
-          <ul>${mineIds.map(pid => `<li><span class="pn">Player #${pid}</span></li>`).join('')}</ul>
+          <ul>${mineIds.map(playerLine).join('')}</ul>
         </div>
       </div>
       ${thread.status === 'pending_accept' && thread.to_team === me.team_id
@@ -1098,10 +1149,10 @@
       <div class="view-head">
         <div class="view-title-block">
           <span class="eyebrow">交易中心 <span class="live-pulse" id="trade-live">LIVE</span></span>
-          <div class="view-title">你與隊伍 #${otherId} 的對話</div>
+          <div class="view-title">你與 ${esc(teamName(otherId))} 的對話</div>
           <div class="view-sub">${unreadCount} 則待處理 · 歷史 ${history.length} 筆</div>
         </div>
-        <div class="view-actions"><button class="btn" id="trade-propose-btn">發起交易提案 ${I.plus}</button></div>
+        <div class="view-actions">${proposeButton}</div>
       </div>
 
       <div class="trade-grid">
@@ -1112,10 +1163,10 @@
 
         <div class="trade-chat">
           <div class="tc-head">
-            ${av('T'+otherId, gradFor(otherId))}
+            ${av(teamName(otherId), gradFor(otherId))}
             <div>
-              <div style="font-weight:600;font-size:var(--fs-sm)">隊伍 #${otherId}</div>
-              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.05em">狀態 · ${esc(thread.status)}</div>
+              <div style="font-weight:600;font-size:var(--fs-sm)">${esc(teamName(otherId))}</div>
+              <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0">狀態 · ${esc(thread.status)}</div>
             </div>
             <span class="pill accent" style="margin-left:auto">W${thread.proposed_week}</span>
           </div>
@@ -1155,16 +1206,29 @@
       : null;
 
     // /api/players with available=true returns only un-drafted. Server default is available=true.
-    const pool = Array.isArray(players) ? players : [];
+    const poolAll = Array.isArray(players) ? players.slice() : [];
+    let pool = poolAll.slice();
+    if (faMode === 'hot') {
+      pool = pool.sort((a,b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 24);
+    } else if (faMode === 'healthy') {
+      pool = pool.filter(p => !p.injury || p.injury.status === 'healthy');
+    }
+    const rosterSize = (myTeam?.players || []).length;
+    const disabledReason =
+      rosterSize <= 0 ? '完成選秀後才可認領'
+      : (me.current_week || 0) <= 0 ? '開始賽季後才可認領'
+      : fa.remaining <= 0 ? '今日認領已用完'
+      : '';
+    const modeBtn = (id, label) => `<button data-fa-mode="${id}" aria-pressed="${faMode===id?'true':'false'}">${label}</button>`;
 
     return `
       <div class="view-head">
         <div class="view-title-block">
           <span class="eyebrow">自由球員 · Waivers</span>
           <div class="view-title">自由球員市場</div>
-          <div class="view-sub">FAAB 剩 \$${fa.budget} · 今日剩 ${fa.remaining}/${fa.limit} 次認領</div>
+          <div class="view-sub">FAAB 剩 \$${fa.budget} · 今日剩 ${fa.remaining}/${fa.limit} 次認領${disabledReason ? ' · ' + esc(disabledReason) : ''}</div>
         </div>
-        <div class="view-actions"><div class="segmented"><button aria-pressed="true">熱門</button><button>全部</button></div></div>
+        <div class="view-actions"><div class="segmented" id="fa-mode-seg">${modeBtn('hot','熱門')}${modeBtn('all','全部')}${modeBtn('healthy','健康')}</div></div>
       </div>
 
       <div class="fa-search-bar">
@@ -1185,7 +1249,7 @@
               <td class="num">${p.age}</td>
               <td class="num">${(p.mpg || 0).toFixed(1)}</td>
               <td><span class="pill ${statusClass(injStatus)}">${esc(injStatus)}</span></td>
-              <td><button class="btn sm" data-fa-claim="${p.id}" ${fa.remaining<=0?'disabled':''}>認領</button></td>
+              <td><button class="btn sm" data-fa-claim="${p.id}" ${disabledReason?'disabled':''} title="${esc(disabledReason || '認領球員')}">認領</button></td>
             </tr>`;
           }).join('') || '<tr><td colspan="7"><div class="empty-state">池內無球員</div></td></tr>'}</tbody>
         </table>
@@ -1254,25 +1318,27 @@
   views.news = async () => {
     const data = await tryGet(loaders.news, {feed:[]});
     const feed = Array.isArray(data.feed) ? data.feed : (Array.isArray(data) ? data : []);
+    const visibleFeed = newsFilter === 'all' ? feed : feed.filter(n => (n.kind || 'league') === newsFilter);
     const kindLabel = {injury:'傷兵',heat:'熱議',league:'聯盟',quote:'引言',milestone:'里程碑',matchup:'對戰'};
     const kindIcon  = {injury:'🩹',heat:'🔥',league:'📎',quote:'"',milestone:'★',matchup:'⚔'};
+    const filterBtn = (id, label) => `<button data-news-filter="${id}" aria-pressed="${newsFilter===id?'true':'false'}">${label}</button>`;
     return `
       <div class="view-head">
         <div class="view-title-block">
           <span class="eyebrow">聯盟動態</span>
           <div class="view-title">News Feed</div>
-          <div class="view-sub">${feed.length} 則消息</div>
+          <div class="view-sub">${visibleFeed.length} / ${feed.length} 則消息</div>
         </div>
         <div class="view-actions">
-          <div class="segmented"><button aria-pressed="true">全部</button><button>傷兵</button><button>熱議</button><button>引言</button></div>
+          <div class="segmented" id="news-filter-seg">${filterBtn('all','全部')}${filterBtn('injury','傷兵')}${filterBtn('heat','熱議')}${filterBtn('quote','引言')}</div>
         </div>
       </div>
       <div class="card">
-        ${feed.length === 0 ? `<div class="empty-state">尚無動態</div>` : feed.map((n,i) => {
+        ${visibleFeed.length === 0 ? `<div class="empty-state">尚無符合條件的動態</div>` : visibleFeed.map((n,i) => {
           const k = n.kind || 'league';
-          return `<div style="display:grid;grid-template-columns:32px 80px 1fr;gap:var(--s-4);padding:var(--s-4) var(--s-5);${i<feed.length-1?'border-bottom:1px solid var(--line-soft)':''}">
+          return `<div style="display:grid;grid-template-columns:32px 80px 1fr;gap:var(--s-4);padding:var(--s-4) var(--s-5);${i<visibleFeed.length-1?'border-bottom:1px solid var(--line-soft)':''}">
             <div class="news-dot" data-kind="${esc(k)}">${kindIcon[k]||'·'}</div>
-            <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.06em;padding-top:6px">${esc(kindLabel[k]||k)}</div>
+            <div style="font-size:11px;color:var(--ink-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0;padding-top:6px">${esc(kindLabel[k]||k)}</div>
             <div>
               ${k === 'quote' && n.quote
                 ? `<div class="news-quote" style="font-size:var(--fs-md)">${esc(n.quote)}</div><div class="news-attrib">— ${esc(n.attrib || '')}</div>`
@@ -1368,23 +1434,7 @@
           e.stopPropagation();
           const addId = Number(id.slice('fa-'.length));
           if (!Number.isFinite(addId) || addId <= 0) { location.hash = '#/fa'; return; }
-          await withBusy(faBtn, async () => {
-            try {
-              const me = await loaders.me();
-              const team = await loaders.team(me.team_id);
-              const bench = team.bench || [];
-              if (!bench.length) { toast('板凳無球員可放走', 'error'); return; }
-              const dropId = bench[bench.length - 1];
-              const r = await fetch('/api/fa/claim', {
-                method:'POST',
-                headers:{'content-type':'application/json'},
-                body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid: 1}),
-              });
-              if (!r.ok) throw new Error((await r.text()).slice(0,200));
-              toast('認領成功', 'success');
-              invalidate('/api/'); mount();
-            } catch(err) { toast('認領失敗：' + err.message, 'error'); }
-          });
+          await withBusy(faBtn, async () => openClaimModal(addId));
           return;
         }
         if (id.startsWith('trade-'))   { activeThread = id.slice('trade-'.length); location.hash = '#/trade'; }
@@ -1414,6 +1464,16 @@
         }
       }));
     });
+    $$('button[data-reco-skip]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const pid = btn.dataset.recoSkip;
+        const name = btn.dataset.recoName || '此建議';
+        skippedRecos.add(String(pid));
+        toast(`已略過 ${name}`);
+        mount();
+      });
+    });
 
     // Trade accept/reject
     $$('button[data-trade-accept]').forEach(btn => {
@@ -1440,26 +1500,20 @@
       }));
     });
 
-    // FA claim (simple: auto-drop last bench player; real app would prompt)
+    // FA claim
     $$('button[data-fa-claim]').forEach(btn => {
       btn.addEventListener('click', () => withBusy(btn, async () => {
         const addId = Number(btn.dataset.faClaim);
         try {
-          const me = await loaders.me();
-          const team = await loaders.team(me.team_id);
-          const bench = team.bench || [];
-          if (!bench.length) { toast('板凳無球員可放走', 'error'); return; }
-          const dropId = bench[bench.length - 1];
-          const r = await fetch('/api/fa/claim', {
-            method:'POST',
-            headers:{'content-type':'application/json'},
-            body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid: 1}),
-          });
-          if (!r.ok) throw new Error((await r.text()).slice(0,200));
-          toast('認領成功', 'success');
-          invalidate('/api/'); mount();
+          openClaimModal(addId);
         } catch(e) { toast('認領失敗：' + e.message, 'error'); }
       }));
+    });
+    $$('#fa-mode-seg button[data-fa-mode]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        faMode = btn.dataset.faMode || 'hot';
+        mount();
+      });
     });
 
     // Schedule week click -> navigate to matchup with week query
@@ -1470,16 +1524,11 @@
       });
     });
 
-    // Standings row click -> navigate to matchup (current week)
+    // Standings row click -> inspect team
     $$('tr[data-team-id]').forEach(row => {
-      row.addEventListener('click', async () => {
-        try {
-          const me = await loaders.me();
-          const cw = me.current_week || 1;
-          location.hash = `#/matchup?week=${cw}`;
-        } catch(_) {
-          location.hash = '#/matchup';
-        }
+      row.addEventListener('click', () => {
+        const tid = Number(row.dataset.teamId);
+        if (Number.isFinite(tid)) openTeamModal(tid);
       });
     });
 
@@ -1567,6 +1616,12 @@
         }, 150);
       });
     }
+    $$('#news-filter-seg button[data-news-filter]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        newsFilter = btn.dataset.newsFilter || 'all';
+        mount();
+      });
+    });
 
     // Trade: propose button opens builder modal
     const tradePropose = $('#trade-propose-btn');
@@ -1574,9 +1629,22 @@
       tradePropose.addEventListener('click', async () => {
         try {
           const me = await loaders.me();
-          const myTeam = await loaders.team(me.team_id);
-          const standings = await tryGet(loaders.standings, {standings:[]});
-          const others = (standings.standings || []).filter(t => t.team_id !== me.team_id);
+          const [myTeam, standings, draftData] = await Promise.all([
+            loaders.team(me.team_id),
+            tryGet(loaders.standings, {standings:[]}),
+            tryGet(loaders.draftState, {teams:[]}),
+          ]);
+          let others = (standings.standings || []).filter(t => t.team_id !== me.team_id);
+          if (!others.length) {
+            others = (draftData.teams || [])
+              .filter(t => t.id !== me.team_id)
+              .map(t => ({team_id:t.id, name:t.name, roster:t.roster || []}))
+              .filter(t => (t.roster || []).length > 0);
+          }
+          if (!(myTeam.players || []).length || !others.length) {
+            toast('完成選秀後才能發起交易', 'error');
+            return;
+          }
           openTradeBuilder(me, myTeam, others);
         } catch(e) { toast('載入失敗：' + e.message, 'error'); }
       });
@@ -2004,6 +2072,253 @@
   $('#modal-bd').addEventListener('click', e => { if (e.target.id === 'modal-bd') closeModal(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+  async function openNotificationsPanel() {
+    const [actionsData, newsData, pendingData] = await Promise.all([
+      tryGet(loaders.homeActions, {actions:[]}),
+      tryGet(loaders.news, {feed:[]}),
+      tryGet(loaders.tradesPending, {pending:[]}),
+    ]);
+    const actions = (actionsData.actions || []).filter(a => a.urgency !== 'done');
+    const news = (newsData.feed || []).slice(0, 6);
+    const pending = pendingData.pending || [];
+    const actionRows = actions.map(a => `
+      <button class="quick-row" data-notify-route="${a.id?.startsWith('trade-')?'trade':a.id?.startsWith('fa-')?'fa':a.id?.startsWith('inj-')?'roster':'home'}">
+        <span class="qr-mark ${esc(a.urgency || '')}"></span>
+        <span><b>${esc(a.title || '')}</b><small>${esc(a.sub || '')}</small></span>
+        <span class="qr-cta">${esc(a.cta || '查看')}</span>
+      </button>`).join('');
+    const newsRows = news.map(n => `
+      <button class="quick-row" data-notify-route="news">
+        <span class="news-dot" data-kind="${esc(n.kind || 'league')}">·</span>
+        <span><b>${esc(n.title || n.quote || '聯盟動態')}</b><small>${esc(n.meta || '')}</small></span>
+      </button>`).join('');
+    openModal(`
+      <div class="modal-head">
+        <h3>通知</h3>
+        <span class="pill accent">${actions.length + pending.length} 待處理</span>
+        <button class="modal-close" data-modal-close>×</button>
+      </div>
+      <div class="quick-section">
+        <div class="eyebrow">需要處理</div>
+        ${actionRows || '<div class="empty-state">目前沒有待處理事項</div>'}
+      </div>
+      <div class="quick-section">
+        <div class="eyebrow">最新動態</div>
+        ${newsRows || '<div class="empty-state">尚無動態</div>'}
+      </div>
+    `, false, 'notification-panel');
+    $$('[data-modal-close]', $('#modal-card')).forEach(btn => btn.addEventListener('click', closeModal));
+    $$('[data-notify-route]', $('#modal-card')).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const route = btn.dataset.notifyRoute || 'home';
+        closeModal();
+        location.hash = '#/' + route;
+      });
+    });
+  }
+
+  async function runControlAction(action, btn) {
+    const post = async (url, body={}) => {
+      const r = await fetch(url, {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(body)});
+      if (!r.ok) throw new Error((await r.text()).slice(0,220));
+      return r.json();
+    };
+    if (action === 'refresh') {
+      invalidate('/api/');
+      toast('已重新整理');
+      closeModal();
+      mount();
+      return;
+    }
+    if (action === 'setup') {
+      window.location.href = '/v1#setup';
+      return;
+    }
+    if (action === 'start-season') {
+      if (!confirm('確定要開始賽季嗎？選秀必須已完成。')) return;
+      await post('/api/season/start');
+      toast('賽季已開始', 'success');
+    } else if (action === 'advance-day') {
+      await post('/api/season/advance-day');
+      toast('已推進一天', 'success');
+    } else if (action === 'advance-week') {
+      if (!confirm('確定要跳到下一週嗎？')) return;
+      await post('/api/season/advance-week');
+      toast('已推進一週', 'success');
+    } else if (action === 'reset-season') {
+      if (!confirm('確定要重設賽季？所有賽季進度將清除。')) return;
+      await post('/api/season/reset');
+      toast('賽季已重設', 'success');
+    } else if (action === 'reset-draft') {
+      if (!confirm('確定要重設選秀？目前選秀與賽季資料將清除。')) return;
+      await post('/api/draft/reset', {randomize_order:false});
+      toast('選秀已重設', 'success');
+    }
+    invalidate('/api/');
+    closeModal();
+    mount();
+  }
+
+  async function openSettingsPanel() {
+    const [me, status] = await Promise.all([
+      tryGet(loaders.me, {league_name:'聯盟', current_week:0}),
+      tryGet(loaders.leagueStatus, {setup_complete:false}),
+    ]);
+    openModal(`
+      <div class="modal-head">
+        <h3>控制中心</h3>
+        <button class="modal-close" data-modal-close>×</button>
+      </div>
+      <div class="settings-summary">
+        <div><span class="eyebrow">聯盟</span><b>${esc(me.league_name || '—')}</b></div>
+        <div><span class="eyebrow">目前週次</span><b>W${esc(me.current_week || 0)}</b></div>
+        <div><span class="eyebrow">狀態</span><b>${status.setup_complete ? '已設定' : '未設定'}</b></div>
+      </div>
+      <div class="control-grid">
+        <button class="control-tile" data-control-action="refresh">${I.sparkle}<span>重新整理資料</span></button>
+        <button class="control-tile" data-control-action="setup">${I.settings}<span>聯盟設定</span></button>
+        <button class="control-tile" data-control-action="start-season">${I.check}<span>開始賽季</span></button>
+        <button class="control-tile" data-control-action="advance-day">${I.schedule}<span>推進一天</span></button>
+        <button class="control-tile" data-control-action="advance-week">${I.arrow}<span>跳到下一週</span></button>
+        <button class="control-tile danger" data-control-action="reset-season">${I.alert}<span>重設賽季</span></button>
+        <button class="control-tile danger" data-control-action="reset-draft">${I.alert}<span>重設選秀</span></button>
+      </div>
+    `, false, 'settings-panel');
+    $$('[data-modal-close]', $('#modal-card')).forEach(btn => btn.addEventListener('click', closeModal));
+    $$('[data-control-action]', $('#modal-card')).forEach(btn => {
+      btn.addEventListener('click', () => withBusy(btn, async () => {
+        try { await runControlAction(btn.dataset.controlAction, btn); }
+        catch(e) { toast('操作失敗：' + e.message, 'error'); }
+      }));
+    });
+  }
+
+  async function openMePanel() {
+    const me = await loaders.me();
+    const team = await tryGet(() => loaders.team(me.team_id), null);
+    const top = (team?.players || []).slice().sort((a,b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 6);
+    openModal(`
+      <div class="modal-head">
+        ${av(me.name, gradFor(me.team_id), 'lg')}
+        <h3>${esc(me.name || '我的球隊')}</h3>
+        <button class="modal-close" data-modal-close>×</button>
+      </div>
+      <div class="settings-summary">
+        <div><span class="eyebrow">戰績</span><b>${me.record?.w ?? 0}-${me.record?.l ?? 0}</b></div>
+        <div><span class="eyebrow">FAAB</span><b>$${me.budget ?? 100}</b></div>
+        <div><span class="eyebrow">排名資料</span><b>W${me.current_week || 0}</b></div>
+      </div>
+      <div class="quick-section">
+        <div class="eyebrow">主力球員</div>
+        ${top.map(p => `<div class="mini-player">${av(p.name, gradFor(p.id), 'sm')}<span>${esc(p.name)}</span><span class="pos-tag" data-pos="${esc(p.pos)}">${esc(p.pos)}</span><b>${(p.fppg || 0).toFixed(1)}</b></div>`).join('') || '<div class="empty-state">尚無球員</div>'}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn ghost" data-jump-route="matchup">看對戰</button>
+        <button class="btn" data-jump-route="roster">管理陣容</button>
+      </div>
+    `, false, 'me-panel');
+    $$('[data-modal-close]', $('#modal-card')).forEach(btn => btn.addEventListener('click', closeModal));
+    $$('[data-jump-route]', $('#modal-card')).forEach(btn => btn.addEventListener('click', () => {
+      const route = btn.dataset.jumpRoute || 'home';
+      closeModal();
+      location.hash = '#/' + route;
+    }));
+  }
+
+  async function openTeamModal(teamId) {
+    const [me, team, stand] = await Promise.all([
+      tryGet(loaders.me, {team_id:-1, current_week:1}),
+      tryGet(() => loaders.team(teamId), null),
+      tryGet(loaders.standings, {standings:[]}),
+    ]);
+    if (!team) { toast('找不到隊伍', 'error'); return; }
+    const row = (stand.standings || []).find(t => t.team_id === teamId) || {};
+    const players = (team.players || []).slice().sort((a,b) => (b.fppg || 0) - (a.fppg || 0)).slice(0, 8);
+    openModal(`
+      <div class="modal-head">
+        ${av(team.team?.name || row.name, gradFor(teamId), 'lg')}
+        <h3>${esc(team.team?.name || row.name || `隊伍 #${teamId}`)}</h3>
+        <button class="modal-close" data-modal-close>×</button>
+      </div>
+      <div class="settings-summary">
+        <div><span class="eyebrow">戰績</span><b>${row.w ?? 0}-${row.l ?? 0}</b></div>
+        <div><span class="eyebrow">總得分</span><b>${row.pf ?? '—'}</b></div>
+        <div><span class="eyebrow">GM</span><b>${esc(row.persona || (team.team?.is_human ? 'Human' : 'AI'))}</b></div>
+      </div>
+      <div class="quick-section">
+        <div class="eyebrow">陣容 Top 8</div>
+        ${players.map(p => `<div class="mini-player">${av(p.name, gradFor(p.id), 'sm')}<span>${esc(p.name)}</span><span class="pos-tag" data-pos="${esc(p.pos)}">${esc(p.pos)}</span><b>${(p.fppg || 0).toFixed(1)}</b></div>`).join('') || '<div class="empty-state">尚無球員</div>'}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        ${teamId !== me.team_id ? '<button class="btn ghost" data-team-action="trade">提交易</button>' : ''}
+        <button class="btn" data-team-action="matchup">看本週對戰</button>
+      </div>
+    `, false, 'team-panel');
+    $$('[data-modal-close]', $('#modal-card')).forEach(btn => btn.addEventListener('click', closeModal));
+    $$('[data-team-action]', $('#modal-card')).forEach(btn => btn.addEventListener('click', () => {
+      const action = btn.dataset.teamAction;
+      closeModal();
+      location.hash = action === 'trade' ? '#/trade' : `#/matchup?week=${me.current_week || 1}`;
+    }));
+  }
+
+  async function openClaimModal(addId) {
+    const [me, fa, players] = await Promise.all([
+      loaders.me(),
+      tryGet(loaders.faStatus, {budget:100, remaining:0}),
+      tryGet(loaders.players, []),
+    ]);
+    const team = await loaders.team(me.team_id);
+    const add = (Array.isArray(players) ? players : []).find(p => p.id === addId);
+    const dropCandidates = (team.players || []).slice().sort((a,b) => (a.fppg || 0) - (b.fppg || 0));
+    if (!add) { toast('找不到自由球員', 'error'); return; }
+    if (!dropCandidates.length) { toast('陣容沒有可釋出的球員', 'error'); return; }
+    openModal(`
+      <div class="modal-head">
+        ${av(add.name, gradFor(add.id), 'lg')}
+        <h3>認領 ${esc(add.name)}</h3>
+        <button class="modal-close" data-claim-close>×</button>
+      </div>
+      <div class="settings-summary">
+        <div><span class="eyebrow">球員</span><b>${esc(add.team)} · ${esc(add.pos)}</b></div>
+        <div><span class="eyebrow">FPPG</span><b>${(add.fppg || 0).toFixed(1)}</b></div>
+        <div><span class="eyebrow">剩餘預算</span><b>$${fa.budget}</b></div>
+      </div>
+      <label class="form-row">
+        <span>釋出球員</span>
+        <select id="claim-drop">
+          ${dropCandidates.map(p => `<option value="${p.id}">${esc(p.name)} · ${esc(p.pos)} · ${(p.fppg || 0).toFixed(1)} FPPG</option>`).join('')}
+        </select>
+      </label>
+      <label class="form-row">
+        <span>出價</span>
+        <input id="claim-bid" type="number" min="0" max="${fa.budget}" value="${Math.min(1, fa.budget)}"/>
+      </label>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px">
+        <button class="btn subtle" data-claim-close>取消</button>
+        <button class="btn" id="claim-submit">送出認領</button>
+      </div>
+    `, false, 'claim-panel');
+    $$('[data-claim-close]', $('#modal-card')).forEach(b => b.addEventListener('click', closeModal));
+    const submit = $('#claim-submit');
+    submit.addEventListener('click', () => withBusy(submit, async () => {
+      const dropId = Number($('#claim-drop').value);
+      const bid = Math.max(0, Number($('#claim-bid').value || 0));
+      try {
+        const r = await fetch('/api/fa/claim', {
+          method:'POST',
+          headers:{'content-type':'application/json'},
+          body: JSON.stringify({add_player_id: addId, drop_player_id: dropId, bid}),
+        });
+        if (!r.ok) throw new Error((await r.text()).slice(0,220));
+        toast(`已認領 ${add.name}`, 'success');
+        closeModal();
+        invalidate('/api/');
+        mount();
+      } catch(e) { toast('認領失敗：' + e.message, 'error'); }
+    }));
+  }
+
   function openPlayerModal(p, team, me) {
     const form = p.form || [];
     const inj = (team.injuries || {})[p.id];
@@ -2160,6 +2475,27 @@
     }));
   }
 
+  const notificationsBtn = $('#notifications-btn');
+  if (notificationsBtn) {
+    notificationsBtn.addEventListener('click', () => {
+      openNotificationsPanel().catch(e => toast('通知載入失敗：' + e.message, 'error'));
+    });
+  }
+
+  const settingsBtn = $('#settings-btn');
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      openSettingsPanel().catch(e => toast('設定載入失敗：' + e.message, 'error'));
+    });
+  }
+
+  const meChipBtn = $('#me-chip');
+  if (meChipBtn) {
+    meChipBtn.addEventListener('click', () => {
+      openMePanel().catch(e => toast('球隊資料載入失敗：' + e.message, 'error'));
+    });
+  }
+
   // ========================================================
   // LEAGUE SWITCH dropdown
   // ========================================================
@@ -2174,10 +2510,13 @@
         const leagues = data.leagues || [];
         const active = data.active;
         menu.innerHTML = leagues.length
-          ? leagues.map(l => `<div class="league-menu-item ${l.id===active?'active':''}" data-league-id="${esc(l.id)}">
-              <span>${esc(l.name || l.id)}</span>
+          ? leagues.map(l => {
+              const lid = l.league_id || l.id;
+              return `<div class="league-menu-item ${lid===active?'active':''}" data-league-id="${esc(lid)}">
+              <span>${esc(l.name || lid)}</span>
               <span style="margin-left:auto;font-size:11px;color:var(--ink-3);font-family:var(--mono)">${l.num_teams||''}人</span>
-            </div>`).join('')
+            </div>`;
+            }).join('')
           : '<div class="empty-state">無其他聯盟</div>';
         const rect = leagueSwitchBtn.getBoundingClientRect();
         menu.style.left = rect.left + 'px';
