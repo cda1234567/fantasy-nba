@@ -2,7 +2,141 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const D = window.DATA;
+  const D = {};  // replaces window.DATA - will be populated from API
+  const API = 'http://127.0.0.1:3410';
+
+  async function api(path, opts = {}) {
+    const res = await fetch(API + path, {
+      ...opts,
+      headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) },
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.status === 204 ? null : res.json();
+  }
+
+  async function refreshData() {
+    try {
+      const [leagueStatus, draftState] = await Promise.all([
+        api('/api/league/status').catch(() => null),
+        api('/api/state').catch(() => null),
+      ]);
+
+      // Populate league-level data
+      if (leagueStatus) {
+        D.league = D.league || {};
+        D.league.name = leagueStatus.league_name || D.league.name || '我的聯盟';
+        D.league.draftDone = draftState?.is_complete ?? false;
+      }
+
+      // Only fetch season data if draft is done
+      if (D.league?.draftDone) {
+        const [standings, meData, faStatus, actionsData] = await Promise.all([
+          api('/api/season/standings').catch(() => null),
+          api('/api/me').catch(() => null),
+          api('/api/fa/claim-status').catch(() => null),
+          api('/api/home/actions').catch(() => null),
+        ]);
+
+        if (meData?.team_id != null) {
+          const [teamData, pendingTrades] = await Promise.all([
+            api(`/api/teams/${meData.team_id}`).catch(() => null),
+            api('/api/trades/pending').catch(() => null),
+          ]);
+
+          if (teamData) {
+            const slotMap = {};
+            (teamData.lineup_slots || []).forEach(s => { if (s.player_id != null) slotMap[s.player_id] = s.slot; });
+            D.roster = (teamData.players || []).map(p => ({
+              id: p.id, playerId: p.id,
+              slot: slotMap[p.id] || 'BN',
+              name: p.name, pos: p.pos, team: p.team,
+              grad: p.grad || ((p.id % 8) + 1),
+              form: p.form?.length ? p.form : [0,0,0,0,0],
+              status: p.status || 'ok',
+              proj: Number((p.fppg || 0).toFixed(1)),
+              avg: { pts: p.pts||0, reb: p.reb||0, ast: p.ast||0, stl: p.stl||0, blk: p.blk||0, to: p.to||0 },
+            }));
+          }
+
+          D._myTeamId = meData.team_id;
+
+          if (pendingTrades) {
+            // Keep existing D.tradeThreads structure if no real trades
+            if (pendingTrades.pending?.length > 0) {
+              D.tradeThreads = pendingTrades.pending.map(t => ({
+                id: t.id, with: t.from_team_name || `Team ${t.from_team}`,
+                team: t.from_team_name || `T${t.from_team}`,
+                persona: t.persona || 'AI', fit: t.fit || 50,
+                unread: t.status === 'pending', grad: 1,
+                status: t.status,
+                msgs: [{
+                  type: 'proposal', id: t.id,
+                  from: t.from_team_name || `T${t.from_team}`,
+                  theirs: (t.their_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
+                  mine: (t.my_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
+                }],
+                time: t.created_at ? new Date(t.created_at).toLocaleString('zh-TW') : '',
+              }));
+            }
+          }
+
+          if (faStatus) {
+            D.faab = { budget: faStatus.budget || 100, spent: faStatus.budget - (faStatus.remaining || faStatus.budget) };
+          }
+
+          if (standings) {
+            D.league.week = standings.current_week || 0;
+            D.league.day = standings.current_day || 0;
+            // Update standings data
+            D.standings = (standings.standings || []).map(s => ({
+              rank: s.rank, name: s.team_name, owner: s.owner_name || '',
+              w: s.wins || 0, l: s.losses || 0, pf: s.points_for || 0,
+              streak: s.streak || '—', waiver: s.waiver_priority || s.faab_remaining || 0,
+            }));
+          }
+
+          // Fetch matchup if in season
+          if (standings?.current_week > 0) {
+            const matchupRaw = await api(`/api/season/matchup?week=${standings.current_week}`).catch(() => null);
+            if (matchupRaw?.matchups) {
+              const myId = meData.team_id;
+              const m = matchupRaw.matchups.find(x => x.team_a === myId || x.team_b === myId);
+              if (m) {
+                const youAreA = m.team_a === myId;
+                D.matchup = D.matchup || {};
+                D.matchup.week = matchupRaw.week;
+                D.matchup.you = { ...(D.matchup.you || {}), score: youAreA ? m.score_a : m.score_b };
+                D.matchup.them = { ...(D.matchup.them || {}), score: youAreA ? m.score_b : m.score_a };
+              }
+            }
+          }
+        }
+
+        // Load FA list
+        const faPlayers = await api('/api/players?available=true&sort=fppg&limit=100').catch(() => null);
+        if (faPlayers?.players) {
+          D.freeAgents = faPlayers.players.map(p => ({
+            id: p.id, playerId: p.id,
+            name: p.name, pos: p.pos, team: p.team,
+            grad: p.grad || ((p.id % 8) + 1),
+            owned: 0, trend: 'flat',
+            form: p.form || [0,0,0,0,0],
+            note: '',
+          }));
+        }
+      }
+
+      // Update header league name
+      const headerEl = document.getElementById('header-league-name');
+      if (headerEl && D.league?.name) {
+        const size = D.standings?.length || D.league.size || '';
+        headerEl.textContent = size ? `${D.league.name} · ${size}人` : D.league.name;
+      }
+    } catch (e) {
+      console.warn('refreshData error:', e);
+    }
+  }
+
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
   const h = (tag, attrs={}, ...kids) => {
@@ -612,7 +746,7 @@
     <div class="view-head">
       <div class="view-title-block">
         <span class="eyebrow">聯盟</span>
-        <div class="view-title">排名 · 絕地爆米花盃</div>
+        <div class="view-title">排名 · ${D.league?.name || '我的聯盟'}</div>
         <div class="view-sub">第 14 週 · 前 6 名進季後賽 · 後 2 名直接抽下季選秀籤</div>
       </div>
       <div class="view-actions">
@@ -796,7 +930,7 @@
               <ul>${m.mine.map(p => `<li><span class="pn">${p.n}</span><span class="pos-tag" data-pos="${p.p}">${p.p}</span></li>`).join('')}</ul>
             </div>
           </div>
-          <div style="display:flex;gap:8px;justify-content:center;margin-top:6px"><button class="btn sm">接受</button><button class="btn sm ghost">還價</button><button class="btn sm subtle">拒絕</button></div>
+          <div style="display:flex;gap:8px;justify-content:center;margin-top:6px"><button class="btn sm" data-trade-accept="${m.id}">接受</button><button class="btn sm ghost">還價</button><button class="btn sm subtle" data-trade-reject="${m.id}">拒絕</button></div>
         </div>`;
       }
       if (m.type === 'system') {
@@ -890,7 +1024,7 @@
             <td class="num">${p.owned}%</td>
             <td class="num"><span class="pill ${p.trend==='up'?'good':p.trend==='down'?'bad':''}">${p.trend==='up'?'↑':p.trend==='down'?'↓':'→'}</span></td>
             <td style="color:var(--ink-2);font-size:var(--fs-xs)">${p.note}</td>
-            <td><button class="btn sm">認領</button></td>
+            <td><button class="btn sm" data-fa-claim="${p.playerId ?? p.id}">認領</button></td>
           </tr>`).join('')}</tbody>
       </table>
     </div>`;
@@ -1028,7 +1162,11 @@
         advDay.disabled = true;
         try {
           const res = await fetch('http://127.0.0.1:3410/api/season/advance-day', { method: 'POST' });
-          if (res.ok) toast('已推進一天', 'success');
+          if (res.ok) {
+            toast('已推進一天', 'success');
+            await refreshData();
+            mount();
+          }
           else toast('推進失敗：' + res.status, 'error');
         } catch (e) {
           toast('推進失敗：' + e.message, 'error');
@@ -1047,7 +1185,11 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ use_ai: false })
           });
-          if (res.ok) toast('已推進一週', 'success');
+          if (res.ok) {
+            toast('已推進一週', 'success');
+            await refreshData();
+            mount();
+          }
           else toast('推進失敗：' + res.status, 'error');
         } catch (e) {
           toast('推進失敗：' + e.message, 'error');
@@ -1063,7 +1205,7 @@
     // Chat send
     const sendBtn = $('#chat-send');
     if (sendBtn) {
-      const doSend = () => {
+      const doSend = async () => {
         const input = $('#chat-input');
         const t = (input.value || '').trim();
         if (!t) return;
@@ -1076,27 +1218,91 @@
         );
         input.value = '';
         body.scrollTop = body.scrollHeight;
-        // simulate reply
-        body.append(
-          h('div', {class:'typing'},
-            h('div', {class:'d'}), h('div', {class:'d'}), h('div', {class:'d'})
-          )
-        );
-        body.scrollTop = body.scrollHeight;
-        setTimeout(() => {
-          body.querySelector('.typing')?.remove();
-          body.append(
-            h('div', {class:'bubble-row them'},
-              h('div', {class:'bubble them'}, '嗯…讓我想想。這邊我覺得可能要你再加一點。'),
-              h('div', {class:'bubble-meta'}, '剛剛')
-            )
-          );
-          body.scrollTop = body.scrollHeight;
-        }, 1200);
+        try {
+          await api(`/api/trades/${activeThread}/message`, {
+            method: 'POST',
+            body: JSON.stringify({ body: t }),
+          });
+          await refreshData();
+          mount();
+        } catch (e) {
+          toast('發送失敗：' + e.message, 'error');
+        }
       };
       sendBtn.addEventListener('click', doSend);
       $('#chat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
     }
+
+    // FA claim button
+    document.querySelectorAll('[data-fa-claim]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const addId = Number(btn.dataset.faClaim);
+        const dropOpts = (D.roster || []).map(p => `<option value="${p.playerId}">${p.name} (${p.pos})</option>`).join('');
+        $('#modal-card').innerHTML = `
+          <div class="modal-head"><h3>認領球員</h3><button class="modal-close" id="modal-close-btn">✕</button></div>
+          <div style="display:flex;flex-direction:column;gap:16px;padding-top:8px">
+            <div><div class="eyebrow" style="margin-bottom:8px">FAAB 出價 (剩 $${(D.faab?.budget||100)-(D.faab?.spent||0)})</div>
+              <input type="number" id="fa-bid" value="0" min="0" max="${(D.faab?.budget||100)-(D.faab?.spent||0)}"
+                style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)"/></div>
+            <div><div class="eyebrow" style="margin-bottom:8px">下架球員</div>
+              <select id="fa-drop" style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)">${dropOpts}</select></div>
+            <button class="btn" id="fa-submit" style="width:100%;justify-content:center">送出認領</button>
+          </div>`;
+        $('#modal-bd').classList.add('open');
+        $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
+        $('#fa-submit').addEventListener('click', async () => {
+          const submitBtn = $('#fa-submit');
+          submitBtn.disabled = true;
+          try {
+            await api('/api/fa/claim', {
+              method: 'POST',
+              body: JSON.stringify({
+                add_player_id: addId,
+                drop_player_id: Number($('#fa-drop').value),
+                bid: Number($('#fa-bid').value || 0),
+              }),
+            });
+            $('#modal-bd').classList.remove('open');
+            toast('認領已提交！', 'success');
+            await refreshData();
+            mount();
+          } catch (e) {
+            toast('認領失敗：' + e.message, 'error');
+            submitBtn.disabled = false;
+          }
+        });
+      });
+    });
+
+    // Trade accept/reject buttons
+    document.querySelectorAll('[data-trade-accept]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await api(`/api/trades/${btn.dataset.tradeAccept}/accept`, { method: 'POST' });
+          toast('已接受交易！', 'success');
+          await refreshData();
+          mount();
+        } catch (e) {
+          toast('接受失敗：' + e.message, 'error');
+          btn.disabled = false;
+        }
+      });
+    });
+    document.querySelectorAll('[data-trade-reject]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        try {
+          await api(`/api/trades/${btn.dataset.tradeReject}/reject`, { method: 'POST' });
+          toast('已拒絕交易', 'success');
+          await refreshData();
+          mount();
+        } catch (e) {
+          toast('拒絕失敗：' + e.message, 'error');
+          btn.disabled = false;
+        }
+      });
+    });
     // New league button
     const newLeagueBtn = $('#new-league-btn');
     if (newLeagueBtn) {
@@ -1107,6 +1313,11 @@
             <button class="modal-close" id="modal-close-btn">✕</button>
           </div>
           <div style="display:flex;flex-direction:column;gap:20px;padding-top:4px">
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">聯盟名稱</div>
+              <input type="text" id="nl-name" placeholder="我的聯盟" maxlength="30"
+                style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)"/>
+            </div>
             <div>
               <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
               <div class="segmented" id="nl-teams-seg">
@@ -1132,11 +1343,51 @@
                 公平：AI 不看 fppg，只憑位置/年齡判斷。天眼：AI 知道本季實際表現。
               </div>
             </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">選秀順序</div>
+              <div class="segmented" id="nl-draft-order-seg">
+                <button data-val="false" aria-pressed="true">固定順序</button>
+                <button data-val="true">隨機</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">計分權重</div>
+              <div class="segmented" id="nl-scoring-seg">
+                <button data-val="default" aria-pressed="true">預設</button>
+                <button data-val="high_ast">重助攻</button>
+                <button data-val="balanced">均衡</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">交易截止週</div>
+              <div class="segmented" id="nl-deadline-seg">
+                <button data-val="null" aria-pressed="true">無截止</button>
+                <button data-val="10">W10</button>
+                <button data-val="12">W12</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">AI 交易頻率</div>
+              <div class="segmented" id="nl-ai-trade-seg">
+                <button data-val="off">關閉</button>
+                <button data-val="low">低</button>
+                <button data-val="normal" aria-pressed="true">正常</button>
+                <button data-val="high">高</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">否決期</div>
+              <div class="segmented" id="nl-veto-seg">
+                <button data-val="1">1 天</button>
+                <button data-val="2" aria-pressed="true">2 天</button>
+                <button data-val="3">3 天</button>
+              </div>
+            </div>
             <button class="btn" id="nl-submit" style="width:100%;justify-content:center">建立聯盟</button>
           </div>`;
         $('#modal-bd').classList.add('open');
         $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
-        ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg'].forEach(sel => {
+        ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg', '#nl-draft-order-seg', '#nl-scoring-seg', '#nl-deadline-seg', '#nl-ai-trade-seg', '#nl-veto-seg'].forEach(sel => {
           $(sel).addEventListener('click', e => {
             const btn = e.target.closest('button[data-val]');
             if (!btn) return;
@@ -1148,17 +1399,34 @@
           const submitBtn = $('#nl-submit');
           submitBtn.disabled = true;
           try {
-            const teams = $('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8';
+            const name = $('#nl-name')?.value?.trim() || '我的聯盟';
+            const teams = parseInt($('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8');
             const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
             const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
+            const randomDraft = $('#nl-draft-order-seg [aria-pressed="true"]')?.dataset.val === 'true';
+            const deadline = $('#nl-deadline-seg [aria-pressed="true"]')?.dataset.val;
+            const aiFreq = $('#nl-ai-trade-seg [aria-pressed="true"]')?.dataset.val || 'normal';
+            const vetodays = parseInt($('#nl-veto-seg [aria-pressed="true"]')?.dataset.val || '2');
+            const scoringPresets = {
+              default:  { pts:1.0, reb:1.2, ast:1.5, stl:2.5, blk:2.5, to:-1.0 },
+              high_ast: { pts:1.0, reb:1.2, ast:2.0, stl:2.5, blk:2.5, to:-1.0 },
+              balanced: { pts:1.0, reb:1.0, ast:1.0, stl:1.5, blk:1.5, to:-1.0 },
+            };
+            const scoring = scoringPresets[$('#nl-scoring-seg [aria-pressed="true"]')?.dataset.val || 'default'];
             const res = await fetch('http://127.0.0.1:3410/api/league/setup', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                num_teams: parseInt(teams),
+                league_name: name,
+                num_teams: teams,
                 season: season,
                 roster_size: 13,
                 draft_display_mode: mode,
+                randomize_draft_order: randomDraft,
+                scoring_weights: scoring,
+                trade_deadline_week: deadline === 'null' ? null : parseInt(deadline),
+                ai_trade_frequency: aiFreq,
+                veto_window_days: vetodays,
               }),
             });
             if (res.ok) {
@@ -1260,5 +1528,12 @@
   // ========================================================
   window.addEventListener('hashchange', mount);
   if (!location.hash) location.hash = '#/home';
-  mount();
+
+  // Seed D from window.DATA as fallback
+  Object.assign(D, window.DATA || {});
+
+  (async function boot() {
+    await refreshData();
+    mount();
+  })();
 })();

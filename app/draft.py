@@ -204,7 +204,6 @@ class DraftState:
         # Cache resolved sizes so properties don't need to re-read settings
         self._num_teams = num_teams
         self._roster_size = roster_size
-        self._human_team_id = human_idx
 
         personas = list(AI_PERSONA_ORDER)
         if do_randomize:
@@ -233,6 +232,19 @@ class DraftState:
                     Team(id=i, name=name, is_human=False, gm_persona=persona, roster=[])
                 )
 
+        if do_randomize:
+            self.rng.shuffle(self.teams)
+
+        # snake_team_for_pick returns a draft-position index, and the rest of
+        # the draft code uses that value to index self.teams directly.
+        for i, team in enumerate(self.teams):
+            team.id = i
+
+        self._human_team_id = next(
+            (i for i, team in enumerate(self.teams) if team.is_human),
+            human_idx,
+        )
+
     # --------------------------------------------------------------- pointers
     @property
     def _total_picks(self) -> int:
@@ -249,6 +261,10 @@ class DraftState:
     @property
     def human_team_id(self) -> int:
         return self._human_team_id
+
+    @property
+    def human_draft_position(self) -> int:
+        return self._human_team_id + 1
 
     def current_pointers(self) -> tuple[int, int, Optional[int]]:
         """(round, pick_in_round, team_id) for the next pick, or (roster_size+1, 0, None) if done."""
@@ -499,13 +515,15 @@ class DraftState:
         for t in self.teams:
             roster_ids.update(t.roster)
         self.drafted_ids = roster_ids | {p.player_id for p in self.picks}
+        for i, team in enumerate(self.teams):
+            team.id = i
         # Sync cached size values from restored teams
         self._num_teams = len(self.teams) if self.teams else NUM_TEAMS
         self._roster_size = (
             self._settings.roster_size if self._settings else ROSTER_SIZE
         )
         self._human_team_id = next(
-            (t.id for t in self.teams if t.is_human),
+            (i for i, t in enumerate(self.teams) if t.is_human),
             self._settings.player_team_index if self._settings else 0,
         )
         # Ensure each team's roster matches the picks made

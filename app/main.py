@@ -267,6 +267,7 @@ def _state_snapshot() -> DraftStateOut:
         total_rounds=roster_size,
         num_teams=num_teams,
         human_team_id=draft.human_team_id,
+        human_draft_position=draft.human_draft_position,
     )
 
 

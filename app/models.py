@@ -110,6 +110,7 @@ class DraftStateOut(BaseModel):
     total_rounds: int
     num_teams: int
     human_team_id: int
+    human_draft_position: int
 
 
 class PickRequest(BaseModel):
