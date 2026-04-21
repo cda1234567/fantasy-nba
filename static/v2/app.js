@@ -275,14 +275,7 @@
         <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 $${D.faab.spent}</span></div>
       </div>
     </div>
-    <div class="rail-section">
-      <div class="rail-head"><span>聯盟最近撿角</span></div>
-      <div class="card card-pad" style="font-size:var(--fs-sm);line-height:1.7;color:var(--ink-2)">
-        · Diana 撿走 <b style="color:var(--ink)">Coby White</b> (\$12)<br/>
-        · Alex 丟了 <b style="color:var(--ink)">R. Holmes</b><br/>
-        · Ben 撿走 <b style="color:var(--ink)">Brandon Miller</b> (\$8)
-      </div>
-    </div>`;
+    `;
   }
 
   // ========================================================
@@ -541,6 +534,10 @@
           <span class="eyebrow">第 14 週 · 例行賽</span>
           <div class="view-title">肉圓幫 vs 珍奶兄弟</div>
           <div class="view-sub">已打 5/8 場 · 週日 18:30 結算</div>
+        </div>
+        <div class="view-actions">
+          <button class="btn ghost" id="adv-day">推進一天</button>
+          <button class="btn" id="adv-week">推進一週</button>
         </div>
       </div>
 
@@ -910,7 +907,8 @@
       return `<div class="week-cell ${cls}">
         <div class="wn">W${w.w}</div>
         <div class="wscore">${w.score}</div>
-        <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono);margin-top:4px">${w.opp}</div>
+        <div style="font-size:11px;font-weight:500;margin-top:4px">${w.opp.team}</div>
+        <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono)">${w.opp.owner}</div>
       </div>`;
     }).join('')}</div>
 
@@ -1020,6 +1018,41 @@
         else if (id === 'a4') location.hash = '#/schedule';
       });
     });
+    // Advance day / week
+    const advDay = $('#adv-day');
+    if (advDay) {
+      advDay.addEventListener('click', async () => {
+        advDay.disabled = true;
+        try {
+          const res = await fetch('http://127.0.0.1:3410/api/season/advance-day', { method: 'POST' });
+          if (res.ok) toast('已推進一天', 'success');
+          else toast('推進失敗：' + res.status, 'error');
+        } catch (e) {
+          toast('推進失敗：' + e.message, 'error');
+        } finally {
+          advDay.disabled = false;
+        }
+      });
+    }
+    const advWeek = $('#adv-week');
+    if (advWeek) {
+      advWeek.addEventListener('click', async () => {
+        advWeek.disabled = true;
+        try {
+          const res = await fetch('http://127.0.0.1:3410/api/season/advance-week', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ use_ai: false })
+          });
+          if (res.ok) toast('已推進一週', 'success');
+          else toast('推進失敗：' + res.status, 'error');
+        } catch (e) {
+          toast('推進失敗：' + e.message, 'error');
+        } finally {
+          advWeek.disabled = false;
+        }
+      });
+    }
     // Draft pick
     $$('button[data-reco]').forEach(btn => {
       btn.addEventListener('click', () => toast(`已選擇 ${btn.dataset.reco}`, 'success'));
@@ -1080,7 +1113,7 @@
     { group:'動作' },
     { icon:I.plus, label:'發起新交易', action:() => { activeThread='t1'; location.hash='#/trade'; } },
     { icon:I.sparkle, label:'建議本週最佳陣容', action:() => { location.hash='#/roster'; toast('已根據你的 9 類別聯盟設定計算最佳陣容'); } },
-    { icon:I.waiver, label:'撿角：Scottie Barnes', action:() => toast('已提交認領：Scottie Barnes (\$5)') },
+    { icon:I.waiver, label:'撿角：Scottie Barnes', action:() => toast('已提交認領：Scottie Barnes') },
   ];
 
   function openCmd() {
