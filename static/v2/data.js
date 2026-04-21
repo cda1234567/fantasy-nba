@@ -1,6 +1,7 @@
 /* Fantasy NBA v2 — data */
 window.DATA = {
   me: { id: 'me', name: 'Chen W.', team: '肉圓幫', initials: 'CW', grad: 1 },
+  faab: { budget: 100, spent: 33 },
   league: { name: '絕地爆米花盃', size: 12, week: 14, totalWeeks: 21, phase: 'regular', draftDone: true, playoffStartWeek: 18 },
 
   standings: [
@@ -118,6 +119,7 @@ window.DATA = {
   // Trade conversations
   tradeThreads: [
     { id:'t1', with:'Eric', team:'珍奶兄弟', grad:7, persona:'aggressive', fit:'high',
+      status:'rejected',
       preview:'你的 Simons 我真的很想要…',
       unread:true, time:'12 分鐘前',
       msgs:[
@@ -128,6 +130,8 @@ window.DATA = {
           mine:[{n:'A. Simons',p:'SG'},{n:'K. Porziņģis',p:'C'}],
           theirs:[{n:'P. Siakam',p:'PF'},{n:'I. Quickley',p:'PG'}] },
         { from:'them', time:'12 分鐘前', text:'我給你加一個次輪 pick，這樣好嗎' },
+        { type:'system', text:'提案 #2041 已被否決', time:'10 分鐘前' },
+        { from:'them', time:'10 分鐘前', text:'提案不行，但我們可以再談，你還有什麼可以給我？' },
       ]},
     { id:'t2', with:'Alex', team:'爆米花特攻', grad:2, persona:'calm', fit:'mid',
       preview:'我這週不交易，先謝了。', unread:false, time:'昨天',

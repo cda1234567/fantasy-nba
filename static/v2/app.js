@@ -265,12 +265,14 @@
   }
 
   function renderWaiverBudget() {
+    const remaining = D.faab.budget - D.faab.spent;
+    const pct = remaining / D.faab.budget * 100;
     return `<div class="rail-section">
-      <div class="rail-head"><span>本季 Waiver 預算</span></div>
+      <div class="rail-head"><span>本季 FAAB 預算</span></div>
       <div class="card card-pad">
-        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:-0.02em">\$67 <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ \$100</span></div>
-        <div style="height:4px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:67%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 \$33</span><span>剩 7 週</span></div>
+        <div style="font-family:var(--mono);font-size:var(--fs-2xl);font-weight:700;letter-spacing:-0.02em">$${remaining} <span style="font-size:var(--fs-sm);color:var(--ink-3);font-weight:400">/ $${D.faab.budget}</span></div>
+        <div style="height:4px;background:var(--line);border-radius:999px;overflow:hidden;margin-top:10px"><div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--accent),var(--accent-hi));border-radius:999px"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:var(--fs-xs);color:var(--ink-3);font-family:var(--mono)"><span>已用 $${D.faab.spent}</span></div>
       </div>
     </div>
     <div class="rail-section">
@@ -797,6 +799,9 @@
           <div style="display:flex;gap:8px;justify-content:center;margin-top:6px"><button class="btn sm">接受</button><button class="btn sm ghost">還價</button><button class="btn sm subtle">拒絕</button></div>
         </div>`;
       }
+      if (m.type === 'system') {
+        return `<div class="bubble-system" style="text-align:center;font-size:11px;color:var(--ink-3);padding:8px 0;font-family:var(--mono)">${m.text}</div>`;
+      }
       return `<div class="bubble-row ${m.from}">
         <div class="bubble ${m.from}">${m.text}</div>
         <div class="bubble-meta">${m.time}</div>
@@ -863,7 +868,7 @@
       <div class="view-title-block">
         <span class="eyebrow">自由球員 · Waivers</span>
         <div class="view-title">自由球員市場</div>
-        <div class="view-sub">週三 03:00 處理認領 · 你剩 \$67 Waiver 預算</div>
+        <div class="view-sub">週三 03:00 處理認領 · 你剩 $${D.faab.budget - D.faab.spent} FAAB 預算（本季固定 $${D.faab.budget}）</div>
       </div>
       <div class="view-actions"><div class="segmented"><button aria-pressed="true">熱門</button><button>全部</button><button>本週多賽</button></div></div>
     </div>
