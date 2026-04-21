@@ -70,19 +70,27 @@ GM_PERSONAS: dict[str, dict] = {
 }
 
 
+def _base_score(p: Player, ctx: dict) -> float:
+    """Current FPPG when explicitly allowed; otherwise use MPG as draft proxy."""
+    eval_fppg = ctx.get("eval_fppg")
+    if eval_fppg is not None:
+        return float(eval_fppg)
+    return min(p.mpg, 36.0) * 0.8
+
+
 def _bpa_score(p: Player, ctx: dict) -> float:
-    return ctx.get("eval_fppg", p.fppg)
+    return _base_score(p, ctx)
 
 
 def _punt_to_score(p: Player, ctx: dict) -> float:
     # Extra -2.5 per TO on top of the base -1.0 already in fppg.
-    return ctx.get("eval_fppg", p.fppg) - (p.to * 2.5)
+    return _base_score(p, ctx) - (p.to * 2.5)
 
 
 def _stars_scrubs_score(p: Player, ctx: dict) -> float:
     rnd = ctx["round"]
     rank = ctx["fppg_rank"].get(p.id, 999)
-    eval_fppg = ctx.get("eval_fppg", p.fppg)
+    eval_fppg = _base_score(p, ctx)
     if rnd <= 3:
         # Only want elite (top 20). Heavy penalty otherwise.
         if rank <= 20:
@@ -98,7 +106,7 @@ def _stars_scrubs_score(p: Player, ctx: dict) -> float:
 
 
 def _balanced_score(p: Player, ctx: dict) -> float:
-    eval_fppg = ctx.get("eval_fppg", p.fppg)
+    eval_fppg = _base_score(p, ctx)
     # Penalize any zero / near-zero category; reward filling all six.
     cats = [p.pts, p.reb, p.ast, p.stl, p.blk]
     penalty = 0.0
@@ -114,7 +122,7 @@ def _balanced_score(p: Player, ctx: dict) -> float:
 
 
 def _youth_score(p: Player, ctx: dict) -> float:
-    eval_fppg = ctx.get("eval_fppg", p.fppg)
+    eval_fppg = _base_score(p, ctx)
     bonus = 0.0
     if p.age <= 22:
         bonus += 8.0
@@ -129,7 +137,7 @@ def _youth_score(p: Player, ctx: dict) -> float:
 
 
 def _vet_score(p: Player, ctx: dict) -> float:
-    eval_fppg = ctx.get("eval_fppg", p.fppg)
+    eval_fppg = _base_score(p, ctx)
     bonus = 0.0
     if p.age >= 27:
         bonus += 5.0
@@ -144,7 +152,7 @@ def _vet_score(p: Player, ctx: dict) -> float:
 
 
 def _contrarian_score(p: Player, ctx: dict) -> float:
-    eval_fppg = ctx.get("eval_fppg", p.fppg)
+    eval_fppg = _base_score(p, ctx)
     rank = ctx["fppg_rank"].get(p.id, 999)
     # Fade consensus: reach 5-10 slots "later" = penalize the very top a bit,
     # prefer players a bit below the top available.

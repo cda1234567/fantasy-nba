@@ -99,20 +99,6 @@ def _load_players(path: Path, weights: dict | None = None) -> list[Player]:
     return players
 
 
-def _load_prev_fppg(path: Path) -> dict[int, float]:
-    """Return {player_id: prev_fppg} from the season JSON. Missing/null -> 0.0."""
-    try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
-    result: dict[int, float] = {}
-    for row in raw:
-        pid = row.get("id")
-        pf = row.get("prev_fppg")
-        if pid is not None and pf is not None:
-            result[int(pid)] = float(pf)
-    return result
-
 
 def snake_team_for_pick(overall_pick: int, num_teams: int = NUM_TEAMS) -> tuple[int, int, int]:
     """Return (round, pick_in_round, team_id) for a 1-based overall pick."""
@@ -145,8 +131,6 @@ class DraftState:
         self.players_by_id: dict[int, Player] = {p.id: p for p in self.players}
         self._fppg_rank: dict[int, int] = {}
         self._recompute_fppg_rank()
-        # prev_fppg_map: used by AI draft scorers when not in current_full mode
-        self._prev_fppg_map: dict[int, float] = _load_prev_fppg(effective_file)
         # Optional reference to preseason SeasonState (for injury penalties at draft time)
         self._preseason_state: Optional[SeasonState] = None
         self.teams: list[Team] = []
@@ -186,7 +170,6 @@ class DraftState:
             self.players = _load_players(effective_file, settings.scoring_weights)
             self.players_by_id = {p.id: p for p in self.players}
             self._recompute_fppg_rank()
-            self._prev_fppg_map = _load_prev_fppg(effective_file)
 
         s = self._settings
         num_teams = s.num_teams if s is not None else NUM_TEAMS
@@ -313,7 +296,7 @@ class DraftState:
         draft_display_mode = (
             self._settings.draft_display_mode if self._settings else "prev_full"
         )
-        use_current_fppg = draft_display_mode == "current_full"
+        allow_fppg = draft_display_mode == "current_full"
 
         # Preseason injury map for draft-time penalty
         preseason_injuries: dict = (
@@ -326,7 +309,8 @@ class DraftState:
             "roster_player_ids": list(team.roster),
             "all_players": self.players_by_id,
             "available_ids": {p.id for p in available},
-            "fppg_rank": self._fppg_rank,
+            "fppg_rank": self._fppg_rank if allow_fppg else {},
+            "allow_fppg": allow_fppg,
         }
 
         # Positional need: count how many of each base position (PG/SG/SF/PF/C)
@@ -345,11 +329,7 @@ class DraftState:
         # Score every available player; tiebreak with seeded random jitter.
         scored = []
         for p in available:
-            # Set eval_fppg: current if display_mode==current_full, else prev_fppg
-            if use_current_fppg:
-                ctx["eval_fppg"] = p.fppg
-            else:
-                ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, p.fppg)
+            ctx["eval_fppg"] = p.fppg if allow_fppg else None
 
             s = scorer(p, ctx)
 
@@ -382,7 +362,7 @@ class DraftState:
                 from .injuries import injury_score_penalty
                 s += injury_score_penalty(p.id, self._preseason_state)
             # Breakout bonus for youth persona
-            if persona == "youth" and p.age <= 23 and p.mpg >= 28 and ctx["eval_fppg"] >= 30:
+            if persona == "youth" and p.age <= 23 and p.mpg >= 28:
                 s += 4.0
 
             # Modest jitter so close picks can swap; large enough to feel human
@@ -415,8 +395,11 @@ class DraftState:
                 bonus = 0.0
                 if persona == "youth" and pl.age <= 23:
                     bonus += 5.0
-                if persona == "stars_scrubs" and pl.fppg >= 40:
-                    bonus += 5.0
+                if persona == "stars_scrubs":
+                    if allow_fppg and pl.fppg >= 40:
+                        bonus += 5.0
+                    elif not allow_fppg and pl.mpg >= 34:
+                        bonus += 5.0
                 if persona == "contrarian":
                     # Contrarian likes defensive specialists (STL+BLK)
                     bonus += (pl.stl + pl.blk) * 2.0
@@ -429,9 +412,10 @@ class DraftState:
 
         persona_label = GM_PERSONAS[persona]["name"]
         reach_note = " (reach)" if reached else ""
+        metric_note = f"FPPG {best_player.fppg}, " if allow_fppg else ""
         reason = (
             f"{persona_label}{reach_note}: selected {best_player.name} "
-            f"(FPPG {best_player.fppg}, age {best_player.age}, score {best_score:.1f})"
+            f"({metric_note}age {best_player.age}, MPG {best_player.mpg}, score {best_score:.1f})"
         )
         return self.make_pick(best_player.id, reason=reason)
 
