@@ -1513,6 +1513,33 @@
     if (e.key === 'Escape') closeCmd();
   });
 
+  // Notifications btn → modal with lineup alerts
+  $('#notifications-btn')?.addEventListener('click', async () => {
+    const alerts = await api('/api/season/lineup-alerts').catch(() => null);
+    const items = alerts?.alerts?.length
+      ? alerts.alerts.map(a => `<div style="padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:var(--fs-sm)">${a.message || JSON.stringify(a)}</div>`).join('')
+      : '<div style="color:var(--ink-3);font-size:var(--fs-sm);padding:12px 0">目前沒有通知</div>';
+    $('#modal-card').innerHTML = `
+      <div class="modal-head"><h3>通知</h3><button class="modal-close" id="modal-close-btn">✕</button></div>
+      <div style="padding-top:4px">${items}</div>`;
+    $('#modal-bd').classList.add('open');
+    $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
+  });
+
+  // Settings btn → modal with league settings summary
+  $('#settings-btn')?.addEventListener('click', async () => {
+    const s = await api('/api/league/settings').catch(() => null);
+    const rows = s ? Object.entries(s)
+      .filter(([k]) => !['setup_complete','use_openrouter','show_offseason_headlines','team_names'].includes(k))
+      .map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line-soft);font-size:var(--fs-sm)"><span style="color:var(--ink-3);font-family:var(--mono)">${k}</span><span>${typeof v === 'object' ? JSON.stringify(v) : String(v)}</span></div>`).join('')
+      : '<div style="color:var(--ink-3);font-size:var(--fs-sm)">讀取失敗</div>';
+    $('#modal-card').innerHTML = `
+      <div class="modal-head"><h3>聯盟設定</h3><button class="modal-close" id="modal-close-btn">✕</button></div>
+      <div style="padding-top:4px">${rows}</div>`;
+    $('#modal-bd').classList.add('open');
+    $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
+  });
+
   // ========================================================
   // TOASTS
   // ========================================================
