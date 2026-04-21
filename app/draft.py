@@ -83,6 +83,21 @@ def _infer_pos_from_stats(p: Player) -> str:
     return "SG" if ast >= 2.0 else "SF"
 
 
+def _load_prev_fppg(path: Path) -> dict[int, float]:
+    """Return {player_id: prev_fppg} from the season JSON. Missing/null -> 0.0."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    result: dict[int, float] = {}
+    for row in raw:
+        pid = row.get("id")
+        pf = row.get("prev_fppg")
+        if pid is not None and pf is not None:
+            result[int(pid)] = float(pf)
+    return result
+
+
 def _load_players(path: Path, weights: dict | None = None) -> list[Player]:
     raw = json.loads(path.read_text(encoding="utf-8"))
     name_pos = _get_name_pos_map()
@@ -131,6 +146,7 @@ class DraftState:
         self.players_by_id: dict[int, Player] = {p.id: p for p in self.players}
         self._fppg_rank: dict[int, int] = {}
         self._recompute_fppg_rank()
+        self._prev_fppg_map: dict[int, float] = _load_prev_fppg(effective_file)
         # Optional reference to preseason SeasonState (for injury penalties at draft time)
         self._preseason_state: Optional[SeasonState] = None
         self.teams: list[Team] = []
@@ -170,6 +186,7 @@ class DraftState:
             self.players = _load_players(effective_file, settings.scoring_weights)
             self.players_by_id = {p.id: p for p in self.players}
             self._recompute_fppg_rank()
+            self._prev_fppg_map = _load_prev_fppg(effective_file)
 
         s = self._settings
         num_teams = s.num_teams if s is not None else NUM_TEAMS
@@ -309,7 +326,7 @@ class DraftState:
             "roster_player_ids": list(team.roster),
             "all_players": self.players_by_id,
             "available_ids": {p.id for p in available},
-            "fppg_rank": self._fppg_rank if allow_fppg else {},
+            "fppg_rank": self._fppg_rank,
             "allow_fppg": allow_fppg,
         }
 
@@ -329,7 +346,10 @@ class DraftState:
         # Score every available player; tiebreak with seeded random jitter.
         scored = []
         for p in available:
-            ctx["eval_fppg"] = p.fppg if allow_fppg else None
+            if allow_fppg:
+                ctx["eval_fppg"] = p.fppg          # 本季實際（天眼模式）
+            else:
+                ctx["eval_fppg"] = self._prev_fppg_map.get(p.id, p.fppg * 0.85)  # 上賽季
 
             s = scorer(p, ctx)
 
@@ -362,7 +382,7 @@ class DraftState:
                 from .injuries import injury_score_penalty
                 s += injury_score_penalty(p.id, self._preseason_state)
             # Breakout bonus for youth persona
-            if persona == "youth" and p.age <= 23 and p.mpg >= 28:
+            if persona == "youth" and p.age <= 23 and p.mpg >= 28 and ctx["eval_fppg"] >= 25:
                 s += 4.0
 
             # Modest jitter so close picks can swap; large enough to feel human
@@ -395,11 +415,8 @@ class DraftState:
                 bonus = 0.0
                 if persona == "youth" and pl.age <= 23:
                     bonus += 5.0
-                if persona == "stars_scrubs":
-                    if allow_fppg and pl.fppg >= 40:
-                        bonus += 5.0
-                    elif not allow_fppg and pl.mpg >= 34:
-                        bonus += 5.0
+                if persona == "stars_scrubs" and ctx.get("eval_fppg", 0) >= 38:
+                    bonus += 5.0
                 if persona == "contrarian":
                     # Contrarian likes defensive specialists (STL+BLK)
                     bonus += (pl.stl + pl.blk) * 2.0

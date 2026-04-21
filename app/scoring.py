@@ -71,10 +71,11 @@ GM_PERSONAS: dict[str, dict] = {
 
 
 def _base_score(p: Player, ctx: dict) -> float:
-    """Current FPPG when explicitly allowed; otherwise use MPG as draft proxy."""
+    """Use eval_fppg (prev or current season); never raw p.fppg."""
     eval_fppg = ctx.get("eval_fppg")
     if eval_fppg is not None:
         return float(eval_fppg)
+    # Truly unknown — use MPG as proxy (should not normally reach here)
     return min(p.mpg, 36.0) * 0.8
 
 
