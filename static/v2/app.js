@@ -1419,7 +1419,7 @@
               body: JSON.stringify({
                 league_name: name,
                 num_teams: teams,
-                season: season,
+                season_year: season,
                 roster_size: 13,
                 draft_display_mode: mode,
                 randomize_draft_order: randomDraft,
