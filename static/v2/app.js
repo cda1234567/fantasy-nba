@@ -321,7 +321,10 @@
         <div>
           <div class="home-greet">早安 Chen W. <span class="muted">— 第 ${week} 週，你有 4 件事可以做。</span></div>
         </div>
-        <div class="home-date mono">WED · 03.12 · 例行賽第 14 週</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="home-date mono">WED · 03.12 · 例行賽第 14 週</div>
+          <button class="btn" id="new-league-btn">+ 開新聯盟</button>
+        </div>
       </div>
 
       <section class="sitrep">
@@ -1093,6 +1096,85 @@
       };
       sendBtn.addEventListener('click', doSend);
       $('#chat-input')?.addEventListener('keydown', e => { if (e.key === 'Enter') doSend(); });
+    }
+    // New league button
+    const newLeagueBtn = $('#new-league-btn');
+    if (newLeagueBtn) {
+      newLeagueBtn.addEventListener('click', () => {
+        $('#modal-card').innerHTML = `
+          <div class="modal-head">
+            <h3>開新聯盟</h3>
+            <button class="modal-close" id="modal-close-btn">✕</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px;padding-top:4px">
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
+              <div class="segmented" id="nl-teams-seg">
+                <button data-val="8" aria-pressed="true">8 隊</button>
+                <button data-val="10">10 隊</button>
+                <button data-val="12">12 隊</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">賽季</div>
+              <div class="segmented" id="nl-season-seg">
+                <button data-val="2024-25" aria-pressed="true">2024-25</button>
+                <button data-val="2023-24">2023-24</button>
+              </div>
+            </div>
+            <div>
+              <div class="eyebrow" style="margin-bottom:8px">AI 選秀資訊</div>
+              <div class="segmented" id="nl-mode-seg">
+                <button data-val="prev_full" aria-pressed="true">公平模式</button>
+                <button data-val="current_full">天眼模式</button>
+              </div>
+              <div style="font-size:11px;color:var(--ink-3);margin-top:8px;line-height:1.5">
+                公平：AI 不看 fppg，只憑位置/年齡判斷。天眼：AI 知道本季實際表現。
+              </div>
+            </div>
+            <button class="btn" id="nl-submit" style="width:100%;justify-content:center">建立聯盟</button>
+          </div>`;
+        $('#modal-bd').classList.add('open');
+        $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
+        ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg'].forEach(sel => {
+          $(sel).addEventListener('click', e => {
+            const btn = e.target.closest('button[data-val]');
+            if (!btn) return;
+            $(sel).querySelectorAll('button[data-val]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+            btn.setAttribute('aria-pressed', 'true');
+          });
+        });
+        $('#nl-submit').addEventListener('click', async () => {
+          const submitBtn = $('#nl-submit');
+          submitBtn.disabled = true;
+          try {
+            const teams = $('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8';
+            const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
+            const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
+            const res = await fetch('http://127.0.0.1:3410/api/league/setup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                num_teams: parseInt(teams),
+                season: season,
+                roster_size: 13,
+                draft_display_mode: mode,
+              }),
+            });
+            if (res.ok) {
+              $('#modal-bd').classList.remove('open');
+              toast('新聯盟已建立，前往選秀廳！', 'success');
+              location.hash = '#/draft';
+            } else {
+              toast('建立失敗：' + res.status, 'error');
+              submitBtn.disabled = false;
+            }
+          } catch (e) {
+            toast('建立失敗：' + e.message, 'error');
+            submitBtn.disabled = false;
+          }
+        });
+      });
     }
   }
 
