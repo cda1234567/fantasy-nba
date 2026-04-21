@@ -634,7 +634,56 @@
     </div>`;
 
   // ---------- DRAFT ----------
+  function renderDraftRecap() {
+    const picks = D.draftState && D.draftState.picks;
+    if (picks && picks.length) {
+      const rows = picks.map(p => `
+        <tr>
+          <td class="num">${p.overall}</td>
+          <td class="num">${p.round}</td>
+          <td>${p.teamName}</td>
+          <td>${p.playerName}</td>
+          <td><span class="pos-tag" data-pos="${p.pos}">${p.pos}</span></td>
+        </tr>`).join('');
+      return `
+        <div class="view-head">
+          <div class="view-title-block">
+            <span class="eyebrow">選秀廳 · 已結束</span>
+            <div class="view-title">選秀回顧</div>
+          </div>
+        </div>
+        <div class="card">
+          <table class="standings-table">
+            <thead><tr><th>順位</th><th>輪次</th><th>球隊</th><th>球員</th><th>位置</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>`;
+    }
+    // fallback: show user's own roster
+    const myPicks = D.roster.map((p, i) => `
+      <tr>
+        <td class="num">${i + 1}</td>
+        <td>${p.name}</td>
+        <td><span class="pos-tag" data-pos="${p.pos}">${p.pos}</span></td>
+        <td>${p.team}</td>
+      </tr>`).join('');
+    return `
+      <div class="view-head">
+        <div class="view-title-block">
+          <span class="eyebrow">選秀廳 · 已結束</span>
+          <div class="view-title">你的選秀陣容</div>
+        </div>
+      </div>
+      <div class="card">
+        <table class="standings-table">
+          <thead><tr><th>#</th><th>球員</th><th>位置</th><th>球隊</th></tr></thead>
+          <tbody>${myPicks}</tbody>
+        </table>
+      </div>`;
+  }
+
   views.draft = () => {
+    if (D.league.draftDone) return renderDraftRecap();
     const ds = D.draftState;
     const needs = ds.needs.map(n => `
       <div class="need-cell ${n.need==='high'?'short':''}">

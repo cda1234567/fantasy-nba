@@ -98,6 +98,20 @@ window.DATA = {
         fit:88, reasons:['你 C 位也缺','多類別貢獻：籃板、阻攻','健康是風險，但產能無敵'] },
       { rank:3, top:false, name:'Jaylen Brown', pos:'SF', team:'BOS', grad:4,
         fit:82, reasons:['SF 位置需求高','穩定上場 34 分鐘','與你下輪可能選到的 PF 組合佳'] },
+    ],
+    picks: [
+      { overall:1,  round:1, pick:1,  teamName:'爆米花特攻', playerName:'P. Banchero',           pos:'PF' },
+      { overall:2,  round:1, pick:2,  teamName:'吸管神',     playerName:'V. Wembanyama',          pos:'C'  },
+      { overall:3,  round:1, pick:3,  teamName:'肉圓幫',     playerName:'T. Haliburton',          pos:'PG' },
+      { overall:4,  round:1, pick:4,  teamName:'蛋塔軍團',   playerName:'L. Dončić',              pos:'PG' },
+      { overall:5,  round:1, pick:5,  teamName:'珍奶兄弟',   playerName:'J. Tatum',               pos:'SF' },
+      { overall:6,  round:1, pick:6,  teamName:'滷肉飯派',   playerName:'G. Antetokounmpo',       pos:'PF' },
+      { overall:7,  round:1, pick:7,  teamName:'臭豆腐隊',   playerName:'A. Edwards',             pos:'SG' },
+      { overall:8,  round:1, pick:8,  teamName:'鹽酥雞團',   playerName:'Shai Gilgeous-Alexander',pos:'PG' },
+      { overall:9,  round:1, pick:9,  teamName:'小籠包',     playerName:'A. Davis',               pos:'C'  },
+      { overall:10, round:1, pick:10, teamName:'牛肉麵友',   playerName:'J. Brown',               pos:'SF' },
+      { overall:11, round:1, pick:11, teamName:'刈包戰神',   playerName:'D. Booker',              pos:'SG' },
+      { overall:12, round:1, pick:12, teamName:'夜市之光',   playerName:'N. Jokić',               pos:'C'  },
     ]
   },
 
