@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.20';
+  const VERSION = '0.6.21';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -680,7 +680,7 @@
           <span style="display:inline-block;width:18px;height:18px;border-radius:4px;font-family:var(--mono);font-size:9px;font-weight:700;line-height:18px;${on ? 'background:var(--accent);color:var(--accent-ink);' : 'background:var(--surface-2);color:var(--ink-4);'}">${DAY_LABELS[i]}</span>
         </td>`;
       }).join('');
-      return `<tr style="${slotBg}">
+      return `<tr draggable="true" data-player-id="${p.id}" data-slot="${p.slot}" style="${slotBg}cursor:grab;">
         <td style="padding:10px 10px;white-space:nowrap;">
           <span style="font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:var(--surface-2);color:var(--ink-2);margin-right:6px">${p.slot}</span>
         </td>
@@ -1363,6 +1363,58 @@
         bindViewEvents();
       });
     });
+
+    // Roster drag-and-drop
+    const rosterTbody = document.getElementById('roster-tbody');
+    if (rosterTbody) {
+      let dragId = null;
+      const STARTER_SLOTS = new Set(['PG','SG','G','SF','PF','F','C','UTIL']);
+      rosterTbody.addEventListener('dragstart', e => {
+        const row = e.target.closest('tr[data-player-id]');
+        if (!row) return;
+        dragId = parseInt(row.dataset.playerId);
+        row.style.opacity = '0.4';
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      rosterTbody.addEventListener('dragend', () => {
+        rosterTbody.querySelectorAll('tr').forEach(r => { r.style.opacity = ''; r.style.outline = ''; });
+      });
+      rosterTbody.addEventListener('dragover', e => {
+        e.preventDefault();
+        const row = e.target.closest('tr[data-player-id]');
+        rosterTbody.querySelectorAll('tr').forEach(r => r.style.outline = '');
+        if (row) row.style.outline = '2px solid var(--accent)';
+      });
+      rosterTbody.addEventListener('drop', async e => {
+        e.preventDefault();
+        rosterTbody.querySelectorAll('tr').forEach(r => { r.style.outline = ''; r.style.opacity = ''; });
+        const row = e.target.closest('tr[data-player-id]');
+        if (!row || !dragId) return;
+        const targetId = parseInt(row.dataset.playerId);
+        if (targetId === dragId) return;
+        const roster = D.roster || [];
+        const starters = roster.filter(p => STARTER_SLOTS.has(p.slot)).map(p => p.id);
+        const draggedP = roster.find(p => p.id === dragId);
+        const targetP = roster.find(p => p.id === targetId);
+        const dragIsStarter = draggedP && STARTER_SLOTS.has(draggedP.slot);
+        const targetIsStarter = targetP && STARTER_SLOTS.has(targetP.slot);
+        let newStarters;
+        if (dragIsStarter && targetIsStarter) {
+          newStarters = starters; // same set, backend re-assigns slots
+        } else if (!dragIsStarter && targetIsStarter) {
+          newStarters = starters.map(id => id === targetId ? dragId : id);
+        } else if (dragIsStarter && !targetIsStarter) {
+          newStarters = starters.filter(id => id !== dragId);
+          if (targetP && targetP.slot !== 'IR') newStarters.push(targetId);
+        } else {
+          return;
+        }
+        try {
+          await api('/api/season/lineup', { method: 'POST', body: JSON.stringify({ starters: newStarters, today_only: false }) });
+          await refreshData(); mount();
+        } catch (err) { toast('調整失敗：' + err.message, 'error'); }
+      });
+    }
 
     // Trade thread clicks
     $$('.ts-row[data-thread]').forEach(row => {
