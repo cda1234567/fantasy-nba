@@ -116,7 +116,7 @@ async def _security_and_cache_headers(request, call_next):
         CACHEABLE = ("/api/personas",)
         if any(path == p or path.startswith(p + "/") or path.startswith(p + "?") for p in CACHEABLE):
             response.headers.setdefault("Cache-Control", "private, max-age=60")
-        elif path.startswith("/api/"):
+        elif path.startswith("/api/") or path.startswith("/static/v2/"):
             response.headers.setdefault("Cache-Control", "no-store")
     return response
 
