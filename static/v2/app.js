@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.15';
+  const VERSION = '0.6.16';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -592,6 +592,8 @@
   const SLOT_ORDER = ['PG','SG','SF','PF','C','G','F','UTIL','BN','IR'];
   let rosterSort = { key: 'slot', dir: 'asc' };
   let standingsSort = { key: 'r', dir: 'asc' };
+  let draftSpeed = 800;
+  let draftAutoTimer = null;
   const DAY_LABELS = ['一','二','三','四','五','六','日'];
 
   views.roster = () => {
@@ -869,6 +871,56 @@
       </table>
     </div>`;
 
+  async function draftAiStep() {
+    if (D.league?.draftDone || D.draftState?.isMyTurn) {
+      stopDraftAutoAdvance();
+      await refreshData();
+      mount();
+      return;
+    }
+    try {
+      const res = await api('/api/draft/ai-advance');
+      if (res?.state) {
+        D.draftState = D.draftState || {};
+        D.draftState.round = res.state.current_round || 1;
+        D.draftState.teams = res.state.teams || [];
+        D.draftState.picks = res.state.picks || [];
+        D.draftState.isMyTurn = res.state.current_team_id === res.state.human_team_id;
+        D.draftState.humanTeamId = res.state.human_team_id;
+        D.draftState.currentTeamId = res.state.current_team_id;
+        D.league.draftDone = res.state.is_complete ?? false;
+      }
+      if (res?.pick?.player_id != null) {
+        D.draftPlayers = (D.draftPlayers || []).filter(p => p.id !== res.pick.player_id);
+      }
+      const rail = document.querySelector('.rail');
+      if (rail) rail.innerHTML = renderDraftBoard();
+      const tbody = document.getElementById('draft-player-tbody');
+      if (tbody) tbody.innerHTML = renderDraftPlayerRows(D.draftPlayers || [], D.draftState?.isMyTurn);
+      const statusEl = document.getElementById('draft-auto-status');
+      if (statusEl) statusEl.textContent = D.draftState?.isMyTurn ? '輪到你了！' : 'AI 正在選秀…';
+      if (D.league?.draftDone || D.draftState?.isMyTurn) {
+        stopDraftAutoAdvance();
+        await refreshData();
+        mount();
+      }
+    } catch (e) {
+      stopDraftAutoAdvance();
+      await refreshData();
+      mount();
+    }
+  }
+
+  function startDraftAutoAdvance() {
+    if (draftAutoTimer) return;
+    if (D.league?.draftDone || D.draftState?.isMyTurn) return;
+    draftAutoTimer = setInterval(draftAiStep, draftSpeed);
+  }
+
+  function stopDraftAutoAdvance() {
+    if (draftAutoTimer) { clearInterval(draftAutoTimer); draftAutoTimer = null; }
+  }
+
   // ---------- DRAFT ----------
   function renderDraftRecap() {
     const picks = D.draftState && D.draftState.picks;
@@ -969,6 +1021,15 @@
         <div class="view-title-block">
           <span class="eyebrow">選秀廳 · 第 ${ds.round} 輪</span>
           <div class="view-title">你的第 ${ds.pickOverall} 順位</div>
+          <div id="draft-auto-status" style="font-size:var(--fs-sm);color:${ds.isMyTurn ? 'var(--good)' : 'var(--ink-3)'};margin-top:4px;font-family:var(--mono)">${ds.isMyTurn ? '輪到你了！' : 'AI 正在選秀…'}</div>
+        </div>
+        <div class="view-actions" style="align-items:center;gap:12px">
+          <div class="segmented" id="draft-speed-seg">
+            <button data-speed="1500">慢</button>
+            <button data-speed="800" aria-pressed="true">正常</button>
+            <button data-speed="200">快</button>
+          </div>
+          ${!ds.isMyTurn ? '<button class="btn ghost" id="draft-skip-to-me">跳到我的回合</button>' : ''}
         </div>
       </div>
 
@@ -1234,6 +1295,7 @@
   }
 
   function mount() {
+    stopDraftAutoAdvance();
     const r = currentRoute();
     const view = views[r] || views.home;
     const main = $('#main');
@@ -1468,6 +1530,41 @@
         }
       });
     });
+
+    const speedSeg = document.getElementById('draft-speed-seg');
+    if (speedSeg) {
+      speedSeg.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-speed]');
+        if (!btn) return;
+        speedSeg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
+        draftSpeed = parseInt(btn.dataset.speed);
+        if (draftAutoTimer) { stopDraftAutoAdvance(); startDraftAutoAdvance(); }
+      });
+    }
+
+    const skipBtn = document.getElementById('draft-skip-to-me');
+    if (skipBtn) {
+      skipBtn.addEventListener('click', async () => {
+        stopDraftAutoAdvance();
+        skipBtn.disabled = true;
+        skipBtn.textContent = '跳轉中…';
+        try {
+          await api('/api/draft/sim-to-me', { method: 'POST' });
+          await refreshData();
+          mount();
+        } catch (e) {
+          toast('跳轉失敗：' + e.message, 'error');
+          skipBtn.disabled = false;
+          skipBtn.textContent = '跳到我的回合';
+        }
+      });
+    }
+
+    if (!D.league?.draftDone && !D.draftState?.isMyTurn && document.getElementById('draft-player-tbody')) {
+      startDraftAutoAdvance();
+    }
+
     // Draft search/filter
     const draftSearch = document.getElementById('draft-search');
     const draftPosSeg = document.getElementById('draft-pos-seg');
