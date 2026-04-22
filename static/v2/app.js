@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.19';
+  const VERSION = '0.6.20';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -83,6 +83,7 @@
           api('/api/fa/claim-status').catch(() => null),
           api('/api/home/actions').catch(() => null),
         ]);
+        if (actionsData) D.actions = actionsData;
 
         if (meData?.team_id != null) {
           const [teamData] = await Promise.all([
@@ -134,6 +135,11 @@
                 D.matchup.week = matchupRaw.week;
                 D.matchup.you = { ...(D.matchup.you || {}), score: youAreA ? m.score_a : m.score_b };
                 D.matchup.them = { ...(D.matchup.them || {}), score: youAreA ? m.score_b : m.score_a };
+                const oppId = youAreA ? m.team_b : m.team_a;
+                const humanTeamObj = (D.draftState?.teams || []).find(t => t.id === myId);
+                const opponentTeamObj = (D.draftState?.teams || []).find(t => t.id === oppId);
+                if (humanTeamObj) D.matchup.you.team = humanTeamObj.name;
+                if (opponentTeamObj) D.matchup.them.team = opponentTeamObj.name;
               }
             }
           }
@@ -141,8 +147,8 @@
 
         // Load FA list
         const faPlayers = await api('/api/players?available=true&sort=fppg&limit=100').catch(() => null);
-        if (faPlayers?.players) {
-          D.freeAgents = faPlayers.players.map(p => ({
+        if (Array.isArray(faPlayers)) {
+          D.freeAgents = faPlayers.map(p => ({
             id: p.id, playerId: p.id,
             name: p.name, pos: p.pos, team: p.team,
             grad: p.grad || ((p.id % 8) + 1),
@@ -150,6 +156,26 @@
             form: p.form || [0,0,0,0,0],
             note: '',
           }));
+        }
+        const newsFeed = await api('/api/news/feed').catch(() => null);
+        if (newsFeed?.feed?.length) D.news = newsFeed.feed;
+        const schedRaw = await api('/api/season/schedule').catch(() => null);
+        if (schedRaw?.schedule?.length) {
+          const curWeek = standings?.current_week || 0;
+          const teams = D.draftState?.teams || [];
+          D.schedule = schedRaw.schedule
+            .filter(m => m.team_a === meData.team_id || m.team_b === meData.team_id)
+            .map(m => {
+              const iAmA = m.team_a === meData.team_id;
+              const myScore = iAmA ? m.score_a : m.score_b;
+              const oppId = iAmA ? m.team_b : m.team_a;
+              const oppTeam = teams.find(t => t.id === oppId);
+              let result = 'future';
+              if (m.complete) result = m.winner === meData.team_id ? 'W' : 'L';
+              else if (m.week === curWeek) result = 'current';
+              return { w: m.week, result, score: m.complete ? myScore.toFixed(1) : '—',
+                       opp: { team: oppTeam?.name || `T${oppId}`, owner: '' } };
+            });
         }
       }
 
@@ -352,10 +378,7 @@
     <div class="rail-section">
       <div class="rail-head"><span>本週建議</span></div>
       <div class="card card-pad" style="font-size:var(--fs-sm);line-height:1.6;color:var(--ink-2)">
-        <b style="color:var(--ink)">關鍵三件事</b><br/>
-        · 把 Jokić 確認先發（DEN vs LAL）<br/>
-        · Porziņģis 出賽存疑，備胎 Simons<br/>
-        · Eric 剩 Brunson 沒打，小心他週末追上
+        ${(D.actions || []).filter(a => a.urgency !== 'done').slice(0,3).map(a => `· ${a.title}${a.sub ? `<br/><span style="color:var(--ink-3);font-size:10px">${a.sub}</span>` : ''}`).join('<br/>') || '目前一切就緒'}
       </div>
     </div>`;
   }
@@ -595,7 +618,7 @@
   };
 
   // ---------- ROSTER ----------
-  const SLOT_ORDER = ['PG','SG','SF','PF','C','G','F','UTIL','BN','IR'];
+  const SLOT_ORDER = ['PG','SG','G','SF','PF','F','C','C','UTIL','UTIL','BN','IR'];
   let rosterSort = { key: 'slot', dir: 'asc' };
   let standingsSort = { key: 'r', dir: 'asc' };
   let draftSpeed = 800;
@@ -749,8 +772,8 @@
     return `
       <div class="view-head">
         <div class="view-title-block">
-          <span class="eyebrow">第 14 週 · 例行賽</span>
-          <div class="view-title">肉圓幫 vs 珍奶兄弟</div>
+          <span class="eyebrow">第 ${D.matchup?.week || D.league?.week || '?'} 週 · 例行賽</span>
+          <div class="view-title">${you?.team || '我的隊伍'} vs ${them?.team || '對手'}</div>
           <div class="view-sub">已打 5/8 場 · 週日 18:30 結算</div>
         </div>
         <div class="view-actions">
@@ -762,12 +785,12 @@
       <div class="card" style="margin-bottom:var(--s-5)">
         <div class="matchup-body" style="padding:var(--s-7) var(--s-8)">
           <div class="matchup-side you winning">
-            <div class="matchup-team">${av('Chen', you.grad, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">肉圓幫</span></div>
+            <div class="matchup-team">${av(you?.team || '我', you?.grad || 1, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">${you?.team || '我的隊伍'}</span></div>
             <div class="matchup-score mono" style="color:var(--good);font-size:var(--fs-4xl)">${you.score}</div>
           </div>
           <div class="matchup-vs mono" style="font-size:var(--fs-xl)">VS</div>
           <div class="matchup-side them losing">
-            <div class="matchup-team">${av('Eric', them.grad, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">珍奶兄弟</span></div>
+            <div class="matchup-team">${av(them?.team || '對', them?.grad || 2, 'lg')}<span style="font-size:var(--fs-lg);font-weight:600;margin-top:6px">${them?.team || '對手'}</span></div>
             <div class="matchup-score mono" style="font-size:var(--fs-4xl)">${them.score}</div>
           </div>
         </div>
@@ -783,7 +806,7 @@
 
       <div class="card" style="margin-bottom:var(--s-5);">
         <div class="card-header"><h3>類別分項</h3><span class="sub">本週累計 · 贏的那方亮色</span></div>
-        ${renderCategoryBreakdown(D.matchup.catBreakdown, '肉圓幫', '珍奶兄弟')}
+        ${renderCategoryBreakdown(D.matchup?.catBreakdown || [], you?.team || '我', them?.team || '對')}
       </div>
 
       <div class="card">
@@ -1218,7 +1241,9 @@
     </div>`;
 
   // ---------- SCHEDULE ----------
-  views.schedule = () => `
+  views.schedule = () => {
+    const schedData = D.schedule || [];
+    return `
     <div class="view-head">
       <div class="view-title-block">
         <span class="eyebrow">整季排程</span>
@@ -1226,7 +1251,7 @@
         <div class="view-sub">13 場已打、3 場待打、4 場季後賽</div>
       </div>
     </div>
-    <div class="week-grid">${D.schedule.map(w => {
+    <div class="week-grid">${schedData.map(w => {
       const cls = w.result === 'W' ? 'won' : w.result === 'L' ? 'lost'
         : w.result === 'current' ? 'current' : w.result === 'playoff' ? 'playoff' : 'future';
       return `<div class="week-cell ${cls}">
@@ -1245,6 +1270,7 @@
         <span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;border:1px dashed var(--pg)"></span>季後賽</span>
       </div>
     </div>`;
+  };
 
   // ---------- NEWS ----------
   views.news = () => {
