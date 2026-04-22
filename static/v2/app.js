@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.17';
+  const VERSION = '0.6.18';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -597,7 +597,10 @@
   const DAY_LABELS = ['一','二','三','四','五','六','日'];
 
   views.roster = () => {
-    const sorted = [...D.roster].sort((a, b) => {
+    if (!D.league?.draftDone) return `
+      <div class="view-head"><div class="view-title-block"><span class="eyebrow">球隊管理</span><div class="view-title">選秀尚未完成</div></div></div>
+      <div class="card" style="padding:48px;text-align:center;color:var(--ink-3);font-size:var(--fs-sm)">完成選秀後才能查看陣容</div>`;
+    const sorted = [...(D.roster || [])].sort((a, b) => {
       const av2 = (p) => {
         if (rosterSort.key === 'slot') { const i = SLOT_ORDER.indexOf(p.slot); return i === -1 ? 99 : i; }
         if (rosterSort.key === 'proj') return p.proj || 0;
@@ -732,8 +735,11 @@
 
   // ---------- MATCHUP ----------
   views.matchup = () => {
-    const { you, them } = D.matchup;
-    const stars = D.roster.filter(p => ['PG','SG','SF','PF','C','G','F','UTIL'].includes(p.slot));
+    if (!D.league?.draftDone) return `
+      <div class="view-head"><div class="view-title-block"><span class="eyebrow">對戰</span><div class="view-title">選秀尚未完成</div></div></div>
+      <div class="card" style="padding:48px;text-align:center;color:var(--ink-3);font-size:var(--fs-sm)">完成選秀後才能查看對戰資訊</div>`;
+    const { you, them } = D.matchup || {};
+    const stars = (D.roster || []).filter(p => ['PG','SG','SF','PF','C','G','F','UTIL'].includes(p.slot));
     return `
       <div class="view-head">
         <div class="view-title-block">
