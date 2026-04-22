@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.16';
+  const VERSION = '0.6.17';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -1801,8 +1801,9 @@
   });
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); }
-    if (e.key === 'Escape') closeCmd();
+    if (e.key === 'Escape') { closeCmd(); $('#modal-bd')?.classList.remove('open'); }
   });
+  $('#modal-bd')?.addEventListener('click', e => { if (e.target === $('#modal-bd')) $('#modal-bd').classList.remove('open'); });
 
   // New league btn (header, always visible)
   $('#new-league-btn')?.addEventListener('click', openNewLeagueModal);
