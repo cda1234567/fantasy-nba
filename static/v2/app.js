@@ -457,7 +457,6 @@
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <div class="home-date mono">WED · 03.12 · 例行賽第 14 週</div>
-          <button class="btn" id="new-league-btn">+ 開新聯盟</button>
         </div>
       </div>
 
@@ -1303,147 +1302,147 @@
         }
       });
     });
-    // New league button
-    const newLeagueBtn = $('#new-league-btn');
-    if (newLeagueBtn) {
-      newLeagueBtn.addEventListener('click', () => {
-        $('#modal-card').innerHTML = `
-          <div class="modal-head">
-            <h3>開新聯盟</h3>
-            <button class="modal-close" id="modal-close-btn">✕</button>
+  }
+
+  function openNewLeagueModal() {
+    $('#modal-card').innerHTML = `
+      <div class="modal-head">
+        <h3>開新聯盟</h3>
+        <button class="modal-close" id="modal-close-btn">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:20px;padding-top:4px">
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">聯盟名稱</div>
+          <input type="text" id="nl-name" placeholder="我的聯盟" maxlength="30"
+            style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)"/>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
+          <div class="segmented" id="nl-teams-seg">
+            <button data-val="8" aria-pressed="true">8 隊</button>
+            <button data-val="10">10 隊</button>
+            <button data-val="12">12 隊</button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:20px;padding-top:4px">
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">聯盟名稱</div>
-              <input type="text" id="nl-name" placeholder="我的聯盟" maxlength="30"
-                style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)"/>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
-              <div class="segmented" id="nl-teams-seg">
-                <button data-val="8" aria-pressed="true">8 隊</button>
-                <button data-val="10">10 隊</button>
-                <button data-val="12">12 隊</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">賽季</div>
-              <div class="segmented" id="nl-season-seg">
-                <button data-val="2024-25" aria-pressed="true">2024-25</button>
-                <button data-val="2023-24">2023-24</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">AI 選秀資訊</div>
-              <div class="segmented" id="nl-mode-seg">
-                <button data-val="prev_full" aria-pressed="true">公平模式</button>
-                <button data-val="current_full">天眼模式</button>
-              </div>
-              <div style="font-size:11px;color:var(--ink-3);margin-top:8px;line-height:1.5">
-                公平：AI 不看 fppg，只憑位置/年齡判斷。天眼：AI 知道本季實際表現。
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">選秀順序</div>
-              <div class="segmented" id="nl-draft-order-seg">
-                <button data-val="false" aria-pressed="true">固定順序</button>
-                <button data-val="true">隨機</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">計分權重</div>
-              <div class="segmented" id="nl-scoring-seg">
-                <button data-val="default" aria-pressed="true">預設</button>
-                <button data-val="high_ast">重助攻</button>
-                <button data-val="balanced">均衡</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">交易截止週</div>
-              <div class="segmented" id="nl-deadline-seg">
-                <button data-val="null" aria-pressed="true">無截止</button>
-                <button data-val="10">W10</button>
-                <button data-val="12">W12</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">AI 交易頻率</div>
-              <div class="segmented" id="nl-ai-trade-seg">
-                <button data-val="off">關閉</button>
-                <button data-val="low">低</button>
-                <button data-val="normal" aria-pressed="true">正常</button>
-                <button data-val="high">高</button>
-              </div>
-            </div>
-            <div>
-              <div class="eyebrow" style="margin-bottom:8px">否決期</div>
-              <div class="segmented" id="nl-veto-seg">
-                <button data-val="1">1 天</button>
-                <button data-val="2" aria-pressed="true">2 天</button>
-                <button data-val="3">3 天</button>
-              </div>
-            </div>
-            <button class="btn" id="nl-submit" style="width:100%;justify-content:center">建立聯盟</button>
-          </div>`;
-        $('#modal-bd').classList.add('open');
-        $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
-        ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg', '#nl-draft-order-seg', '#nl-scoring-seg', '#nl-deadline-seg', '#nl-ai-trade-seg', '#nl-veto-seg'].forEach(sel => {
-          $(sel).addEventListener('click', e => {
-            const btn = e.target.closest('button[data-val]');
-            if (!btn) return;
-            $(sel).querySelectorAll('button[data-val]').forEach(b => b.setAttribute('aria-pressed', 'false'));
-            btn.setAttribute('aria-pressed', 'true');
-          });
-        });
-        $('#nl-submit').addEventListener('click', async () => {
-          const submitBtn = $('#nl-submit');
-          submitBtn.disabled = true;
-          try {
-            const name = $('#nl-name')?.value?.trim() || '我的聯盟';
-            const teams = parseInt($('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8');
-            const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
-            const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
-            const randomDraft = $('#nl-draft-order-seg [aria-pressed="true"]')?.dataset.val === 'true';
-            const deadline = $('#nl-deadline-seg [aria-pressed="true"]')?.dataset.val;
-            const aiFreq = $('#nl-ai-trade-seg [aria-pressed="true"]')?.dataset.val || 'normal';
-            const vetodays = parseInt($('#nl-veto-seg [aria-pressed="true"]')?.dataset.val || '2');
-            const scoringPresets = {
-              default:  { pts:1.0, reb:1.2, ast:1.5, stl:2.5, blk:2.5, to:-1.0 },
-              high_ast: { pts:1.0, reb:1.2, ast:2.0, stl:2.5, blk:2.5, to:-1.0 },
-              balanced: { pts:1.0, reb:1.0, ast:1.0, stl:1.5, blk:1.5, to:-1.0 },
-            };
-            const scoring = scoringPresets[$('#nl-scoring-seg [aria-pressed="true"]')?.dataset.val || 'default'];
-            const res = await fetch('/api/league/setup', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                league_name: name,
-                num_teams: teams,
-                season_year: season,
-                roster_size: 13,
-                draft_display_mode: mode,
-                randomize_draft_order: randomDraft,
-                scoring_weights: scoring,
-                trade_deadline_week: deadline === 'null' ? null : parseInt(deadline),
-                ai_trade_frequency: aiFreq,
-                veto_window_days: vetodays,
-              }),
-            });
-            if (res.ok) {
-              $('#modal-bd').classList.remove('open');
-              toast('新聯盟已建立，前往選秀廳！', 'success');
-              location.hash = '#/draft';
-            } else {
-              toast('建立失敗：' + res.status, 'error');
-              submitBtn.disabled = false;
-            }
-          } catch (e) {
-            toast('建立失敗：' + e.message, 'error');
-            submitBtn.disabled = false;
-          }
-        });
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">賽季</div>
+          <div class="segmented" id="nl-season-seg">
+            <button data-val="2024-25" aria-pressed="true">2024-25</button>
+            <button data-val="2023-24">2023-24</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">AI 選秀資訊</div>
+          <div class="segmented" id="nl-mode-seg">
+            <button data-val="prev_full" aria-pressed="true">公平模式</button>
+            <button data-val="current_full">天眼模式</button>
+          </div>
+          <div style="font-size:11px;color:var(--ink-3);margin-top:8px;line-height:1.5">
+            公平：AI 不看 fppg，只憑位置/年齡判斷。天眼：AI 知道本季實際表現。
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">選秀順序</div>
+          <div class="segmented" id="nl-draft-order-seg">
+            <button data-val="false" aria-pressed="true">固定順序</button>
+            <button data-val="true">隨機</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">計分權重</div>
+          <div class="segmented" id="nl-scoring-seg">
+            <button data-val="default" aria-pressed="true">預設</button>
+            <button data-val="high_ast">重助攻</button>
+            <button data-val="balanced">均衡</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">交易截止週</div>
+          <div class="segmented" id="nl-deadline-seg">
+            <button data-val="null" aria-pressed="true">無截止</button>
+            <button data-val="10">W10</button>
+            <button data-val="12">W12</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">AI 交易頻率</div>
+          <div class="segmented" id="nl-ai-trade-seg">
+            <button data-val="off">關閉</button>
+            <button data-val="low">低</button>
+            <button data-val="normal" aria-pressed="true">正常</button>
+            <button data-val="high">高</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow" style="margin-bottom:8px">否決期</div>
+          <div class="segmented" id="nl-veto-seg">
+            <button data-val="1">1 天</button>
+            <button data-val="2" aria-pressed="true">2 天</button>
+            <button data-val="3">3 天</button>
+          </div>
+        </div>
+        <button class="btn" id="nl-submit" style="width:100%;justify-content:center">建立聯盟</button>
+      </div>`;
+    $('#modal-bd').classList.add('open');
+    $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
+    ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg', '#nl-draft-order-seg', '#nl-scoring-seg', '#nl-deadline-seg', '#nl-ai-trade-seg', '#nl-veto-seg'].forEach(sel => {
+      $(sel).addEventListener('click', e => {
+        const btn = e.target.closest('button[data-val]');
+        if (!btn) return;
+        $(sel).querySelectorAll('button[data-val]').forEach(b => b.setAttribute('aria-pressed', 'false'));
+        btn.setAttribute('aria-pressed', 'true');
       });
-    }
+    });
+    $('#nl-submit').addEventListener('click', async () => {
+      const submitBtn = $('#nl-submit');
+      submitBtn.disabled = true;
+      try {
+        const name = $('#nl-name')?.value?.trim() || '我的聯盟';
+        const teams = parseInt($('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8');
+        const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
+        const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
+        const randomDraft = $('#nl-draft-order-seg [aria-pressed="true"]')?.dataset.val === 'true';
+        const deadline = $('#nl-deadline-seg [aria-pressed="true"]')?.dataset.val;
+        const aiFreq = $('#nl-ai-trade-seg [aria-pressed="true"]')?.dataset.val || 'normal';
+        const vetodays = parseInt($('#nl-veto-seg [aria-pressed="true"]')?.dataset.val || '2');
+        const scoringPresets = {
+          default:  { pts:1.0, reb:1.2, ast:1.5, stl:2.5, blk:2.5, to:-1.0 },
+          high_ast: { pts:1.0, reb:1.2, ast:2.0, stl:2.5, blk:2.5, to:-1.0 },
+          balanced: { pts:1.0, reb:1.0, ast:1.0, stl:1.5, blk:1.5, to:-1.0 },
+        };
+        const scoring = scoringPresets[$('#nl-scoring-seg [aria-pressed="true"]')?.dataset.val || 'default'];
+        const res = await fetch('/api/league/setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            league_name: name,
+            num_teams: teams,
+            season_year: season,
+            roster_size: 13,
+            draft_display_mode: mode,
+            randomize_draft_order: randomDraft,
+            scoring_weights: scoring,
+            trade_deadline_week: deadline === 'null' ? null : parseInt(deadline),
+            ai_trade_frequency: aiFreq,
+            veto_window_days: vetodays,
+          }),
+        });
+        if (res.ok) {
+          $('#modal-bd').classList.remove('open');
+          toast('新聯盟已建立，前往選秀廳！', 'success');
+          await refreshData();
+          location.hash = '#/draft';
+          mount();
+        } else {
+          const err = await res.json().catch(() => ({}));
+          toast('建立失敗：' + (err.detail || res.status), 'error');
+          submitBtn.disabled = false;
+        }
+      } catch (e) {
+        toast('建立失敗：' + e.message, 'error');
+        submitBtn.disabled = false;
+      }
+    });
   }
 
   // ========================================================
@@ -1512,6 +1511,9 @@
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmd(); }
     if (e.key === 'Escape') closeCmd();
   });
+
+  // New league btn (header, always visible)
+  $('#new-league-btn')?.addEventListener('click', openNewLeagueModal);
 
   // Notifications btn → modal with lineup alerts
   $('#notifications-btn')?.addEventListener('click', async () => {
