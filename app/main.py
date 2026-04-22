@@ -228,7 +228,7 @@ def index():
     html = html.replace('href="shell.css"', f'href="/static/v2/shell.css?v={APP_VERSION}"')
     html = html.replace('src="data.js"', f'src="/static/v2/data.js?v={APP_VERSION}"')
     html = html.replace('src="app.js"', f'src="/static/v2/app.js?v={APP_VERSION}"')
-    return HTMLResponse(html)
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
 
 
 @app.get("/v1", include_in_schema=False)
