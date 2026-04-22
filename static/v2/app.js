@@ -2,6 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
+  const VERSION = '0.6.15';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -16,16 +17,57 @@
 
   async function refreshData() {
     try {
-      const [leagueStatus, draftState] = await Promise.all([
+      const [leagueStatus, draftState, pendingTradesTop] = await Promise.all([
         api('/api/league/status').catch(() => null),
         api('/api/state').catch(() => null),
+        api('/api/trades/pending').catch(() => null),
       ]);
+      // Always sync tradeThreads from real API (clears mock data even in draft phase)
+      if (pendingTradesTop) {
+        D.tradeThreads = pendingTradesTop.pending?.length > 0
+          ? pendingTradesTop.pending.map(t => ({
+              id: t.id, with: t.from_team_name || `Team ${t.from_team}`,
+              team: t.from_team_name || `T${t.from_team}`,
+              persona: t.persona || 'AI', fit: t.fit || 50,
+              unread: t.status === 'pending', grad: 1, status: t.status,
+              msgs: [{ type: 'proposal', id: t.id, from: t.from_team_name || `T${t.from_team}`,
+                theirs: (t.their_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
+                mine: (t.my_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
+              }],
+              time: t.created_at ? new Date(t.created_at).toLocaleString('zh-TW') : '',
+            }))
+          : [];
+      }
 
       // Populate league-level data
       if (leagueStatus) {
         D.league = D.league || {};
         D.league.name = leagueStatus.league_name || D.league.name || '我的聯盟';
-        D.league.draftDone = draftState?.is_complete ?? false;
+      }
+
+      // Sync draft state and available players
+      if (draftState) {
+        D.draftState = D.draftState || {};
+        D.draftState.round = draftState.current_round || 1;
+        D.draftState.pickOverall = draftState.current_overall || 1;
+        D.draftState.pickInRound = draftState.current_pick_in_round || 1;
+        D.draftState.currentTeamId = draftState.current_team_id;
+        D.draftState.humanTeamId = draftState.human_team_id;
+        D.draftState.numTeams = draftState.num_teams || 8;
+        D.draftState.totalRounds = draftState.total_rounds || 13;
+        D.draftState.teams = draftState.teams || [];
+        D.draftState.picks = draftState.picks || [];
+        D.draftState.isMyTurn = draftState.current_team_id === draftState.human_team_id;
+        D.league.draftDone = draftState.is_complete ?? false;
+      }
+      if (!D.league?.draftDone) {
+        const playersRaw = await api('/api/players?available=true&limit=500').catch(() => null);
+        if (playersRaw) {
+          D.draftPlayers = playersRaw.map((p, i) => ({
+            id: p.id, name: p.name, pos: p.pos, team: p.team,
+            fppg: p.fppg || 0, rank: i + 1,
+          }));
+        }
       }
 
       // Only fetch season data if draft is done
@@ -38,9 +80,8 @@
         ]);
 
         if (meData?.team_id != null) {
-          const [teamData, pendingTrades] = await Promise.all([
+          const [teamData] = await Promise.all([
             api(`/api/teams/${meData.team_id}`).catch(() => null),
-            api('/api/trades/pending').catch(() => null),
           ]);
 
           if (teamData) {
@@ -52,33 +93,14 @@
               name: p.name, pos: p.pos, team: p.team,
               grad: p.grad || ((p.id % 8) + 1),
               form: p.form?.length ? p.form : [0,0,0,0,0],
-              status: p.status || 'ok',
+              status: p.status || 'healthy',
               proj: Number((p.fppg || 0).toFixed(1)),
+              mpg: Number(p.mpg || 0),
               avg: { pts: p.pts||0, reb: p.reb||0, ast: p.ast||0, stl: p.stl||0, blk: p.blk||0, to: p.to||0 },
             }));
           }
 
           D._myTeamId = meData.team_id;
-
-          if (pendingTrades) {
-            // Keep existing D.tradeThreads structure if no real trades
-            if (pendingTrades.pending?.length > 0) {
-              D.tradeThreads = pendingTrades.pending.map(t => ({
-                id: t.id, with: t.from_team_name || `Team ${t.from_team}`,
-                team: t.from_team_name || `T${t.from_team}`,
-                persona: t.persona || 'AI', fit: t.fit || 50,
-                unread: t.status === 'pending', grad: 1,
-                status: t.status,
-                msgs: [{
-                  type: 'proposal', id: t.id,
-                  from: t.from_team_name || `T${t.from_team}`,
-                  theirs: (t.their_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
-                  mine: (t.my_players || []).map(p => ({ n: p.name || `#${p}`, p: p.pos || 'F' })),
-                }],
-                time: t.created_at ? new Date(t.created_at).toLocaleString('zh-TW') : '',
-              }));
-            }
-          }
 
           if (faStatus) {
             D.faab = { budget: faStatus.budget || 100, spent: faStatus.budget - (faStatus.remaining || faStatus.budget) };
@@ -371,29 +393,33 @@
   }
 
   function renderDraftBoard() {
+    const ds = D.draftState || {};
+    const teams = ds.teams || [];
+    const picks = ds.picks || [];
+
+    const rows = teams.length
+      ? teams.map((team, i) => {
+          const pick = picks.find(p => p.round === 1 && p.team_id === team.id);
+          const pickedPlayer = pick?.player_id != null
+            ? (D.draftPlayers || []).find(p => p.id === pick.player_id)
+            : null;
+          const isHuman = team.id === ds.humanTeamId;
+          const isCurrent = team.id === ds.currentTeamId;
+          const pickName = pickedPlayer?.name || pick?.player_name || (pick?.player_id != null ? `#${pick.player_id}` : null);
+
+          return `
+          <div style="display:grid;grid-template-columns:24px 1fr 1fr;gap:8px;padding:6px 8px;border-radius:6px;${isHuman?'background:var(--accent-14)':''}">
+            <span class="mono" style="color:var(--ink-3);font-size:11px">${i + 1}</span>
+            <span style="${isHuman?'color:var(--accent-hi);font-weight:600':''}">${team.name}</span>
+            <span class="mono" style="font-size:11px;color:${pickName?'var(--ink-2)':'var(--ink-4)'};text-align:right">${pickName || (isCurrent?'選擇中…':'—')}</span>
+          </div>`;
+        }).join('')
+      : '<div style="padding:6px 8px;color:var(--ink-3);font-size:var(--fs-sm)">載入中…</div>';
+
     return `<div class="rail-section">
       <div class="rail-head"><span>選秀順位</span></div>
       <div class="card card-pad" style="font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px">
-        ${[
-          ['1','Alex','P. Banchero',true],
-          ['2','Ben','V. Wembanyama',true],
-          ['3','Diana','T. Haliburton',true],
-          ['4','Eric','L. Dončić',true],
-          ['5','Fiona','J. Tatum',true],
-          ['6','Gary','G. Antetokounmpo',true],
-          ['7','Hana','A. Edwards',true],
-          ['8','你',null,false,true],
-          ['9','Ivan',null,false],
-          ['10','Jay',null,false],
-          ['11','Kelly',null,false],
-          ['12','Leo',null,false],
-        ].map(([p,n,pk,done,me]) => `
-          <div style="display:grid;grid-template-columns:24px 1fr 1fr;gap:8px;padding:6px 8px;border-radius:6px;${me?'background:var(--accent-14)':''}">
-            <span class="mono" style="color:var(--ink-3);font-size:11px">${p}</span>
-            <span style="${me?'color:var(--accent-hi);font-weight:600':''}">${n}</span>
-            <span class="mono" style="font-size:11px;color:${done?'var(--ink-2)':'var(--ink-4)'};text-align:right">${pk || (me?'選擇中…':'—')}</span>
-          </div>
-        `).join('')}
+        ${rows}
       </div>
     </div>`;
   }
@@ -565,6 +591,7 @@
   // ---------- ROSTER ----------
   const SLOT_ORDER = ['PG','SG','SF','PF','C','G','F','UTIL','BN','IR'];
   let rosterSort = { key: 'slot', dir: 'asc' };
+  let standingsSort = { key: 'r', dir: 'asc' };
   const DAY_LABELS = ['一','二','三','四','五','六','日'];
 
   views.roster = () => {
@@ -572,13 +599,14 @@
       const av2 = (p) => {
         if (rosterSort.key === 'slot') { const i = SLOT_ORDER.indexOf(p.slot); return i === -1 ? 99 : i; }
         if (rosterSort.key === 'proj') return p.proj || 0;
+        if (rosterSort.key === 'mpg') return p.mpg || 0;
         return (p.avg && p.avg[rosterSort.key] != null) ? p.avg[rosterSort.key] : -Infinity;
       };
       return rosterSort.dir === 'desc' ? av2(b) - av2(a) : av2(a) - av2(b);
     });
 
-    const statCols = ['proj','pts','reb','ast','stl','blk','to'];
-    const statLabel = { proj:'PROJ', pts:'PTS', reb:'REB', ast:'AST', stl:'STL', blk:'BLK', to:'TO' };
+    const statCols = ['proj','mpg','pts','reb','ast','stl','blk','to'];
+    const statLabel = { proj:'PROJ', mpg:'MPG', pts:'PTS', reb:'REB', ast:'AST', stl:'STL', blk:'BLK', to:'TO' };
 
     const thStyle = 'padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);text-align:right;white-space:nowrap;cursor:pointer;user-select:none;';
     const thActive = 'color:var(--accent-hi);';
@@ -586,7 +614,7 @@
     const headers = statCols.map(k => {
       const active = rosterSort.key === k;
       const arrow = active ? (rosterSort.dir === 'desc' ? ' ↓' : ' ↑') : '';
-      return `<th data-sort="${k}" style="${thStyle}${active ? thActive : ''}">${statLabel[k]}${arrow}</th>`;
+      return `<th data-table="roster" data-sort="${k}" style="${thStyle}${active ? thActive : ''}">${statLabel[k]}${arrow}</th>`;
     }).join('');
 
     const dayHeader = DAY_LABELS.map(d =>
@@ -600,9 +628,18 @@
         if (k === 'proj') {
           return `<td style="text-align:right;font-family:var(--mono);font-weight:700;font-size:var(--fs-sm);color:var(--ink)">${p.proj || '—'}</td>`;
         }
+        if (k === 'mpg') {
+          const mpg = Number(p.mpg);
+          return `<td style="text-align:right;font-family:var(--mono);font-size:var(--fs-xs);color:var(--ink-2)">${Number.isFinite(mpg) ? mpg.toFixed(1) : '—'}</td>`;
+        }
         const val = p.avg ? p.avg[k] : null;
         return `<td style="text-align:right;font-family:var(--mono);font-size:var(--fs-xs);color:var(--ink-2)">${val != null ? val.toFixed(1) : '—'}</td>`;
       }).join('');
+      const injuryBadge = p.status === 'out'
+        ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--bad-bg);color:var(--bad);margin-left:4px;font-family:var(--mono)">OUT</span>'
+        : p.status === 'day_to_day'
+          ? '<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:var(--warn-bg);color:var(--warn);margin-left:4px;font-family:var(--mono)">DTD</span>'
+          : '';
       const dayCells = DAY_LABELS.map((_, i) => {
         const on = p.days && p.days[i];
         return `<td style="text-align:center;padding:8px 4px;">
@@ -617,7 +654,10 @@
           <div style="display:flex;align-items:center;gap:8px;">
             ${av(p.name, p.grad, 'sm')}
             <div>
-              <div style="font-weight:500;font-size:var(--fs-sm)">${p.name}</div>
+              <div style="display:flex;align-items:center;">
+                <div style="font-weight:500;font-size:var(--fs-sm)">${p.name}</div>
+                ${injuryBadge}
+              </div>
               <div style="font-size:10px;color:var(--ink-3);font-family:var(--mono)">${p.team} · ${p.game || '休'}</div>
             </div>
           </div>
@@ -644,7 +684,7 @@
       </div>
 
       <div class="card" style="overflow-x:auto;">
-        <table class="standings-table" style="min-width:820px;">
+        <table class="standings-table" style="min-width:900px;">
           <thead>
             <tr>
               <th style="padding:8px 10px;font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);">位置</th>
@@ -659,6 +699,34 @@
       </div>
     `;
   };
+
+  function renderCategoryBreakdown(cb, youName, themName) {
+    return `
+        <table class="standings-table">
+          <thead><tr>
+            <th>類別</th>
+            <th class="num" style="color:var(--accent-hi)">你·${youName}</th>
+            <th class="num">Δ</th>
+            <th class="num">對手·${themName}</th>
+          </tr></thead>
+          <tbody>
+            ${(cb || []).map(r => {
+              const delta = r.cat === 'TO' ? r.them - r.you : r.you - r.them;
+              const deltaColor = delta > 0 ? 'var(--good)' : delta < 0 ? 'var(--bad)' : 'var(--ink-3)';
+              const deltaText = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}`;
+              // For TO, lower is better
+              const youWins = r.cat === 'TO' ? r.you < r.them : r.you > r.them;
+              const themWins = r.cat === 'TO' ? r.them < r.you : r.them > r.you;
+              return `<tr>
+                <td><span style="font-family:var(--mono);font-weight:700;font-size:var(--fs-xs);padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--ink-2)">${r.cat}</span></td>
+                <td class="num" style="font-family:var(--mono);font-weight:700;${youWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.you.toFixed(1)}</td>
+                <td class="num" style="font-family:var(--mono);font-weight:700;color:${deltaColor}">${deltaText}</td>
+                <td class="num" style="font-family:var(--mono);${themWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.them.toFixed(1)}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>`;
+  }
 
   // ---------- MATCHUP ----------
   views.matchup = () => {
@@ -701,25 +769,7 @@
 
       <div class="card" style="margin-bottom:var(--s-5);">
         <div class="card-header"><h3>類別分項</h3><span class="sub">本週累計 · 贏的那方亮色</span></div>
-        <table class="standings-table">
-          <thead><tr>
-            <th>類別</th>
-            <th class="num" style="color:var(--accent-hi)">你 · 肉圓幫</th>
-            <th class="num">對手 · 珍奶兄弟</th>
-          </tr></thead>
-          <tbody>
-            ${D.matchup.catBreakdown.map(r => {
-              // For TO, lower is better
-              const youWins = r.cat === 'TO' ? r.you < r.them : r.you > r.them;
-              const themWins = r.cat === 'TO' ? r.them < r.you : r.them > r.you;
-              return `<tr>
-                <td><span style="font-family:var(--mono);font-weight:700;font-size:var(--fs-xs);padding:2px 8px;border-radius:4px;background:var(--surface-2);color:var(--ink-2)">${r.cat}</span></td>
-                <td class="num" style="font-family:var(--mono);font-weight:700;${youWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.you.toFixed(1)}</td>
-                <td class="num" style="font-family:var(--mono);${themWins ? 'color:var(--good)' : 'color:var(--ink-2)'}">${r.them.toFixed(1)}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
+        ${renderCategoryBreakdown(D.matchup.catBreakdown, '肉圓幫', '珍奶兄弟')}
       </div>
 
       <div class="card">
@@ -740,6 +790,66 @@
     `;
   };
 
+  function standingsRank(s) {
+    return s.r ?? s.rank;
+  }
+
+  function standingsTeam(s) {
+    return s.team ?? s.name;
+  }
+
+  function standingsSortValue(s, key) {
+    if (key === 'r') return Number(standingsRank(s) ?? Infinity);
+    if (key === 'w') return Number(s.w ?? 0);
+    if (key === 'pf') return Number(s.pf ?? 0);
+    return 0;
+  }
+
+  function sortedStandings() {
+    return [...(D.standings || [])].sort((a, b) => {
+      const av = standingsSortValue(a, standingsSort.key);
+      const bv = standingsSortValue(b, standingsSort.key);
+      if (av !== bv) return standingsSort.dir === 'desc' ? bv - av : av - bv;
+      return standingsSortValue(a, 'r') - standingsSortValue(b, 'r');
+    });
+  }
+
+  function renderStandingsRows() {
+    return sortedStandings().map(s => {
+      const rank = standingsRank(s);
+      const rankNum = Number(rank);
+      const hasRank = Number.isFinite(rankNum);
+      const team = standingsTeam(s) || '';
+      const streak = s.streak || '—';
+      return `
+          <tr class="${s.you?'you':''} ${hasRank && rankNum<=6?'playoff':''}">
+            <td><span class="rank-medal" data-rank="${rank}">${rank}</span></td>
+            <td><div style="display:flex;align-items:center;gap:10px">${av(team, hasRank ? ((rankNum-1)%8)+1 : 1, 'sm')}<div><div style="font-weight:500">${team}${s.you?' <span class="pill accent" style="margin-left:6px">你</span>':''}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${s.owner}</div></div></div></td>
+            <td class="num"><b>${s.w}–${s.l}</b></td>
+            <td class="num">${s.pf}</td>
+            <td class="num"><span class="streak ${streak[0].toLowerCase()}">${streak}</span></td>
+            <td class="num" style="color:var(--ink-3)">${hasRank && rankNum <= 3 ? '▲' : hasRank && rankNum >= 10 ? '▼' : '—'}</td>
+          </tr>`;
+    }).join('');
+  }
+
+  function renderStandingsSortHeader(key, label, cls='') {
+    const active = standingsSort.key === key;
+    const arrow = active ? (standingsSort.dir === 'desc' ? ' ↓' : ' ↑') : '';
+    const classAttr = cls ? ` class="${cls}"` : '';
+    return `<th data-table="standings" data-sort="${key}" data-label="${label}"${classAttr} style="cursor:pointer;user-select:none;${active ? 'color:var(--accent-hi);' : ''}">${label}${arrow}</th>`;
+  }
+
+  function syncSortHeaders(table) {
+    const sortState = table === 'standings' ? standingsSort : rosterSort;
+    $$(`th[data-table="${table}"][data-sort]`).forEach(th => {
+      const active = sortState.key === th.dataset.sort;
+      const label = th.dataset.label || th.textContent.replace(/\s*[↓↑]\s*$/, '');
+      th.textContent = `${label}${active ? (sortState.dir === 'desc' ? ' ↓' : ' ↑') : ''}`;
+      th.style.color = active ? 'var(--accent-hi)' : '';
+    });
+  }
+
   // ---------- STANDINGS ----------
   views.standings = () => `
     <div class="view-head">
@@ -754,17 +864,8 @@
     </div>
     <div class="card">
       <table class="standings-table">
-        <thead><tr><th>名次</th><th>隊伍</th><th class="num">戰績</th><th class="num">總得分</th><th class="num">連勝</th><th class="num">趨勢</th></tr></thead>
-        <tbody>${D.standings.map(s => `
-          <tr class="${s.you?'you':''} ${s.r<=6?'playoff':''}">
-            <td><span class="rank-medal" data-rank="${s.r}">${s.r}</span></td>
-            <td><div style="display:flex;align-items:center;gap:10px">${av(s.team, ((s.r-1)%8)+1, 'sm')}<div><div style="font-weight:500">${s.team}${s.you?' <span class="pill accent" style="margin-left:6px">你</span>':''}</div><div style="font-size:11px;color:var(--ink-3);font-family:var(--mono)">${s.owner}</div></div></div></td>
-            <td class="num"><b>${s.w}–${s.l}</b></td>
-            <td class="num">${s.pf}</td>
-            <td class="num"><span class="streak ${s.streak[0].toLowerCase()}">${s.streak}</span></td>
-            <td class="num" style="color:var(--ink-3)">${s.r <= 3 ? '▲' : s.r >= 10 ? '▼' : '—'}</td>
-          </tr>`).join('')}
-        </tbody>
+        <thead><tr>${renderStandingsSortHeader('r', '名次')}<th>隊伍</th>${renderStandingsSortHeader('w', '戰績', 'num')}${renderStandingsSortHeader('pf', '總得分', 'num')}<th class="num">連勝</th><th class="num">趨勢</th></tr></thead>
+        <tbody id="standings-tbody">${renderStandingsRows()}</tbody>
       </table>
     </div>`;
 
@@ -815,6 +916,23 @@
           <tbody>${myPicks}</tbody>
         </table>
       </div>`;
+  }
+
+  function renderDraftPlayerRows(players, isMyTurn, filterPos, filterQ) {
+    let list = players;
+    if (filterQ) { const q = filterQ.toLowerCase(); list = list.filter(p => p.name.toLowerCase().includes(q) || p.team.toLowerCase().includes(q)); }
+    if (filterPos) list = list.filter(p => p.pos === filterPos);
+    list = list.slice(0, 100);
+    if (!list.length) return '<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:20px">沒有符合的球員</td></tr>';
+    return list.map((p, i) => `
+      <tr>
+        <td><span class="mono" style="color:var(--ink-3);font-size:11px">${p.rank}</span></td>
+        <td><div style="display:flex;align-items:center;gap:8px">${av(p.name, (p.id % 8) + 1, 'sm')}<span>${p.name}</span></div></td>
+        <td><span class="pos-tag" data-pos="${p.pos}">${p.pos || '—'}</span></td>
+        <td style="color:var(--ink-3);font-size:var(--fs-sm)">${p.team}</td>
+        <td class="num">${p.fppg.toFixed(1)}</td>
+        <td>${isMyTurn ? `<button class="btn sm ghost" data-draft-pick="${p.id}">選</button>` : ''}</td>
+      </tr>`).join('');
   }
 
   views.draft = () => {
@@ -872,27 +990,31 @@
       <div class="reco-grid">${recos}</div>
 
       <div class="card">
-        <div class="card-header"><h3>可選球員（前 10 名）</h3><span class="sub">依 ADP 排序 · 灰色代表已被選走</span></div>
-        <table class="standings-table">
-          <tbody>${[
-            ['P. Banchero','PF','ORL',1,true],
-            ['V. Wembanyama','C','SAS',2,true],
-            ['T. Haliburton','PG','IND',3,true],
-            ['L. Dončić','PG','DAL',4,true],
-            ['J. Tatum','SF','BOS',5,true],
-            ['G. Antetokounmpo','PF','MIL',6,true],
-            ['A. Edwards','SG','MIN',7,true],
-            ['SGA','PG','OKC',8,false],
-            ['A. Davis','C','LAL',9,false],
-            ['J. Brown','SF','BOS',10,false],
-          ].map(([n,p,t,r,taken], i) => `
-            <tr style="${taken?'opacity:0.4':''}">
-              <td><span class="mono" style="color:var(--ink-3);font-size:11px">${r}</span></td>
-              <td><div style="display:flex;align-items:center;gap:10px">${av(n, (i%8)+1, 'sm')}<span style="${taken?'text-decoration:line-through':''}">${n}</span></div></td>
-              <td><span class="pos-tag" data-pos="${p}">${p}</span></td>
-              <td>${t}</td>
-              <td class="num">${taken ? '<span style="color:var(--ink-3)">已選走</span>' : '<button class="btn sm ghost">選</button>'}</td>
-            </tr>`).join('')}</tbody>
+        <div class="card-header">
+          <h3>可選球員 (${D.draftPlayers?.length || 0})</h3>
+          <span class="sub">依 FPPG 排序</span>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <input type="text" id="draft-search" placeholder="搜尋球員或球隊…" style="flex:1;min-width:160px;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 10px;font-size:var(--fs-sm);font-family:var(--sans)"/>
+          <div class="segmented" id="draft-pos-seg" style="flex-shrink:0">
+            <button data-val="" aria-pressed="true">全部</button>
+            <button data-val="PG">PG</button>
+            <button data-val="SG">SG</button>
+            <button data-val="SF">SF</button>
+            <button data-val="PF">PF</button>
+            <button data-val="C">C</button>
+          </div>
+        </div>
+        <table class="standings-table" id="draft-player-table">
+          <thead><tr>
+            <th style="width:36px">#</th>
+            <th>球員</th>
+            <th>位置</th>
+            <th>球隊</th>
+            <th class="num">FPPG</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="draft-player-tbody">${renderDraftPlayerRows(D.draftPlayers || [], D.draftState?.isMyTurn)}</tbody>
         </table>
       </div>
     `;
@@ -901,6 +1023,23 @@
   // ---------- TRADE ----------
   let activeThread = 't1';
   views.trade = () => {
+    if (!D.tradeThreads.length) {
+      return `
+    <div class="view-head">
+      <div class="view-title-block">
+        <span class="eyebrow">交易中心</span>
+        <div class="view-title">交易對話</div>
+        <div class="view-sub">目前沒有進行中的交易</div>
+      </div>
+      <div class="view-actions"><button class="btn" id="new-trade-btn">發起交易 ${I.plus}</button></div>
+    </div>
+    <div class="empty-state" style="margin-top:40px">
+      <div style="font-size:32px;margin-bottom:12px">🤝</div>
+      <div>目前沒有交易提案</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--ink-3)">AI GM 會主動發起交易，或你也可以發起</div>
+      <div style="margin-top:4px;font-size:12px;color:var(--ink-3)">⚠️ 本聯盟不支援選秀權交易，僅限球員交換</div>
+    </div>`;
+    }
     const thread = D.tradeThreads.find(t => t.id === activeThread) || D.tradeThreads[0];
 
     const threadList = D.tradeThreads.map(t => `
@@ -1107,16 +1246,27 @@
   }
 
   function bindViewEvents() {
-    // Roster sort — click th[data-sort] to sort, re-render tbody only
-    $$('th[data-sort]').forEach(th => {
+    // Sortable tables — scope by data-table to avoid cross-view collisions
+    $$('th[data-table][data-sort]').forEach(th => {
       th.addEventListener('click', () => {
+        const table = th.dataset.table;
         const key = th.dataset.sort;
-        if (rosterSort.key === key) {
-          rosterSort.dir = rosterSort.dir === 'desc' ? 'asc' : 'desc';
+        const sortState = table === 'standings' ? standingsSort : rosterSort;
+        if (sortState.key === key) {
+          sortState.dir = sortState.dir === 'desc' ? 'asc' : 'desc';
         } else {
-          rosterSort.key = key;
-          rosterSort.dir = 'desc';
+          sortState.key = key;
+          sortState.dir = 'desc';
         }
+
+        if (table === 'standings') {
+          const tbody = document.getElementById('standings-tbody');
+          if (!tbody) return;
+          tbody.innerHTML = renderStandingsRows();
+          syncSortHeaders('standings');
+          return;
+        }
+
         // Re-render only the tbody to avoid full mount()
         const tbody = document.getElementById('roster-tbody');
         if (!tbody) return;
@@ -1302,6 +1452,51 @@
         }
       });
     });
+
+    // Draft pick handler
+    document.querySelectorAll('[data-draft-pick]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const pid = parseInt(btn.dataset.draftPick);
+        btn.disabled = true;
+        try {
+          await api('/api/draft/pick', { method: 'POST', body: JSON.stringify({ player_id: pid }) });
+          await refreshData();
+          mount();
+        } catch (e) {
+          toast('選秀失敗：' + e.message, 'error');
+          btn.disabled = false;
+        }
+      });
+    });
+    // Draft search/filter
+    const draftSearch = document.getElementById('draft-search');
+    const draftPosSeg = document.getElementById('draft-pos-seg');
+    function _rerenderDraftTable() {
+      const tbody = document.getElementById('draft-player-tbody');
+      if (!tbody) return;
+      const q = draftSearch?.value || '';
+      const pos = draftPosSeg?.querySelector('[aria-pressed="true"]')?.dataset.val || '';
+      tbody.innerHTML = renderDraftPlayerRows(D.draftPlayers || [], D.draftState?.isMyTurn, pos, q);
+      // Re-wire pick buttons
+      tbody.querySelectorAll('[data-draft-pick]').forEach(b => {
+        b.addEventListener('click', async () => {
+          const pid = parseInt(b.dataset.draftPick);
+          b.disabled = true;
+          try {
+            await api('/api/draft/pick', { method: 'POST', body: JSON.stringify({ player_id: pid }) });
+            await refreshData(); mount();
+          } catch (e) { toast('選秀失敗：' + e.message, 'error'); b.disabled = false; }
+        });
+      });
+    }
+    if (draftSearch) draftSearch.addEventListener('input', _rerenderDraftTable);
+    if (draftPosSeg) draftPosSeg.addEventListener('click', e => {
+      const b = e.target.closest('button[data-val]');
+      if (!b) return;
+      draftPosSeg.querySelectorAll('button[data-val]').forEach(x => x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+      _rerenderDraftTable();
+    });
   }
 
   function openNewLeagueModal() {
@@ -1318,14 +1513,17 @@
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
-          <div style="font-size:var(--fs-sm);color:var(--ink-2);padding:6px 0">8 隊（固定）</div>
+          <div class="segmented" id="nl-teams-seg">
+            <button data-val="8" aria-pressed="true">8 隊</button>
+            <button data-val="10">10 隊</button>
+            <button data-val="12">12 隊</button>
+          </div>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:8px">賽季</div>
-          <div class="segmented" id="nl-season-seg">
-            <button data-val="2024-25" aria-pressed="true">2024-25</button>
-            <button data-val="2023-24">2023-24</button>
-          </div>
+          <select id="nl-season-sel" style="width:100%;background:var(--surface);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:8px 10px;font-size:var(--fs-sm);font-family:var(--sans)">
+            ${Array.from({length:30},(_,i)=>{const y=2025-i;const s=`${y}-${String((y+1)%100).padStart(2,'0')}`;return`<option value="${s}"${i===0?' selected':''}>${s}</option>`;}).join('')}
+          </select>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:8px">AI 選秀資訊</div>
@@ -1381,7 +1579,7 @@
       </div>`;
     $('#modal-bd').classList.add('open');
     $('#modal-close-btn').addEventListener('click', () => $('#modal-bd').classList.remove('open'));
-    ['#nl-teams-seg', '#nl-season-seg', '#nl-mode-seg', '#nl-draft-order-seg', '#nl-scoring-seg', '#nl-deadline-seg', '#nl-ai-trade-seg', '#nl-veto-seg'].forEach(sel => {
+    ['#nl-teams-seg', '#nl-mode-seg', '#nl-draft-order-seg', '#nl-scoring-seg', '#nl-deadline-seg', '#nl-ai-trade-seg', '#nl-veto-seg'].forEach(sel => {
       $(sel).addEventListener('click', e => {
         const btn = e.target.closest('button[data-val]');
         if (!btn) return;
@@ -1394,8 +1592,8 @@
       submitBtn.disabled = true;
       try {
         const name = $('#nl-name')?.value?.trim() || '我的聯盟';
-        const teams = 8;
-        const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
+        const teams = parseInt($('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8');
+        const season = $('#nl-season-sel')?.value || '2025-26';
         const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
         const randomDraft = $('#nl-draft-order-seg [aria-pressed="true"]')?.dataset.val === 'true';
         const deadline = $('#nl-deadline-seg [aria-pressed="true"]')?.dataset.val;
@@ -1559,6 +1757,8 @@
   Object.assign(D, window.DATA || {});
 
   (async function boot() {
+    const vEl = document.querySelector('.brand-name .sub');
+    if (vEl) vEl.textContent = `/ v2 · ${VERSION}`;
     await refreshData();
     mount();
   })();

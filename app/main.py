@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "0.6.13"
+APP_VERSION = "0.6.15"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -484,6 +484,7 @@ _MID_SEASON_ALLOWED = {
 _VALID_ROSTER_SIZES = {10, 13, 15}
 _VALID_STARTERS = {8, 10, 12}
 _VALID_REG_WEEKS = set(range(18, 23))
+_VALID_NUM_TEAMS = {8, 10, 12}
 
 
 @app.get("/api/league/settings")
@@ -520,12 +521,14 @@ def league_setup(body: LeagueSettings):
     """Validate and save full settings; reset draft to the chosen season."""
     errors: list[str] = []
 
-    if body.num_teams != 8:
-        errors.append("num_teams must be 8")
+    if body.num_teams not in _VALID_NUM_TEAMS:
+        errors.append(f"num_teams must be one of {sorted(_VALID_NUM_TEAMS)}")
     if not (0 <= body.player_team_index < body.num_teams):
         errors.append(f"player_team_index must be 0..{body.num_teams - 1}")
-    if len(body.team_names) != body.num_teams:
-        errors.append(f"team_names must have {body.num_teams} entries")
+    team_names = list(body.team_names)
+    while len(team_names) < body.num_teams:
+        team_names.append(f"隊伍{len(team_names) + 1}")
+    body.team_names = team_names[:body.num_teams]
     season_file = SEASONS_DIR / f"{body.season_year}.json"
     if not season_file.exists():
         errors.append(f"season_year '{body.season_year}' not found in seasons data")
