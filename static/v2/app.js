@@ -2,7 +2,7 @@
  * Hash router, nav, views. All views rendered as innerHTML strings.
  */
 (() => {
-  const VERSION = '0.6.18';
+  const VERSION = '0.6.19';
   const D = {};  // replaces window.DATA - will be populated from API
   const API = '';
 
@@ -67,6 +67,11 @@
             id: p.id, name: p.name, pos: p.pos, team: p.team,
             fppg: p.fppg || 0, rank: i + 1,
           }));
+        }
+        const recoData = await api('/api/draft/recommendations').catch(() => null);
+        if (recoData && !recoData.is_complete) {
+          D.draftState = D.draftState || {};
+          D.draftState.needs = recoData.needs || [];
         }
       }
 
@@ -399,7 +404,8 @@
 
     const rows = teams.length
       ? teams.map((team, i) => {
-          const pick = picks.find(p => p.round === 1 && p.team_id === team.id);
+          const teamPicks = picks.filter(p => p.team_id === team.id);
+          const pick = teamPicks.sort((a, b) => (b.overall ?? b.round) - (a.overall ?? a.round))[0];
           const pickedPlayer = pick?.player_id != null
             ? (D.draftPlayers || []).find(p => p.id === pick.player_id)
             : null;
@@ -417,7 +423,7 @@
       : '<div style="padding:6px 8px;color:var(--ink-3);font-size:var(--fs-sm)">載入中…</div>';
 
     return `<div class="rail-section">
-      <div class="rail-head"><span>選秀順位</span></div>
+      <div class="rail-head"><span>選秀順位 · 第 ${ds.round || 1} 輪</span></div>
       <div class="card card-pad" style="font-size:var(--fs-sm);display:flex;flex-direction:column;gap:4px">
         ${rows}
       </div>
@@ -996,30 +1002,10 @@
   views.draft = () => {
     if (D.league.draftDone) return renderDraftRecap();
     const ds = D.draftState;
-    const needs = ds.needs.map(n => `
+    const needs = (ds.needs || []).map(n => `
       <div class="need-cell ${n.need==='high'?'short':''}">
         <div class="np">${n.pos}</div>
         <div class="nc">${n.filled}/${n.target}</div>
-      </div>`).join('');
-
-    const recos = ds.recos.map(r => `
-      <div class="reco-card ${r.top?'top':''}">
-        <div class="reco-player">
-          ${av(r.name, r.grad, 'lg')}
-          <div>
-            <div class="reco-name">${r.name}</div>
-            <div class="reco-meta"><span class="pos-tag" data-pos="${r.pos}">${r.pos}</span><span>${r.team}</span><span>·</span><span>ADP 第 ${r.rank+6} 順位</span></div>
-          </div>
-        </div>
-        <div class="reco-fit">
-          <span class="score">${r.fit}<small>/100</small></span>
-          <span class="label">陣容適配分</span>
-        </div>
-        <div class="reco-reasons">${r.reasons.map(x => `<div class="reco-r"><span class="bullet">◆</span>${x}</div>`).join('')}</div>
-        <div class="reco-actions">
-          <button class="btn" data-reco="${r.name}">選他 ${I.arrow}</button>
-          <button class="btn ghost">略過</button>
-        </div>
       </div>`).join('');
 
     return `
@@ -1046,15 +1032,12 @@
             <span class="pick-num">你的第 1 支籤</span>
           </div>
           <h2>剩 ${ds.timeLeft} 秒</h2>
-          <div class="dc-sub">前 7 順位已選走前段球星。根據你聯盟設定（9 類別）與位置缺口，以下是我們的建議。</div>
         </div>
         <div class="needs-strip">
           <div class="needs-head">目前陣容缺口</div>
           <div class="needs-grid">${needs}</div>
         </div>
       </div>
-
-      <div class="reco-grid">${recos}</div>
 
       <div class="card">
         <div class="card-header">
@@ -1154,7 +1137,7 @@
           <div class="view-title">你與 ${thread.with} 的對話</div>
           <div class="view-sub">${D.tradeThreads.filter(t=>t.unread).length} 則未讀 · 截止 本週四 23:59</div>
         </div>
-        <div class="view-actions"><button class="btn">發起交易 ${I.plus}</button></div>
+        <div class="view-actions"><button class="btn" id="new-trade-btn">發起交易 ${I.plus}</button></div>
       </div>
 
       <div class="trade-grid">
@@ -1361,6 +1344,9 @@
         activeThread = row.dataset.thread;
         mount();
       });
+    });
+    document.getElementById('new-trade-btn')?.addEventListener('click', () => {
+      toast('功能開發中：AI GM 會主動發起交易提案', 'info');
     });
     // Action item: go to relevant page
     $$('.action-item').forEach(el => {
