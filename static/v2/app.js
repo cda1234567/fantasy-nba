@@ -1318,11 +1318,7 @@
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:8px">隊伍數</div>
-          <div class="segmented" id="nl-teams-seg">
-            <button data-val="8" aria-pressed="true">8 隊</button>
-            <button data-val="10">10 隊</button>
-            <button data-val="12">12 隊</button>
-          </div>
+          <div style="font-size:var(--fs-sm);color:var(--ink-2);padding:6px 0">8 隊（固定）</div>
         </div>
         <div>
           <div class="eyebrow" style="margin-bottom:8px">賽季</div>
@@ -1398,7 +1394,7 @@
       submitBtn.disabled = true;
       try {
         const name = $('#nl-name')?.value?.trim() || '我的聯盟';
-        const teams = parseInt($('#nl-teams-seg [aria-pressed="true"]')?.dataset.val || '8');
+        const teams = 8;
         const season = $('#nl-season-seg [aria-pressed="true"]')?.dataset.val || '2024-25';
         const mode = $('#nl-mode-seg [aria-pressed="true"]')?.dataset.val || 'prev_full';
         const randomDraft = $('#nl-draft-order-seg [aria-pressed="true"]')?.dataset.val === 'true';
@@ -1435,7 +1431,8 @@
           mount();
         } else {
           const err = await res.json().catch(() => ({}));
-          toast('建立失敗：' + (err.detail || res.status), 'error');
+          const msg = Array.isArray(err.detail?.errors) ? err.detail.errors.join('、') : (typeof err.detail === 'string' ? err.detail : res.status);
+          toast('建立失敗：' + msg, 'error');
           submitBtn.disabled = false;
         }
       } catch (e) {
