@@ -273,28 +273,10 @@ async function renderDraftView(root) {
   );
   root.append(head);
 
-  // Top: clock + recos (human turn) OR clock-only (AI turn)
-  const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
+  // Top: clock + commentary feed (replaces old recos panel)
   const clock = buildDraftClock(d);
-  const recosContainer = el('div', { id: 'draft-recos-slot' });
-  const top = el('div', { class: 'draft-top' }, clock, recosContainer);
+  const top = el('div', { class: 'draft-top' }, clock, buildDraftCommentaryPanel());
   root.append(top);
-
-  if (isHumanTurn) {
-    recosContainer.append(el('div', { class: 'card card-pad', 'aria-busy': 'true' }, '載入 AI 推薦中…'));
-    refreshDraftRecos().then(() => {
-      const fresh = buildDraftRecosCard();
-      recosContainer.innerHTML = '';
-      if (fresh) recosContainer.append(fresh);
-    });
-  } else if (!d.is_complete) {
-    recosContainer.append(
-      el('div', { class: 'card card-pad' },
-        el('div', { class: 'eyebrow', style: 'margin-bottom:8px;' }, 'AI 選秀中'),
-        el('div', { style: 'color:var(--ink-3);' }, '輪到你時，會顯示四位 AI 推薦球員。'),
-      )
-    );
-  }
 
   // Available players table (left) + board (right)
   const availPanel = buildAvailablePanel(d);
@@ -305,9 +287,6 @@ async function renderDraftView(root) {
     boardPanel,
   );
   root.append(grid);
-
-  // League chat feed (AI GM commentary on recent picks)
-  root.append(buildDraftCommentaryPanel());
 
   // Kick off table render
   renderAvailableTable(state.draftDisplayMode || 'prev_full');
@@ -673,7 +652,13 @@ function scheduleDraftAutoAdvance() {
     } finally {
       state.draftAutoBusy = false;
     }
-    if (ok) render();
+    if (ok) {
+      render();
+    } else {
+      // Keep the loop alive even after a silent no-op or error so the draft
+      // never gets stuck; render() path already re-schedules via renderDraftView.
+      scheduleDraftAutoAdvance();
+    }
   }, 1500);
 }
 
