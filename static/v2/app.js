@@ -3305,8 +3305,11 @@ async function onCreateLeague() {
     const dlg = $('#dlg-new-league-v2');
     if (dlg) dlg.close();
     toast(`已建立聯盟 ${lid}，請完成設定`);
-    // After reload, boot() will auto-redirect to #/setup because setup_complete=false.
-    setTimeout(() => { location.hash = '#/setup'; window.location.reload(); }, 200);
+    await loadLeagues();
+    await refreshState();
+    state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);
+    location.hash = '/setup';
+    render();
   } catch (e) {
     toast(`建立失敗：${e.message}`, 'error');
   }
