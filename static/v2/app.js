@@ -3070,6 +3070,17 @@ function renderSetupView(root) {
   const form = state.setupForm;
   const wrap = el('div', { class: 'setup-v2' });
 
+  // If personas weren't loaded yet (boot may have failed softly), fetch once here.
+  if (!state.personas || !Object.keys(state.personas).length) {
+    apiSoft('/api/personas').then((p) => {
+      if (p && Object.keys(p).length) {
+        state.personas = p;
+        root.innerHTML = '';
+        renderSetupView(root);
+      }
+    }).catch(() => {});
+  }
+
   wrap.append(el('div', { class: 'view-head' },
     el('div', { class: 'view-title-block' },
       el('span', { class: 'eyebrow' }, '聯盟設定'),
@@ -3204,7 +3215,29 @@ function renderSetupView(root) {
         el('label', {}, `${i}: ${escapeHtml(form.team_names[i])}`), sel));
     }
     if (personaGrid.childElementCount) {
-      wrap.append(section('GM Persona（可選）', personaGrid));
+      // Helper actions: reset all to default, randomize all
+      const helperRow = el('div', { class: 'setup-btn-row', style: 'justify-content: flex-start; padding: 0 0 var(--s-2) 0;' },
+        el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
+          onclick: () => {
+            for (let i = 0; i < form.num_teams; i++) {
+              if (i === form.player_team_index) continue;
+              form.gm_personas[i] = '';
+            }
+            root.innerHTML = ''; renderSetupView(root);
+          }
+        }, '全部設為預設'),
+        el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
+          onclick: () => {
+            const pool = [...personaIds];
+            for (let i = 0; i < form.num_teams; i++) {
+              if (i === form.player_team_index) continue;
+              form.gm_personas[i] = pool[Math.floor(Math.random() * pool.length)] || '';
+            }
+            root.innerHTML = ''; renderSetupView(root);
+          }
+        }, '全部隨機指派'),
+      );
+      wrap.append(section('GM Persona（可選）', helperRow, personaGrid));
     }
   }
 
@@ -3223,12 +3256,34 @@ function renderSetupView(root) {
   }
   wrap.append(section('計分權重', weightGrid));
 
+  // Trade deadline select — options: 無截止 + weeks 1..regular_season_weeks
+  const weeksN = form.regular_season_weeks || 20;
+  const deadlineOptionsHtml = ['<option value="">無截止</option>']
+    .concat(
+      Array.from({ length: weeksN }, (_, i) => i + 1).map((w) =>
+        `<option value="${w}" ${String(form.trade_deadline_week ?? '') === String(w) ? 'selected' : ''}>W${w}</option>`
+      )
+    ).join('');
+  const deadlineSelect = el('select', {
+    disabled: isLocked ? true : null,
+    html: deadlineOptionsHtml,
+    onchange: (e) => {
+      form.trade_deadline_week = e.target.value === '' ? null : parseInt(e.target.value, 10);
+    },
+  });
+
   // Roster / schedule
   wrap.append(section('名單 & 賽程',
     row('名單人數', radioGroup('roster_size', [[10,'10'],[13,'13'],[15,'15']], form.roster_size, (v)=>{form.roster_size=v;})),
     row('每日先發', radioGroup('starters_per_day', [[8,'8'],[10,'10'],[12,'12']], form.starters_per_day, (v)=>{form.starters_per_day=v;})),
     row('傷兵位置', radioGroup('il_slots', [[0,'0'],[1,'1'],[2,'2'],[3,'3 (預設)']], form.il_slots, (v)=>{form.il_slots=v;})),
-    row('例行賽週數', radioGroup('regular_season_weeks', [[18,'18'],[19,'19'],[20,'20'],[21,'21'],[22,'22']], form.regular_season_weeks, (v)=>{form.regular_season_weeks=v;})),
+    row('例行賽週數', radioGroup('regular_season_weeks', [[18,'18'],[19,'19'],[20,'20'],[21,'21'],[22,'22']], form.regular_season_weeks, (v)=>{
+      form.regular_season_weeks=v;
+      // Keep trade_deadline_week valid when shrinking week count
+      if (form.trade_deadline_week && form.trade_deadline_week > v) form.trade_deadline_week = null;
+      root.innerHTML=''; renderSetupView(root);
+    })),
+    row('交易截止週', deadlineSelect, '例行賽中的哪一週為交易截止；留空表示整季皆可交易'),
   ));
 
   // Errors

@@ -1319,6 +1319,7 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
   background: rgba(239,68,68,0.08); color: var(--bad); font-size: var(--fs-sm);
   display: flex; flex-direction: column; gap: 4px;
 }
+.setup-v2 .setup-errors[hidden] { display: none !important; }
 .setup-v2 .setup-btn-row { display: flex; gap: var(--s-3); justify-content: flex-end; padding-top: var(--s-2); }
 .setup-v2 .setup-blank {
   padding: var(--s-6); text-align: center; color: var(--ink-2);
