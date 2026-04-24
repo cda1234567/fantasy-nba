@@ -281,10 +281,15 @@
   text-transform: uppercase; letter-spacing: 0;
   background: var(--surface-2); color: var(--ink-2);
 }
+/* Single positions (exact match). */
 .pos-tag[data-pos="PG"], .pos-tag[data-pos="SG"], .pos-tag[data-pos="G"] { color: var(--pg); background: rgba(167,139,250,0.12); }
 .pos-tag[data-pos="SF"], .pos-tag[data-pos="PF"], .pos-tag[data-pos="F"] { color: var(--sf); background: rgba(74,222,128,0.12); }
 .pos-tag[data-pos="C"] { color: var(--c); background: rgba(248,113,113,0.12); }
 .pos-tag[data-pos="UTIL"] { color: var(--warn); background: rgba(251,191,36,0.12); }
+/* Multi-position (e.g. "SG/SF", "PF/C"): color by first position. */
+.pos-tag[data-pos^="PG"], .pos-tag[data-pos^="SG"] { color: var(--pg); background: rgba(167,139,250,0.12); }
+.pos-tag[data-pos^="SF"], .pos-tag[data-pos^="PF"] { color: var(--sf); background: rgba(74,222,128,0.12); }
+.pos-tag[data-pos^="C/"] { color: var(--c); background: rgba(248,113,113,0.12); }
 
 .pill {
   display: inline-flex; align-items: center; gap: 5px;
