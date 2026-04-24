@@ -2060,9 +2060,10 @@ async function onLeagueSimToPlayoffs() {
   _logMgmt('⏩ 模擬剩餘例行賽中…');
 
   // Loop weekly streams (each stream is below Cloudflare's 60s timeout) until
-  // we either enter the playoffs or champion is set.
+  // we either enter the playoffs or champion is set. Use heuristic (use_ai=false)
+  // so each week finishes in seconds rather than minutes.
   const streamOneWeek = () => new Promise((resolve, reject) => {
-    const es = new EventSource('/api/season/advance-week/stream');
+    const es = new EventSource('/api/season/advance-week/stream?use_ai=false');
     es.onmessage = (ev) => {
       try {
         const p = JSON.parse(ev.data);

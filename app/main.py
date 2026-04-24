@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.17"
+APP_VERSION = "v26.04.24.18"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -863,7 +863,7 @@ def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest()):
 
 
 @app.get("/api/season/advance-week/stream")
-def season_advance_week_stream():
+def season_advance_week_stream(use_ai: bool = True):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
@@ -875,7 +875,7 @@ def season_advance_week_stream():
                 if state.champion is not None:
                     break
                 state = season_advance_day(
-                    draft, state, storage, ai_gm=ai_gm, use_ai=True, settings=settings
+                    draft, state, storage, ai_gm=ai_gm, use_ai=use_ai, settings=settings
                 )
                 yield f"data: {json.dumps({'day': state.current_day, 'week': state.current_week})}\n\n"
                 if state.current_day % 7 == 0:
