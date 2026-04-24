@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.11"
+APP_VERSION = "v26.04.24.12"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -702,6 +702,39 @@ def get_team(team_id: int):
     }
 
 
+def _maybe_draft_commentary(pick) -> list[dict]:
+    """Return 0 or 1 AI GM commentary entries for a draft pick (25% chance).
+
+    The commentator must be an AI team that is not the picker. Falls back to
+    heuristic one-liners silently on any error — this is best-effort flavour
+    and must never block a pick from being recorded.
+    """
+    if pick is None:
+        return []
+    try:
+        import random as _rnd
+        if _rnd.random() >= 0.25:
+            return []
+        candidates = [
+            t for t in draft.teams
+            if not t.is_human and t.id != pick.team_id
+        ]
+        if not candidates:
+            return []
+        speaker = _rnd.choice(candidates)
+        text = ai_gm.pick_commentary(pick, draft, speaker)
+        if not text:
+            return []
+        return [{
+            "gm_team_id": speaker.id,
+            "gm_team_name": speaker.name,
+            "text": text,
+            "ts": _time.time(),
+        }]
+    except Exception:
+        return []
+
+
 @app.post("/api/draft/pick")
 def human_pick(req: PickRequest):
     _require_setup()
@@ -718,14 +751,18 @@ def human_pick(req: PickRequest):
             })
         raise HTTPException(400, msg)
     _persist_draft()
-    return {"pick": pick.model_dump(), "state": _state_snapshot().model_dump()}
+    return {
+        "pick": pick.model_dump(),
+        "state": _state_snapshot().model_dump(),
+        "commentary": _maybe_draft_commentary(pick),
+    }
 
 
 @app.post("/api/draft/ai-advance")
 def ai_advance():
     _require_setup()
     if draft.is_complete:
-        return {"pick": None, "state": _state_snapshot().model_dump()}
+        return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
     _, _, team_id = draft.current_pointers()
     if team_id == draft.human_team_id:
         raise HTTPException(409, "目前是玩家的回合")
@@ -734,6 +771,7 @@ def ai_advance():
     return {
         "pick": pick.model_dump() if pick else None,
         "state": _state_snapshot().model_dump(),
+        "commentary": _maybe_draft_commentary(pick),
     }
 
 
@@ -1526,6 +1564,7 @@ class TradeProposeRequest(BaseModel):
     receive: list[int]
     proposer_message: str = ""
     force: bool = False
+    counter_of: Optional[str] = None  # original trade id when this is a counter
 
 
 class TradeVetoRequest(BaseModel):
@@ -1568,12 +1607,17 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
             receive_ids=req.receive,
             current_day=season.current_day,
             current_week=season.current_week,
-            reasoning="human",
+            reasoning="human" if not req.counter_of else "human_counter",
             proposer_message=req.proposer_message,
             force=req.force,
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
+    # If this is a counter-offer, record the linkage so AI GMs can see the
+    # chain and the UI can display it if we want to later.
+    if req.counter_of:
+        trade.counter_of = req.counter_of
+        mgr._save()
     storage.append_log({
         "type": "trade_proposed",
         "trade_id": trade.id,

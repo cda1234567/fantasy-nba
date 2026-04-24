@@ -637,6 +637,64 @@ class AIGM:
 
         return _FALLBACKS[1] if ratio <= 1.15 else _FALLBACKS[0]
 
+    def pick_commentary(
+        self,
+        pick: Any,
+        draft_state: "DraftState",
+        commentator_team: Team,
+        model_id: str = DEFAULT_MODEL_ID,
+    ) -> str:
+        """Return one zh-TW sentence reaction from an AI GM to a draft pick."""
+        _FALLBACKS = [
+            "不錯的選擇，這輪還能挑到他算撿到。",
+            "我早就看上他了，可惜被搶先。",
+            "你搞錯位置了吧，這順位有更好的選項。",
+            "穩健的一手，不驚豔但不會出錯。",
+            "持保留態度，後面輪次要看怎麼補。",
+            "這順位挑這個，膽子不小。",
+            "老實說我不會這樣選，但各家有各家邏輯。",
+        ]
+        import random as _rnd
+        fallback = _rnd.choice(_FALLBACKS)
+
+        persona = commentator_team.gm_persona or "bpa"
+        persona_meta = GM_PERSONAS.get(persona, GM_PERSONAS["bpa"])
+
+        picker_team = draft_state.teams[pick.team_id]
+        player = draft_state.players_by_id.get(pick.player_id)
+        player_name = getattr(player, "name", None) or pick.player_name
+        player_pos = getattr(player, "pos", "") if player else ""
+        player_fppg = getattr(player, "fppg", None) if player else None
+        fppg_line = f" FPPG {player_fppg:.1f}" if isinstance(player_fppg, (int, float)) else ""
+
+        if not self.enabled:
+            return fallback
+
+        system_text = (
+            f"你是 NBA 夢幻球隊 GM，人格：{persona_meta['name']}。策略：{persona_meta['desc']}。\n"
+            "你正在觀看選秀直播，別隊剛做了一個選擇。請用 1 句繁體中文說出你的第一反應，口語化即可，可以是讚美、質疑、或吐槽，但不要超過 40 字。"
+        )
+        user_text = (
+            f"第 {pick.round} 輪第 {pick.pick_in_round} 順位（總 #{pick.overall}）：\n"
+            f"{picker_team.name} 選了 {player_name}（{player_pos}{fppg_line}）。\n"
+            "你的 1 句繁中反應："
+        )
+
+        try:
+            text = call_llm(
+                system=system_text,
+                user=user_text,
+                model_id=model_id,
+                max_tokens=80,
+                temperature=0.9,
+            )
+            text = (text or "").strip()
+            if text:
+                return text[:120]
+        except LLMError:
+            pass
+        return fallback
+
     def maybe_counter(
         self,
         trade: Any,

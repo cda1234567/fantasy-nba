@@ -69,6 +69,10 @@ const state = {
   tradesHistoryExpanded: new Set(), // history trade ids that are expanded
   proposeDraft: null,            // { counterparty, send:Set, receive:Set, humanRoster, counterpartyRoster }
   tradesPollTimer: null,
+  // Phase 7.1 trade counter-offer modal
+  counterDraft: null,            // { originalTradeId, counterparty, send:Set, receive:Set, fromRoster, toRoster }
+  // Draft commentary feed (latest first, cap 10)
+  draftCommentary: [],
   // league switcher + setup
   leagues: [],                   // [{league_id,name,setup_complete}, ...]
   activeLeague: 'default',
@@ -300,11 +304,46 @@ async function renderDraftView(root) {
   );
   root.append(grid);
 
+  // League chat feed (AI GM commentary on recent picks)
+  root.append(buildDraftCommentaryPanel());
+
   // Kick off table render
   renderAvailableTable(state.draftDisplayMode || 'prev_full');
 
   // Auto-advance AI turn
   scheduleDraftAutoAdvance();
+}
+
+function buildDraftCommentaryPanel() {
+  const panel = el('div', { class: 'card', id: 'draft-chat-panel', style: 'margin-top: var(--s-5);' });
+  const header = el('div', { class: 'card-header' },
+    el('h3', {}, '聯盟聊天'),
+    el('span', { class: 'sub' }, '最近 10 則 AI GM 評論'),
+  );
+  panel.append(header);
+  const body = el('div', { id: 'draft-chat-body', style: 'padding: var(--s-3) var(--s-4); max-height: 240px; overflow-y: auto;' });
+  renderDraftCommentaryBody(body);
+  panel.append(body);
+  return panel;
+}
+
+function renderDraftCommentaryBody(body) {
+  body.innerHTML = '';
+  const items = state.draftCommentary || [];
+  if (!items.length) {
+    body.append(el('div', { style: 'color: var(--ink-3); font-size: var(--fs-sm);' },
+      '尚無評論。AI GM 會在選秀過程中隨機發表看法。'));
+    return;
+  }
+  const list = el('ul', { style: 'list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap: var(--s-2);' });
+  for (const c of items) {
+    list.append(el('li', { style: 'font-size: var(--fs-sm); line-height: 1.5;' },
+      el('b', { style: 'color: var(--accent);' }, `[${c.gm_team_name || `Team ${c.gm_team_id}`}]`),
+      ' ',
+      el('span', {}, c.text || ''),
+    ));
+  }
+  body.append(list);
 }
 
 function buildDraftClock(d) {
@@ -615,6 +654,7 @@ function scheduleDraftAutoAdvance() {
     try {
       const r = await api('/api/draft/ai-advance', { method: 'POST' });
       state.draft = r.state;
+      appendDraftCommentary(r.commentary);
       ok = true;
       // If the server just completed the draft, stop the loop immediately.
       if (r.state?.is_complete) cancelDraftAutoAdvance();
@@ -636,10 +676,19 @@ function scheduleDraftAutoAdvance() {
 }
 
 // ---------------------------------------------------------------- actions
+function appendDraftCommentary(commentary) {
+  if (!Array.isArray(commentary) || !commentary.length) return;
+  // Prepend (latest first), then trim to 10. Skip entries without text.
+  const cleaned = commentary.filter((c) => c && c.text);
+  if (!cleaned.length) return;
+  state.draftCommentary = [...cleaned, ...(state.draftCommentary || [])].slice(0, 10);
+}
+
 async function onAdvance() {
   try {
     const r = await api('/api/draft/ai-advance', { method: 'POST' });
     state.draft = r.state;
+    appendDraftCommentary(r.commentary);
     render();
   } catch (e) {
     toast(e.message || '推進失敗', 'error');
@@ -650,6 +699,8 @@ async function onSimToMe() {
   try {
     const r = await api('/api/draft/sim-to-me', { method: 'POST' });
     state.draft = r.state;
+    // sim-to-me can produce many picks — only pull commentary if backend sent any
+    appendDraftCommentary(r.commentary);
     render();
   } catch (e) {
     toast(e.message || '模擬失敗', 'error');
@@ -663,6 +714,7 @@ async function onDraftPlayer(playerId) {
       body: JSON.stringify({ player_id: playerId }),
     });
     state.draft = r.state;
+    appendDraftCommentary(r.commentary);
     render();
   } catch (e) {
     toast(e.message || '選秀失敗', 'error');
@@ -2286,9 +2338,7 @@ async function renderTradesView(root) {
         el('div', { class: 'view-title', id: 'trades-title' }, '交易中心'),
         el('div', { class: 'view-sub', id: 'trades-sub' }, ' '),
       ),
-      el('div', { class: 'view-actions' },
-        el('button', { class: 'btn', onclick: openProposeTradeDialogV2 }, '＋ 發起新交易'),
-      ),
+      el('div', { class: 'view-actions' }),
     ),
   );
 
@@ -2301,6 +2351,8 @@ async function renderTradesView(root) {
 
   // Propose modal (hidden by default; reused)
   root.append(buildProposeModalV2());
+  // Counter-offer modal (hidden by default; reused for rejected trades)
+  root.append(buildCounterModalV2());
 
   await refreshLeagueData();   // for team names
   await refreshTradesV2();
@@ -2505,8 +2557,11 @@ function buildTradeCardV2(trade, opts) {
     card.append(buildTradeOddsSectionV2(trade));
   }
 
-  // Actions (pending only)
-  if (pending) {
+  // Actions: pending → accept/reject/cancel; history rejected w/ human
+  // proposer → counter-offer.
+  const humanId = state.draft?.human_team_id ?? 0;
+  const canCounter = !pending && trade.status === 'rejected' && trade.from_team === humanId;
+  if (pending || canCounter) {
     const actions = buildTradeActionsV2(trade);
     if (actions) card.append(actions);
   }
@@ -2619,6 +2674,15 @@ function buildTradeActionsV2(trade) {
   if (status === 'pending_accept' && trade.from_team === humanId) {
     actions.append(
       el('button', { class: 'btn sm ghost', onclick: () => onCancelTradeV2(trade.id) }, '取消'),
+    );
+    return actions;
+  }
+  // Counter-offer entry point on trades that were rejected while the human was
+  // the proposer. Only the proposer side gets to counter (the rejector has
+  // already spoken — they can re-propose via the normal flow if they want).
+  if (status === 'rejected' && trade.from_team === humanId) {
+    actions.append(
+      el('button', { class: 'btn sm', onclick: () => openCounterTradeDialogV2(trade) }, '還價'),
     );
     return actions;
   }
@@ -2877,6 +2941,184 @@ async function onSubmitProposeTradeV2() {
     toast(e.message || '送出失敗', 'error');
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '送出提案'; }
+  }
+}
+
+// -------- Counter-offer modal ----------------------------------------------
+function buildCounterModalV2() {
+  const dlg = el('dialog', { class: 'trade-propose-dlg-v2', id: 'trade-counter-v2' },
+    el('form', { method: 'dialog', class: 'dialog-inner' },
+      el('div', { class: 'dlg-head' },
+        el('h2', {}, '還價交易'),
+        el('button', { type: 'button', class: 'icon-btn', onclick: () => $('#trade-counter-v2').close() }, '×'),
+      ),
+      el('div', { class: 'dlg-body', id: 'trade-counter-body-v2' }),
+      el('div', { class: 'dlg-foot' },
+        el('textarea', {
+          id: 'trade-counter-message-v2',
+          placeholder: '給對方 GM 的留言（可選）…',
+          maxlength: '300',
+          rows: '2',
+          style: 'width:100%; margin-top:8px;',
+        }),
+        el('div', { class: 'dlg-actions' },
+          el('button', { type: 'button', class: 'btn ghost', onclick: () => $('#trade-counter-v2').close() }, '取消'),
+          el('button', { type: 'button', class: 'btn', id: 'btn-trade-counter-submit-v2', onclick: onSubmitCounterTradeV2 }, '送出還價'),
+        ),
+      ),
+    ),
+  );
+  return dlg;
+}
+
+async function openCounterTradeDialogV2(originalTrade) {
+  const dlg = $('#trade-counter-v2');
+  if (!dlg) return;
+  const humanId = state.draft?.human_team_id ?? 0;
+  // Pre-fill send/receive with the original trade's player IDs.
+  state.counterDraft = {
+    originalTradeId: originalTrade.id,
+    counterparty: originalTrade.to_team,
+    send: new Set(originalTrade.send_player_ids || []),
+    receive: new Set(originalTrade.receive_player_ids || []),
+    fromRoster: [],
+    toRoster: [],
+  };
+  try {
+    const [me, them] = await Promise.all([
+      api(`/api/teams/${humanId}`),
+      api(`/api/teams/${originalTrade.to_team}`),
+    ]);
+    state.counterDraft.fromRoster = me.players || [];
+    state.counterDraft.toRoster = them.players || [];
+    for (const p of state.counterDraft.fromRoster) state.playerCache.set(p.id, p);
+    for (const p of state.counterDraft.toRoster) state.playerCache.set(p.id, p);
+  } catch {
+    state.counterDraft.fromRoster = [];
+    state.counterDraft.toRoster = [];
+  }
+  // Pre-fill message field with placeholder hint
+  const msgEl = $('#trade-counter-message-v2');
+  if (msgEl) msgEl.value = '';
+  renderCounterBodyV2();
+  try { dlg.showModal(); } catch {}
+}
+
+function renderCounterBodyV2() {
+  const body = $('#trade-counter-body-v2');
+  if (!body) return;
+  body.innerHTML = '';
+  const d = state.counterDraft;
+  if (!d) return;
+  const cpName = teamNameOf(d.counterparty);
+  body.append(
+    el('div', { style: 'padding: 8px 0 4px; font-size: var(--fs-sm); color: var(--ink-3);' },
+      `向 `, el('b', {}, cpName), ` 提出還價。可修改下列雙方球員勾選。`,
+    ),
+  );
+
+  body.append(el('div', { class: 'propose-sides-v2' },
+    buildCounterSideV2('送出（你的名單）', d.fromRoster, d.send, 'send'),
+    buildCounterSideV2('收到（對方名單）', d.toRoster, d.receive, 'receive'),
+  ));
+
+  const sendSum = Array.from(d.send).reduce((s, id) => {
+    const p = state.playerCache.get(id); return s + (p?.fppg || 0);
+  }, 0);
+  const recvSum = Array.from(d.receive).reduce((s, id) => {
+    const p = state.playerCache.get(id); return s + (p?.fppg || 0);
+  }, 0);
+  const ratio = sendSum > 0 && recvSum > 0
+    ? Math.max(sendSum, recvSum) / Math.min(sendSum, recvSum) : 0;
+  let ratioCls = 'ok';
+  if (ratio > 1.30) ratioCls = 'bad';
+  else if (ratio > 1.15) ratioCls = 'warn';
+
+  body.append(
+    el('div', { class: 'propose-balance-v2' },
+      el('span', {}, `送出 Σ ${fppg(sendSum)}`),
+      ratio ? el('span', { class: `trade-ratio-badge ${ratioCls}` }, `比值 ${ratio.toFixed(2)}x`) : el('span', {}, '—'),
+      el('span', {}, `收到 Σ ${fppg(recvSum)}`),
+    ),
+  );
+}
+
+function buildCounterSideV2(title, players, selectedSet, which) {
+  const wrap = el('div', { class: 'propose-side-v2' },
+    el('div', { class: 'propose-side-title' }, title),
+  );
+  const list = el('ul', { class: 'propose-player-list-v2' });
+  const sorted = players.slice().sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+  if (!sorted.length) {
+    list.append(el('li', { class: 'empty' }, '（無球員）'));
+  } else {
+    for (const p of sorted) {
+      const checked = selectedSet.has(p.id);
+      const li = el('li', { class: checked ? 'selected' : '' },
+        el('label', {},
+          el('input', {
+            type: 'checkbox',
+            checked: checked ? true : null,
+            onchange: (e) => toggleCounterPlayerV2(which, p.id, e.target.checked),
+          }),
+          el('span', { class: 'pname' }, p.name || `#${p.id}`),
+          el('span', { class: 'pmeta' }, `${p.pos || ''} · ${fppg(p.fppg)}`),
+        ),
+      );
+      list.append(li);
+    }
+  }
+  wrap.append(list);
+  return wrap;
+}
+
+function toggleCounterPlayerV2(which, id, checked) {
+  const set = state.counterDraft[which];
+  if (checked) {
+    if (set.size >= 3) {
+      toast('每方最多 3 名球員', 'info');
+      renderCounterBodyV2();
+      return;
+    }
+    set.add(id);
+  } else {
+    set.delete(id);
+  }
+  renderCounterBodyV2();
+}
+
+async function onSubmitCounterTradeV2() {
+  const humanId = state.draft?.human_team_id ?? 0;
+  const d = state.counterDraft;
+  if (!d) return;
+  if (!d.send.size || !d.receive.size) { toast('每方至少選一名球員', 'info'); return; }
+  const proposerMessage = ($('#trade-counter-message-v2')?.value || '').trim();
+  const btn = $('#btn-trade-counter-submit-v2');
+  if (btn) { btn.disabled = true; btn.textContent = '發送中…'; }
+  try {
+    // Counter-offer posted as a fresh proposal. Backend does not yet accept
+    // `counter_of` on this endpoint — when it does, pass it here too.
+    await api('/api/trades/propose', {
+      method: 'POST',
+      body: JSON.stringify({
+        from_team: humanId,
+        to_team: d.counterparty,
+        send: Array.from(d.send),
+        receive: Array.from(d.receive),
+        proposer_message: proposerMessage,
+        counter_of: d.originalTradeId,
+        force: false,
+      }),
+    });
+    $('#trade-counter-v2').close();
+    toast('還價已送出', 'info');
+    state.tradesTab = 'pending';
+    await afterTradeMutationV2();
+    render();
+  } catch (e) {
+    toast(e.message || '送出失敗', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '送出還價'; }
   }
 }
 
@@ -3148,9 +3390,21 @@ function renderSetupView(root) {
     oninput: (e) => { form.league_name = e.target.value; },
   });
 
-  const seasonInput = el('input', {
-    type: 'text', value: form.season_year, disabled: isLocked ? true : null,
-    oninput: (e) => { form.season_year = e.target.value; },
+  // Hard-coded list of seasons that have data files in app/data/seasons/
+  // (1996-97 through 2025-26 inclusive — 30 seasons)
+  const SEASON_OPTIONS = (() => {
+    const out = [];
+    for (let y = 1996; y <= 2025; y++) {
+      const next = String((y + 1) % 100).padStart(2, '0');
+      out.push(`${y}-${next}`);
+    }
+    return out;
+  })();
+  const seasonInput = el('select', {
+    disabled: isLocked ? true : null,
+    onchange: (e) => { form.season_year = e.target.value; },
+    html: SEASON_OPTIONS.map((s) =>
+      `<option value="${s}" ${s === form.season_year ? 'selected' : ''}>${s}</option>`).join(''),
   });
 
   const playerTeamSelect = el('select', {
