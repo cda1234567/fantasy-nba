@@ -1001,6 +1001,180 @@ button[disabled] { opacity: 0.55; cursor: not-allowed; }
 .standings-table td.name { font-weight: 500; }
 .table-wrap { overflow-x: auto; }
 
+/* ========== SCHEDULE VIEW (Phase 6) ========== */
+.schedule-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--s-2);
+  padding: var(--s-3);
+}
+.week-cell-v2 {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: var(--s-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 120ms, transform 80ms;
+}
+.week-cell-v2:hover { border-color: var(--accent); }
+.week-cell-v2:active { transform: scale(0.98); }
+.week-cell-v2 .wk-num { color: var(--ink-3); font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: 0.3px; }
+.week-cell-v2 .wk-title { font-weight: 600; font-size: var(--fs-sm); }
+.week-cell-v2 .wk-sub { color: var(--ink-3); font-size: var(--fs-xs); }
+.week-cell-v2.current { border-color: var(--accent); background: rgba(88,166,255,0.10); }
+.week-cell-v2.played { opacity: 0.75; }
+.week-cell-v2.playoff { border-style: dashed; }
+.week-cell-v2.open { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+
+.schedule-detail-card { margin-top: var(--s-4); }
+.schedule-detail-card .card-header { display: flex; justify-content: space-between; align-items: center; }
+.sched-match-row { border-top: 1px solid var(--line-soft); }
+.sched-match-row:first-child { border-top: none; }
+.sched-match-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: var(--s-3);
+  padding: var(--s-3);
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.sched-match-head:hover { background: var(--surface); }
+.sched-match-head .mm-side { display: flex; justify-content: space-between; align-items: center; gap: var(--s-2); }
+.sched-match-head .mm-side.win .mm-name { font-weight: 700; color: var(--ink); }
+.sched-match-head .mm-side .mm-name { font-size: var(--fs-sm); }
+.sched-match-head .mm-side .mm-score { font-family: var(--mono); font-weight: 600; }
+.sched-match-head .mm-vs { color: var(--ink-3); font-size: var(--fs-xs); }
+.sched-match-head .chevron { color: var(--ink-3); }
+.sched-match-detail { padding: var(--s-3); background: var(--surface); border-top: 1px dashed var(--line-soft); }
+
+/* ========== TRADES VIEW (Phase 7) ========== */
+.trade-list { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-3); }
+.trade-card-v2 {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-2);
+  padding: var(--s-3);
+  background: var(--surface);
+  display: flex; flex-direction: column; gap: var(--s-2);
+}
+.trade-card-v2.status-executed { border-left: 3px solid var(--good, #22c55e); }
+.trade-card-v2.status-rejected { border-left: 3px solid var(--bad, #ef4444); }
+.trade-card-v2.status-pending_accept { border-left: 3px solid var(--accent); }
+.trade-card-v2.status-accepted { border-left: 3px solid var(--warn, #d29922); }
+.trade-head-v2 {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: var(--s-3);
+  align-items: center;
+}
+.trade-teams { display: flex; align-items: center; gap: var(--s-2); font-weight: 600; }
+.trade-teams .tm.from { color: var(--ink); }
+.trade-teams .tm.to { color: var(--ink-2); }
+.trade-teams .arrow { color: var(--ink-3); }
+.trade-status-v2 {
+  font-size: var(--fs-xs);
+  padding: 2px 8px;
+  border-radius: var(--r-pill);
+  background: var(--surface-2);
+  color: var(--ink-2);
+}
+.trade-status-v2.status-pending_accept { background: rgba(88,166,255,0.14); color: var(--accent); }
+.trade-status-v2.status-accepted { background: rgba(210,153,34,0.14); color: #d29922; }
+.trade-status-v2.status-executed { background: rgba(34,197,94,0.14); color: var(--good, #22c55e); }
+.trade-status-v2.status-rejected { background: rgba(239,68,68,0.14); color: var(--bad, #ef4444); }
+.trade-when { font-family: var(--mono); font-size: var(--fs-xs); color: var(--ink-3); }
+
+.trade-sides-v2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.trade-side-v2 { border: 1px dashed var(--line-soft); border-radius: var(--r-1); padding: var(--s-2); background: var(--bg); }
+.trade-side-title { font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: var(--s-1); text-transform: uppercase; letter-spacing: 0.3px; }
+.trade-player-list-v2 { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.trade-player-list-v2 li { display: flex; justify-content: space-between; gap: var(--s-2); font-size: var(--fs-sm); }
+.trade-player-list-v2 .pname { font-weight: 500; }
+.trade-player-list-v2 .pmeta { color: var(--ink-3); font-family: var(--mono); font-size: var(--fs-xs); }
+.trade-player-list-v2 li.empty { color: var(--ink-3); font-style: italic; }
+.trade-side-sum { margin-top: var(--s-2); font-size: var(--fs-xs); color: var(--ink-3); text-align: right; font-family: var(--mono); }
+
+.trade-reasoning-v2 { font-size: var(--fs-sm); color: var(--ink-2); padding: var(--s-2); background: var(--bg); border-radius: var(--r-1); border-left: 2px solid var(--accent); }
+.trade-proposer-msg-v2 { font-size: var(--fs-sm); color: var(--ink-2); }
+.trade-proposer-msg-v2 .lbl { color: var(--ink-3); margin-right: 4px; }
+
+.trade-odds-section-v2 { margin-top: 4px; }
+.trade-odds-toggle-v2 { width: 100%; justify-content: flex-start; text-align: left; }
+.trade-odds-body-v2 { padding: var(--s-2); margin-top: var(--s-1); background: var(--bg); border-radius: var(--r-1); border: 1px dashed var(--line-soft); }
+.trade-odds-list-v2 { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.trade-odds-row-v2 { display: grid; grid-template-columns: 60px 80px 1fr; gap: var(--s-2); font-size: var(--fs-sm); align-items: center; }
+.trade-odds-label { font-weight: 600; color: var(--ink-2); }
+.trade-odds-delta { font-family: var(--mono); font-weight: 600; }
+.trade-odds-delta.odds-pos { color: var(--good, #22c55e); }
+.trade-odds-delta.odds-neg { color: var(--bad, #ef4444); }
+.trade-odds-delta.odds-zero { color: var(--ink-3); }
+.trade-odds-detail { color: var(--ink-3); font-size: var(--fs-xs); font-family: var(--mono); }
+.trade-odds-fp-v2 { display: flex; justify-content: space-between; margin-top: var(--s-2); padding-top: var(--s-2); border-top: 1px dashed var(--line-soft); font-weight: 600; }
+
+.trade-actions-v2 { display: flex; gap: var(--s-2); flex-wrap: wrap; margin-top: var(--s-1); }
+
+.trade-ratio-badge {
+  padding: 2px 8px; border-radius: var(--r-pill);
+  font-size: var(--fs-xs); font-family: var(--mono); font-weight: 600;
+}
+.trade-ratio-badge.ok   { background: rgba(34,197,94,0.14); color: var(--good, #22c55e); }
+.trade-ratio-badge.warn { background: rgba(210,153,34,0.14); color: #d29922; }
+.trade-ratio-badge.bad  { background: rgba(239,68,68,0.14); color: var(--bad, #ef4444); }
+
+/* Propose modal */
+.trade-propose-dlg-v2::backdrop { background: rgba(0,0,0,0.6); }
+.trade-propose-dlg-v2 {
+  border: 1px solid var(--line-soft);
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: var(--r-3);
+  padding: 0;
+  max-width: 720px;
+  width: 92vw;
+}
+.trade-propose-dlg-v2 .dialog-inner { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
+.trade-propose-dlg-v2 .dlg-head { display: flex; justify-content: space-between; align-items: center; }
+.trade-propose-dlg-v2 .dlg-head h2 { margin: 0; font-size: var(--fs-lg); }
+.trade-propose-dlg-v2 .dlg-body { display: flex; flex-direction: column; gap: var(--s-3); }
+.trade-propose-dlg-v2 .dlg-foot { display: flex; flex-direction: column; gap: var(--s-2); border-top: 1px solid var(--line-soft); padding-top: var(--s-3); }
+.trade-propose-dlg-v2 .dlg-actions { display: flex; justify-content: flex-end; gap: var(--s-2); }
+.trade-propose-dlg-v2 textarea {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-1);
+  padding: var(--s-2);
+  font-family: inherit;
+  resize: vertical;
+}
+.trade-propose-dlg-v2 select {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--r-1);
+  padding: 6px 10px;
+  min-width: 200px;
+}
+.propose-row-v2 { display: flex; align-items: center; gap: var(--s-3); }
+.propose-sides-v2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.propose-side-v2 { border: 1px dashed var(--line-soft); border-radius: var(--r-1); padding: var(--s-2); background: var(--surface); max-height: 320px; overflow-y: auto; }
+.propose-side-title { font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: var(--s-2); text-transform: uppercase; letter-spacing: 0.3px; }
+.propose-player-list-v2 { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.propose-player-list-v2 li { padding: 4px; border-radius: var(--r-1); }
+.propose-player-list-v2 li.selected { background: rgba(88,166,255,0.12); }
+.propose-player-list-v2 label { display: flex; align-items: center; gap: var(--s-2); cursor: pointer; font-size: var(--fs-sm); }
+.propose-player-list-v2 .pname { flex: 1; }
+.propose-player-list-v2 .pmeta { color: var(--ink-3); font-family: var(--mono); font-size: var(--fs-xs); }
+.propose-balance-v2 { display: flex; justify-content: space-between; align-items: center; padding: var(--s-2); background: var(--surface); border-radius: var(--r-1); font-family: var(--mono); }
+.propose-force-label { font-size: var(--fs-sm); color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+
 *, *::before, *::after { letter-spacing: 0 !important; }
 
 /* ========== Shell responsive breakpoints (end-of-file so they win cascade) ========== */
