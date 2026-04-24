@@ -18,6 +18,14 @@
             <span class="phase-dot"></span>
             <span id="league-name-text">NBA Fantasy</span>
         </div>
+        <div class="league-switcher-v2" id="league-switcher-v2">
+            <button class="lsw-btn-v2" id="btn-league-switch" aria-haspopup="menu" aria-expanded="false" type="button" title="切換/建立聯盟">
+                <span class="lsw-label-v2">聯盟</span>
+                <span class="lsw-current-v2" id="lsw-current">—</span>
+                <span aria-hidden="true" style="margin-left:4px;">▾</span>
+            </button>
+            <div class="lsw-menu-v2" id="league-switch-menu" role="menu" hidden></div>
+        </div>
         <div class="header-actions" style="margin-left:auto;">
             <span id="conn-dot" class="pill" style="font-size:10px;">—</span>
             <button class="icon-btn" id="btn-reset-draft" title="重置選秀">↻</button>
@@ -27,6 +35,30 @@
             </div>
         </div>
     </header>
+    <dialog id="dlg-new-league-v2" class="dlg-v2" aria-labelledby="dlg-new-league-title-v2">
+        <form method="dialog" class="dlg-v2-inner">
+            <h2 id="dlg-new-league-title-v2">建立新聯盟</h2>
+            <label class="dlg-field-v2">
+                <span>聯盟 ID（英數字 / - / _，最多 32 字）</span>
+                <input type="text" id="new-league-id-v2" maxlength="32" placeholder="例如 season2" autocomplete="off">
+            </label>
+            <p class="dlg-hint-v2">建立後會自動切換，並進入設定畫面。</p>
+            <div class="dlg-foot-v2">
+                <button type="submit" value="cancel" class="btn ghost">取消</button>
+                <button type="button" class="btn" id="btn-new-league-create-v2">建立並切換</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="dlg-confirm-v2" class="dlg-v2" aria-labelledby="dlg-confirm-title-v2">
+        <form method="dialog" class="dlg-v2-inner">
+            <h2 id="dlg-confirm-title-v2">確認</h2>
+            <p id="dlg-confirm-body-v2" class="dlg-hint-v2"></p>
+            <div class="dlg-foot-v2">
+                <button type="submit" value="cancel" class="btn ghost">取消</button>
+                <button type="submit" value="ok" class="btn" id="dlg-confirm-ok-v2">確定</button>
+            </div>
+        </form>
+    </dialog>
     <nav class="shell-nav" id="nav">
         <a class="nav-item" href="#/draft"    data-route="draft">    <span class="ni-ic">🎯</span> 選秀</a>
         <a class="nav-item" href="#/teams"    data-route="teams">    <span class="ni-ic">👥</span> 隊伍</a>

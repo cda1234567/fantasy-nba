@@ -69,9 +69,42 @@ const state = {
   tradesHistoryExpanded: new Set(), // history trade ids that are expanded
   proposeDraft: null,            // { counterparty, send:Set, receive:Set, humanRoster, counterpartyRoster }
   tradesPollTimer: null,
+  // league switcher + setup
+  leagues: [],                   // [{league_id,name,setup_complete}, ...]
+  activeLeague: 'default',
+  setupForm: null,               // working copy for #setup
 };
 
-const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'trades'];
+const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'trades', 'setup'];
+
+// Defaults mirrored from v1 DEFAULT_SETTINGS (keep in sync w/ static/app.js).
+const DEFAULT_TEAM_NAMES_V2 = [
+  '我的隊伍', 'BPA 書呆子', '控制失誤', '巨星搭配飼料',
+  '全能建造者', '年輕上檔', '老將求勝', '反主流',
+];
+const DEFAULT_SETTINGS_V2 = {
+  league_name: '我的聯盟',
+  season_year: '2025-26',
+  player_team_index: 0,
+  team_names: [...DEFAULT_TEAM_NAMES_V2],
+  randomize_draft_order: false,
+  num_teams: 8,
+  roster_size: 13,
+  starters_per_day: 10,
+  il_slots: 3,
+  scoring_weights: { pts: 1, reb: 1.2, ast: 1.5, stl: 2.5, blk: 2.5, to: -1 },
+  regular_season_weeks: 20,
+  playoff_teams: 6,
+  trade_deadline_week: null,
+  ai_trade_frequency: 'normal',
+  ai_trade_style: 'balanced',
+  veto_threshold: 3,
+  veto_window_days: 1,
+  ai_decision_mode: 'auto',
+  draft_display_mode: 'prev_full',
+  show_offseason_headlines: true,
+  gm_personas: [],
+};
 
 // ---------------------------------------------------------------- api
 async function api(path, opts = {}) {
@@ -177,6 +210,7 @@ function render() {
     case 'league':   renderLeagueView(main); break;
     case 'schedule': renderScheduleView(main); break;
     case 'trades':   renderTradesView(main); break;
+    case 'setup':    renderSetupView(main); break;
   }
   // Start/stop trades polling based on route
   if (route === 'trades') startTradesPolling();
@@ -199,6 +233,18 @@ function renderPlaceholder(root, title, note) {
 
 // ================================================================ DRAFT VIEW
 async function renderDraftView(root) {
+  // Blank state: league created but setup not yet run.
+  if (state.leagueStatus && state.leagueStatus.setup_complete === false) {
+    root.append(
+      el('div', { class: 'setup-blank' },
+        el('h2', { style: 'margin:0 0 8px;' }, '尚未設定聯盟'),
+        el('p', { style: 'color:var(--ink-3); margin:0 0 16px;' },
+          '本聯盟 (' + escapeHtml(state.activeLeague || '') + ') 還沒完成設定，請先到「聯盟設定」填好隊名與規則。'),
+        el('button', { class: 'btn', onclick: () => navigate('setup') }, '前往設定 →'),
+      ),
+    );
+    return;
+  }
   const d = state.draft;
   if (!d) {
     root.append(el('div', { class: 'card card-pad' }, '載入選秀狀態中…'));
@@ -2843,11 +2889,485 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ================================================================ LEAGUE SWITCHER
+async function loadLeagues() {
+  try {
+    const data = await api('/api/leagues/list');
+    state.leagues = data.leagues || [];
+    state.activeLeague = data.active || 'default';
+  } catch {
+    state.leagues = [];
+    state.activeLeague = 'default';
+  }
+  renderLeagueSwitcherLabel();
+}
+
+function renderLeagueSwitcherLabel() {
+  const cur = $('#lsw-current');
+  if (!cur) return;
+  const active = (state.leagues || []).find((l) => l.league_id === state.activeLeague);
+  const label = active ? (active.name || active.league_id) : (state.activeLeague || '—');
+  cur.textContent = label;
+  cur.title = state.activeLeague || '';
+}
+
+function openLeagueSwitchMenu() {
+  const menu = $('#league-switch-menu');
+  const btn = $('#btn-league-switch');
+  if (!menu || !btn) return;
+  const leagues = state.leagues || [];
+  const active = state.activeLeague;
+  const items = leagues.map((l) => {
+    const isActive = l.league_id === active;
+    const displayName = escapeHtml(l.name || l.league_id);
+    const idChip = l.name && l.name !== l.league_id
+      ? `<span class="lsw-id-v2">${escapeHtml(l.league_id)}</span>` : '';
+    return `
+      <div class="lsw-item-v2" role="menuitem">
+        <button type="button" class="lsw-pick-v2" data-league="${escapeHtml(l.league_id)}" ${isActive ? 'disabled' : ''}>
+          <span class="lsw-check-v2" aria-hidden="true">${isActive ? '✓' : ''}</span>
+          <span class="lsw-name-v2">${displayName}</span>
+          ${idChip}
+          ${l.setup_complete ? '' : '<span class="lsw-tag-v2">未設定</span>'}
+        </button>
+        ${isActive ? '' : `<button type="button" class="lsw-del-v2" data-league="${escapeHtml(l.league_id)}" title="刪除">×</button>`}
+      </div>`;
+  }).join('');
+  menu.innerHTML = `
+    <div class="lsw-list-v2">${items || '<div class="lsw-empty-v2">尚無其他聯盟</div>'}</div>
+    <div class="lsw-foot-v2">
+      <button type="button" class="lsw-new-v2" id="btn-lsw-new-v2">+ 建立新聯盟</button>
+    </div>
+  `;
+  menu.hidden = false;
+  btn.setAttribute('aria-expanded', 'true');
+
+  menu.querySelectorAll('.lsw-pick-v2').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      const lid = e.currentTarget.dataset.league;
+      if (lid) onSwitchLeague(lid);
+    });
+  });
+  menu.querySelectorAll('.lsw-del-v2').forEach((b) => {
+    b.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const lid = e.currentTarget.dataset.league;
+      if (lid) onDeleteLeague(lid);
+    });
+  });
+  const newBtn = $('#btn-lsw-new-v2');
+  if (newBtn) newBtn.addEventListener('click', () => {
+    closeLeagueSwitchMenu();
+    openNewLeagueModal();
+  });
+}
+
+function closeLeagueSwitchMenu() {
+  const menu = $('#league-switch-menu');
+  const btn = $('#btn-league-switch');
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function openNewLeagueModal() {
+  const dlg = $('#dlg-new-league-v2');
+  const inp = $('#new-league-id-v2');
+  if (!dlg) return;
+  if (inp) inp.value = '';
+  try { dlg.showModal(); setTimeout(() => inp && inp.focus(), 50); } catch {}
+}
+
+async function onSwitchLeague(leagueId) {
+  closeLeagueSwitchMenu();
+  try {
+    await api('/api/leagues/switch', { method: 'POST', body: JSON.stringify({ league_id: leagueId }) });
+    toast(`已切換到聯盟 ${leagueId}`);
+    setTimeout(() => window.location.reload(), 150);
+  } catch (e) {
+    toast(`切換失敗：${e.message}`, 'error');
+  }
+}
+
+async function onCreateLeague() {
+  const inp = $('#new-league-id-v2');
+  const lid = (inp && inp.value || '').trim();
+  if (!lid) { toast('請輸入聯盟 ID', 'info'); return; }
+  try {
+    await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, switch: true }) });
+    const dlg = $('#dlg-new-league-v2');
+    if (dlg) dlg.close();
+    toast(`已建立聯盟 ${lid}，請完成設定`);
+    // After reload, boot() will auto-redirect to #/setup because setup_complete=false.
+    setTimeout(() => { location.hash = '#/setup'; window.location.reload(); }, 200);
+  } catch (e) {
+    toast(`建立失敗：${e.message}`, 'error');
+  }
+}
+
+function confirmDialogV2(title, body) {
+  return new Promise((resolve) => {
+    const dlg = $('#dlg-confirm-v2');
+    if (!dlg) { resolve(window.confirm(`${title}\n\n${body}`)); return; }
+    const titleEl = $('#dlg-confirm-title-v2');
+    const bodyEl = $('#dlg-confirm-body-v2');
+    if (titleEl) titleEl.textContent = title;
+    if (bodyEl) bodyEl.textContent = body;
+    const onClose = () => {
+      dlg.removeEventListener('close', onClose);
+      resolve(dlg.returnValue === 'ok');
+    };
+    dlg.addEventListener('close', onClose);
+    try { dlg.showModal(); } catch { resolve(window.confirm(`${title}\n\n${body}`)); }
+  });
+}
+
+async function onDeleteLeague(leagueId) {
+  const ok = await confirmDialogV2('刪除聯盟', `確定刪除聯盟「${leagueId}」? 此操作無法還原。`);
+  if (!ok) return;
+  try {
+    await api('/api/leagues/delete', { method: 'POST', body: JSON.stringify({ league_id: leagueId }) });
+    toast(`已刪除聯盟 ${leagueId}`);
+    await loadLeagues();
+    const menu = $('#league-switch-menu');
+    if (menu && !menu.hidden) openLeagueSwitchMenu();
+  } catch (e) {
+    toast(`刪除失敗：${e.message}`, 'error');
+  }
+}
+
+// ================================================================ SETUP VIEW
+function makeDefaultSetupFormV2(existing) {
+  const s = existing || {};
+  return {
+    league_name: s.league_name ?? DEFAULT_SETTINGS_V2.league_name,
+    season_year: s.season_year ?? DEFAULT_SETTINGS_V2.season_year,
+    player_team_index: s.player_team_index ?? DEFAULT_SETTINGS_V2.player_team_index,
+    team_names: s.team_names ? [...s.team_names] : [...DEFAULT_SETTINGS_V2.team_names],
+    randomize_draft_order: s.randomize_draft_order ?? DEFAULT_SETTINGS_V2.randomize_draft_order,
+    num_teams: s.num_teams ?? DEFAULT_SETTINGS_V2.num_teams,
+    roster_size: s.roster_size ?? DEFAULT_SETTINGS_V2.roster_size,
+    starters_per_day: s.starters_per_day ?? DEFAULT_SETTINGS_V2.starters_per_day,
+    il_slots: s.il_slots ?? DEFAULT_SETTINGS_V2.il_slots,
+    scoring_weights: Object.assign({}, DEFAULT_SETTINGS_V2.scoring_weights, s.scoring_weights || {}),
+    regular_season_weeks: s.regular_season_weeks ?? DEFAULT_SETTINGS_V2.regular_season_weeks,
+    playoff_teams: s.playoff_teams ?? DEFAULT_SETTINGS_V2.playoff_teams,
+    trade_deadline_week: s.trade_deadline_week ?? DEFAULT_SETTINGS_V2.trade_deadline_week,
+    ai_trade_frequency: s.ai_trade_frequency ?? DEFAULT_SETTINGS_V2.ai_trade_frequency,
+    ai_trade_style: s.ai_trade_style ?? DEFAULT_SETTINGS_V2.ai_trade_style,
+    veto_threshold: s.veto_threshold ?? DEFAULT_SETTINGS_V2.veto_threshold,
+    veto_window_days: s.veto_window_days ?? DEFAULT_SETTINGS_V2.veto_window_days,
+    ai_decision_mode: s.ai_decision_mode ?? DEFAULT_SETTINGS_V2.ai_decision_mode,
+    draft_display_mode: s.draft_display_mode ?? DEFAULT_SETTINGS_V2.draft_display_mode,
+    show_offseason_headlines: s.show_offseason_headlines ?? DEFAULT_SETTINGS_V2.show_offseason_headlines,
+    gm_personas: s.gm_personas ? [...s.gm_personas] : [],
+  };
+}
+
+function renderSetupView(root) {
+  const status = state.leagueStatus;
+  const isLocked = status && status.setup_complete;
+  if (!state.setupForm) state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);
+  const form = state.setupForm;
+  const wrap = el('div', { class: 'setup-v2' });
+
+  wrap.append(el('div', { class: 'view-head' },
+    el('div', { class: 'view-title-block' },
+      el('span', { class: 'eyebrow' }, '聯盟設定'),
+      el('div', { class: 'view-title' }, '建立新聯盟 / 設定聯盟'),
+      el('div', { class: 'view-sub' }, '完成後會進入選秀階段。'),
+    ),
+  ));
+
+  if (isLocked) {
+    wrap.append(el('div', { class: 'setup-lock-warn' },
+      '聯盟已開賽，以下設定已鎖定；如需重新設定請先刪除聯盟或建立新聯盟。'));
+  }
+
+  function section(title, ...children) {
+    return el('div', { class: 'setup-section' },
+      el('div', { class: 'setup-section-title' }, title),
+      ...children,
+    );
+  }
+  function row(label, control, hint) {
+    const r = el('div', { class: 'setup-row' },
+      el('div', { class: 'setup-label' }, label),
+      el('div', { class: 'setup-control' }, control),
+    );
+    if (hint) r.append(el('div', { class: 'setup-hint' }, hint));
+    return r;
+  }
+  function radioGroup(name, options, current, onChange) {
+    const grp = el('div', { class: 'radio-group' });
+    for (const [val, label] of options) {
+      const id = `rgv2-${name}-${val}`;
+      const inp = el('input', {
+        type: 'radio', name, id, value: String(val),
+        checked: String(val) === String(current) ? true : null,
+        disabled: isLocked ? true : null,
+        onchange: () => onChange(typeof current === 'number' ? Number(val) : val),
+      });
+      grp.append(el('span', { class: 'radio-item' }, inp, el('label', { for: id }, String(label))));
+    }
+    return grp;
+  }
+
+  // Team count select (8/10/12)
+  const numTeamsSelect = el('select', {
+    disabled: isLocked ? true : null,
+    onchange: (e) => {
+      const n = parseInt(e.target.value, 10);
+      form.num_teams = n;
+      // Resize team_names array (pad w/ defaults or truncate)
+      const base = DEFAULT_TEAM_NAMES_V2;
+      const next = form.team_names.slice(0, n);
+      while (next.length < n) next.push(base[next.length] || `隊伍${next.length}`);
+      form.team_names = next;
+      if (form.player_team_index >= n) form.player_team_index = 0;
+      // Rerender just this view
+      root.innerHTML = '';
+      renderSetupView(root);
+    },
+    html: [8, 10, 12].map((n) =>
+      `<option value="${n}" ${n === form.num_teams ? 'selected' : ''}>${n} 隊</option>`).join(''),
+  });
+
+  const leagueNameInput = el('input', {
+    type: 'text', value: form.league_name, disabled: isLocked ? true : null,
+    oninput: (e) => { form.league_name = e.target.value; },
+  });
+
+  const seasonInput = el('input', {
+    type: 'text', value: form.season_year, disabled: isLocked ? true : null,
+    oninput: (e) => { form.season_year = e.target.value; },
+  });
+
+  const playerTeamSelect = el('select', {
+    disabled: isLocked ? true : null,
+    onchange: (e) => { form.player_team_index = parseInt(e.target.value, 10); },
+    html: form.team_names.map((n, i) =>
+      `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i}: ${escapeHtml(n)}</option>`).join(''),
+  });
+
+  const randomizeCheck = el('input', {
+    type: 'checkbox', checked: form.randomize_draft_order ? true : null,
+    disabled: isLocked ? true : null,
+    onchange: (e) => { form.randomize_draft_order = e.target.checked; },
+  });
+
+  wrap.append(section('聯盟基本',
+    row('聯盟名稱', leagueNameInput),
+    row('賽季年份', seasonInput, '例如 2025-26（需要 data/seasons/ 有對應檔）'),
+    row('隊伍數', numTeamsSelect),
+    row('我的隊伍', playerTeamSelect),
+    row('隨機選秀順序', randomizeCheck),
+  ));
+
+  // Team names grid
+  const namesGrid = el('div', { class: 'setup-team-names' });
+  form.team_names.forEach((name, i) => {
+    const inp = el('input', {
+      type: 'text', value: name,
+      placeholder: `隊伍 ${i}`,
+      disabled: isLocked ? true : null,
+      oninput: (e) => {
+        form.team_names[i] = e.target.value;
+        const opt = playerTeamSelect.options[i];
+        if (opt) opt.textContent = `${i}: ${e.target.value}`;
+      },
+    });
+    namesGrid.append(el('div', { class: 'team-name-row' },
+      el('label', {}, String(i)), inp));
+  });
+  wrap.append(section('隊伍名稱', namesGrid));
+
+  // Personas (optional — only show if /api/personas returned keys)
+  const personaIds = Object.keys(state.personas || {});
+  if (personaIds.length) {
+    const personaGrid = el('div', { class: 'setup-team-names' });
+    // Ensure gm_personas length matches num_teams
+    while (form.gm_personas.length < form.num_teams) form.gm_personas.push('');
+    form.gm_personas = form.gm_personas.slice(0, form.num_teams);
+    for (let i = 0; i < form.num_teams; i++) {
+      if (i === form.player_team_index) continue; // Human team has no persona
+      const sel = el('select', {
+        disabled: isLocked ? true : null,
+        html: '<option value="">(系統預設)</option>' +
+          personaIds.map((pid) => {
+            const p = state.personas[pid];
+            const nm = p && p.name ? `${pid} · ${p.name}` : pid;
+            return `<option value="${escapeHtml(pid)}" ${form.gm_personas[i] === pid ? 'selected' : ''}>${escapeHtml(nm)}</option>`;
+          }).join(''),
+        onchange: (e) => { form.gm_personas[i] = e.target.value; },
+      });
+      personaGrid.append(el('div', { class: 'persona-row team-name-row' },
+        el('label', {}, `${i}: ${escapeHtml(form.team_names[i])}`), sel));
+    }
+    if (personaGrid.childElementCount) {
+      wrap.append(section('GM Persona（可選）', personaGrid));
+    }
+  }
+
+  // Scoring weights
+  const weights = form.scoring_weights;
+  const weightCats = ['pts', 'reb', 'ast', 'stl', 'blk', 'to'];
+  const weightGrid = el('div', { class: 'setup-team-names' });
+  for (const cat of weightCats) {
+    const inp = el('input', {
+      type: 'number', step: '0.1', value: String(weights[cat]),
+      disabled: isLocked ? true : null,
+      oninput: (e) => { weights[cat] = parseFloat(e.target.value); },
+    });
+    weightGrid.append(el('div', { class: 'team-name-row' },
+      el('label', {}, cat.toUpperCase()), inp));
+  }
+  wrap.append(section('計分權重', weightGrid));
+
+  // Roster / schedule
+  wrap.append(section('名單 & 賽程',
+    row('名單人數', radioGroup('roster_size', [[10,'10'],[13,'13'],[15,'15']], form.roster_size, (v)=>{form.roster_size=v;})),
+    row('每日先發', radioGroup('starters_per_day', [[8,'8'],[10,'10'],[12,'12']], form.starters_per_day, (v)=>{form.starters_per_day=v;})),
+    row('傷兵位置', radioGroup('il_slots', [[0,'0'],[1,'1'],[2,'2'],[3,'3 (預設)']], form.il_slots, (v)=>{form.il_slots=v;})),
+    row('例行賽週數', radioGroup('regular_season_weeks', [[18,'18'],[19,'19'],[20,'20'],[21,'21'],[22,'22']], form.regular_season_weeks, (v)=>{form.regular_season_weeks=v;})),
+  ));
+
+  // Errors
+  const errBox = el('div', { id: 'setup-errors-v2', class: 'setup-errors', hidden: true });
+  wrap.append(errBox);
+
+  // Submit
+  if (!isLocked) {
+    wrap.append(el('div', { class: 'setup-btn-row' },
+      el('button', { class: 'btn ghost', type: 'button', onclick: () => {
+        state.setupForm = makeDefaultSetupFormV2(null);
+        root.innerHTML = ''; renderSetupView(root);
+      }}, '使用預設值'),
+      el('button', { class: 'btn', type: 'button', id: 'btn-setup-submit-v2',
+        onclick: () => onSubmitSetupV2(root) }, '開始選秀 →'),
+    ));
+  } else {
+    wrap.append(el('div', { class: 'setup-btn-row' },
+      el('button', { class: 'btn', type: 'button', onclick: () => navigate('draft') }, '前往選秀')));
+  }
+
+  root.append(wrap);
+}
+
+function validateSetupFormV2(form) {
+  const errors = [];
+  for (let i = 0; i < form.team_names.length; i++) {
+    if (!String(form.team_names[i] || '').trim()) errors.push(`隊伍 ${i} 名稱不可為空`);
+  }
+  for (const cat of ['pts','reb','ast','stl','blk','to']) {
+    if (isNaN(form.scoring_weights[cat])) errors.push(`權重「${cat.toUpperCase()}」必須是數字`);
+  }
+  return errors;
+}
+
+async function onSubmitSetupV2(root) {
+  const form = state.setupForm;
+  const errors = validateSetupFormV2(form);
+  const errBox = $('#setup-errors-v2');
+  if (errors.length) {
+    if (errBox) {
+      errBox.hidden = false;
+      errBox.innerHTML = errors.map((e) => `<div>• ${escapeHtml(e)}</div>`).join('');
+    }
+    return;
+  }
+  if (errBox) errBox.hidden = true;
+
+  const btn = $('#btn-setup-submit-v2');
+  if (btn) { btn.disabled = true; btn.textContent = '設定中…'; }
+  try {
+    const payload = {
+      league_name: form.league_name,
+      season_year: form.season_year,
+      player_team_index: form.player_team_index,
+      team_names: form.team_names,
+      randomize_draft_order: form.randomize_draft_order,
+      num_teams: form.num_teams,
+      roster_size: form.roster_size,
+      starters_per_day: form.starters_per_day,
+      il_slots: form.il_slots,
+      scoring_weights: form.scoring_weights,
+      regular_season_weeks: form.regular_season_weeks,
+      playoff_teams: form.playoff_teams,
+      trade_deadline_week: form.trade_deadline_week,
+      ai_trade_frequency: form.ai_trade_frequency,
+      ai_trade_style: form.ai_trade_style,
+      veto_threshold: form.veto_threshold,
+      veto_window_days: form.veto_window_days,
+      ai_decision_mode: form.ai_decision_mode,
+      draft_display_mode: form.draft_display_mode,
+      show_offseason_headlines: form.show_offseason_headlines,
+      gm_personas: form.gm_personas,
+    };
+    await api('/api/league/setup', { method: 'POST', body: JSON.stringify(payload) });
+    const [status, settings] = await Promise.all([
+      apiSoft('/api/league/status'),
+      apiSoft('/api/league/settings'),
+    ]);
+    state.leagueStatus = status;
+    state.leagueSettings = settings;
+    state.setupForm = null;
+    await refreshState().catch(() => {});
+    toast('聯盟設定完成');
+    navigate('draft');
+  } catch (e) {
+    toast(e.message || '設定失敗', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '開始選秀 →'; }
+  }
+}
+
+// ================================================================ GLOBAL BINDINGS
+function bindLeagueSwitcherV2() {
+  const btn = $('#btn-league-switch');
+  const menu = $('#league-switch-menu');
+  if (btn && menu) {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (menu.hidden) openLeagueSwitchMenu(); else closeLeagueSwitchMenu();
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !menu.contains(e.target) && !btn.contains(e.target)) closeLeagueSwitchMenu();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) closeLeagueSwitchMenu();
+    });
+  }
+  const createBtn = $('#btn-new-league-create-v2');
+  if (createBtn) createBtn.addEventListener('click', onCreateLeague);
+  const createInp = $('#new-league-id-v2');
+  if (createInp) {
+    createInp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); onCreateLeague(); }
+    });
+  }
+  const resetBtn = $('#btn-reset-draft');
+  if (resetBtn) resetBtn.addEventListener('click', onResetDraft);
+}
+
 // ---------------------------------------------------------------- boot
 window.addEventListener('hashchange', render);
 
 (async function boot() {
   if (!location.hash) location.hash = '/draft';
+  bindLeagueSwitcherV2();
+  // Load personas + leagues in parallel (soft)
+  const [personas, _] = await Promise.all([
+    apiSoft('/api/personas').then((p) => p || {}),
+    loadLeagues(),
+  ]);
+  state.personas = personas;
   await refreshState();
+  // If league not set up yet, redirect to #/setup regardless of current hash.
+  if (state.leagueStatus && state.leagueStatus.setup_complete === false) {
+    state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);
+    if (currentRoute() !== 'setup') {
+      location.hash = '/setup';
+      return; // hashchange will fire render()
+    }
+  }
   render();
 })();
