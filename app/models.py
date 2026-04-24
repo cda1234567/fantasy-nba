@@ -14,6 +14,10 @@ DEFAULT_TEAM_NAMES = [
     "Youth Upside",
     "Vet Win-Now",
     "Contrarian",
+    "Sleeper Pick",
+    "Playoff Push",
+    "Glass Cannon",
+    "The Rebuild",
 ]
 
 
@@ -23,7 +27,7 @@ class LeagueSettings(BaseModel):
     player_team_index: int = Field(0, ge=0, le=31)
     team_names: list[str] = Field(default_factory=lambda: list(DEFAULT_TEAM_NAMES))
     randomize_draft_order: bool = False
-    num_teams: int = Field(8, ge=4, le=16)
+    num_teams: int = Field(8, ge=8, le=12)
     roster_size: int = Field(13, ge=8, le=20)
     starters_per_day: int = Field(10, ge=1, le=15)
     il_slots: int = Field(3, ge=0, le=5)

@@ -29,6 +29,7 @@ function escapeHtml(s) {
 }
 
 const fppg = (n) => (typeof n === 'number' ? n.toFixed(1) : '-');
+const fmtStat = (n) => (typeof n === 'number' ? n.toFixed(1) : '-');
 
 // ---------------------------------------------------------------- state
 const state = {
@@ -43,6 +44,8 @@ const state = {
   draftDisplayMode: 'prev_full',
   connected: false,
   _lastDraftWasHumanTurn: false,
+  teamView: null,         // last /api/teams/{id} payload
+  currentTeamId: null,    // selected team in #/teams
 };
 
 const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'trades'];
@@ -146,7 +149,7 @@ function render() {
   main.innerHTML = '';
   switch (route) {
     case 'draft':    renderDraftView(main); break;
-    case 'teams':    renderPlaceholder(main, '隊伍', 'Phase 3 會接上名單與陣容'); break;
+    case 'teams':    renderTeamsView(main); break;
     case 'fa':       renderPlaceholder(main, '自由球員', 'Phase 3 才做'); break;
     case 'league':   renderPlaceholder(main, '聯盟', 'Phase 3 才做'); break;
     case 'schedule': renderPlaceholder(main, '賽程', 'Phase 3 才做'); break;
@@ -602,6 +605,316 @@ async function onStartSeason() {
   } catch (e) {
     toast(e.message || '開始賽季失敗', 'error');
   }
+}
+
+// ================================================================ TEAMS VIEW
+function injuryPillHtml(inj) {
+  if (!inj || inj.status === 'healthy') return '';
+  const kind = inj.status === 'out' ? 'bad' : 'warn';
+  const label = inj.status === 'out' ? 'OUT' : 'DTD';
+  const days = inj.return_in_days > 0 ? ` ${inj.return_in_days}d` : '';
+  const title = `${label}${inj.return_in_days > 0 ? `，預計 ${inj.return_in_days} 天後復出` : ''}${inj.note ? '：' + inj.note : ''}`;
+  return ` <span class="pill ${kind}" style="font-size:9px; padding:1px 6px;" title="${escapeHtml(title)}">${label}${days}</span>`;
+}
+
+async function renderTeamsView(root) {
+  const d = state.draft;
+  if (!d || !Array.isArray(d.teams) || d.teams.length === 0) {
+    root.append(el('div', { class: 'card card-pad' }, '載入隊伍資訊中…'));
+    return;
+  }
+
+  // Pick default team: human team if available, else first team.
+  if (state.currentTeamId == null || state.currentTeamId >= d.teams.length) {
+    state.currentTeamId = (d.human_team_id != null) ? d.human_team_id : 0;
+  }
+
+  const teamSelect = el('select', {
+    id: 'team-pick',
+    style: 'padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); min-width: 180px;',
+    onchange: (e) => {
+      state.currentTeamId = parseInt(e.target.value, 10);
+      renderTeamBody();
+    },
+    html: d.teams.map((t) =>
+      `<option value="${t.id}" ${t.id === state.currentTeamId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_human ? ' (你)' : ''}</option>`
+    ).join(''),
+  });
+
+  const head = el('div', { class: 'view-head' },
+    el('div', { class: 'view-title-block' },
+      el('span', { class: 'eyebrow' }, '隊伍'),
+      el('div', { class: 'view-title' }, '球員名單'),
+      el('div', { class: 'view-sub' }, '切換隊伍檢視名單、先發與板凳'),
+    ),
+    el('div', { class: 'view-actions' }, teamSelect),
+  );
+  root.append(head);
+  root.append(el('div', { id: 'team-body' }));
+  renderTeamBody();
+}
+
+async function renderTeamBody() {
+  const container = $('#team-body');
+  if (!container) return;
+  const tid = state.currentTeamId;
+  container.innerHTML = '<div class="card card-pad" aria-busy="true">載入中…</div>';
+
+  let data;
+  try {
+    data = await api(`/api/teams/${tid}`);
+  } catch (e) {
+    container.innerHTML = `<div class="card card-pad" style="color:var(--bad);">載入失敗：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  state.teamView = data;
+
+  const { team, players, totals, persona_desc, lineup_slots, bench, injured_out, injuries, has_lineup_override } = data;
+  const isHuman = !!team.is_human;
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const injSet = new Set(injured_out || []);
+  const injuriesMap = injuries || {};
+
+  const seasonStarted = !!(state.draft && state.draft.is_complete);
+  const slotsPopulated = Array.isArray(lineup_slots) && lineup_slots.some((s) => s && s.player_id != null);
+
+  // Summary card
+  const gmName = team.gm_persona ? (state.personas?.[team.gm_persona]?.name || team.gm_persona) : null;
+  const win = team.wins != null ? team.wins : (team.record?.wins ?? null);
+  const loss = team.losses != null ? team.losses : (team.record?.losses ?? null);
+  const recordStr = (win != null && loss != null) ? `${win}-${loss}` : null;
+  const overrideBadge = has_lineup_override
+    ? '<span class="pill warn" style="font-size:10px;" title="手動設定陣容">手動陣容</span>'
+    : '<span class="pill" style="font-size:10px;" title="自動最佳化">自動陣容</span>';
+
+  const summary = el('div', { class: 'card card-pad' });
+  summary.innerHTML = `
+    <div style="display:flex; align-items:center; gap: var(--s-3); flex-wrap:wrap; margin-bottom: var(--s-3);">
+      <span style="font-size: var(--fs-lg); font-weight: 600;">${escapeHtml(team.name)}</span>
+      ${isHuman ? '<span class="pill accent" style="font-size:10px;">你</span>' : ''}
+      ${isHuman && seasonStarted ? overrideBadge : ''}
+      ${gmName ? `<span style="color:var(--ink-3); font-size: var(--fs-sm);">GM：${escapeHtml(gmName)}</span>` : ''}
+      ${recordStr ? `<span class="pill" style="font-size:10px;">W-L ${recordStr}</span>` : ''}
+    </div>
+    ${persona_desc ? `<div style="color:var(--ink-2); font-size: var(--fs-sm); margin-bottom: var(--s-3);">${escapeHtml(persona_desc)}</div>` : ''}
+    <div style="display:flex; gap: var(--s-5); flex-wrap:wrap; color:var(--ink-2); font-size: var(--fs-sm);">
+      <span>FPPG 總計 <b style="color:var(--ink);">${fppg(totals?.fppg)}</b></span>
+      <span>PTS <b style="color:var(--ink);">${fmtStat(totals?.pts)}</b></span>
+      <span>REB <b style="color:var(--ink);">${fmtStat(totals?.reb)}</b></span>
+      <span>AST <b style="color:var(--ink);">${fmtStat(totals?.ast)}</b></span>
+    </div>
+  `;
+
+  const blocks = [summary];
+
+  // Not-started hint
+  if (!seasonStarted) {
+    blocks.push(el('div', { class: 'card card-pad', style: 'color: var(--ink-3);' },
+      '選秀尚未完成，等選秀結束後才能設定先發陣容。'
+    ));
+  }
+
+  // Starters card
+  const startersCard = el('div', { class: 'card' });
+  const startersHeader = el('div', { class: 'card-header' },
+    el('h3', {}, '先發陣容'),
+    el('span', { class: 'sub' }, seasonStarted ? `${(lineup_slots || []).length} 位` : '選秀完成後可用'),
+  );
+  const startersWrap = el('div', { id: 'starters-wrap' });
+
+  if (seasonStarted && slotsPopulated) {
+    const rows = (lineup_slots || []).map((s) => {
+      const p = (s.player_id != null) ? playerById.get(s.player_id) : null;
+      const injured = p && injSet.has(p.id);
+      const injBadge = p ? injuryPillHtml(injuriesMap[p.id]) : '';
+      if (!p) {
+        return `<tr>
+          <td><span class="pos-tag" data-pos="${escapeHtml(s.slot)}">${escapeHtml(s.slot)}</span></td>
+          <td colspan="4" style="color:var(--ink-4);">—</td>
+        </tr>`;
+      }
+      return `<tr ${injured ? 'style="opacity:0.6;"' : ''}>
+        <td><span class="pos-tag" data-pos="${escapeHtml(s.slot)}">${escapeHtml(s.slot)}</span></td>
+        <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
+        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
+        <td class="num"><b>${fppg(p.fppg)}</b></td>
+        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
+      </tr>`;
+    }).join('');
+    startersWrap.innerHTML = `<table class="standings-table">
+      <thead><tr><th>位置</th><th>球員</th><th>定位</th><th class="num">FPPG</th><th>球隊</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+  } else {
+    startersWrap.innerHTML = `<div style="padding: var(--s-5); color:var(--ink-3);">${seasonStarted ? '名單中沒有可排入的先發球員。' : '選秀尚未完成。'}</div>`;
+  }
+
+  // Lineup actions (human only, season started)
+  if (isHuman && seasonStarted && slotsPopulated) {
+    const actions = el('div', { style: 'display:flex; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-top: 1px solid var(--line-soft); justify-content: flex-end;' });
+    if (has_lineup_override) {
+      actions.append(el('button', {
+        class: 'btn ghost sm',
+        onclick: async () => {
+          try {
+            await api(`/api/season/lineup/${team.id}`, { method: 'DELETE' });
+            toast('已恢復自動陣容', 'info');
+            renderTeamBody();
+          } catch (e) { toast(e.message || '清除失敗', 'error'); }
+        },
+      }, '恢復自動陣容'));
+    }
+    actions.append(el('button', {
+      class: 'btn sm',
+      onclick: () => openLineupModal(data),
+    }, '設定先發陣容'));
+    startersCard.append(startersHeader, startersWrap, actions);
+  } else {
+    startersCard.append(startersHeader, startersWrap);
+  }
+  blocks.push(startersCard);
+
+  // Bench card
+  const benchPlayers = (bench || []).map((id) => playerById.get(id)).filter(Boolean);
+  if (benchPlayers.length > 0) {
+    const benchCard = el('div', { class: 'card' });
+    const benchHeader = el('div', { class: 'card-header' },
+      el('h3', {}, '板凳'),
+      el('span', { class: 'sub' }, `${benchPlayers.length} 位`),
+    );
+    const benchWrap = el('div');
+    const rows = benchPlayers.map((p) => {
+      const injBadge = injuryPillHtml(injuriesMap[p.id]);
+      const injured = injSet.has(p.id);
+      return `<tr ${injured ? 'style="opacity:0.6;"' : ''}>
+        <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
+        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
+        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
+        <td class="num">${p.age ?? '-'}</td>
+        <td class="num"><b>${fppg(p.fppg)}</b></td>
+        <td class="num">${fmtStat(p.pts)}</td>
+        <td class="num">${fmtStat(p.reb)}</td>
+        <td class="num">${fmtStat(p.ast)}</td>
+      </tr>`;
+    }).join('');
+    benchWrap.innerHTML = `<table class="standings-table">
+      <thead><tr><th>球員</th><th>位置</th><th>球隊</th>
+        <th class="num">年齡</th><th class="num">FPPG</th>
+        <th class="num">PTS</th><th class="num">REB</th><th class="num">AST</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+    benchCard.append(benchHeader, benchWrap);
+    blocks.push(benchCard);
+  } else if (players.length === 0) {
+    blocks.push(el('div', { class: 'card card-pad', style: 'color: var(--ink-3);' }, '尚未選入任何球員。'));
+  }
+
+  container.innerHTML = '';
+  container.append(...blocks);
+}
+
+// Simple lineup override modal (v2 has no modal system, built inline)
+function openLineupModal(data) {
+  const { team, players, lineup_slots, injured_out } = data;
+  const injSet = new Set(injured_out || []);
+  const targetCount = (lineup_slots || []).length || 10;
+  let selected = new Set((lineup_slots || []).map((s) => s.player_id).filter((id) => id != null));
+
+  const candidates = players
+    .filter((p) => !injSet.has(p.id))
+    .sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+
+  function rowsHtml() {
+    return candidates.map((p) => {
+      const checked = selected.has(p.id);
+      return `<tr ${checked ? 'style="background:var(--accent-08);"' : ''}>
+        <td><input type="checkbox" class="lineup-check" data-pid="${p.id}" ${checked ? 'checked' : ''}></td>
+        <td><b>${escapeHtml(p.name)}</b></td>
+        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
+        <td class="num"><b>${fppg(p.fppg)}</b></td>
+        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  const overlay = el('div', {
+    id: 'lineup-overlay',
+    style: 'position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding: var(--s-5);',
+  });
+  overlay.innerHTML = `
+    <div class="card" style="max-width: 720px; width:100%; max-height: 85vh; display:flex; flex-direction:column;">
+      <div class="card-header">
+        <h3>設定先發陣容（選 ${targetCount} 人）</h3>
+        <button class="btn ghost sm" id="btn-close-lineup">✕</button>
+      </div>
+      <div style="padding: var(--s-3) var(--s-4); color:var(--ink-2); font-size: var(--fs-sm); border-bottom: 1px solid var(--line-soft);">
+        已選：<b id="lineup-count">${selected.size}</b> / ${targetCount}
+      </div>
+      <div style="overflow:auto; flex:1;">
+        <table class="standings-table" id="lineup-tbl">
+          <thead><tr><th></th><th>球員</th><th>位置</th><th class="num">FPPG</th><th>球隊</th></tr></thead>
+          <tbody>${rowsHtml()}</tbody>
+        </table>
+      </div>
+      <div style="padding: var(--s-3) var(--s-4); display:flex; gap: var(--s-2); justify-content: flex-end; border-top: 1px solid var(--line-soft);">
+        <button class="btn ghost sm" id="btn-auto-lineup">一鍵最佳</button>
+        <button class="btn ghost sm" id="btn-cancel-lineup">取消</button>
+        <button class="btn sm" id="btn-save-lineup">儲存先發</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  $('#btn-close-lineup').addEventListener('click', close);
+  $('#btn-cancel-lineup').addEventListener('click', close);
+
+  function refreshCount() {
+    const n = $('#lineup-count'); if (n) n.textContent = String(selected.size);
+  }
+  function wireCheckboxes() {
+    overlay.querySelectorAll('.lineup-check').forEach((cb) => {
+      cb.addEventListener('change', () => {
+        const pid = Number(cb.dataset.pid);
+        if (cb.checked) {
+          if (selected.size >= targetCount) { cb.checked = false; return; }
+          selected.add(pid);
+        } else {
+          selected.delete(pid);
+        }
+        const tr = cb.closest('tr');
+        if (tr) tr.style.background = cb.checked ? 'var(--accent-08)' : '';
+        refreshCount();
+      });
+    });
+  }
+  wireCheckboxes();
+
+  $('#btn-auto-lineup').addEventListener('click', () => {
+    selected = new Set(candidates.slice(0, targetCount).map((p) => p.id));
+    const tbody = overlay.querySelector('#lineup-tbl tbody');
+    if (tbody) tbody.innerHTML = rowsHtml();
+    wireCheckboxes();
+    refreshCount();
+    toast(`已套用 FPPG 最佳陣容（${selected.size} 人）`, 'info');
+  });
+
+  $('#btn-save-lineup').addEventListener('click', async () => {
+    if (selected.size !== targetCount) {
+      toast(`請選滿 ${targetCount} 名先發（目前 ${selected.size} 人）`, 'error');
+      return;
+    }
+    try {
+      await api('/api/season/lineup', {
+        method: 'POST',
+        body: JSON.stringify({ team_id: team.id, starters: [...selected], today_only: false }),
+      });
+      toast('先發陣容已儲存', 'info');
+      close();
+      renderTeamBody();
+    } catch (e) {
+      toast(e.message || '儲存失敗', 'error');
+    }
+  });
 }
 
 // ---------------------------------------------------------------- global delegation
