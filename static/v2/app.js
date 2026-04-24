@@ -2055,15 +2055,42 @@ async function onLeagueResetSeason() {
 
 async function onLeagueSimToPlayoffs() {
   if (state.advancing) return;
-  if (!confirm('模擬到季後賽？執行所有剩餘例行賽週次，可能需要 10-30 秒。')) return;
+  if (!confirm('模擬到季後賽？將逐週推進剩餘例行賽（每週 20-40 秒，共 20 週），可以在日誌看進度。')) return;
   state.advancing = true;
   _logMgmt('⏩ 模擬剩餘例行賽中…');
+
+  // Loop weekly streams (each stream is below Cloudflare's 60s timeout) until
+  // we either enter the playoffs or champion is set.
+  const streamOneWeek = () => new Promise((resolve, reject) => {
+    const es = new EventSource('/api/season/advance-week/stream');
+    es.onmessage = (ev) => {
+      try {
+        const p = JSON.parse(ev.data);
+        if (p.error) { es.close(); reject(new Error(p.error)); return; }
+        if (p.done) { es.close(); resolve(p); return; }
+        _logMgmt(`· W${p.week} D${p.day}`);
+      } catch (err) { /* ignore parse errors */ }
+    };
+    es.onerror = () => { es.close(); reject(new Error('SSE 中斷')); };
+  });
+
   try {
-    await api('/api/season/sim-to-playoffs', {
-      method: 'POST',
-      body: JSON.stringify({ use_ai: false }),
-    });
-    await refreshLeagueData();
+    for (let guard = 0; guard < 30; guard++) {
+      await streamOneWeek();
+      await refreshLeagueData();
+      const st = state.standings || {};
+      if (st.is_playoffs || st.champion) break;
+      if (st.current_week >= (st.regular_weeks || 20)) break;
+    }
+    // After last regular week, POST sim-to-playoffs once to flip the flag if needed
+    const st = state.standings || {};
+    if (!st.is_playoffs && !st.champion) {
+      await api('/api/season/sim-to-playoffs', {
+        method: 'POST',
+        body: JSON.stringify({ use_ai: false }),
+      });
+      await refreshLeagueData();
+    }
     _logMgmt('✅ 例行賽模擬完成，準備進入季後賽');
     rerenderLeagueSubFromTabs();
     toast('例行賽模擬完成', 'info');
