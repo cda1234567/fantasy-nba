@@ -79,6 +79,11 @@ const state = {
   draftDisplayMode: 'prev_full',// cached from leagueSettings
   draftAutoTimer: null,         // setTimeout id for auto AI pick
   draftAutoBusy: false,         // lock to prevent overlapping auto picks
+  homeBrief: null,              // result of /api/home/brief
+  homeActions: null,            // result of /api/home/actions
+  draftRecos: null,             // result of /api/draft/recommendations
+  tradeOddsCache: new Map(),    // trade_id -> /api/trades/{id}/category-odds payload
+  tradeOddsOpen: new Set(),     // trade_ids whose odds panel is expanded
   leagueSubTab: 'matchup',      // Yahoo-style sub-tab: matchup | standings | management | activity
   activityFilter: 'all',        // all | trade | fa | injury | milestone
 };
@@ -893,14 +898,26 @@ async function renderDraftView(root) {
   // Headlines placeholder container
   const headlinesContainer = el('div', { id: 'headlines-container' });
 
+  // AI recommendations banner — only meaningful when human is on the clock.
+  const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
+  const recosContainer = el('div', { id: 'draft-recos-container' });
+
   // Stable DOM order to avoid layout-jumps when turn flips AI<->human.
   // Available panel is first during human turn so the 選秀 button is above
   // the fold; otherwise headlines-first since no action is needed.
-  const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
   if (isHumanTurn) {
-    root.append(heroContainer, grid, headlinesContainer);
+    root.append(heroContainer, recosContainer, grid, headlinesContainer);
   } else {
     root.append(headlinesContainer, heroContainer, grid);
+  }
+
+  if (isHumanTurn) {
+    recosContainer.append(el('div', { class: 'panel draft-recos-card', 'aria-busy': 'true' }, '載入 AI 推薦中…'));
+    refreshDraftRecos().then(() => {
+      const fresh = buildDraftRecosCard();
+      if (fresh) recosContainer.replaceChildren(fresh);
+      else recosContainer.replaceChildren();
+    });
   }
 
   wireAvailableFilters();
@@ -958,6 +975,54 @@ function scheduleDraftAutoAdvance() {
     }
     if (ok) render();
   }, 1500);
+}
+
+async function refreshDraftRecos() {
+  const payload = await apiSoft('/api/draft/recommendations?limit=4');
+  state.draftRecos = payload || null;
+  return state.draftRecos;
+}
+
+function buildDraftRecosCard() {
+  const data = state.draftRecos;
+  if (!data || data.is_complete) return null;
+  const recos = Array.isArray(data.recos) ? data.recos : [];
+  if (!recos.length) return null;
+
+  const card = el('div', { class: 'panel draft-recos-card' });
+  card.append(el('div', { class: 'panel-head draft-recos-head' },
+    el('h2', {}, 'AI 推薦'),
+    el('span', { class: 'draft-recos-pick' },
+      `第 ${data.round} 輪 · 第 ${data.pick_overall} 順位${data.on_clock ? ' · 你選' : ''}`),
+  ));
+
+  const list = el('ul', { class: 'draft-recos-list' });
+  for (const r of recos) {
+    const reasonText = (Array.isArray(r.reasons) ? r.reasons : []).join(' · ');
+    const item = el('li', { class: `draft-reco-item ${r.top ? 'top' : ''}` },
+      el('span', { class: 'reco-rank' }, `#${r.rank}`),
+      el('div', { class: 'reco-main' },
+        el('div', { class: 'reco-name-row' },
+          el('span', { class: 'reco-name' }, r.name),
+          el('span', { class: 'reco-pos' }, r.pos || ''),
+          el('span', { class: 'reco-team' }, r.team || ''),
+        ),
+        el('div', { class: 'reco-meta' },
+          el('span', { class: 'reco-fit' }, `Fit ${r.fit}`),
+          el('span', { class: 'reco-fppg' }, `FPPG ${r.fppg}`),
+        ),
+        reasonText ? el('div', { class: 'reco-reason' }, reasonText) : null,
+      ),
+      el('button', {
+        type: 'button',
+        class: 'btn small primary reco-pick-btn',
+        onclick: () => onDraftPlayer(r.player_id),
+      }, '選他'),
+    );
+    list.append(item);
+  }
+  card.append(list);
+  return card;
 }
 
 function categorizeHeadline(text) {
@@ -2003,6 +2068,21 @@ function renderLeagueView(root) {
 
   // Yahoo-style structure: hero banner + control bar + sub-tabs + sub-content.
   root.append(buildLeagueHero());
+  root.append(el('div', { id: 'panel-home-brief', class: 'panel home-brief-card' }, '載入中...'));
+  root.append(el('div', { id: 'panel-home-actions', class: 'panel home-actions-card' }, '載入中...'));
+
+  setTimeout(async () => {
+    await refreshHomeBrief();
+    const panel = $('#panel-home-brief', root);
+    if (panel) panel.replaceWith(buildHomeBriefCard());
+  }, 0);
+
+  setTimeout(async () => {
+    await refreshHomeActions();
+    const panel = $('#panel-home-actions', root);
+    if (panel) panel.replaceWith(buildHomeActionsCard());
+  }, 0);
+
   const todo = buildLeagueTodoCard();
   if (todo) root.append(todo);
   root.append(buildLeagueControlBar());
@@ -2011,6 +2091,79 @@ function renderLeagueView(root) {
   const sub = el('div', { class: 'league-subcontent' });
   root.append(sub);
   renderLeagueSubContent(sub);
+}
+
+async function refreshHomeBrief() {
+  const payload = await apiSoft('/api/home/brief');
+  if (payload) state.homeBrief = payload;
+  return state.homeBrief;
+}
+
+async function refreshHomeActions() {
+  const payload = await apiSoft('/api/home/actions');
+  if (payload) state.homeActions = payload;
+  return state.homeActions;
+}
+
+function buildHomeBriefCard() {
+  const data = state.homeBrief || {};
+  const record = typeof data.record === 'string'
+    ? data.record
+    : data.record && typeof data.record === 'object'
+      ? `${data.record.w ?? data.record.wins ?? 0}-${data.record.l ?? data.record.losses ?? 0}`
+      : '-';
+  const week = data.week ?? state.standings?.current_week ?? '-';
+
+  return el('div', { class: 'panel home-brief-card' },
+    el('p', { class: 'home-brief-text' }, data.brief || '暫無資料'),
+    el('div', { class: 'home-brief-meta' },
+      el('span', { class: 'home-brief-record' }, `戰績 ${record}`),
+      el('span', { class: 'home-brief-week' }, `第 ${week} 週`),
+    ),
+  );
+}
+
+function buildHomeActionsCard() {
+  const payload = state.homeActions;
+  const allActions = Array.isArray(payload?.actions) ? payload.actions : [];
+  const actions = allActions.filter((action) => action.urgency !== 'done');
+
+  const card = el('div', { class: 'panel home-actions-card' },
+    el('div', { class: 'panel-head' },
+      el('span', {}, '今日待辦'),
+    ),
+  );
+
+  if (!payload) {
+    card.append(el('div', { class: 'empty-state' }, '暫無資料'));
+    return card;
+  }
+
+  if (!actions.length) {
+    card.append(el('div', { class: 'empty-state' }, '一切就緒'));
+    return card;
+  }
+
+  const list = el('ul', { class: 'todo-list home-actions-list' });
+  for (const action of actions) {
+    const sub = [action.sub, action.time].filter(Boolean).join(' · ');
+    list.append(
+      el('li', { class: `todo-item home-action-item urgency-${action.urgency || 'normal'}` },
+        el('span', { class: 'todo-icon home-action-icon', 'aria-hidden': 'true' }, action.ic || '•'),
+        el('div', { class: 'todo-text home-action-copy' },
+          el('div', { class: 'home-action-title' }, action.title || '未命名待辦'),
+          sub ? el('div', { class: 'home-action-sub' }, sub) : null,
+        ),
+        el('button', {
+          type: 'button',
+          class: 'btn small ghost todo-cta',
+          onclick: () => toast(action.title || '未命名待辦'),
+        }, action.cta || '查看'),
+      ),
+    );
+  }
+  card.append(list);
+  return card;
 }
 
 function buildLeagueHero() {
@@ -2316,6 +2469,9 @@ function buildMyTradeCard(trade, humanId) {
     const reason = String(trade.reasoning).replace(/^human\s*｜\s*/, '');
     card.append(el('div', { class: 'trade-reasoning hist' }, reason));
   }
+
+  const odds = buildTradeOddsSection(trade);
+  if (odds) card.append(odds);
 
   const thread = buildTradeThread(trade);
   if (thread) card.append(thread);
@@ -3519,6 +3675,10 @@ function buildTradeCard(trade) {
     }, `否決票：${votes} / 3`));
   }
 
+  // Category odds expandable analysis
+  const odds = buildTradeOddsSection(trade);
+  if (odds) parts.push(odds);
+
   // Chat thread (pending trades: both parties can negotiate)
   const thread = buildTradeThread(trade);
   if (thread) parts.push(thread);
@@ -3529,6 +3689,90 @@ function buildTradeCard(trade) {
 
   card.append(...parts);
   return card;
+}
+
+function buildTradeOddsSection(trade) {
+  const wrap = el('div', { class: 'trade-odds-section' });
+  const open = state.tradeOddsOpen.has(trade.id);
+  const toggle = el('button', {
+    type: 'button',
+    class: 'trade-odds-toggle',
+    'aria-expanded': open ? 'true' : 'false',
+    onclick: () => onToggleTradeOdds(trade.id, wrap),
+  },
+    el('span', { class: 'trade-odds-chev' }, open ? '▾' : '▸'),
+    el('span', {}, '勝率分析（各統計類別）'),
+  );
+  const body = el('div', { class: 'trade-odds-body', hidden: !open });
+  if (open) {
+    const cached = state.tradeOddsCache.get(trade.id);
+    if (cached) body.append(buildTradeOddsTable(cached));
+    else body.append(el('div', { class: 'empty-state' }, '載入中…'));
+  }
+  wrap.append(toggle, body);
+  return wrap;
+}
+
+async function onToggleTradeOdds(tradeId, wrap) {
+  const isOpen = state.tradeOddsOpen.has(tradeId);
+  if (isOpen) {
+    state.tradeOddsOpen.delete(tradeId);
+  } else {
+    state.tradeOddsOpen.add(tradeId);
+  }
+  const toggle = wrap.querySelector('.trade-odds-toggle');
+  const body = wrap.querySelector('.trade-odds-body');
+  const chev = wrap.querySelector('.trade-odds-chev');
+  if (toggle) toggle.setAttribute('aria-expanded', !isOpen ? 'true' : 'false');
+  if (chev) chev.textContent = !isOpen ? '▾' : '▸';
+  if (!body) return;
+  if (isOpen) {
+    body.hidden = true;
+    body.innerHTML = '';
+    return;
+  }
+  body.hidden = false;
+  let payload = state.tradeOddsCache.get(tradeId);
+  if (!payload) {
+    body.innerHTML = '';
+    body.append(el('div', { class: 'empty-state' }, '載入中…'));
+    payload = await apiSoft(`/api/trades/${tradeId}/category-odds`);
+    if (payload) state.tradeOddsCache.set(tradeId, payload);
+  }
+  body.innerHTML = '';
+  if (!payload) {
+    body.append(el('div', { class: 'empty-state' }, '無法載入勝率分析'));
+    return;
+  }
+  body.append(buildTradeOddsTable(payload));
+}
+
+function buildTradeOddsTable(payload) {
+  const labelMap = { pts: 'PTS', reb: 'REB', ast: 'AST', stl: 'STL', blk: 'BLK', to: 'TO' };
+  const cats = payload.categories || {};
+  const list = el('ul', { class: 'trade-odds-list' });
+  for (const key of ['pts', 'reb', 'ast', 'stl', 'blk', 'to']) {
+    const c = cats[key];
+    if (!c) continue;
+    const sign = c.delta > 0 ? '+' : '';
+    const cls = c.favorable ? 'odds-pos' : (c.delta === 0 ? 'odds-zero' : 'odds-neg');
+    list.append(el('li', { class: 'trade-odds-row' },
+      el('span', { class: 'trade-odds-label' }, labelMap[key] || key.toUpperCase()),
+      el('span', { class: `trade-odds-delta ${cls}` }, `${sign}${c.delta}`),
+      el('span', { class: 'trade-odds-detail' }, `送 ${c.send} → 收 ${c.receive}`),
+    ));
+  }
+  const fp = payload.fp_delta_per_game;
+  const fpCls = fp > 0 ? 'odds-pos' : (fp === 0 ? 'odds-zero' : 'odds-neg');
+  const fpSign = fp > 0 ? '+' : '';
+  const wrap = el('div', { class: 'trade-odds-wrap' },
+    list,
+    el('div', { class: 'trade-odds-fp' },
+      el('span', {}, '加權 FP/場 變化'),
+      el('span', { class: `trade-odds-delta ${fpCls}` }, `${fpSign}${fp}`),
+    ),
+  );
+  return wrap;
 }
 
 function buildTradeThread(trade) {
