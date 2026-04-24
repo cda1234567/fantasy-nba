@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.04"
+APP_VERSION = "v26.04.24.05"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -601,7 +601,9 @@ def list_players(
         ql = q.lower()
         pool = [p for p in pool if ql in p.name.lower() or ql in p.team.lower()]
     if pos:
-        pool = [p for p in pool if p.pos.upper() == pos.upper()]
+        from .season import _player_positions as _pp
+        want = pos.upper()
+        pool = [p for p in pool if want in _pp(p.pos)]
 
     # Injury overlay: when season exists, tag each player with injury status
     # so the frontend can show badges. exclude_injured drops OUT/DTD from pool.
