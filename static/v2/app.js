@@ -46,6 +46,9 @@ const state = {
   _lastDraftWasHumanTurn: false,
   teamView: null,         // last /api/teams/{id} payload
   currentTeamId: null,    // selected team in #/teams
+  faFilter: { q: '', pos: '', sort: 'fppg' },
+  faQuota: null,
+  playerCache: new Map(),
 };
 
 const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'trades'];
@@ -150,7 +153,7 @@ function render() {
   switch (route) {
     case 'draft':    renderDraftView(main); break;
     case 'teams':    renderTeamsView(main); break;
-    case 'fa':       renderPlaceholder(main, '自由球員', 'Phase 3 才做'); break;
+    case 'fa':       renderFaView(main); break;
     case 'league':   renderPlaceholder(main, '聯盟', 'Phase 3 才做'); break;
     case 'schedule': renderPlaceholder(main, '賽程', 'Phase 3 才做'); break;
     case 'trades':   renderPlaceholder(main, '交易', 'Phase 4 才做'); break;
@@ -914,6 +917,251 @@ function openLineupModal(data) {
     } catch (e) {
       toast(e.message || '儲存失敗', 'error');
     }
+  });
+}
+
+// ================================================================ FREE AGENTS VIEW
+async function renderFaView(root) {
+  const d = state.draft;
+  const seasonStarted = !!(d && d.is_complete);
+
+  const head = el('div', { class: 'view-head' },
+    el('div', { class: 'view-title-block' },
+      el('span', { class: 'eyebrow' }, '自由球員'),
+      el('div', { class: 'view-title' }, 'FA 名單'),
+      el('div', { class: 'view-sub' }, '簽入想要的球員並釋出一位替換'),
+    ),
+    el('div', { class: 'view-actions' },
+      el('div', { id: 'fa-quota-box', class: 'pill', style: 'font-size:11px;' }, '—'),
+    ),
+  );
+  root.append(head);
+
+  if (!seasonStarted) {
+    root.append(el('div', { class: 'card card-pad', style: 'color:var(--ink-3);' },
+      '等賽季開始才能簽 FA。請先完成選秀並啟動賽季。'));
+    return;
+  }
+
+  // Filter bar + table panel
+  const f = state.faFilter;
+  const filterBar = el('div', {
+    style: 'display:flex; gap:8px; padding: var(--s-3) var(--s-4); border-bottom: 1px solid var(--line-soft); flex-wrap: wrap;',
+  },
+    el('input', {
+      type: 'search', placeholder: '搜尋姓名 / 球隊…', value: f.q,
+      style: 'flex:1; min-width: 160px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+      oninput: (e) => { f.q = e.target.value; renderFaTable(); },
+    }),
+    el('select', {
+      style: 'padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+      onchange: (e) => { f.pos = e.target.value; renderFaTable(); },
+      html: `
+        <option value="" ${f.pos === '' ? 'selected' : ''}>所有位置</option>
+        <option value="PG" ${f.pos === 'PG' ? 'selected' : ''}>PG</option>
+        <option value="SG" ${f.pos === 'SG' ? 'selected' : ''}>SG</option>
+        <option value="SF" ${f.pos === 'SF' ? 'selected' : ''}>SF</option>
+        <option value="PF" ${f.pos === 'PF' ? 'selected' : ''}>PF</option>
+        <option value="C" ${f.pos === 'C' ? 'selected' : ''}>C</option>`,
+    }),
+    el('select', {
+      style: 'padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+      onchange: (e) => { f.sort = e.target.value; renderFaTable(); },
+      html: `
+        <option value="fppg" ${f.sort === 'fppg' ? 'selected' : ''}>排序：FPPG</option>
+        <option value="name" ${f.sort === 'name' ? 'selected' : ''}>排序：姓名</option>
+        <option value="pos"  ${f.sort === 'pos'  ? 'selected' : ''}>排序：位置</option>`,
+    }),
+  );
+
+  const panel = el('div', { class: 'card' });
+  const header = el('div', { class: 'card-header' },
+    el('h3', {}, '可簽球員'),
+    el('span', { class: 'sub', id: 'fa-count' }, '載入中…'),
+  );
+  const tableWrap = el('div', { id: 'fa-table-wrap', style: 'max-height: 640px; overflow-y: auto;' });
+  panel.append(header, filterBar, tableWrap);
+  root.append(panel);
+
+  refreshFaQuota();
+  renderFaTable();
+}
+
+async function refreshFaQuota() {
+  const box = $('#fa-quota-box');
+  if (!box) return;
+  try {
+    const q = await api('/api/fa/claim-status');
+    state.faQuota = q;
+    const remaining = q.remaining ?? ((q.limit ?? 3) - (q.used_today ?? 0));
+    box.textContent = `今日可簽 ${remaining} / ${q.limit ?? 3}`;
+  } catch {
+    box.textContent = '賽季尚未開始';
+  }
+}
+
+async function renderFaTable() {
+  const wrap = $('#fa-table-wrap');
+  const countEl = $('#fa-count');
+  if (!wrap) return;
+  const f = state.faFilter;
+
+  // Note: we do NOT send `pos` query. Backend strict-matches, but UI needs
+  // multi-position matching (e.g. "PG/SG" player should match PG filter).
+  // We pull a wider pool and filter client-side.
+  const params = new URLSearchParams({ available: 'true', limit: '400' });
+  if (f.q) params.set('q', f.q);
+
+  let players;
+  try {
+    players = await api(`/api/players?${params.toString()}`);
+  } catch (e) {
+    wrap.innerHTML = `<div style="padding: var(--s-6); color:var(--bad);">載入失敗：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+
+  // Client-side multi-position filter
+  if (f.pos) {
+    players = players.filter((p) => {
+      const parts = String(p.pos || '').split('/').map((s) => s.trim()).filter(Boolean);
+      return parts.includes(f.pos);
+    });
+  }
+
+  // Client-side sort (fppg desc / name asc / pos asc)
+  if (f.sort === 'name') {
+    players.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  } else if (f.sort === 'pos') {
+    players.sort((a, b) => String(a.pos || '').localeCompare(String(b.pos || '')) || (b.fppg || 0) - (a.fppg || 0));
+  } else {
+    players.sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+  }
+
+  // Cache for drop-select later
+  for (const p of players) state.playerCache.set(p.id, p);
+
+  if (countEl) countEl.textContent = `${players.length} 位`;
+
+  if (!players.length) {
+    wrap.innerHTML = `<div style="padding: var(--s-6); text-align:center; color:var(--ink-3);">找不到符合的球員</div>`;
+    return;
+  }
+
+  const canSign = !!(state.draft && state.draft.is_complete);
+  const body = players.map((p) => {
+    const injBadge = p.injury && p.injury.status !== 'healthy'
+      ? ` <span class="pill bad" style="font-size:9px; padding:1px 6px;">${p.injury.status === 'out' ? 'OUT' : 'DTD'}</span>`
+      : '';
+    return `<tr>
+      <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
+      <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
+      <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
+      <td class="num">${p.age ?? '-'}</td>
+      <td class="num"><b>${fppg(p.fppg)}</b></td>
+      <td class="num">${fppg(p.pts)}</td>
+      <td class="num">${fppg(p.reb)}</td>
+      <td class="num">${fppg(p.ast)}</td>
+      <td style="text-align:right;"><button class="btn sm" data-fa-sign="${p.id}" ${canSign ? '' : 'disabled'}>簽約</button></td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table class="standings-table">
+    <thead><tr>
+      <th>球員</th><th>位置</th><th>球隊</th>
+      <th class="num">年齡</th><th class="num">FPPG</th>
+      <th class="num">PTS</th><th class="num">REB</th><th class="num">AST</th>
+      <th></th>
+    </tr></thead>
+    <tbody>${body}</tbody></table>`;
+
+  wrap.querySelectorAll('button[data-fa-sign]').forEach((btn) => {
+    btn.addEventListener('click', () => onOpenSignDialog(Number(btn.dataset.faSign)));
+  });
+}
+
+async function onOpenSignDialog(addPlayerId) {
+  const d = state.draft;
+  const humanId = d?.human_team_id;
+  if (humanId == null) { toast('找不到你的隊伍', 'error'); return; }
+
+  let teamData;
+  try {
+    teamData = await api(`/api/teams/${humanId}`);
+  } catch {
+    toast('無法載入你的陣容', 'error');
+    return;
+  }
+  const addPlayer = state.playerCache.get(addPlayerId);
+  if (!addPlayer) { toast('找不到此球員', 'error'); return; }
+
+  const roster = Array.isArray(teamData.players) ? teamData.players : [];
+  if (!roster.length) { toast('陣容是空的，無法交換', 'error'); return; }
+
+  const picked = await pickDropDialog(addPlayer, roster);
+  if (picked == null) return;
+
+  try {
+    const r = await api('/api/fa/claim', {
+      method: 'POST',
+      body: JSON.stringify({ add_player_id: addPlayerId, drop_player_id: picked }),
+    });
+    toast(`✅ 簽入 ${r.add ?? addPlayer.name}，釋出 ${r.drop ?? ''}${r.remaining != null ? `（今日剩餘 ${r.remaining}）` : ''}`, 'info');
+    await refreshFaQuota();
+    await renderFaTable();
+  } catch (e) {
+    toast(e.message || '簽約失敗', 'error');
+  }
+}
+
+function pickDropDialog(addPlayer, roster) {
+  return new Promise((resolve) => {
+    const sorted = roster.slice().sort((a, b) => (a.fppg || 0) - (b.fppg || 0));
+    const rowsHtml = sorted.map((p, i) => `
+      <label style="display:flex; align-items:center; gap:8px; padding:8px 10px; border:1px solid var(--line-soft); border-radius:6px; margin-bottom:6px; cursor:pointer; ${i === 0 ? 'background:var(--accent-08);' : ''}">
+        <input type="radio" name="fa-drop-pid" value="${p.id}" ${i === 0 ? 'checked' : ''}>
+        <span style="flex:1;"><b>${escapeHtml(p.name)}</b> <span class="pos-tag" data-pos="${escapeHtml(p.pos || '')}" style="margin-left:6px;">${escapeHtml(p.pos || '')}</span></span>
+        <span style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">FPPG ${fppg(p.fppg)}</span>
+        ${i === 0 ? '<span class="pill accent" style="font-size:9px;">建議</span>' : ''}
+      </label>
+    `).join('');
+
+    const overlay = el('div', {
+      id: 'fa-sign-overlay',
+      style: 'position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding: var(--s-5);',
+    });
+    overlay.innerHTML = `
+      <div class="card" style="max-width: 560px; width:100%; max-height: 85vh; display:flex; flex-direction:column;">
+        <div class="card-header">
+          <h3>簽約自由球員</h3>
+          <button class="btn ghost sm" id="btn-close-fa">✕</button>
+        </div>
+        <div style="padding: var(--s-4); border-bottom: 1px solid var(--line-soft);">
+          簽入：<b>${escapeHtml(addPlayer.name)}</b>
+          <span class="pos-tag" data-pos="${escapeHtml(addPlayer.pos || '')}" style="margin-left:6px;">${escapeHtml(addPlayer.pos || '')}</span>
+          <span style="color:var(--ink-3); margin-left:8px;">FPPG ${fppg(addPlayer.fppg)}</span>
+        </div>
+        <div style="padding: var(--s-3) var(--s-4); color:var(--ink-2); font-size: var(--fs-sm);">
+          選擇一位要釋出的球員（已預選 FPPG 最低者）：
+        </div>
+        <div style="overflow:auto; flex:1; padding: 0 var(--s-4) var(--s-3);">
+          ${rowsHtml}
+        </div>
+        <div style="padding: var(--s-3) var(--s-4); display:flex; gap: var(--s-2); justify-content: flex-end; border-top: 1px solid var(--line-soft);">
+          <button class="btn ghost sm" id="btn-cancel-fa">取消</button>
+          <button class="btn sm" id="btn-confirm-fa">確認簽約</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const done = (val) => { overlay.remove(); resolve(val); };
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) done(null); });
+    $('#btn-close-fa').addEventListener('click', () => done(null));
+    $('#btn-cancel-fa').addEventListener('click', () => done(null));
+    $('#btn-confirm-fa').addEventListener('click', () => {
+      const picked = overlay.querySelector('input[name="fa-drop-pid"]:checked');
+      done(picked ? Number(picked.value) : null);
+    });
   });
 }
 
