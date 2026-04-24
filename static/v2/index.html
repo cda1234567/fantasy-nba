@@ -3,135 +3,50 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Fantasy NBA — v2</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<title>Fantasy NBA v2</title>
 <link rel="stylesheet" href="tokens.css"/>
 <link rel="stylesheet" href="shell.css"/>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: var(--fs-md); line-height: var(--lh-base); font-feature-settings: var(--feat-text); -webkit-font-smoothing: antialiased; }
-  button, input { font-family: inherit; color: inherit; }
-  a { color: inherit; text-decoration: none; }
-  h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; letter-spacing: 0; }
-  [hidden] { display: none !important; }
-  .mono { font-family: var(--mono); font-feature-settings: var(--feat-num); }
-  .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: 0; color: var(--ink-3); font-weight: 600; font-family: var(--mono); }
-  .skel { background: linear-gradient(90deg, var(--card, #1c1c1c) 0%, var(--line, #2a2a2a) 50%, var(--card, #1c1c1c) 100%); background-size: 200% 100%; animation: skel 1.2s infinite; border-radius: 8px; }
-  @keyframes skel { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
-  .skel-row { height: 14px; margin: 8px 0; }
-  .err-panel { padding: 20px; border: 1px solid var(--bad, #f87171); border-radius: 10px; background: rgba(248,113,113,0.06); color: var(--ink); margin: 16px 0; }
-  .err-panel h3 { color: var(--bad, #f87171); margin-bottom: 8px; font-size: var(--fs-md); }
-  .err-panel pre { font-family: var(--mono); font-size: 11px; color: var(--ink-3); margin: 8px 0 12px; white-space: pre-wrap; word-break: break-all; }
-  .empty-state { padding: 32px 20px; text-align: center; color: var(--ink-3); font-size: var(--fs-sm); }
-  .cmdk-item[aria-selected="true"] { background: var(--accent-14, rgba(79,140,255,0.14)); outline: 1px solid var(--accent, #4f8cff); }
-  .cmdk-item mark { background: transparent; color: var(--accent-hi, #8ab4ff); font-weight: 600; }
-  .cmdk-item .cmdk-meta { margin-left: auto; font-size: 10px; color: var(--ink-3); font-family: var(--mono); text-transform: uppercase; letter-spacing: 0; }
-  .live-pulse { display: inline-flex; align-items: center; gap: 6px; font-size: 10px; font-family: var(--mono); color: var(--good, #4ade80); text-transform: uppercase; letter-spacing: 0; font-weight: 600; }
-  .live-pulse::before { content: ''; width: 6px; height: 6px; border-radius: 999px; background: var(--good, #4ade80); box-shadow: 0 0 0 0 rgba(74,222,128,0.5); animation: livePulse 1.6s infinite; }
-  @keyframes livePulse { 0%{box-shadow:0 0 0 0 rgba(74,222,128,0.5)} 70%{box-shadow:0 0 0 6px rgba(74,222,128,0)} 100%{box-shadow:0 0 0 0 rgba(74,222,128,0)} }
-  .draft-clock-timer { font-family: var(--mono); font-size: 28px; font-weight: 700; letter-spacing: 0; margin-top: 8px; }
-  .draft-clock-timer.expired { color: var(--bad, #f87171); animation: clockFlash 1s infinite; }
-  @keyframes clockFlash { 0%,100%{opacity:1} 50%{opacity:0.35} }
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 80; display: none; align-items: center; justify-content: center; animation: fadeIn 180ms ease; }
-  .modal-backdrop.open { display: flex; }
-  .modal-card { background: var(--surface, #161616); border: 1px solid var(--line, #2a2a2a); border-radius: 12px; width: min(520px, 92vw); max-height: 86vh; overflow: auto; padding: 20px; box-shadow: 0 24px 64px rgba(0,0,0,0.5); }
-  .modal-card.wide { width: min(760px, 94vw); }
-  .modal-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-  .modal-head h3 { font-size: var(--fs-lg, 16px); font-weight: 600; flex: 1; }
-  .modal-close { background: transparent; border: 0; color: var(--ink-3); cursor: pointer; font-size: 18px; padding: 4px 8px; border-radius: 6px; }
-  .modal-close:hover { background: var(--line-soft, #222); color: var(--ink); }
-  .league-menu { position: absolute; top: 54px; left: 120px; z-index: 70; background: var(--surface, #161616); border: 1px solid var(--line, #2a2a2a); border-radius: 10px; min-width: 220px; padding: 6px; box-shadow: 0 16px 40px rgba(0,0,0,0.45); display: none; }
-  .league-menu.open { display: block; }
-  .league-menu-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: var(--fs-sm, 13px); }
-  .league-menu-item:hover { background: var(--line-soft, #222); }
-  .league-menu-item.active { background: var(--accent-14, rgba(79,140,255,0.14)); color: var(--accent-hi, #8ab4ff); }
-  .slot { cursor: pointer; }
-  .slot:hover { background: var(--line-soft, #222); }
-  .trade-builder-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .trade-builder-panel .tb-col { border: 1px solid var(--line, #2a2a2a); border-radius: 8px; padding: 10px; max-height: 360px; overflow: auto; }
-  .trade-builder-panel .tb-col h4 { font-size: var(--fs-sm, 13px); margin-bottom: 8px; }
-  .tb-player { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font-size: var(--fs-sm, 13px); border-radius: 4px; cursor: pointer; }
-  .tb-player:hover { background: var(--line-soft, #222); }
-  .tb-player input { cursor: pointer; }
-</style>
 </head>
 <body>
-
 <div class="app" id="app">
-  <!-- ===================== HEADER ===================== -->
-  <header class="shell-header">
-    <div class="brand">
-      <div class="brand-mark">NF</div>
-      <div class="brand-name">Fantasy NBA <span class="sub">/ v2</span></div>
-    </div>
-    <button class="league-switch" title="切換聯盟">
-      <span class="phase-dot"></span>
-      <span id="header-league-name">絕地爆米花盃 · 12人</span>
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
-    </button>
-    <button id="new-league-btn" style="flex-shrink:0;background:var(--accent,#7c6aff);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:var(--sans)">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>新聯盟
-    </button>
-    <button class="cmd-trigger" id="cmd-open">
-      <svg class="ct-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <span class="ct-text">搜尋球員、指令…</span>
-      <span class="kbd">⌘K</span>
-    </button>
-    <div class="header-actions">
-      <button class="icon-btn" id="notifications-btn" title="通知" aria-label="通知">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
-      </button>
-      <button class="icon-btn" id="settings-btn" title="設定" aria-label="設定">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-      </button>
-      <button class="me-chip" id="me-chip" title="我的球隊" aria-label="我的球隊">
-        <div class="av sm" data-grad="1">ME</div>
-        <span class="me-chip-name">—</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- ===================== NAV ===================== -->
-  <nav class="shell-nav" id="nav"></nav>
-
-  <!-- ===================== MAIN ===================== -->
-  <main class="shell-main" id="main"></main>
-
-  <!-- ===================== RIGHT RAIL ===================== -->
-  <aside class="shell-rail" id="rail"></aside>
-
-  <!-- ===================== MOBILE TABBAR ===================== -->
-  <div class="shell-tabbar" id="tabbar"></div>
+    <header class="shell-header">
+        <div class="brand">
+            <div class="brand-mark">NF</div>
+            <div class="brand-name">Fantasy NBA <span class="sub">/ v2</span></div>
+        </div>
+        <div class="league-switch" id="header-league-name">
+            <span class="phase-dot"></span>
+            <span id="league-name-text">NBA Fantasy</span>
+        </div>
+        <div class="header-actions" style="margin-left:auto;">
+            <span id="conn-dot" class="pill" style="font-size:10px;">—</span>
+            <button class="icon-btn" id="btn-reset-draft" title="重置選秀">↻</button>
+            <div class="me-chip">
+                <div class="av sm" data-grad="1">ME</div>
+                <span class="me-chip-name">經理</span>
+            </div>
+        </div>
+    </header>
+    <nav class="shell-nav" id="nav">
+        <a class="nav-item" href="#/draft"    data-route="draft">    <span class="ni-ic">🎯</span> 選秀</a>
+        <a class="nav-item" href="#/teams"    data-route="teams">    <span class="ni-ic">👥</span> 隊伍</a>
+        <a class="nav-item" href="#/fa"       data-route="fa">       <span class="ni-ic">🔁</span> 自由球員</a>
+        <a class="nav-item" href="#/league"   data-route="league">   <span class="ni-ic">🏆</span> 聯盟</a>
+        <a class="nav-item" href="#/schedule" data-route="schedule"> <span class="ni-ic">📅</span> 賽程</a>
+        <a class="nav-item" href="#/trades"   data-route="trades">   <span class="ni-ic">🤝</span> 交易</a>
+    </nav>
+    <main class="shell-main" id="main" tabindex="-1"></main>
+    <aside class="shell-rail" id="rail">
+        <div class="rail-section">
+            <div class="rail-head">聯盟動態</div>
+            <div class="news-feed" id="rail-feed">
+                <div style="color:var(--ink-3); font-size: var(--fs-xs); padding: 12px;">尚無動態</div>
+            </div>
+        </div>
+    </aside>
 </div>
-
-<!-- ===================== CMDK MODAL ===================== -->
-<div class="cmdk-backdrop" id="cmdk-bd">
-  <div class="cmdk" role="dialog" aria-label="指令面板">
-    <div class="cmdk-input">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input type="text" id="cmdk-q" placeholder="跳到頁面、搜尋球員、下指令…" autocomplete="off"/>
-      <span class="kbd">ESC</span>
-    </div>
-    <div class="cmdk-list" id="cmdk-list"></div>
-  </div>
-</div>
-
-<!-- ===================== LEAGUE MENU ===================== -->
-<div class="league-menu" id="league-menu"></div>
-
-<!-- ===================== MODAL ===================== -->
-<div class="modal-backdrop" id="modal-bd">
-  <div class="modal-card" id="modal-card"></div>
-</div>
-
-<!-- ===================== TOASTS ===================== -->
-<div class="toast-stack" id="toasts"></div>
-
-<!-- ===================== APP ===================== -->
+<div class="toast-stack" id="toast-stack"></div>
 <script src="data.js"></script>
 <script src="app.js"></script>
-
 </body>
 </html>
