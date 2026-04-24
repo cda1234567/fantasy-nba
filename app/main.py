@@ -1,12 +1,13 @@
 """FastAPI entry point: static file mount + draft & season APIs."""
 from __future__ import annotations
 
+import contextvars
 import json
 import os
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Response
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -57,7 +58,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.18"
+APP_VERSION = "v26.04.24.19"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -77,6 +78,24 @@ else:
 
 app = FastAPI(title="Fantasy NBA Draft Sim", version=APP_VERSION)
 app.include_router(injuries_router)
+
+
+@app.middleware("http")
+async def _resolve_active_league(request, call_next):
+    """Pin the active league for the duration of a request.
+
+    Must run BEFORE any endpoint touches ``_get_storage()`` / ``_get_draft()``
+    so those helpers see the right ContextVar value. Falling back to the
+    module-level LEAGUE_ID default keeps prior single-user behaviour intact
+    when no cookie is present.
+    """
+    lid = _resolve_league_for_request(request)
+    token = _current_league_var.set(lid)
+    try:
+        response = await call_next(request)
+    finally:
+        _current_league_var.reset(token)
+    return response
 
 
 @app.middleware("http")
@@ -120,11 +139,29 @@ async def _security_and_cache_headers(request, call_next):
             response.headers.setdefault("Cache-Control", "no-store")
     return response
 
-# Lock guarding module-global reassignment during /api/leagues/switch.
+# Lock guarding lazy cache population for Storage/DraftState per league.
 import threading as _threading
 _league_lock = _threading.Lock()
 
-storage = Storage(DATA_DIR, league_id=LEAGUE_ID)
+# ---------------------------------------------------------------------------
+# Per-request league isolation
+# ---------------------------------------------------------------------------
+# Prior design kept a single module-global ``storage`` / ``draft`` that every
+# request shared. Any client hitting /api/leagues/switch flipped those globals
+# for ALL concurrent users. The new scheme:
+#   1. A ContextVar holds the "active league" for the current request.
+#   2. A middleware reads a ``league_id`` cookie (fallback: ?league_id= query,
+#      then the pointer-resolved initial LEAGUE_ID).
+#   3. Storage + DraftState live in per-league caches, built lazily on first
+#      access via ``_get_storage()`` / ``_get_draft()``.
+# Each user's browser tab keeps its own cookie, so switching leagues is a
+# per-client concern — no more cross-user interference.
+_current_league_var: contextvars.ContextVar[str] = contextvars.ContextVar(
+    "current_league_id", default=LEAGUE_ID
+)
+
+_storage_cache: dict[str, "Storage"] = {}
+_draft_cache: dict[str, "DraftState"] = {}
 
 # ---------------------------------------------------------------------------
 # Startup: respect saved league settings if setup_complete=True
@@ -150,7 +187,66 @@ def _build_draft_for(storage_obj: Storage) -> DraftState:
     return d
 
 
-draft = _build_draft_for(storage)
+def _get_storage() -> Storage:
+    """Return the Storage for the current request's league, creating on first use."""
+    lid = _current_league_var.get()
+    s = _storage_cache.get(lid)
+    if s is not None:
+        return s
+    with _league_lock:
+        s = _storage_cache.get(lid)
+        if s is None:
+            s = Storage(DATA_DIR, league_id=lid)
+            _storage_cache[lid] = s
+    return s
+
+
+def _get_draft() -> DraftState:
+    """Return the DraftState for the current request's league, creating on first use."""
+    lid = _current_league_var.get()
+    d = _draft_cache.get(lid)
+    if d is not None:
+        return d
+    with _league_lock:
+        d = _draft_cache.get(lid)
+        if d is None:
+            d = _build_draft_for(_get_storage())
+            _draft_cache[lid] = d
+    return d
+
+
+def _resolve_league_for_request(request) -> str:
+    """Pick the active league for this request.
+
+    Priority: cookie > query param > module-level LEAGUE_ID fallback.
+    Invalid ids (missing league dir, fails validation) silently fall back so a
+    stale cookie never 500s the whole app; they just see the default league.
+    """
+    leagues_root = (DATA_DIR / "leagues").resolve()
+
+    def _valid(candidate: str | None) -> str | None:
+        if not candidate:
+            return None
+        try:
+            lid = _validate_league_id(candidate)
+        except ValueError:
+            return None
+        target = (leagues_root / lid).resolve()
+        if target == leagues_root or leagues_root not in target.parents:
+            return None
+        if not target.is_dir():
+            return None
+        return lid
+
+    cookie_lid = _valid(request.cookies.get("league_id"))
+    if cookie_lid:
+        return cookie_lid
+    query_lid = _valid(request.query_params.get("league_id"))
+    if query_lid:
+        return query_lid
+    return LEAGUE_ID
+
+
 ai_gm = AIGM(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
@@ -184,32 +280,52 @@ def _repair_legacy_league_names() -> None:
 _repair_legacy_league_names()
 
 
-def _switch_league(new_league_id: str) -> None:
-    """Reassign module-level storage + draft for the given league.
+def _validate_switch_target(new_league_id: str) -> str:
+    """Validate a league id and ensure its directory exists.
 
-    Safe under threadpool concurrency via _league_lock. After switching, the
-    active-league pointer is persisted so subsequent restarts default here.
+    Returns the normalised league id. Raises ValueError on any problem.
+    Used by /api/leagues/switch and /api/leagues/create to refuse cookies for
+    leagues that don't exist on disk.
     """
-    global storage, draft, LEAGUE_ID
     new_league_id = _validate_league_id(new_league_id)
     leagues_root = (DATA_DIR / "leagues").resolve()
     target = (leagues_root / new_league_id).resolve()
-    # Defense in depth: refuse anything that escapes leagues_root
     if target == leagues_root or leagues_root not in target.parents:
         raise ValueError("invalid league path")
     if not target.is_dir():
         raise ValueError(f"league '{new_league_id}' does not exist")
+    return new_league_id
+
+
+def _apply_league_cookie(response: Response, league_id: str) -> None:
+    """Set the per-client league cookie so subsequent requests stay isolated.
+
+    httponly=False because the frontend never reads it — browser same-origin
+    fetches send cookies automatically — but leaving it accessible is harmless
+    and makes debugging simpler. samesite=lax is enough for the UI since all
+    /api/* calls are same-origin.
+    """
+    response.set_cookie(
+        "league_id",
+        league_id,
+        max_age=31536000,  # 1 year
+        httponly=False,
+        samesite="lax",
+        path="/",
+    )
+
+
+def _prime_league_cache(league_id: str) -> None:
+    """Eagerly warm Storage + DraftState for a league id.
+
+    Called after create/switch so the very next request from the same client
+    (which arrives with the new cookie) doesn't pay the build cost inline.
+    """
     with _league_lock:
-        new_storage = Storage(DATA_DIR, league_id=new_league_id)
-        new_draft = _build_draft_for(new_storage)
-        storage = new_storage
-        draft = new_draft
-        LEAGUE_ID = new_league_id
-    try:
-        set_active_league(DATA_DIR, new_league_id)
-    except Exception as _exc:
-        import sys as _sys
-        print(f"[switch] set_active_league failed: {_exc!r}", file=_sys.stderr)
+        if league_id not in _storage_cache:
+            _storage_cache[league_id] = Storage(DATA_DIR, league_id=league_id)
+        if league_id not in _draft_cache:
+            _draft_cache[league_id] = _build_draft_for(_storage_cache[league_id])
 
 
 # ---------------------------------------------------------------------------
@@ -246,34 +362,34 @@ def index_v1():
 # Helpers
 # ---------------------------------------------------------------------------
 def _current_settings() -> LeagueSettings:
-    return storage.load_league_settings()
+    return _get_storage().load_league_settings()
 
 
 def _state_snapshot() -> DraftStateOut:
     settings = _current_settings()
-    num_teams = draft._num_teams
-    roster_size = draft._roster_size
-    rnd, pos, team_id = draft.current_pointers()
+    num_teams = _get_draft()._num_teams
+    roster_size = _get_draft()._roster_size
+    rnd, pos, team_id = _get_draft().current_pointers()
     return DraftStateOut(
-        teams=draft.teams,
-        picks=draft.picks,
-        board=draft.board(),
-        current_overall=draft.current_overall if not draft.is_complete else num_teams * roster_size + 1,
+        teams=_get_draft().teams,
+        picks=_get_draft().picks,
+        board=_get_draft().board(),
+        current_overall=_get_draft().current_overall if not _get_draft().is_complete else num_teams * roster_size + 1,
         current_round=rnd,
         current_pick_in_round=pos,
         current_team_id=team_id,
-        is_complete=draft.is_complete,
-        available_count=len(draft.available_players()),
+        is_complete=_get_draft().is_complete,
+        available_count=len(_get_draft().available_players()),
         total_rounds=roster_size,
         num_teams=num_teams,
-        human_team_id=draft.human_team_id,
-        human_draft_position=draft.human_draft_position,
+        human_team_id=_get_draft().human_team_id,
+        human_draft_position=_get_draft().human_draft_position,
     )
 
 
 def _persist_draft() -> None:
     try:
-        storage.save_draft(draft.snapshot())
+        _get_storage().save_draft(_get_draft().snapshot())
     except Exception as exc:
         import traceback, sys
         print(f"[persist] save_draft failed: {exc!r}", file=sys.stderr)
@@ -281,7 +397,7 @@ def _persist_draft() -> None:
 
 
 def _load_or_init_season() -> Optional[SeasonState]:
-    raw = storage.load_season()
+    raw = _get_storage().load_season()
     if not raw:
         return None
     try:
@@ -302,7 +418,7 @@ def _load_or_init_season() -> Optional[SeasonState]:
                 remapped = True
         if remapped:
             try:
-                storage.save_season(state.model_dump())
+                _get_storage().save_season(state.model_dump())
             except Exception as exc:
                 import traceback, sys
                 print(f"[season] save after model remap failed: {exc!r}", file=sys.stderr)
@@ -382,7 +498,7 @@ def health():
     return {
         "ok": True,
         "version": APP_VERSION,
-        "league_id": LEAGUE_ID,
+        "league_id": _current_league_var.get(),
         "ai_enabled": ai_gm.enabled,
     }
 
@@ -402,41 +518,66 @@ class SwitchLeagueRequest(BaseModel):
 @app.get("/api/leagues/list")
 def leagues_list():
     items = storage_list_leagues(DATA_DIR)
-    return {"leagues": items, "active": LEAGUE_ID}
+    return {"leagues": items, "active": _current_league_var.get()}
 
 
 @app.post("/api/leagues/create")
-def leagues_create(req: CreateLeagueRequest):
+def leagues_create(req: CreateLeagueRequest, response: Response):
     try:
         storage_create_league(DATA_DIR, req.league_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    active = _current_league_var.get()
     if req.switch:
         try:
-            _switch_league(req.league_id)
+            target = _validate_switch_target(req.league_id)
         except ValueError as e:
             raise HTTPException(400, str(e))
-    return {"ok": True, "active": LEAGUE_ID}
+        # Per-request isolation: set cookie on the client and prime caches.
+        # The active-league pointer on disk is also updated so ops/restart
+        # defaults follow the most-recent create.
+        _apply_league_cookie(response, target)
+        _prime_league_cache(target)
+        try:
+            set_active_league(DATA_DIR, target)
+        except Exception as _exc:
+            import sys as _sys
+            print(f"[create] set_active_league failed: {_exc!r}", file=_sys.stderr)
+        active = target
+    return {"ok": True, "active": active}
 
 
 @app.post("/api/leagues/switch")
-def leagues_switch(req: SwitchLeagueRequest):
+def leagues_switch(req: SwitchLeagueRequest, response: Response):
     try:
-        _switch_league(req.league_id)
+        target = _validate_switch_target(req.league_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    return {"ok": True, "active": LEAGUE_ID}
+    _apply_league_cookie(response, target)
+    _prime_league_cache(target)
+    try:
+        set_active_league(DATA_DIR, target)
+    except Exception as _exc:
+        import sys as _sys
+        print(f"[switch] set_active_league failed: {_exc!r}", file=_sys.stderr)
+    return {"ok": True, "active": target}
 
 
 @app.post("/api/leagues/delete")
 def leagues_delete(req: SwitchLeagueRequest):
-    # Refuse to delete the currently-active league (prevents orphaning globals)
-    if req.league_id == LEAGUE_ID:
+    # Refuse to delete the league THIS client is currently viewing. Under
+    # per-request isolation, only the requester's cookie matters — other
+    # clients with different cookies can keep using their own leagues.
+    if req.league_id == _current_league_var.get():
         raise HTTPException(400, "無法刪除當前使用中的聯盟,請先切換到其他聯盟")
     try:
         storage_delete_league(DATA_DIR, req.league_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    # Drop any cached Storage/DraftState so a re-creation starts clean.
+    with _league_lock:
+        _storage_cache.pop(req.league_id, None)
+        _draft_cache.pop(req.league_id, None)
     return {"ok": True}
 
 
@@ -494,12 +635,12 @@ def get_league_settings():
 
 @app.post("/api/league/settings")
 def patch_league_settings(body: dict[str, Any]):
-    # Pin the storage reference for the whole read-modify-write. The module
-    # global `storage` can be reassigned by a concurrent /api/league/switch,
-    # which caused stress agent 4's settings leak: thread A read from league
-    # X, thread B swapped storage to Y, thread A wrote to Y's file.
+    # Pin the storage reference for the whole read-modify-write. Per-request
+    # isolation means `_get_storage()` already returns the caller's league,
+    # but we still take the lock + local alias so cache construction (if any)
+    # happens exactly once across concurrent settings writes.
     with _league_lock:
-        local_storage = storage
+        local_storage = _get_storage()
     settings = local_storage.load_league_settings()
     if settings.setup_complete:
         forbidden = set(body.keys()) - _MID_SEASON_ALLOWED
@@ -546,17 +687,17 @@ def league_setup(body: LeagueSettings):
 
     # Mark complete and persist
     body.setup_complete = True
-    storage.save_league_settings(body)
+    _get_storage().save_league_settings(body)
 
     # Re-initialize draft with new settings
-    draft.reset(
+    _get_draft().reset(
         randomize_order=body.randomize_draft_order,
         seed=int(_time.time() * 1000) & 0xFFFFFFFF,
         settings=body,
     )
     _persist_draft()
-    storage.clear_season()
-    storage.clear_trades()
+    _get_storage().clear_season()
+    _get_storage().clear_trades()
 
     return _state_snapshot().model_dump()
 
@@ -596,7 +737,7 @@ def list_players(
     pos: Optional[str] = None,
     exclude_injured: bool = False,
 ):
-    pool = draft.available_players() if available else list(draft.players)
+    pool = _get_draft().available_players() if available else list(_get_draft().players)
     if q:
         ql = q.lower()
         pool = [p for p in pool if ql in p.name.lower() or ql in p.team.lower()]
@@ -622,7 +763,7 @@ def list_players(
 
     reverse = sort != "name" and sort != "to"
     pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
-    prev_map = getattr(draft, "_prev_fppg_map", {}) or {}
+    prev_map = getattr(_get_draft(), "_prev_fppg_map", {}) or {}
     out = []
     for p in pool[:limit]:
         row = p.model_dump()
@@ -637,14 +778,14 @@ def list_players(
 
 @app.get("/api/teams/{team_id}")
 def get_team(team_id: int):
-    if team_id < 0 or team_id >= draft._num_teams:
+    if team_id < 0 or team_id >= _get_draft()._num_teams:
         raise HTTPException(404, "Unknown team_id")
-    team = draft.teams[team_id]
+    team = _get_draft().teams[team_id]
     # Attach injury status + compute slot assignment for the 10 starters.
     season = _load_or_init_season()
     players = []
     for pid in team.roster:
-        row = draft.players_by_id[pid].model_dump()
+        row = _get_draft().players_by_id[pid].model_dump()
         form = _player_form_5(pid, season)
         row["form"] = form
         row["status"] = _player_status(pid, season, form)
@@ -667,11 +808,11 @@ def get_team(team_id: int):
 
     if lineup_override:
         # Build slot_rows from the override order (assign_slots greedily from overridden starters)
-        valid_override = [pid for pid in lineup_override if pid in draft.players_by_id and pid not in injured_out]
-        slot_rows = _assign_slots(valid_override, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
+        valid_override = [pid for pid in lineup_override if pid in _get_draft().players_by_id and pid not in injured_out]
+        slot_rows = _assign_slots(valid_override, _get_draft().players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
         assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
     else:
-        slot_rows = _assign_slots(healthy, draft.players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
+        slot_rows = _assign_slots(healthy, _get_draft().players_by_id, LINEUP_SLOTS[:LINEUP_SIZE])
         assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
 
     # Bench = non-slot players, including injured ones so they remain visible
@@ -692,7 +833,7 @@ def get_team(team_id: int):
     return {
         "team": team.model_dump(),
         "players": players,
-        "totals": draft.team_totals(team_id),
+        "totals": _get_draft().team_totals(team_id),
         "persona_desc": GM_PERSONAS[team.gm_persona]["desc"] if team.gm_persona else None,
         "lineup_slots": slot_rows,   # [{slot, player_id|None}, ...]
         "bench": bench,              # roster ids not in any slot (includes injured)
@@ -716,13 +857,13 @@ def _maybe_draft_commentary(pick) -> list[dict]:
         if _rnd.random() >= 0.25:
             return []
         candidates = [
-            t for t in draft.teams
+            t for t in _get_draft().teams
             if not t.is_human and t.id != pick.team_id
         ]
         if not candidates:
             return []
         speaker = _rnd.choice(candidates)
-        text = ai_gm.pick_commentary(pick, draft, speaker)
+        text = ai_gm.pick_commentary(pick, _get_draft(), speaker)
         if not text:
             return []
         return [{
@@ -739,15 +880,15 @@ def _maybe_draft_commentary(pick) -> list[dict]:
 def human_pick(req: PickRequest):
     _require_setup()
     try:
-        pick = draft.human_pick(req.player_id)
+        pick = _get_draft().human_pick(req.player_id)
     except ValueError as e:
         msg = str(e)
         if "not the human's turn" in msg:
-            _, _, next_team = draft.current_pointers()
+            _, _, next_team = _get_draft().current_pointers()
             raise HTTPException(400, {
                 "detail": "human_slot_already_consumed",
                 "next_picker": next_team,
-                "is_complete": draft.is_complete,
+                "is_complete": _get_draft().is_complete,
             })
         raise HTTPException(400, msg)
     _persist_draft()
@@ -761,17 +902,17 @@ def human_pick(req: PickRequest):
 @app.post("/api/draft/ai-advance")
 def ai_advance():
     _require_setup()
-    if draft.is_complete:
+    if _get_draft().is_complete:
         return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
-    _, _, team_id = draft.current_pointers()
+    _, _, team_id = _get_draft().current_pointers()
     # Snake-round turnarounds produce back-to-back human picks (e.g. #16→#17
     # for an 8-team draft with the human at position 1). The auto-advance
     # timer and race conditions can call this endpoint when it's the human's
     # turn; return a no-op snapshot instead of 409 so the client can simply
     # refresh state and stop the loop.
-    if team_id == draft.human_team_id:
+    if team_id == _get_draft().human_team_id:
         return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
-    pick = draft.ai_pick()
+    pick = _get_draft().ai_pick()
     _persist_draft()
     return {
         "pick": pick.model_dump() if pick else None,
@@ -783,7 +924,7 @@ def ai_advance():
 @app.post("/api/draft/sim-to-me")
 def sim_to_me():
     _require_setup()
-    made = draft.sim_to_human()
+    made = _get_draft().sim_to_human()
     _persist_draft()
     return {
         "picks": [p.model_dump() for p in made],
@@ -806,14 +947,14 @@ def reset_draft(req: ResetRequestV2 = ResetRequestV2()):
         if not season_file.exists():
             raise HTTPException(400, f"season_year '{req.season_year}' not found")
         settings = settings.model_copy(update={"season_year": req.season_year})
-    draft.reset(
+    _get_draft().reset(
         randomize_order=req.randomize_order,
         seed=seed,
         settings=settings if settings.setup_complete or req.season_year else None,
     )
     _persist_draft()
-    storage.clear_season()
-    storage.clear_trades()
+    _get_storage().clear_season()
+    _get_storage().clear_trades()
     return _state_snapshot()
 
 
@@ -823,7 +964,7 @@ def reset_draft(req: ResetRequestV2 = ResetRequestV2()):
 @app.post("/api/season/start")
 def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
     _require_setup()
-    if not draft.is_complete:
+    if not _get_draft().is_complete:
         raise HTTPException(400, "Draft is not complete")
     # Refuse to silently wipe an existing season. Callers that want a fresh
     # start must hit /api/season/reset first (explicit, Chinese-labelled in UI).
@@ -836,7 +977,7 @@ def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
             "賽季已存在，請先使用「重置賽季」清除後再開始。",
         )
     settings = _current_settings()
-    state = season_start(draft, storage, settings=settings)
+    state = season_start(_get_draft(), _get_storage(), settings=settings)
     return state.model_dump()
 
 
@@ -846,7 +987,7 @@ def season_advance_day_endpoint(req: AdvanceRequest = AdvanceRequest()):
     state = _require_season()
     settings = _current_settings()
     state = season_advance_day(
-        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
 
@@ -857,7 +998,7 @@ def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest()):
     state = _require_season()
     settings = _current_settings()
     state = season_advance_week(
-        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
 
@@ -875,7 +1016,7 @@ def season_advance_week_stream(use_ai: bool = True):
                 if state.champion is not None:
                     break
                 state = season_advance_day(
-                    draft, state, storage, ai_gm=ai_gm, use_ai=use_ai, settings=settings
+                    _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=use_ai, settings=settings
                 )
                 yield f"data: {json.dumps({'day': state.current_day, 'week': state.current_week})}\n\n"
                 if state.current_day % 7 == 0:
@@ -893,7 +1034,7 @@ def season_sim_to_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
     state = _require_season()
     settings = _current_settings()
     state = season_sim_to_playoffs(
-        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
 
@@ -904,7 +1045,7 @@ def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
     state = _require_season()
     settings = _current_settings()
     state = season_sim_playoffs(
-        draft, state, storage, ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
 
@@ -932,7 +1073,7 @@ def fa_claim_status():
         }
     today = state.current_day
     used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
-    human_team_id = draft.human_team_id
+    human_team_id = _get_draft().human_team_id
     budget = 100
     if human_team_id is not None:
         budget = int(state.waiver_budgets.get(human_team_id, 100))
@@ -949,7 +1090,7 @@ def fa_claim_status():
 def fa_claim(req: FAClaimRequest):
     state = _require_season()
     # Find the human team
-    human = next((t for t in draft.teams if t.is_human), None)
+    human = next((t for t in _get_draft().teams if t.is_human), None)
     if human is None:
         raise HTTPException(400, "此聯盟沒有玩家隊伍")
 
@@ -957,9 +1098,9 @@ def fa_claim(req: FAClaimRequest):
     if req.drop_player_id not in human.roster:
         raise HTTPException(400, "釋出的球員不在你的陣容中")
     # Validate add: must exist and not on any roster
-    if req.add_player_id not in draft.players_by_id:
+    if req.add_player_id not in _get_draft().players_by_id:
         raise HTTPException(400, "找不到此球員")
-    on_any_roster = {pid for t in draft.teams for pid in t.roster}
+    on_any_roster = {pid for t in _get_draft().teams for pid in t.roster}
     if req.add_player_id in on_any_roster:
         raise HTTPException(400, "此球員已被其他隊伍簽走")
 
@@ -978,8 +1119,8 @@ def fa_claim(req: FAClaimRequest):
     # and claimed player disappears from FA pool)
     human.roster = [p for p in human.roster if p != req.drop_player_id]
     human.roster.append(req.add_player_id)
-    draft.drafted_ids.discard(req.drop_player_id)
-    draft.drafted_ids.add(req.add_player_id)
+    _get_draft().drafted_ids.discard(req.drop_player_id)
+    _get_draft().drafted_ids.add(req.add_player_id)
 
     # Deduct FAAB
     state.waiver_budgets[human.id] = budget - req.bid
@@ -995,21 +1136,21 @@ def fa_claim(req: FAClaimRequest):
 
     # Persist
     try:
-        storage.save_draft(draft.snapshot())
+        _get_storage().save_draft(_get_draft().snapshot())
     except Exception as exc:
         import traceback, sys
         print(f"[waiver] save_draft failed: {exc!r}", file=sys.stderr)
         traceback.print_exc()
     try:
-        storage.save_season(state.model_dump())
+        _get_storage().save_season(state.model_dump())
     except Exception as exc:
         import traceback, sys
         print(f"[waiver] save_season failed: {exc!r}", file=sys.stderr)
         traceback.print_exc()
 
-    drop_name = draft.players_by_id[req.drop_player_id].name
-    add_name = draft.players_by_id[req.add_player_id].name
-    storage.append_log({
+    drop_name = _get_draft().players_by_id[req.drop_player_id].name
+    add_name = _get_draft().players_by_id[req.add_player_id].name
+    _get_storage().append_log({
         "type": "fa_claim",
         "team_id": human.id,
         "drop": req.drop_player_id,
@@ -1039,7 +1180,7 @@ class LineupOverrideRequest(BaseModel):
 def set_lineup_override(req: LineupOverrideRequest):
     """Human user manually sets their 10 starters. Persists until cleared (or one-shot if today_only)."""
     state = _require_season()
-    human = next((t for t in draft.teams if t.is_human), None)
+    human = next((t for t in _get_draft().teams if t.is_human), None)
     if human is None:
         raise HTTPException(400, "找不到人類隊伍")
     if req.team_id != human.id:
@@ -1047,7 +1188,7 @@ def set_lineup_override(req: LineupOverrideRequest):
 
     from .season import SLOT_ELIGIBILITY, _player_positions, LINEUP_SIZE
     lineup_sz = LINEUP_SIZE
-    settings = storage.load_league_settings()
+    settings = _get_storage().load_league_settings()
     if settings is not None:
         lineup_sz = settings.starters_per_day
 
@@ -1060,7 +1201,7 @@ def set_lineup_override(req: LineupOverrideRequest):
     for pid in req.starters:
         if pid not in roster_set:
             raise HTTPException(400, f"球員 {pid} 不在你的名單中")
-        player = draft.players_by_id.get(pid)
+        player = _get_draft().players_by_id.get(pid)
         if player is None:
             raise HTTPException(400, f"找不到球員 {pid}")
         # Check player can fill at least one slot
@@ -1073,7 +1214,7 @@ def set_lineup_override(req: LineupOverrideRequest):
             raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
 
     # Feasibility check: ensure all 10 slots can be filled
-    unfilled = check_lineup_feasibility(list(req.starters), draft.players_by_id)
+    unfilled = check_lineup_feasibility(list(req.starters), _get_draft().players_by_id)
     if unfilled:
         slots_str = '/'.join(unfilled)
         raise HTTPException(400, f'這 10 位球員無法填滿全部先發位置 (缺:{slots_str})')
@@ -1083,8 +1224,8 @@ def set_lineup_override(req: LineupOverrideRequest):
         state.lineup_override_today_only[human.id] = True
     else:
         state.lineup_override_today_only.pop(human.id, None)
-    storage.save_season(state.model_dump())
-    storage.append_log({
+    _get_storage().save_season(state.model_dump())
+    _get_storage().append_log({
         "type": "lineup_override_set",
         "team_id": human.id,
         "starters": req.starters,
@@ -1097,7 +1238,7 @@ def set_lineup_override(req: LineupOverrideRequest):
 def clear_lineup_override(team_id: int):
     """Reset human lineup override back to auto."""
     state = _require_season()
-    human = next((t for t in draft.teams if t.is_human), None)
+    human = next((t for t in _get_draft().teams if t.is_human), None)
     if human is None:
         raise HTTPException(400, "找不到人類隊伍")
     if team_id != human.id:
@@ -1105,8 +1246,8 @@ def clear_lineup_override(team_id: int):
 
     state.lineup_overrides.pop(human.id, None)
     state.lineup_override_today_only.pop(human.id, None)
-    storage.save_season(state.model_dump())
-    storage.append_log({"type": "lineup_override_cleared", "team_id": human.id})
+    _get_storage().save_season(state.model_dump())
+    _get_storage().append_log({"type": "lineup_override_cleared", "team_id": human.id})
     return {"ok": True}
 
 
@@ -1124,7 +1265,7 @@ def clear_lineup_override_alerts():
     """Clear the pending lineup_override_alerts list (called by UI after showing toasts)."""
     state = _require_season()
     state.lineup_override_alerts = []
-    storage.save_season(state.model_dump())
+    _get_storage().save_season(state.model_dump())
     return {"ok": True}
 
 
@@ -1139,7 +1280,7 @@ def season_standings():
     settings = _current_settings()
     reg_weeks = settings.regular_season_weeks if settings.setup_complete else REGULAR_WEEKS
     rows = []
-    for team in draft.teams:
+    for team in _get_draft().teams:
         s = state.standings.get(team.id, {"w": 0, "l": 0, "pf": 0, "pa": 0})
         rows.append({
             "team_id": team.id,
@@ -1152,7 +1293,7 @@ def season_standings():
             "pa": round(float(s.get("pa", 0.0)), 2),
         })
     rows.sort(key=lambda r: (r["w"], r["pf"]), reverse=True)
-    mgr = TradeManager(storage, draft, state, settings=settings if settings.setup_complete else None)
+    mgr = TradeManager(_get_storage(), _get_draft(), state, settings=settings if settings.setup_complete else None)
     return {
         "standings": rows,
         "current_week": state.current_week,
@@ -1184,13 +1325,13 @@ def season_matchup(week: int = Query(..., ge=1)):
 
 @app.get("/api/season/logs")
 def season_logs(limit: int = Query(50, ge=1, le=500)):
-    return {"logs": storage.load_log(limit=limit)}
+    return {"logs": _get_storage().load_log(limit=limit)}
 
 
 @app.get("/api/season/activity")
 def season_activity(limit: int = Query(20, ge=1, le=100)):
     """Return up to `limit` notable activity feed entries, newest first."""
-    teams_by_id: dict[int, str] = {t.id: t.name for t in draft.teams}
+    teams_by_id: dict[int, str] = {t.id: t.name for t in _get_draft().teams}
 
     def _team(tid) -> str:
         return teams_by_id.get(tid, f"隊伍{tid}")
@@ -1236,7 +1377,7 @@ def season_activity(limit: int = Query(20, ge=1, le=100)):
             return f"🏆 {_team(e.get('team_id','?'))} 奪冠！"
         return t
 
-    raw = storage.load_log(limit=50)
+    raw = _get_storage().load_log(limit=50)
     notable = [e for e in raw if e.get("type") in NOTABLE]
     notable = list(reversed(notable))[:limit]
 
@@ -1259,7 +1400,7 @@ def season_activity(limit: int = Query(20, ge=1, le=100)):
 def season_ai_models():
     state = _require_season()
     result: dict[str, dict] = {}
-    for team in draft.teams:
+    for team in _get_draft().teams:
         if team.is_human:
             continue
         model_id = state.ai_models.get(team.id, "anthropic/claude-haiku-4.5")
@@ -1269,9 +1410,9 @@ def season_ai_models():
 
 @app.post("/api/season/reset")
 def season_reset():
-    storage.clear_season()
-    storage.clear_trades()
-    storage.append_log({"type": "season_reset"})
+    _get_storage().clear_season()
+    _get_storage().clear_trades()
+    _get_storage().append_log({"type": "season_reset"})
     return {"ok": True}
 
 
@@ -1287,9 +1428,9 @@ def season_week_recap(week: int = Query(..., ge=1)):
     if not week_matchups:
         raise HTTPException(404, f"Week {week} has no resolved matchups yet")
 
-    players_by_id = {p.id: p for p in draft.players}
-    teams_by_id = {t.id: t for t in draft.teams}
-    human_id = draft.human_team_id
+    players_by_id = {p.id: p for p in _get_draft().players}
+    teams_by_id = {t.id: t for t in _get_draft().teams}
+    human_id = _get_draft().human_team_id
 
     def _team_name(tid: int) -> str:
         t = teams_by_id.get(tid)
@@ -1381,8 +1522,8 @@ def season_matchup_detail(week: int = Query(..., ge=1), team_a: int = Query(...)
     if state is None or not state.started:
         raise HTTPException(409, "賽季尚未開始")
 
-    players_by_id = {p.id: p for p in draft.players}
-    teams_by_id = {t.id: t for t in draft.teams}
+    players_by_id = {p.id: p for p in _get_draft().players}
+    teams_by_id = {t.id: t for t in _get_draft().teams}
     matchup = next(
         (m for m in state.schedule
          if m.week == week and {m.team_a, m.team_b} == {team_a, team_b}),
@@ -1444,8 +1585,8 @@ def season_summary():
     state = _load_or_init_season()
     if state is None or not state.started:
         raise HTTPException(409, "賽季尚未開始")
-    players_by_id = {p.id: p for p in draft.players}
-    teams_by_id = {t.id: t for t in draft.teams}
+    players_by_id = {p.id: p for p in _get_draft().players}
+    teams_by_id = {t.id: t for t in _get_draft().teams}
 
     # aggregate player totals from game_logs
     totals: dict[int, dict] = {}
@@ -1509,7 +1650,7 @@ def season_summary():
     settings = _current_settings()
     reg_weeks = settings.regular_season_weeks if settings.setup_complete else REGULAR_WEEKS
     final_standings = []
-    for team in draft.teams:
+    for team in _get_draft().teams:
         s = state.standings.get(team.id, {"w": 0, "l": 0, "pf": 0, "pa": 0})
         final_standings.append({
             "team_id": team.id, "name": team.name,
@@ -1520,7 +1661,7 @@ def season_summary():
         })
     final_standings.sort(key=lambda r: (r["w"], r["pf"]), reverse=True)
 
-    human_team = next((t for t in draft.teams if t.is_human), None)
+    human_team = next((t for t in _get_draft().teams if t.is_human), None)
     human_id = human_team.id if human_team else None
     human_rank = None
     if human_id is not None:
@@ -1540,7 +1681,7 @@ def season_summary():
         "champion_name": champ_name,
         "human_team_id": human_id,
         "human_rank": human_rank,
-        "num_teams": len(draft.teams),
+        "num_teams": len(_get_draft().teams),
         "regular_weeks": reg_weeks,
         "final_standings": final_standings,
         "mvp": mvp,
@@ -1557,7 +1698,7 @@ def _trade_manager() -> TradeManager:
     season = _load_or_init_season() or SeasonState()
     settings = _current_settings()
     return TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
 
@@ -1584,7 +1725,7 @@ class TradeMessageRequest(BaseModel):
 def trades_pending():
     mgr = _trade_manager()
     pending = [t.model_dump() for t in mgr.pending()]
-    attention = mgr.require_human_attention(human_team_id=draft.human_team_id)
+    attention = mgr.require_human_attention(human_team_id=_get_draft().human_team_id)
     return {"pending": pending, "require_human_attention": attention}
 
 
@@ -1596,12 +1737,12 @@ def trades_history(limit: int = Query(50, ge=1, le=500)):
 
 @app.post("/api/trades/propose")
 def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
-    if req.from_team != draft.human_team_id:
+    if req.from_team != _get_draft().human_team_id:
         raise HTTPException(400, "只有玩家隊伍可透過此端點發起交易")
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     try:
@@ -1623,7 +1764,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
     if req.counter_of:
         trade.counter_of = req.counter_of
         mgr._save()
-    storage.append_log({
+    _get_storage().append_log({
         "type": "trade_proposed",
         "trade_id": trade.id,
         "from_team": trade.from_team,
@@ -1644,7 +1785,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
             if fresh_season is None:
                 return
             bg_mgr = TradeManager(
-                storage, draft, fresh_season,
+                _get_storage(), _get_draft(), fresh_season,
                 settings=settings if settings.setup_complete else None,
             )
             bg_trade = bg_mgr._find(trade_id)
@@ -1656,7 +1797,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                 import traceback, sys
                 print(f"[finalize] peer_commentary failed: {exc!r}", file=sys.stderr)
                 traceback.print_exc()
-            cp = draft.teams[to_team]
+            cp = _get_draft().teams[to_team]
             if not cp.is_human:
                 # Re-read state right before AI decision: the human may have
                 # cancelled while we were collecting peer commentary.
@@ -1664,7 +1805,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
                 if fresh2 is None:
                     return
                 bg_mgr2 = TradeManager(
-                    storage, draft, fresh2,
+                    _get_storage(), _get_draft(), fresh2,
                     settings=settings if settings.setup_complete else None,
                 )
                 bg_trade2 = bg_mgr2._find(trade_id)
@@ -1690,7 +1831,7 @@ def trades_accept(trade_id: str):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     trade = mgr._find(trade_id)
@@ -1702,7 +1843,7 @@ def trades_accept(trade_id: str):
         )
     except ValueError as e:
         raise HTTPException(400, str(e))
-    storage.append_log({
+    _get_storage().append_log({
         "type": "trade_accepted",
         "trade_id": result.id,
         "from_team": result.from_team,
@@ -1718,7 +1859,7 @@ def trades_reject(trade_id: str):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     trade = mgr._find(trade_id)
@@ -1728,7 +1869,7 @@ def trades_reject(trade_id: str):
         result = mgr.decide(trade_id, trade.to_team, False, season.current_day)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    storage.append_log({
+    _get_storage().append_log({
         "type": "trade_rejected",
         "trade_id": result.id,
         "from_team": result.from_team,
@@ -1744,14 +1885,14 @@ def trades_veto(trade_id: str, req: TradeVetoRequest):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     try:
         result = mgr.veto(trade_id, req.team_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    storage.append_log({
+    _get_storage().append_log({
         "type": "trade_veto_vote",
         "trade_id": result.id,
         "voter": req.team_id,
@@ -1766,7 +1907,7 @@ def trades_cancel(trade_id: str):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     trade = mgr._find(trade_id)
@@ -1776,7 +1917,7 @@ def trades_cancel(trade_id: str):
         result = mgr.cancel(trade_id, trade.from_team)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    storage.append_log({
+    _get_storage().append_log({
         "type": "trade_cancelled",
         "trade_id": result.id,
         "from_team": result.from_team,
@@ -1796,13 +1937,13 @@ def trades_message(trade_id: str, req: TradeMessageRequest):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
-        storage, draft, season,
+        _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
     try:
         result = mgr.add_message(
             trade_id=trade_id,
-            from_team=draft.human_team_id,
+            from_team=_get_draft().human_team_id,
             body=req.body,
             ai_gm=ai_gm,
         )
@@ -1818,8 +1959,8 @@ def trades_message(trade_id: str, req: TradeMessageRequest):
 def api_me():
     """Player dashboard summary for v2 UI home screen."""
     settings = _current_settings()
-    human_id = draft.human_team_id
-    team = draft.teams[human_id] if human_id is not None and 0 <= human_id < len(draft.teams) else None
+    human_id = _get_draft().human_team_id
+    team = _get_draft().teams[human_id] if human_id is not None and 0 <= human_id < len(_get_draft().teams) else None
     name = team.name if team else ""
     state = _load_or_init_season()
     record = {"w": 0, "l": 0, "pf": 0.0, "pa": 0.0}
@@ -1852,7 +1993,7 @@ def api_me():
 @app.get("/api/home/brief")
 def api_home_brief():
     """Narrative brief + current-week matchup for the v2 home screen."""
-    human_id = draft.human_team_id
+    human_id = _get_draft().human_team_id
     state = _load_or_init_season()
     if state is None or not state.started:
         return {
@@ -1882,7 +2023,7 @@ def api_home_brief():
                 my_score = round(float(m.score_b), 2)
                 opp_score = round(float(m.score_a), 2)
                 opp_id = m.team_a
-            opp_team = draft.teams[opp_id] if 0 <= opp_id < len(draft.teams) else None
+            opp_team = _get_draft().teams[opp_id] if 0 <= opp_id < len(_get_draft().teams) else None
             opp_name = opp_team.name if opp_team else f"T{opp_id}"
             matchup_obj = {
                 "week": week,
@@ -1914,7 +2055,7 @@ def api_home_brief():
 def api_home_actions():
     """Prioritized action items for the v2 home screen."""
     actions: list[dict] = []
-    human_id = draft.human_team_id
+    human_id = _get_draft().human_team_id
     state = _load_or_init_season()
 
     # Pending trades awaiting human decision
@@ -1922,7 +2063,7 @@ def api_home_actions():
         mgr = _trade_manager()
         for t in mgr.pending():
             if t.to_team == human_id and t.status == "pending_accept":
-                sender = draft.teams[t.from_team].name if 0 <= t.from_team < len(draft.teams) else f"T{t.from_team}"
+                sender = _get_draft().teams[t.from_team].name if 0 <= t.from_team < len(_get_draft().teams) else f"T{t.from_team}"
                 actions.append({
                     "id": f"trade-{t.id}",
                     "urgency": "high",
@@ -1936,12 +2077,12 @@ def api_home_actions():
         pass
 
     # Injured players on human roster
-    if state is not None and human_id is not None and 0 <= human_id < len(draft.teams):
-        human_team = draft.teams[human_id]
+    if state is not None and human_id is not None and 0 <= human_id < len(_get_draft().teams):
+        human_team = _get_draft().teams[human_id]
         for pid in human_team.roster:
             inj = state.injuries.get(pid)
             if inj is not None and inj.status != "healthy":
-                p = draft.players_by_id.get(pid)
+                p = _get_draft().players_by_id.get(pid)
                 pname = p.name if p else f"#{pid}"
                 actions.append({
                     "id": f"inj-{pid}",
@@ -1954,8 +2095,8 @@ def api_home_actions():
                 })
 
         # Top 3 FAs by fppg
-        on_any_roster = {pid for t in draft.teams for pid in t.roster}
-        fa_pool = [p for p in draft.players if p.id not in on_any_roster]
+        on_any_roster = {pid for t in _get_draft().teams for pid in t.roster}
+        fa_pool = [p for p in _get_draft().players if p.id not in on_any_roster]
         fa_pool.sort(key=lambda p: float(getattr(p, "fppg", 0.0) or 0.0), reverse=True)
         for p in fa_pool[:3]:
             actions.append({
@@ -2007,7 +2148,7 @@ def api_trade_category_odds(trade_id: str):
     def _sum(pids: list[int]) -> dict[str, float]:
         totals = {c: 0.0 for c in CATS}
         for pid in pids:
-            p = draft.players_by_id.get(pid)
+            p = _get_draft().players_by_id.get(pid)
             if p is None:
                 continue
             for c in CATS:
@@ -2044,18 +2185,18 @@ def api_trade_category_odds(trade_id: str):
 @app.get("/api/draft/recommendations")
 def api_draft_recommendations(limit: int = Query(3, ge=1, le=20)):
     """Draft reco: top N fits for the human team's next pick."""
-    if draft.is_complete:
+    if _get_draft().is_complete:
         return {"is_complete": True, "recos": [], "needs": []}
 
-    rnd, pos_in_round, team_id = draft.current_pointers()
-    num_teams = draft._num_teams
-    pick_overall = draft.current_overall
-    on_clock = team_id == draft.human_team_id
+    rnd, pos_in_round, team_id = _get_draft().current_pointers()
+    num_teams = _get_draft()._num_teams
+    pick_overall = _get_draft().current_overall
+    on_clock = team_id == _get_draft().human_team_id
 
-    human_id = draft.human_team_id
+    human_id = _get_draft().human_team_id
     human_roster: list[int] = []
-    if human_id is not None and 0 <= human_id < len(draft.teams):
-        human_roster = list(draft.teams[human_id].roster)
+    if human_id is not None and 0 <= human_id < len(_get_draft().teams):
+        human_roster = list(_get_draft().teams[human_id].roster)
 
     # Position counts via season._player_positions
     from .season import _player_positions as _pp
@@ -2063,7 +2204,7 @@ def api_draft_recommendations(limit: int = Query(3, ge=1, le=20)):
     TARGET = 2
     pos_counts: dict[str, int] = {p: 0 for p in POSITIONS}
     for pid in human_roster:
-        player = draft.players_by_id.get(pid)
+        player = _get_draft().players_by_id.get(pid)
         if player is None:
             continue
         for pos_key in _pp(player.pos):
@@ -2082,7 +2223,7 @@ def api_draft_recommendations(limit: int = Query(3, ge=1, le=20)):
         needs.append({"pos": p, "filled": filled, "target": TARGET, "need": need_level})
 
     # Score available players
-    available = draft.available_players()
+    available = _get_draft().available_players()
     def _score(p) -> tuple[float, list[str]]:
         fppg = float(getattr(p, "fppg", 0.0) or 0.0)
         score = fppg
@@ -2150,11 +2291,11 @@ def api_news_feed(limit: int = Query(30, ge=1, le=100)):
     """Aggregated news/activity feed for the v2 news screen."""
     state = _load_or_init_season()
     feed: list[dict] = []
-    human_id = draft.human_team_id
+    human_id = _get_draft().human_team_id
 
     def _team_name(tid: int) -> str:
-        if 0 <= tid < len(draft.teams):
-            return draft.teams[tid].name
+        if 0 <= tid < len(_get_draft().teams):
+            return _get_draft().teams[tid].name
         return f"T{tid}"
 
     # Current injuries
@@ -2162,7 +2303,7 @@ def api_news_feed(limit: int = Query(30, ge=1, le=100)):
         for pid, inj in state.injuries.items():
             if inj.status == "healthy":
                 continue
-            p = draft.players_by_id.get(pid)
+            p = _get_draft().players_by_id.get(pid)
             pname = p.name if p else f"#{pid}"
             w = int(state.current_week or 0)
             d = int(state.current_day or 0)
@@ -2176,7 +2317,7 @@ def api_news_feed(limit: int = Query(30, ge=1, le=100)):
 
     # Activity log (last 50)
     try:
-        log_rows = storage.load_log(limit=50)
+        log_rows = _get_storage().load_log(limit=50)
     except Exception:
         log_rows = []
 

@@ -8,8 +8,8 @@ router = APIRouter(prefix="/api/injuries")
 
 def _get_season_and_draft():
     """Import here to avoid circular imports at module load time."""
-    from .main import _load_or_init_season, draft
-    return _load_or_init_season, draft
+    from .main import _load_or_init_season, _get_draft
+    return _load_or_init_season, _get_draft()
 
 
 @router.get("/active")
