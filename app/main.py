@@ -57,7 +57,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.13"
+APP_VERSION = "v26.04.24.14"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -764,8 +764,13 @@ def ai_advance():
     if draft.is_complete:
         return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
     _, _, team_id = draft.current_pointers()
+    # Snake-round turnarounds produce back-to-back human picks (e.g. #16→#17
+    # for an 8-team draft with the human at position 1). The auto-advance
+    # timer and race conditions can call this endpoint when it's the human's
+    # turn; return a no-op snapshot instead of 409 so the client can simply
+    # refresh state and stop the loop.
     if team_id == draft.human_team_id:
-        raise HTTPException(409, "目前是玩家的回合")
+        return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
     pick = draft.ai_pick()
     _persist_draft()
     return {
