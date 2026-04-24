@@ -4851,9 +4851,49 @@ function bindGlobalUI() {
     if (Number.isFinite(pid)) onDraftPlayer(pid);
   });
 
+  function refreshSettingsDialogState() {
+    const setButtonState = (selector, reason = '') => {
+      const btn = $(selector);
+      if (!btn) return;
+      btn.disabled = !!reason;
+      btn.title = reason;
+    };
+
+    const draftComplete = !!state.draft?.is_complete;
+    const hasSeason = !!state.season;
+    const isPlayoffs = !!state.standings?.is_playoffs;
+    const hasChampion = state.standings?.champion != null;
+
+    setButtonState(
+      '#btn-season-start',
+      !draftComplete ? '請先完成選秀'
+        : hasSeason ? '賽季已開始'
+        : ''
+    );
+
+    setButtonState(
+      '#btn-sim-playoffs',
+      !draftComplete ? '請先完成選秀'
+        : !hasSeason ? '請先開始賽季'
+        : isPlayoffs ? '已進入季後賽'
+        : hasChampion ? '賽季已結束'
+        : ''
+    );
+
+    setButtonState(
+      '#btn-sim-playoffs-bracket',
+      !draftComplete ? '請先完成選秀'
+        : !hasSeason ? '請先開始賽季'
+        : !isPlayoffs ? '例行賽尚未結束'
+        : hasChampion ? '季後賽已結束'
+        : ''
+    );
+  }
+
   // Hamburger → settings.
   $('#btn-menu').addEventListener('click', () => {
     const dlg = $('#dlg-settings');
+    refreshSettingsDialogState();
     try { dlg.showModal(); } catch { /* fallback: do nothing */ }
   });
 
