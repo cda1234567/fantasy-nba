@@ -54,6 +54,10 @@ Constraints:
 - Only propose a waiver_claim if the add clearly upgrades the drop
 - Only propose a trade_offer if it meaningfully helps your team
 
+Language:
+- All "reasoning" fields must be written in Traditional Chinese (繁體中文).
+- JSON keys and IDs stay English.
+
 Return JSON ONLY. No prose before or after.
 """
 
@@ -780,18 +784,25 @@ class AIGM:
         if receiver_team is not None:
             # Current positional counts on receiver roster (excluding sent players)
             receiver_roster_ids = set(receiver_team.roster) - set(trade.receive_player_ids)
+            from .season import _player_positions as _pp
             pos_before: dict[str, int] = {p: 0 for p in _POSITIONS}
             for pid in receiver_roster_ids:
                 pl = draft_state.players_by_id.get(pid)
-                if pl and pl.pos in pos_before:
-                    pos_before[pl.pos] += 1
+                if not pl:
+                    continue
+                for ps in _pp(pl.pos):
+                    if ps in pos_before:
+                        pos_before[ps] += 1
 
             # Positional counts after receiving send_player_ids
             pos_after = dict(pos_before)
             for pid in trade.send_player_ids:
                 pl = draft_state.players_by_id.get(pid)
-                if pl and pl.pos in pos_after:
-                    pos_after[pl.pos] += 1
+                if not pl:
+                    continue
+                for ps in _pp(pl.pos):
+                    if ps in pos_after:
+                        pos_after[ps] += 1
 
             # Each position where receiver was thin (<=1) and gains a player
             # contributes to need_alignment (fills a hole → more unfair gift)
