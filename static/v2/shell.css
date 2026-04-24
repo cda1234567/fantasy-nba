@@ -1331,3 +1331,72 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
   .lsw-current-v2 { max-width: 90px; }
   .lsw-label-v2 { display: none; }
 }
+
+/* ========== YAHOO-STYLE ROSTER TABLE (teams view) ========== */
+.yahoo-roster-wrap { overflow-x: auto; }
+.yahoo-roster-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  background: var(--surface);
+}
+.yahoo-roster-table thead th {
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--ink-3);
+  font-weight: 600;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  background: var(--surface-2, var(--surface));
+  position: sticky;
+  top: 0;
+  white-space: nowrap;
+}
+.yahoo-roster-table thead th.num { text-align: right; }
+.yahoo-roster-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.yahoo-roster-table tbody td.num { text-align: right; font-family: var(--mono); }
+.yahoo-roster-table tbody tr:hover td { background: var(--accent-08, rgba(100,100,150,0.05)); }
+.yahoo-roster-table tr.yahoo-injured td { opacity: 0.55; }
+.yahoo-roster-table tr.yahoo-empty .yahoo-empty-cell {
+  color: var(--ink-4);
+  font-style: italic;
+  font-size: var(--fs-xs);
+}
+.yahoo-roster-table .yahoo-dash {
+  text-align: center;
+  color: var(--ink-4);
+  font-family: var(--mono);
+}
+.yahoo-roster-table .yahoo-player-cell { min-width: 180px; white-space: normal; }
+.yahoo-roster-table .yahoo-player-name { font-size: var(--fs-sm); line-height: 1.25; }
+.yahoo-roster-table .yahoo-player-meta {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+.yahoo-roster-table .inj-badge {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  background: rgba(248,113,113,0.18);
+  color: var(--bad, #f87171);
+  border-radius: 3px;
+  font-weight: 700;
+  font-family: var(--mono);
+  vertical-align: middle;
+}
+.yahoo-roster-table tr.yahoo-totals td {
+  border-top: 2px solid var(--line);
+  background: var(--surface-2, rgba(100,100,150,0.04));
+  font-weight: 600;
+}

@@ -493,6 +493,7 @@ def _run_trades_daily(
                     current_day=current_day,
                     current_week=current_week,
                     reasoning=str(proposal.get("reasoning", ""))[:300],
+                    proposer_message=str(proposal.get("proposer_message", ""))[:300],
                 )
                 storage.append_log({
                     "type": "trade_proposed",

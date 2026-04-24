@@ -855,38 +855,25 @@ async function renderTeamBody() {
     ));
   }
 
-  // Starters card
-  const startersCard = el('div', { class: 'card' });
-  const startersHeader = el('div', { class: 'card-header' },
-    el('h3', {}, '先發陣容'),
-    el('span', { class: 'sub' }, seasonStarted ? `${(lineup_slots || []).length} 位` : '選秀完成後可用'),
+  // Yahoo-style unified roster table: PG/SG/G/SF/PF/F/C/C/Util/Util/BN/BN/BN
+  const rosterCard = el('div', { class: 'card' });
+  const rosterHeader = el('div', { class: 'card-header' },
+    el('h3', {}, '球員名單'),
+    el('span', { class: 'sub' }, seasonStarted ? '先發 + 板凳（Yahoo 格式）' : '選秀完成後可用'),
   );
-  const startersWrap = el('div', { id: 'starters-wrap' });
+  const rosterWrap = el('div', { id: 'roster-wrap' });
 
   if (seasonStarted && slotsPopulated) {
-    const rows = (lineup_slots || []).map((s) => {
-      const p = (s.player_id != null) ? playerById.get(s.player_id) : null;
-      const injured = p && injSet.has(p.id);
-      const injBadge = p ? injuryPillHtml(injuriesMap[p.id]) : '';
-      if (!p) {
-        return `<tr>
-          <td><span class="pos-tag" data-pos="${escapeHtml(s.slot)}">${escapeHtml(s.slot)}</span></td>
-          <td colspan="4" style="color:var(--ink-4);">—</td>
-        </tr>`;
-      }
-      return `<tr ${injured ? 'style="opacity:0.6;"' : ''}>
-        <td><span class="pos-tag" data-pos="${escapeHtml(s.slot)}">${escapeHtml(s.slot)}</span></td>
-        <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
-        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
-        <td class="num"><b>${fppg(p.fppg)}</b></td>
-        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
-      </tr>`;
-    }).join('');
-    startersWrap.innerHTML = `<table class="standings-table">
-      <thead><tr><th>位置</th><th>球員</th><th>定位</th><th class="num">FPPG</th><th>球隊</th></tr></thead>
-      <tbody>${rows}</tbody></table>`;
+    rosterWrap.innerHTML = buildYahooRosterHtml({
+      lineup_slots: lineup_slots || [],
+      bench: bench || [],
+      playerById,
+      injSet,
+      injuriesMap,
+      totals,
+    });
   } else {
-    startersWrap.innerHTML = `<div style="padding: var(--s-5); color:var(--ink-3);">${seasonStarted ? '名單中沒有可排入的先發球員。' : '選秀尚未完成。'}</div>`;
+    rosterWrap.innerHTML = `<div style="padding: var(--s-5); color:var(--ink-3);">${seasonStarted ? '名單中沒有可排入的先發球員。' : '選秀尚未完成。'}</div>`;
   }
 
   // Lineup actions (human only, season started)
@@ -908,48 +895,129 @@ async function renderTeamBody() {
       class: 'btn sm',
       onclick: () => openLineupModal(data),
     }, '設定先發陣容'));
-    startersCard.append(startersHeader, startersWrap, actions);
+    rosterCard.append(rosterHeader, rosterWrap, actions);
   } else {
-    startersCard.append(startersHeader, startersWrap);
+    rosterCard.append(rosterHeader, rosterWrap);
   }
-  blocks.push(startersCard);
+  blocks.push(rosterCard);
 
-  // Bench card
-  const benchPlayers = (bench || []).map((id) => playerById.get(id)).filter(Boolean);
-  if (benchPlayers.length > 0) {
-    const benchCard = el('div', { class: 'card' });
-    const benchHeader = el('div', { class: 'card-header' },
-      el('h3', {}, '板凳'),
-      el('span', { class: 'sub' }, `${benchPlayers.length} 位`),
-    );
-    const benchWrap = el('div');
-    const rows = benchPlayers.map((p) => {
-      const injBadge = injuryPillHtml(injuriesMap[p.id]);
-      const injured = injSet.has(p.id);
-      return `<tr ${injured ? 'style="opacity:0.6;"' : ''}>
-        <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
-        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
-        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
-        <td class="num">${p.age ?? '-'}</td>
-        <td class="num"><b>${fppg(p.fppg)}</b></td>
-        <td class="num">${fmtStat(p.pts)}</td>
-        <td class="num">${fmtStat(p.reb)}</td>
-        <td class="num">${fmtStat(p.ast)}</td>
-      </tr>`;
-    }).join('');
-    benchWrap.innerHTML = `<table class="standings-table">
-      <thead><tr><th>球員</th><th>位置</th><th>球隊</th>
-        <th class="num">年齡</th><th class="num">FPPG</th>
-        <th class="num">PTS</th><th class="num">REB</th><th class="num">AST</th></tr></thead>
-      <tbody>${rows}</tbody></table>`;
-    benchCard.append(benchHeader, benchWrap);
-    blocks.push(benchCard);
-  } else if (players.length === 0) {
+  if (players.length === 0) {
     blocks.push(el('div', { class: 'card card-pad', style: 'color: var(--ink-3);' }, '尚未選入任何球員。'));
   }
 
   container.innerHTML = '';
   container.append(...blocks);
+}
+
+// Yahoo-style roster table: fixed 13-row slot layout (PG/SG/G/SF/PF/F/C/C/Util/Util/BN/BN/BN)
+// with Pos | Players | Opp | Fan Pts | Rank | %Start | %Ros | PTS | REB | AST | ST | BLK | TO
+function buildYahooRosterHtml({ lineup_slots, bench, playerById, injSet, injuriesMap, totals }) {
+  // Canonical Yahoo slot order (13 rows). Desired: PG SG G SF PF F C C Util Util BN BN BN
+  // Our backend emits LINEUP_SLOTS (10 starters). We re-label trailing slots to match the spec.
+  const SLOT_ORDER = ['PG', 'SG', 'G', 'SF', 'PF', 'F', 'C', 'C', 'Util', 'Util'];
+
+  // Map starters into the canonical order. Backend slots may use 'UTIL' — normalize.
+  const normalized = (lineup_slots || []).map((s) => ({
+    slot: (s.slot || '').toUpperCase() === 'UTIL' ? 'Util' : (s.slot || ''),
+    player_id: s.player_id,
+  }));
+
+  // Produce rows in canonical order by greedy slot-match against the backend list
+  const starterRows = [];
+  const used = new Set();
+  for (const want of SLOT_ORDER) {
+    const idx = normalized.findIndex((s, i) =>
+      !used.has(i) && s.slot.toUpperCase() === want.toUpperCase(),
+    );
+    if (idx >= 0) {
+      used.add(idx);
+      starterRows.push({ slot: want, player_id: normalized[idx].player_id });
+    } else {
+      starterRows.push({ slot: want, player_id: null });
+    }
+  }
+
+  // Bench: 3 BN slots
+  const benchPlayers = (bench || []).map((id) => playerById.get(id)).filter(Boolean);
+  const benchRows = [];
+  for (let i = 0; i < 3; i++) {
+    benchRows.push({ slot: 'BN', player_id: benchPlayers[i] ? benchPlayers[i].id : null });
+  }
+
+  const allRows = [...starterRows, ...benchRows];
+
+  const rowsHtml = allRows.map((r) => rowHtml(r, playerById, injSet, injuriesMap)).join('');
+
+  // Totals row: starters only (Yahoo shows starter totals at bottom)
+  const t = totals || {};
+  const totalsHtml = `<tr class="yahoo-totals">
+    <td colspan="2"><b>合計（先發）</b></td>
+    <td class="yahoo-dash">-</td>
+    <td class="num"><b>${fppg(t.fppg)}</b></td>
+    <td class="yahoo-dash">-</td>
+    <td class="yahoo-dash">-</td>
+    <td class="yahoo-dash">-</td>
+    <td class="num">${fmtStat(t.pts)}</td>
+    <td class="num">${fmtStat(t.reb)}</td>
+    <td class="num">${fmtStat(t.ast)}</td>
+    <td class="num">${fmtStat(t.stl)}</td>
+    <td class="num">${fmtStat(t.blk)}</td>
+    <td class="num">${fmtStat(t.to)}</td>
+  </tr>`;
+
+  return `<div class="yahoo-roster-wrap"><table class="yahoo-roster-table">
+    <thead><tr>
+      <th>Pos</th><th>Players</th><th>Opp</th><th class="num">Fan Pts</th>
+      <th class="num">Rank</th><th class="num">% Start</th><th class="num">% Ros</th>
+      <th class="num">PTS</th><th class="num">REB</th><th class="num">AST</th>
+      <th class="num">ST</th><th class="num">BLK</th><th class="num">TO</th>
+    </tr></thead>
+    <tbody>${rowsHtml}${totalsHtml}</tbody>
+  </table></div>`;
+}
+
+function rowHtml(r, playerById, injSet, injuriesMap) {
+  const p = r.player_id != null ? playerById.get(r.player_id) : null;
+  const slotTag = `<span class="pos-tag" data-pos="${escapeHtml(r.slot)}">${escapeHtml(r.slot)}</span>`;
+  if (!p) {
+    return `<tr class="yahoo-empty">
+      <td>${slotTag}</td>
+      <td class="yahoo-empty-cell">(Empty)</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+      <td class="yahoo-dash">-</td>
+    </tr>`;
+  }
+  const injured = injSet.has(p.id);
+  const injObj = injuriesMap[p.id];
+  const injBadge = injObj ? ` <span class="inj-badge" title="${escapeHtml(injObj.note || '')}">${escapeHtml((injObj.status || 'INJ').toUpperCase())}</span>` : '';
+  const posLabel = `${escapeHtml(p.team || '')} - ${escapeHtml(p.pos || '')}`;
+  return `<tr class="${injured ? 'yahoo-injured' : ''}">
+    <td>${slotTag}</td>
+    <td class="yahoo-player-cell">
+      <div class="yahoo-player-name"><b>${escapeHtml(p.name)}</b>${injBadge}</div>
+      <div class="yahoo-player-meta">${posLabel}</div>
+    </td>
+    <td class="yahoo-dash">-</td>
+    <td class="num"><b>${fppg(p.fppg)}</b></td>
+    <td class="yahoo-dash">-</td>
+    <td class="yahoo-dash">-</td>
+    <td class="yahoo-dash">-</td>
+    <td class="num">${fmtStat(p.pts)}</td>
+    <td class="num">${fmtStat(p.reb)}</td>
+    <td class="num">${fmtStat(p.ast)}</td>
+    <td class="num">${fmtStat(p.stl)}</td>
+    <td class="num">${fmtStat(p.blk)}</td>
+    <td class="num">${fmtStat(p.to)}</td>
+  </tr>`;
 }
 
 // Simple lineup override modal (v2 has no modal system, built inline)
@@ -2559,8 +2627,8 @@ function buildTradeCardV2(trade, opts) {
     card.append(buildTradeOddsSectionV2(trade));
   }
 
-  // Actions: pending → accept/reject/cancel; history rejected w/ human
-  // proposer → counter-offer.
+  // Actions: pending → accept/reject/cancel + incoming counter; history rejected
+  // w/ human proposer → counter-offer.
   const humanId = state.draft?.human_team_id ?? 0;
   const canCounter = !pending && trade.status === 'rejected' && trade.from_team === humanId;
   if (pending || canCounter) {
@@ -2670,6 +2738,7 @@ function buildTradeActionsV2(trade) {
     actions.append(
       el('button', { class: 'btn sm', onclick: () => onAcceptTradeV2(trade.id) }, '接受'),
       el('button', { class: 'btn sm ghost', onclick: () => onRejectTradeV2(trade.id) }, '拒絕'),
+      el('button', { class: 'btn sm ghost', onclick: () => openCounterTradeDialogV2(trade, { incoming: true }) }, '還價'),
     );
     return actions;
   }
@@ -2973,23 +3042,33 @@ function buildCounterModalV2() {
   return dlg;
 }
 
-async function openCounterTradeDialogV2(originalTrade) {
+async function openCounterTradeDialogV2(originalTrade, opts) {
   const dlg = $('#trade-counter-v2');
   if (!dlg) return;
   const humanId = state.draft?.human_team_id ?? 0;
-  // Pre-fill send/receive with the original trade's player IDs.
+  const incoming = !!(opts && opts.incoming);
+  // For incoming trades (AI proposed to human), flip direction: human sends what
+  // they were offered to receive, receives what was being sent to them. For
+  // outgoing counter (rejected human proposal), keep same direction.
+  const counterparty = incoming ? originalTrade.from_team : originalTrade.to_team;
+  const prefillSend = incoming
+    ? new Set(originalTrade.receive_player_ids || [])
+    : new Set(originalTrade.send_player_ids || []);
+  const prefillReceive = incoming
+    ? new Set(originalTrade.send_player_ids || [])
+    : new Set(originalTrade.receive_player_ids || []);
   state.counterDraft = {
     originalTradeId: originalTrade.id,
-    counterparty: originalTrade.to_team,
-    send: new Set(originalTrade.send_player_ids || []),
-    receive: new Set(originalTrade.receive_player_ids || []),
+    counterparty,
+    send: prefillSend,
+    receive: prefillReceive,
     fromRoster: [],
     toRoster: [],
   };
   try {
     const [me, them] = await Promise.all([
       api(`/api/teams/${humanId}`),
-      api(`/api/teams/${originalTrade.to_team}`),
+      api(`/api/teams/${counterparty}`),
     ]);
     state.counterDraft.fromRoster = me.players || [];
     state.counterDraft.toRoster = them.players || [];

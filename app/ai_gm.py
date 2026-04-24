@@ -320,12 +320,83 @@ class AIGM:
             f"{GM_PERSONAS[persona]['name']}: swap {my_pick.name} "
             f"({my_pick.fppg:.1f}) for {target_pick.name} ({target_pick.fppg:.1f})"
         )
+        proposer_message = self._compose_proposer_message(
+            persona=persona,
+            my_team_name=team.name,
+            target_team_name=target.name,
+            my_send=[my_pick],
+            my_receive=[target_pick],
+        )
         return {
             "to_team": target.id,
             "send": [my_pick.id],
             "receive": [target_pick.id],
             "reasoning": reasoning,
+            "proposer_message": proposer_message,
         }
+
+    # ---------------------------------------------------------- trade messaging
+    def _compose_proposer_message(
+        self,
+        *,
+        persona: str,
+        my_team_name: str,
+        target_team_name: str,
+        my_send: list[Player],
+        my_receive: list[Player],
+        model_id: str = DEFAULT_MODEL_ID,
+    ) -> str:
+        """Generate a short zh-TW trade pitch (30-80 chars). LLM preferred, heuristic fallback.
+
+        The message explains proposer's motivation + why the other side benefits.
+        Stored on trade.proposer_message so counterparty (AI or human) sees context.
+        """
+        persona_meta = GM_PERSONAS.get(persona, GM_PERSONAS["bpa"])
+        send_names = "、".join(p.name for p in my_send) or "（無）"
+        recv_names = "、".join(p.name for p in my_receive) or "（無）"
+
+        if self.enabled:
+            try:
+                system_text = (
+                    f"你是 NBA 夢幻籃球 GM，人格：{persona_meta['name']}。策略：{persona_meta['desc']}。\n"
+                    "你正要發出一筆交易提案給對方 GM。請用繁體中文寫一段 30-80 字的短訊，"
+                    "解釋你為何想交易、以及這筆對對方的好處。直接、誠懇、不要囉唆，不要用條列。\n"
+                    "回傳嚴格 JSON：{\"message\": \"訊息內容\"}"
+                )
+                payload = {
+                    "我送出": [{"name": p.name, "fppg": round(p.fppg, 1), "pos": p.pos} for p in my_send],
+                    "對方送出": [{"name": p.name, "fppg": round(p.fppg, 1), "pos": p.pos} for p in my_receive],
+                    "我方": my_team_name,
+                    "對方": target_team_name,
+                }
+                user_text = "寫一段提案訊息：\n\n" + json.dumps(payload, ensure_ascii=False)
+                text = call_llm(
+                    system=system_text,
+                    user=user_text,
+                    model_id=model_id,
+                    max_tokens=200,
+                    temperature=0.8,
+                    response_format={"type": "json_object"},
+                )
+                data = _extract_json(text or "")
+                if data and isinstance(data.get("message"), str):
+                    msg = data["message"].strip()
+                    if 10 <= len(msg) <= 200:
+                        return msg[:300]
+            except LLMError:
+                pass
+            except Exception:
+                pass
+
+        # Heuristic fallback: pos-aware 30-80 字 pitch
+        send_pos = my_send[0].pos if my_send else ""
+        recv_pos = my_receive[0].pos if my_receive else ""
+        pos_blurb = f"我這邊{send_pos}有深度" if send_pos else "我位置上有多出來的戰力"
+        need_blurb = f"急缺{recv_pos}" if recv_pos else "需要補位置"
+        return (
+            f"我 {need_blurb}，{pos_blurb}，想用 {send_names} 換你的 {recv_names}。"
+            f"你拿到的是即戰力，我覺得對雙方都划算，考慮一下？"
+        )
 
     def decide_trade(
         self,
