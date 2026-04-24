@@ -378,7 +378,7 @@ function buildDraftClock(d) {
       : el('div', { class: 'dc-sub' }, isYou ? '請在下方「剩餘球員」中點「選秀」。' : 'AI 選秀中…'),
     el('div', { style: 'display:flex; gap:8px; margin-top: var(--s-4);' },
       el('button', { class: 'btn ghost sm', disabled: isYou, onclick: onAdvance }, '推進 AI 一手'),
-      el('button', { class: 'btn sm', disabled: isYou, onclick: onSimToMe }, '⏭ 模擬到我'),
+      el('button', { class: 'btn sm', onclick: onSimToMe }, '⏭ 模擬到我'),
     ),
   );
   return card;
