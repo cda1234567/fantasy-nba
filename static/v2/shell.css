@@ -895,6 +895,112 @@
   color: var(--ink);
 }
 button[disabled] { opacity: 0.55; cursor: not-allowed; }
+
+/* ============================================================
+ * LEAGUE VIEW (Phase 5) — sub-tabs + matchup + standings + mgmt
+ * ============================================================ */
+.league-tabs-v2 {
+  display: flex; gap: 4px; margin: var(--s-4) 0;
+  border-bottom: 1px solid var(--line);
+  overflow-x: auto;
+}
+.league-tabs-v2 .lt2 {
+  appearance: none; background: transparent; border: none;
+  padding: 10px 16px; font-size: var(--fs-sm); color: var(--ink-3);
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: color var(--dur-1) var(--ease-std), border-color var(--dur-1) var(--ease-std);
+  white-space: nowrap;
+}
+.league-tabs-v2 .lt2:hover { color: var(--ink); }
+.league-tabs-v2 .lt2.active {
+  color: var(--accent); border-bottom-color: var(--accent); font-weight: 600;
+}
+.league-tabs-v2 .lt2.ghost { opacity: 0.65; font-style: italic; }
+.league-tabs-v2 .lt2.ghost.active { opacity: 1; font-style: normal; }
+
+/* Week nav */
+.league-week-nav { padding: var(--s-3) var(--s-4); margin-bottom: var(--s-4); background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-2); }
+.lwn-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); }
+.lwn-label { font-size: var(--fs-md); font-weight: 600; }
+
+/* Matchup hero */
+.matchup-hero { margin-bottom: var(--s-4); }
+.matchup-hero .mh-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--s-3); }
+.matchup-hero .mh-label { font-size: var(--fs-xs); color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.5px; }
+.matchup-hero .mh-status { padding: 2px 10px; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 600; }
+.matchup-hero .mh-status.status-upcoming { background: var(--surface-2); color: var(--ink-2); }
+.matchup-hero .mh-status.status-won      { background: var(--good-12, rgba(34,197,94,0.12)); color: var(--good, #22c55e); }
+.matchup-hero .mh-status.status-lost     { background: var(--bad-12, rgba(239,68,68,0.12)); color: var(--bad, #ef4444); }
+.matchup-hero .mh-status.status-tie      { background: var(--surface-2); color: var(--ink-2); }
+.matchup-hero .mh-body { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s-4); }
+.matchup-hero .mh-side { text-align: center; padding: var(--s-3); }
+.matchup-hero .mh-side.user { background: var(--accent-08, rgba(59,130,246,0.08)); border-radius: var(--r-2); }
+.matchup-hero .mh-tag { font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: var(--s-2); text-transform: uppercase; }
+.matchup-hero .mh-name { font-size: var(--fs-md); font-weight: 600; margin-bottom: var(--s-2); }
+.matchup-hero .mh-score { font-size: 28px; font-weight: 700; font-family: var(--mono); }
+.matchup-hero .mh-vs { font-family: var(--mono); color: var(--ink-3); font-weight: 600; }
+
+/* Matchup detail grid (two-team player tables) */
+.matchup-detail .md-head { text-align: center; font-weight: 600; margin-bottom: var(--s-3); font-size: var(--fs-md); }
+.matchup-detail .md-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+.matchup-detail .md-col-head { font-size: var(--fs-sm); font-weight: 600; color: var(--ink-2); margin-bottom: var(--s-2); }
+.matchup-detail .md-tbl { font-size: var(--fs-xs); }
+.matchup-detail .md-tbl th, .matchup-detail .md-tbl td { padding: 4px 6px; }
+@media (max-width: 860px) {
+  .matchup-detail .md-grid { grid-template-columns: 1fr; }
+}
+
+/* Mini matchup cards (scoreboard for other games) */
+#league-scoreboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s-2); padding: var(--s-3); }
+.mini-matchup { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s-2); align-items: center; padding: 8px 10px; background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-1); font-size: var(--fs-sm); }
+.mini-matchup .mm-side { display: flex; justify-content: space-between; gap: var(--s-2); }
+.mini-matchup .mm-side.win .mm-name { font-weight: 700; color: var(--ink); }
+.mini-matchup .mm-name { color: var(--ink-2); }
+.mini-matchup .mm-score { font-family: var(--mono); color: var(--ink); }
+.mini-matchup .mm-vs { color: var(--ink-4); font-family: var(--mono); font-size: var(--fs-xs); }
+
+/* Standings v2 */
+.standings-v2 { width: 100%; font-size: var(--fs-sm); }
+.standings-v2 tr.you td { background: var(--accent-08, rgba(59,130,246,0.08)); }
+.rank-pill { display: inline-block; min-width: 22px; padding: 2px 6px; border-radius: var(--r-1); background: var(--surface-2); color: var(--ink-2); font-family: var(--mono); font-size: var(--fs-xs); text-align: center; }
+.rank-pill.top-1 { background: gold; color: #7c5a00; }
+.rank-pill.top-2 { background: silver; color: #555; }
+.rank-pill.top-3 { background: #cd7f32; color: #fff; }
+
+/* Management controls */
+.mgmt-controls { display: flex; gap: var(--s-3); flex-wrap: wrap; margin-bottom: var(--s-3); }
+.mgmt-log { max-height: 180px; overflow-y: auto; padding: var(--s-3); background: var(--surface-2); border-radius: var(--r-1); font-size: var(--fs-xs); font-family: var(--mono); }
+.mgmt-log-row { display: flex; gap: var(--s-3); padding: 2px 0; }
+.mgmt-log-time { color: var(--ink-4); min-width: 80px; }
+.mgmt-log-text { color: var(--ink-2); }
+
+/* Info grid (reused by management) */
+.info-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: var(--s-3); padding: var(--s-3); }
+.info-item { padding: var(--s-3); background: var(--surface); border: 1px solid var(--line-soft); border-radius: var(--r-1); }
+.info-label { font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: var(--s-1); }
+.info-value { font-size: var(--fs-sm); font-weight: 500; color: var(--ink); }
+
+/* Schedule / activity placeholders */
+.sched-list { padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-3); }
+.sched-week-head { font-family: var(--mono); font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: var(--s-2); }
+.sched-week-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s-1); }
+.activity-list { padding: var(--s-3); display: flex; flex-direction: column; gap: 6px; }
+.activity-row { padding: 6px 10px; background: var(--surface); border-radius: var(--r-1); font-size: var(--fs-sm); }
+
+/* Shared empty state */
+.empty-state { padding: var(--s-5); text-align: center; color: var(--ink-3); font-size: var(--fs-sm); }
+
+/* Tighten panel-body variant used in v2 league */
+.panel-body.tight { padding: 0; }
+
+/* Data-table shared */
+.standings-table { width: 100%; border-collapse: collapse; }
+.standings-table th, .standings-table td { padding: 6px 10px; border-bottom: 1px solid var(--line-soft); text-align: left; }
+.standings-table th { font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+.standings-table td.num, .standings-table th.num { text-align: right; font-family: var(--mono); }
+.standings-table td.name { font-weight: 500; }
+.table-wrap { overflow-x: auto; }
+
 *, *::before, *::after { letter-spacing: 0 !important; }
 
 /* ========== Shell responsive breakpoints (end-of-file so they win cascade) ========== */
