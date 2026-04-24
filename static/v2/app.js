@@ -79,7 +79,7 @@ const state = {
   setupForm: null,               // working copy for #setup
 };
 
-const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'trades', 'setup'];
+const VALID_ROUTES = ['teams', 'fa', 'league', 'schedule', 'trades', 'draft', 'setup'];
 
 // Defaults mirrored from v1 DEFAULT_SETTINGS (keep in sync w/ static/app.js).
 const DEFAULT_TEAM_NAMES_V2 = [
@@ -188,7 +188,9 @@ async function refreshState() {
 // ---------------------------------------------------------------- router
 function currentRoute() {
   const hash = (location.hash || '').replace(/^#\/?/, '').trim();
-  return VALID_ROUTES.includes(hash) ? hash : 'draft';
+  if (VALID_ROUTES.includes(hash)) return hash;
+  // Default: if draft hasn't completed, send user to draft; otherwise teams.
+  return state.draft && !state.draft.is_complete ? 'draft' : 'teams';
 }
 
 function navigate(route) {
@@ -3661,7 +3663,10 @@ function bindLeagueSwitcherV2() {
 window.addEventListener('hashchange', render);
 
 (async function boot() {
-  if (!location.hash) location.hash = '/draft';
+  // Default landing: draft if draft pending, teams otherwise. We finalise
+  // this after state refresh below; the initial hash just avoids a blank
+  // flicker during boot.
+  if (!location.hash) location.hash = '/teams';
   bindLeagueSwitcherV2();
   // Load personas + leagues in parallel (soft)
   const [personas, _] = await Promise.all([
