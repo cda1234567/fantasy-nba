@@ -541,11 +541,15 @@ function buildBoardHtml(d) {
 }
 
 // ---------------------------------------------------------------- draft auto-advance
-function scheduleDraftAutoAdvance() {
+function cancelDraftAutoAdvance() {
   if (state.draftAutoTimer) {
     clearTimeout(state.draftAutoTimer);
     state.draftAutoTimer = null;
   }
+}
+
+function scheduleDraftAutoAdvance() {
+  cancelDraftAutoAdvance();
   const d = state.draft;
   if (!d || d.is_complete) return;
   if (currentRoute() !== 'draft') return;
@@ -556,6 +560,7 @@ function scheduleDraftAutoAdvance() {
     state.draftAutoTimer = null;
     if (state.draftAutoBusy) return;
     const cur = state.draft;
+    // Double-guard: don't fire if state flipped between schedule and timeout.
     if (!cur || cur.is_complete) return;
     if (currentRoute() !== 'draft') return;
     if (cur.current_team_id === cur.human_team_id) return;
@@ -565,8 +570,18 @@ function scheduleDraftAutoAdvance() {
       const r = await api('/api/draft/ai-advance', { method: 'POST' });
       state.draft = r.state;
       ok = true;
+      // If the server just completed the draft, stop the loop immediately.
+      if (r.state?.is_complete) cancelDraftAutoAdvance();
     } catch (err) {
-      console.warn('auto ai-advance failed', err);
+      // 409 = draft already complete on server (race with a parallel request).
+      // Swallow silently; any other error: log for debugging.
+      if (err?.status !== 409) console.warn('auto ai-advance failed', err);
+      // Refresh state so we exit the loop next tick.
+      try {
+        const fresh = await api('/api/state');
+        state.draft = fresh;
+        if (fresh?.is_complete) cancelDraftAutoAdvance();
+      } catch { /* ignore */ }
     } finally {
       state.draftAutoBusy = false;
     }
@@ -1289,6 +1304,43 @@ async function renderLeagueView(root) {
   const title = $('#league-title'); if (title) title.textContent = phase;
   const sub = $('#league-sub'); if (sub) sub.textContent = `${rows.length} 隊 · Day ${st.current_day ?? 0}`;
 
+  // Global action bar: always-visible advance + playoff buttons so the user
+  // never has to hunt inside sub-tabs. Mirrors v1's league control bar.
+  const actionsHost = $('#league-actions');
+  if (actionsHost) {
+    actionsHost.innerHTML = '';
+    const champion = st.champion;
+    const isPlayoffs = !!st.is_playoffs;
+    const awaitingBracket = isPlayoffs && champion == null;
+    const advDisabled = awaitingBracket || champion != null || state.advancing;
+    const advTitle = awaitingBracket
+      ? '例行賽已結束，請開打季後賽'
+      : champion != null ? '賽季已結束' : null;
+    actionsHost.append(
+      el('button', {
+        class: 'btn sm', disabled: advDisabled, title: advTitle,
+        onclick: onLeagueAdvanceDay,
+      }, '推進一天'),
+      el('button', {
+        class: 'btn sm', disabled: advDisabled, title: advTitle,
+        onclick: onLeagueAdvanceWeek,
+      }, '推進一週'),
+    );
+    if (champion == null) {
+      if (awaitingBracket) {
+        actionsHost.append(el('button', {
+          class: 'btn sm primary', disabled: state.advancing,
+          onclick: onLeagueSimPlayoffs,
+        }, '🏆 模擬季後賽'));
+      } else {
+        actionsHost.append(el('button', {
+          class: 'btn sm', disabled: state.advancing,
+          onclick: onLeagueSimToPlayoffs,
+        }, '模擬到季後賽'));
+      }
+    }
+  }
+
   // Sub-tabs nav
   root.append(buildLeagueSubTabsV2());
 
@@ -1602,22 +1654,38 @@ function renderManagementSubV2(container) {
     ? '例行賽已結束，請開打季後賽'
     : champion != null ? '賽季已結束' : null;
 
-  // Controls panel
+  // Controls panel — advance + playoff sims + reset
+  const controlButtons = [
+    el('button', {
+      class: 'btn', disabled, title: disableTitle,
+      onclick: onLeagueAdvanceDay,
+    }, '推進一天'),
+    el('button', {
+      class: 'btn', disabled, title: disableTitle,
+      onclick: onLeagueAdvanceWeek,
+    }, '推進一週'),
+  ];
+  // Playoff transition buttons (only when relevant)
+  if (champion == null) {
+    if (awaitingBracket) {
+      controlButtons.push(el('button', {
+        class: 'btn primary', disabled: state.advancing,
+        onclick: onLeagueSimPlayoffs,
+      }, '🏆 模擬季後賽'));
+    } else {
+      controlButtons.push(el('button', {
+        class: 'btn', disabled: state.advancing,
+        onclick: onLeagueSimToPlayoffs,
+      }, '模擬到季後賽'));
+    }
+  }
+  controlButtons.push(el('button', {
+    class: 'btn ghost',
+    onclick: onLeagueResetSeason,
+  }, '重置賽季'));
+
   const controls = el('div', { class: 'card card-pad' },
-    el('div', { class: 'mgmt-controls' },
-      el('button', {
-        class: 'btn', disabled, title: disableTitle,
-        onclick: onLeagueAdvanceDay,
-      }, '推進一天'),
-      el('button', {
-        class: 'btn', disabled, title: disableTitle,
-        onclick: onLeagueAdvanceWeek,
-      }, '推進一週'),
-      el('button', {
-        class: 'btn ghost',
-        onclick: onLeagueResetSeason,
-      }, '重置賽季'),
-    ),
+    el('div', { class: 'mgmt-controls' }, ...controlButtons),
     el('div', { class: 'mgmt-log', id: 'league-mgmt-log' },
       el('div', { class: 'empty-state' }, '操作訊息會顯示在這裡。'),
     ),
@@ -1829,6 +1897,51 @@ async function onLeagueResetSeason() {
     render();
   } catch (e) {
     toast(e.message || '重置失敗', 'error');
+  }
+}
+
+async function onLeagueSimToPlayoffs() {
+  if (state.advancing) return;
+  if (!confirm('模擬到季後賽？執行所有剩餘例行賽週次，可能需要 10-30 秒。')) return;
+  state.advancing = true;
+  _logMgmt('⏩ 模擬剩餘例行賽中…');
+  try {
+    await api('/api/season/sim-to-playoffs', {
+      method: 'POST',
+      body: JSON.stringify({ use_ai: false }),
+    });
+    await refreshLeagueData();
+    _logMgmt('✅ 例行賽模擬完成，準備進入季後賽');
+    rerenderLeagueSubFromTabs();
+    toast('例行賽模擬完成', 'info');
+  } catch (e) {
+    _logMgmt(`❌ 模擬失敗：${e.message || ''}`);
+    toast(e.message || '模擬失敗', 'error');
+  } finally {
+    state.advancing = false;
+  }
+}
+
+async function onLeagueSimPlayoffs() {
+  if (state.advancing) return;
+  if (!confirm('模擬季後賽淘汰賽？將跑完整個 bracket（約 10-20 秒）。')) return;
+  state.advancing = true;
+  _logMgmt('🏆 模擬季後賽 bracket 中…');
+  try {
+    await api('/api/season/sim-playoffs', {
+      method: 'POST',
+      body: JSON.stringify({ use_ai: false }),
+    });
+    await refreshLeagueData();
+    const champ = state.standings?.champion;
+    _logMgmt(champ != null ? `🏆 冠軍：${teamNameOf(champ)}` : '✅ 季後賽模擬完成');
+    rerenderLeagueSubFromTabs();
+    toast('季後賽模擬完成', 'info');
+  } catch (e) {
+    _logMgmt(`❌ 模擬失敗：${e.message || ''}`);
+    toast(e.message || '季後賽模擬失敗', 'error');
+  } finally {
+    state.advancing = false;
   }
 }
 

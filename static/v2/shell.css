@@ -1138,12 +1138,29 @@ button[disabled] { opacity: 0.55; cursor: not-allowed; }
   padding: 0;
   max-width: 720px;
   width: 92vw;
+  max-height: 90vh;
+  overflow: hidden;
 }
-.trade-propose-dlg-v2 .dialog-inner { display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-4); }
-.trade-propose-dlg-v2 .dlg-head { display: flex; justify-content: space-between; align-items: center; }
+.trade-propose-dlg-v2 .dialog-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-3);
+  padding: var(--s-4);
+  max-height: 90vh;
+  box-sizing: border-box;
+}
+.trade-propose-dlg-v2 .dlg-head { display: flex; justify-content: space-between; align-items: center; flex: 0 0 auto; }
 .trade-propose-dlg-v2 .dlg-head h2 { margin: 0; font-size: var(--fs-lg); }
-.trade-propose-dlg-v2 .dlg-body { display: flex; flex-direction: column; gap: var(--s-3); }
-.trade-propose-dlg-v2 .dlg-foot { display: flex; flex-direction: column; gap: var(--s-2); border-top: 1px solid var(--line-soft); padding-top: var(--s-3); }
+.trade-propose-dlg-v2 .dlg-body { display: flex; flex-direction: column; gap: var(--s-3); flex: 1 1 auto; overflow-y: auto; min-height: 0; }
+.trade-propose-dlg-v2 .dlg-foot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--s-3);
+  flex: 0 0 auto;
+  background: var(--bg);
+}
 .trade-propose-dlg-v2 .dlg-actions { display: flex; justify-content: flex-end; gap: var(--s-2); }
 .trade-propose-dlg-v2 textarea {
   background: var(--surface);
