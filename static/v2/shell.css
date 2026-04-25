@@ -1400,3 +1400,139 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
   background: var(--surface-2, rgba(100,100,150,0.04));
   font-weight: 600;
 }
+
+/* ==========================================================================
+   Mobile responsive (< 768px) — collapse layout, scrollable tables, finger-
+   friendly tap targets. Tablet (768-1024px) inherits the existing rules.
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* Shell layout: full width, no fixed sidebar nav */
+  .app { min-width: 0; }
+  .shell-main { padding: var(--s-3); }
+  .shell-header {
+    flex-wrap: wrap;
+    padding: var(--s-3);
+    gap: var(--s-2);
+  }
+  .brand-name { font-size: var(--fs-sm); }
+  .brand-name .sub { display: none; }
+  .header-actions { flex-wrap: wrap; gap: 6px; }
+
+  /* Nav: horizontal scroll bar instead of vertical sidebar */
+  .shell-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 6px var(--s-3);
+    gap: 4px;
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  .nav-item {
+    flex: 0 0 auto;
+    height: 36px;
+    padding: 0 12px;
+    font-size: var(--fs-sm);
+    white-space: nowrap;
+  }
+  .nav-item .ni-shortcut, .nav-item .ni-badge { display: none; }
+  .nav-item[aria-current="page"]::after { display: none; }
+
+  /* Make wide tables horizontally scrollable inside their container */
+  .standings-table-wrap, .yahoo-roster-wrap, .table-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .standings-table, .yahoo-roster-table { min-width: 600px; font-size: var(--fs-xs); }
+  .yahoo-roster-table th, .yahoo-roster-table td { padding: 6px 4px; }
+
+  /* Cards / panels: less internal padding */
+  .card, .card-pad { padding: var(--s-3); }
+  .card-header { padding: var(--s-3); }
+
+  /* Modals/dialogs: near full-screen */
+  .dlg-v2, dialog.dlg-v2, dialog.dialog {
+    width: 96vw;
+    max-width: 96vw;
+    margin: 0;
+  }
+  .dlg-v2-inner, .dialog-inner {
+    width: 100%;
+    max-width: 100%;
+    max-height: 92vh;
+  }
+  .dlg-foot, .dlg-foot-v2 {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Tap-friendly buttons (44×44 min recommended for touch) */
+  .btn { min-height: 38px; padding: 0 12px; }
+  .btn.sm { min-height: 32px; }
+  .icon-btn { min-width: 36px; min-height: 36px; }
+
+  /* Draft board: tighter cells, allow scroll */
+  .draft-top {
+    grid-template-columns: 1fr !important;
+    gap: var(--s-3);
+  }
+  .draft-board, .board-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .board-cell {
+    min-width: 64px;
+    font-size: 10px;
+    padding: 4px;
+  }
+  .draft-clock h2 { font-size: var(--fs-md); }
+
+  /* Grids that side-by-side on desktop: stack */
+  [style*="grid-template-columns: 1.3fr 1fr"],
+  [style*="grid-template-columns: 1.4fr 1fr"],
+  [style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* League switcher dropdown: full width */
+  .lsw-menu-v2, .league-switch .menu {
+    position: fixed !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  /* Setup form: inputs full-width */
+  .setup-row { flex-direction: column; align-items: stretch; gap: 4px; }
+  .setup-label { font-size: var(--fs-sm); }
+  .setup-control input, .setup-control select { width: 100%; }
+  .setup-team-names { grid-template-columns: 1fr !important; }
+
+  /* League sub-tabs: scroll horizontally */
+  .league-tabs-v2 {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+  .league-tabs-v2 .lt2 { flex: 0 0 auto; white-space: nowrap; }
+
+  /* Toast stack */
+  .toast-stack { left: 8px !important; right: 8px !important; bottom: 8px !important; }
+
+  /* FA filter bar wraps */
+  .fa-filter-bar, .filter-bar { flex-wrap: wrap; gap: 6px; }
+
+  /* Pos tag size */
+  .pos-tag { font-size: 9px; padding: 2px 5px; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .brand-name { display: none; }
+  .nav-item { padding: 0 8px; font-size: 11px; }
+  .nav-item .ni-ic { font-size: 14px; }
+  .yahoo-roster-table { min-width: 520px; }
+}
