@@ -1,0 +1,2 @@
+window.DATA = { me: { id: "me", name: "Chen W.", team: "Team A", initials: "CW", grad: 1 }, faab: { budget: 100, spent: 33 }, league: { name: "League", size: 12, week: 14, totalWeeks: 21, phase: "regular", draftDone: true, playoffStartWeek: 18 }, standings: [], roster: [], matchup: { week: 14, you: { score:0, proj:0 }, them: { score:0, proj:0 }, catBreakdown: [] }, actions: [], news: [], draftState: { round:1, picks:[] }, tradeThreads: [], freeAgents: [], schedule: [] };
+

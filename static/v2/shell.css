@@ -1496,13 +1496,16 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
     grid-template-columns: 1fr !important;
   }
 
-  /* League switcher dropdown: full width */
-  .lsw-menu-v2, .league-switch .menu {
+  /* League switcher dropdown: full width, anchored below header */
+  .lsw-menu-v2, .league-switch .menu, #league-switch-menu {
     position: fixed !important;
+    top: 60px !important;
     left: 8px !important;
     right: 8px !important;
     width: auto !important;
     max-width: none !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow-y: auto !important;
   }
 
   /* Setup form: inputs full-width */
