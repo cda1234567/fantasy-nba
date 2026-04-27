@@ -1823,132 +1823,147 @@ function aggregateMatchupStats(dailyLogs) {
   return out;
 }
 
-// Yahoo-style matchup roster: 10 starter slots side-by-side + bench section.
+// Aggregate per-player for either the whole week (dayFilter null) or a single
+// day number (e.g. 3 for D3). Returns {[pid]: {fp, pts, reb, ast, stl, blk, to, played}}
+function aggregatePerPlayer(dailyLogs, dayFilter) {
+  const out = {};
+  for (const r of (dailyLogs || [])) {
+    if (!r || !r.played) continue;
+    if (dayFilter != null && r.day !== dayFilter) continue;
+    const id = r.player_id;
+    if (!out[id]) out[id] = { fp: 0, pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, to: 0, played: 0 };
+    const a = out[id];
+    a.fp  += Number(r.fp)  || 0;
+    a.pts += Number(r.pts) || 0;
+    a.reb += Number(r.reb) || 0;
+    a.ast += Number(r.ast) || 0;
+    a.stl += Number(r.stl) || 0;
+    a.blk += Number(r.blk) || 0;
+    a.to  += Number(r.to)  || 0;
+    a.played += 1;
+  }
+  return out;
+}
+
+// Yahoo-style matchup roster with Pos | Player | Fan Pts | PTS REB AST ST BLK TO
+// columns per side, day-tab selector to switch between Totals and any single day.
 // Mobile (< 768px) collapses to stacked-team layout via CSS.
 function buildYahooMatchupTable(d) {
-  const lineupA = d.lineup_a || [];
-  const lineupB = d.lineup_b || [];
-  const benchA = d.bench_a || [];
-  const benchB = d.bench_b || [];
-  const aggA = aggregateMatchupStats(d.players_a);
-  const aggB = aggregateMatchupStats(d.players_b);
-  const totalA = lineupA.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
-  const totalB = lineupB.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
+  // Determine which day numbers exist this week (e.g. days 1..7 for week 1).
+  const allLogs = [...(d.players_a || []), ...(d.players_b || [])];
+  const dayNums = Array.from(new Set(allLogs.map(r => r.day).filter(n => Number.isFinite(n)))).sort((x, y) => x - y);
 
-  const fmt1 = (n) => (Number.isFinite(n) ? n.toFixed(1) : '—');
-  const cellPlayer = (p, agg, side) => {
-    if (!p) return `<span class="ymt-empty">(空)</span>`;
-    const a = agg || {};
-    const stats = `<span class="ymt-statline">PTS ${fmt1(a.pts || 0)} · REB ${fmt1(a.reb || 0)} · AST ${fmt1(a.ast || 0)} · ST ${fmt1(a.stl || 0)} · BLK ${fmt1(a.blk || 0)} · TO ${fmt1(a.to || 0)}</span>`;
-    return `<div class="ymt-pname"><button class="ymt-expand" data-side="${side}" data-pid="${p.player_id}"><b>${escapeHtml(p.name)}</b></button></div>
-      <div class="ymt-pmeta">${escapeHtml(p.pos || '')} · 出 ${p.days_played || 0} 天</div>
-      ${stats}`;
-  };
-  const fpCell = (p, isHigh) =>
-    `<td class="num ${isHigh ? 'high' : ''}">${p ? fmtStat(Number(p.weekly_fp) || 0) : '—'}</td>`;
+  // Container holds day tabs + table. Re-renders the table only when day changes.
+  const container = el('div', { class: 'yahoo-matchup-wrap' });
+  let currentDay = null;  // null = totals; otherwise a specific day number
 
-  // Starter rows: pair lineup_a[i] with lineup_b[i] by slot (both arrays
-  // share LINEUP_SLOTS order from the backend).
-  const slotCount = Math.max(lineupA.length, lineupB.length, 10);
-  const starterRows = [];
-  for (let i = 0; i < slotCount; i++) {
-    const ra = lineupA[i] || { slot: '-', player: null };
-    const rb = lineupB[i] || { slot: '-', player: null };
-    const pa = ra.player;
-    const pb = rb.player;
-    const fa = pa ? Number(pa.weekly_fp) || 0 : 0;
-    const fb = pb ? Number(pb.weekly_fp) || 0 : 0;
-    const aHigh = pa && pb && fa > fb;
-    const bHigh = pa && pb && fb > fa;
-    starterRows.push(`<tr>
-      <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(ra.slot)}">${escapeHtml(ra.slot)}</span></td>
-      <td class="ymt-player ymt-left ${aHigh ? 'side-win' : ''}">${cellPlayer(pa, pa && aggA[pa.player_id], 'a')}</td>
-      ${fpCell(pa, aHigh)}
-      <td class="ymt-mid">·</td>
-      ${fpCell(pb, bHigh)}
-      <td class="ymt-player ymt-right ${bHigh ? 'side-win' : ''}">${cellPlayer(pb, pb && aggB[pb.player_id], 'b')}</td>
-      <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(rb.slot)}">${escapeHtml(rb.slot)}</span></td>
-    </tr>`);
+  function rerender() {
+    container.innerHTML = '';
+    container.append(buildDayTabs(), buildTable());
   }
 
-  // Totals row (starter sums; matches game score from backend).
-  const aWins = totalA > totalB;
-  const bWins = totalB > totalA;
-  const totalsRow = `<tr class="ymt-totals">
-    <td></td>
-    <td class="ymt-left ${aWins ? 'side-win' : ''}"><b>合計（先發）</b></td>
-    <td class="num ${aWins ? 'high' : ''}"><b>${fmtStat(totalA)}</b></td>
-    <td class="ymt-mid"></td>
-    <td class="num ${bWins ? 'high' : ''}"><b>${fmtStat(totalB)}</b></td>
-    <td class="ymt-right ${bWins ? 'side-win' : ''}"><b>合計（先發）</b></td>
-    <td></td>
-  </tr>`;
-
-  // Bench rows: pair by index. Bench is flexibly aligned (no slots).
-  const benchCount = Math.max(benchA.length, benchB.length);
-  const benchRows = [];
-  for (let i = 0; i < benchCount; i++) {
-    const pa = benchA[i] || null;
-    const pb = benchB[i] || null;
-    benchRows.push(`<tr class="ymt-bench-row">
-      <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
-      <td class="ymt-player ymt-left">${cellPlayer(pa, pa && aggA[pa.player_id], 'a')}</td>
-      ${fpCell(pa, false)}
-      <td class="ymt-mid">·</td>
-      ${fpCell(pb, false)}
-      <td class="ymt-player ymt-right">${cellPlayer(pb, pb && aggB[pb.player_id], 'b')}</td>
-      <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
-    </tr>`);
+  function buildDayTabs() {
+    const tabs = el('div', { class: 'ymt-day-tabs' });
+    const mkTab = (label, dayVal) => {
+      const active = currentDay === dayVal;
+      return el('button', {
+        class: `ymt-day-tab ${active ? 'active' : ''}`,
+        onclick: () => { currentDay = dayVal; rerender(); },
+      }, label);
+    };
+    tabs.append(mkTab('合計', null));
+    for (const dn of dayNums) tabs.append(mkTab(`D${dn}`, dn));
+    return tabs;
   }
-  const benchHeader = benchCount
-    ? `<tr class="ymt-section"><td colspan="7">板凳（不計入分數）</td></tr>`
-    : '';
 
-  const head = `<thead><tr>
-    <th>位</th>
-    <th class="ymt-left">${escapeHtml(d.team_a_name || 'A')}</th>
-    <th class="num">週分</th>
-    <th></th>
-    <th class="num">週分</th>
-    <th class="ymt-right">${escapeHtml(d.team_b_name || 'B')}</th>
-    <th>位</th>
-  </tr></thead>`;
+  function buildTable() {
+    const lineupA = d.lineup_a || [];
+    const lineupB = d.lineup_b || [];
+    const benchA = d.bench_a || [];
+    const benchB = d.bench_b || [];
+    const statsA = aggregatePerPlayer(d.players_a, currentDay);
+    const statsB = aggregatePerPlayer(d.players_b, currentDay);
 
-  const wrap = el('div', { class: 'yahoo-matchup-wrap' });
-  wrap.innerHTML = `<table class="yahoo-matchup-table">
-    ${head}
-    <tbody>
-      ${starterRows.join('')}
-      ${totalsRow}
-      ${benchHeader}
-      ${benchRows.join('')}
-    </tbody>
-  </table>`;
-  // Delegated click: tap a player name -> show/hide 7-day breakdown row beneath.
-  wrap.addEventListener('click', (e) => {
-    const btn = e.target.closest('.ymt-expand');
-    if (!btn) return;
-    const pid = parseInt(btn.dataset.pid, 10);
-    const side = btn.dataset.side;
-    const tr = btn.closest('tr');
-    if (!tr) return;
-    const next = tr.nextElementSibling;
-    if (next && next.classList.contains('ymt-daily-row') && next.dataset.pid === String(pid)) {
-      next.remove();
-      return;
+    const fmt1 = (n) => (Number.isFinite(n) && n !== 0 ? n.toFixed(1) : (n === 0 ? '0.0' : '—'));
+    // Box-score stats are integer counts in real basketball — round at display.
+    const fmtBox = (n) => (Number.isFinite(n) ? String(Math.round(n)) : '—');
+    const dash = '<td class="num ymt-dash">—</td>';
+
+    // Render one player's stat cells: Fan Pts | PTS | REB | AST | ST | BLK | TO
+    const statCells = (p, stats, sideClass) => {
+      if (!p) return `<td class="num"><span class="ymt-empty-mark">—</span></td>${dash.repeat(6)}`;
+      const s = stats[p.player_id];
+      if (!s) return `<td class="num">0.0</td>${dash.repeat(6)}`;
+      return `<td class="num ${sideClass}"><b>${fmt1(s.fp)}</b></td>
+        <td class="num">${fmtBox(s.pts)}</td>
+        <td class="num">${fmtBox(s.reb)}</td>
+        <td class="num">${fmtBox(s.ast)}</td>
+        <td class="num">${fmtBox(s.stl)}</td>
+        <td class="num">${fmtBox(s.blk)}</td>
+        <td class="num">${fmtBox(s.to)}</td>`;
+    };
+    const playerCell = (p) => {
+      if (!p) return `<span class="ymt-empty">(空)</span>`;
+      return `<div class="ymt-pname"><b>${escapeHtml(p.name)}</b></div>
+        <div class="ymt-pmeta">${escapeHtml(p.pos || '')}</div>`;
+    };
+
+    // Build one side's full table (starters + bench) — Yahoo layout
+    function buildSide(lineup, bench, stats, sideName, isA) {
+      const slotCount = Math.max(lineup.length, 10);
+      const rows = [];
+      let totalFp = 0;
+      for (let i = 0; i < slotCount; i++) {
+        const r = lineup[i] || { slot: '-', player: null };
+        const p = r.player;
+        const s = p ? stats[p.player_id] : null;
+        if (s) totalFp += s.fp;
+        rows.push(`<tr>
+          <td class="ymt-pos"><span class="pos-tag" data-pos="${escapeHtml(r.slot)}">${escapeHtml(r.slot)}</span></td>
+          <td class="ymt-player">${playerCell(p)}</td>
+          ${statCells(p, stats, isA ? 'a-fp' : 'b-fp')}
+        </tr>`);
+      }
+      // Bench section
+      const benchRows = [];
+      for (const p of (bench || [])) {
+        benchRows.push(`<tr class="ymt-bench-row">
+          <td class="ymt-pos"><span class="pos-tag" data-pos="BN">BN</span></td>
+          <td class="ymt-player">${playerCell(p)}</td>
+          ${statCells(p, stats, '')}
+        </tr>`);
+      }
+      const benchHead = benchRows.length
+        ? `<tr class="ymt-section"><td colspan="9">板凳（不計入分數）</td></tr>`
+        : '';
+      const totalRow = `<tr class="ymt-totals">
+        <td></td>
+        <td class="ymt-player"><b>合計（先發）</b></td>
+        <td class="num"><b>${fmt1(totalFp)}</b></td>
+        ${dash.repeat(6)}
+      </tr>`;
+      return `<table class="yahoo-matchup-table">
+        <thead>
+          <tr class="ymt-team-head"><th colspan="9">${escapeHtml(sideName)}</th></tr>
+          <tr>
+            <th>Pos</th><th>Player</th>
+            <th class="num">Fan Pts</th>
+            <th class="num">PTS</th><th class="num">REB</th><th class="num">AST</th>
+            <th class="num">ST</th><th class="num">BLK</th><th class="num">TO</th>
+          </tr>
+        </thead>
+        <tbody>${rows.join('')}${totalRow}${benchHead}${benchRows.join('')}</tbody>
+      </table>`;
     }
-    const agg = side === 'a' ? aggA[pid] : aggB[pid];
-    const days = agg && agg.days || [];
-    const sorted = days.slice().sort((x, y) => (x.day || 0) - (y.day || 0));
-    const cells = sorted.map(r => `<td class="num">D${r.day}: <b>${fmt1(r.fp)}</b><br><span class="ymt-daily-stats">${fmt1(r.pts)}/${fmt1(r.reb)}/${fmt1(r.ast)}/${fmt1(r.stl)}/${fmt1(r.blk)}/${fmt1(r.to)}</span></td>`).join('');
-    const empty = !sorted.length ? `<td colspan="7" style="text-align:center; color:var(--ink-3);">本週無上場紀錄</td>` : '';
-    const dailyRow = document.createElement('tr');
-    dailyRow.className = 'ymt-daily-row';
-    dailyRow.dataset.pid = String(pid);
-    dailyRow.innerHTML = `<td colspan="7" style="padding:0;"><table class="ymt-daily-inner"><thead><tr><th colspan="${sorted.length || 1}">逐日 — PTS / REB / AST / ST / BLK / TO</th></tr></thead><tbody><tr>${cells || empty}</tr></tbody></table></td>`;
-    tr.after(dailyRow);
-  });
-  return wrap;
+
+    const split = el('div', { class: 'ymt-split' });
+    split.innerHTML = `<div class="ymt-side-wrap">${buildSide(lineupA, benchA, statsA, d.team_a_name || 'A', true)}</div>
+      <div class="ymt-side-wrap">${buildSide(lineupB, benchB, statsB, d.team_b_name || 'B', false)}</div>`;
+    return split;
+  }
+
+  rerender();
+  return container;
 }
 
 function aggregateMatchupPlayers(rows) {
