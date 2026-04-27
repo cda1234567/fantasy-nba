@@ -43,14 +43,19 @@ def _season_year_int(season_str: str | None) -> int | None:
 
 
 def _season_start(season_year: int) -> date | None:
-    """First real-world game date of the given NBA season. Cached."""
+    """First REGULAR-SEASON game date of the given NBA season. Cached.
+
+    Game IDs starting with '1' = preseason, '2' = regular, '3' = all-star,
+    '4' = playoffs. Anchor on regular-season opener so fantasy day 1 doesn't
+    map to a preseason game most starters skip.
+    """
     if season_year in _season_start_cache:
         return _season_start_cache[season_year]
     conn = _connect()
     if conn is None:
         return None
     row = conn.execute(
-        "SELECT MIN(game_date) FROM player_games WHERE season_year = ?",
+        "SELECT MIN(game_date) FROM player_games WHERE season_year = ? AND SUBSTR(game_id,1,1) = '2'",
         (season_year,),
     ).fetchone()
     if not row or not row[0]:

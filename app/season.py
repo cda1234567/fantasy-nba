@@ -208,10 +208,13 @@ def _sample_game(
             played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
         )
 
-    real = real_game_for(player.id, season_year, day) if season_year else None
-    if real is not None:
-        if real["minutes"] <= 0 and real["pts"] == 0 and real["reb"] == 0:
-            # Real DNP for this player on this date — preserve the truth.
+    if season_year:
+        # Real-history mode: use actual box score if the player played that
+        # date, otherwise treat as DNP. Don't fall back to gauss — that would
+        # invent stats on days the player didn't actually play, which is
+        # exactly what produced absurd lines like Duncan 37/21 on opener.
+        real = real_game_for(player.id, season_year, day)
+        if real is None or (real["minutes"] <= 0 and real["pts"] == 0 and real["reb"] == 0):
             return GameLog(
                 day=day, week=week, player_id=player.id, team_id=team_id,
                 played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
@@ -230,7 +233,7 @@ def _sample_game(
             stl=real["stl"], blk=real["blk"], to=real["tov"], fp=fp,
         )
 
-    # Fallback: gauss simulation around the player's season average.
+    # No season_year provided (current/active season without DB): gauss sim.
     play_prob = 0.9 if player.fppg > 0 else 0.5
     played = rng.random() < play_prob
 
