@@ -232,8 +232,10 @@ def _sample_game(
     return GameLog(
         day=day, week=week, player_id=player.id, team_id=team_id,
         played=True,
-        pts=round(pts, 2), reb=round(reb, 2), ast=round(ast, 2),
-        stl=round(stl, 2), blk=round(blk, 2), to=round(to_v, 2), fp=fp,
+        # Real box-score counts are integers (you can't get 7.3 rebounds in a
+        # game). FP keeps decimals because it's a weighted sum.
+        pts=round(pts), reb=round(reb), ast=round(ast),
+        stl=round(stl), blk=round(blk), to=round(to_v), fp=fp,
     )
 
 
