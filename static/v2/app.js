@@ -2297,9 +2297,6 @@ async function renderActivityPlaceholder(container) {
 }
 
 async function renderTradesPlaceholder(container) {
-  container.append(el('div', { class: 'card card-pad' },
-    el('div', { class: 'empty-state' }, '交易清單將於 Phase 7 完整實作（發起交易、接受、否決）。')));
-
   const loading = el('div', { class: 'card card-pad' },
     el('div', { class: 'empty-state' }, '載入交易紀錄…'));
   container.append(loading);
@@ -2350,9 +2347,12 @@ async function onLeagueAdvanceDay() {
       body: JSON.stringify({ use_ai: true }),
     });
     await refreshLeagueData();
-    _logMgmt(`✅ 已推進至 W${state.standings?.current_week ?? '?'} D${state.standings?.current_day ?? '?'}`);
+    const wk = state.standings?.current_week ?? '?';
+    const dy = state.standings?.current_day ?? '?';
+    _logMgmt(`✅ 已推進至 W${wk} D${dy}`);
     rerenderLeagueSubFromTabs();
-    toast('推進一天完成', 'info');
+    render();  // also refresh top action bar so the visible W/D counter updates
+    toast(`✅ 推進到 W${wk} D${dy}`, 'info');
   } catch (e) {
     _logMgmt(`❌ 推進失敗：${e.message || ''}`);
     toast(e.message || '推進失敗', 'error');

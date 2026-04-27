@@ -58,7 +58,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.23"
+APP_VERSION = "v26.04.24.24"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -736,8 +736,11 @@ def list_players(
     q: Optional[str] = None,
     pos: Optional[str] = None,
     exclude_injured: bool = False,
+    min_gp: int = 20,  # filter out small-sample cameos by default; the UI can pass 0 to see everyone
 ):
     pool = _get_draft().available_players() if available else list(_get_draft().players)
+    if min_gp > 0:
+        pool = [p for p in pool if (getattr(p, "gp", 0) or 0) >= min_gp]
     if q:
         ql = q.lower()
         pool = [p for p in pool if ql in p.name.lower() or ql in p.team.lower()]
