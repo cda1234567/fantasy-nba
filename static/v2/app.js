@@ -660,7 +660,10 @@ function scheduleDraftAutoAdvance() {
       appendDraftCommentary(r.commentary);
       ok = true;
       // If the server just completed the draft, stop the loop immediately.
-      if (r.state?.is_complete) cancelDraftAutoAdvance();
+      if (r.state?.is_complete) {
+        cancelDraftAutoAdvance();
+        maybeAutoStartSeason();
+      }
     } catch (err) {
       // 409 = draft already complete on server (race with a parallel request).
       // Swallow silently; any other error: log for debugging.
@@ -699,6 +702,7 @@ async function onAdvance() {
     state.draft = r.state;
     appendDraftCommentary(r.commentary);
     render();
+    maybeAutoStartSeason();
   } catch (e) {
     toast(e.message || '推進失敗', 'error');
   }
@@ -711,8 +715,22 @@ async function onSimToMe() {
     // sim-to-me can produce many picks — only pull commentary if backend sent any
     appendDraftCommentary(r.commentary);
     render();
+    maybeAutoStartSeason();
   } catch (e) {
     toast(e.message || '模擬失敗', 'error');
+  }
+}
+
+// Auto-start the season the moment the draft completes — saves the user one
+// extra click. No-op if season already started (backend returns harmless error).
+async function maybeAutoStartSeason() {
+  if (!state.draft?.is_complete) return;
+  try {
+    await api('/api/season/start', { method: 'POST' });
+    toast('🏁 選秀完成，賽季自動開始', 'info');
+    setTimeout(() => navigate('league'), 600);
+  } catch (e) {
+    // already started or not allowed — silent
   }
 }
 
@@ -725,6 +743,7 @@ async function onDraftPlayer(playerId) {
     state.draft = r.state;
     appendDraftCommentary(r.commentary);
     render();
+    maybeAutoStartSeason();
   } catch (e) {
     toast(e.message || '選秀失敗', 'error');
   }
@@ -2514,7 +2533,7 @@ async function onLeagueAdvanceDay() {
   try {
     await api('/api/season/advance-day', {
       method: 'POST',
-      body: JSON.stringify({ use_ai: true }),
+      body: JSON.stringify({ use_ai: false }),  // heuristic = fast (LLM per team per day was 60+s)
     });
     await refreshLeagueData();
     const wk = state.standings?.current_week ?? '?';
