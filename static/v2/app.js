@@ -1802,6 +1802,27 @@ async function fetchAndRenderMatchupDetail(m, week, container) {
   }
 }
 
+// Aggregate raw daily logs into per-player weekly totals (pts/reb/ast/stl/blk/to)
+// keyed by player_id. The backend's lineup rows only carry weekly_fp + days, so we
+// recompute the box-score columns here so the matchup table can show them.
+function aggregateMatchupStats(dailyLogs) {
+  const out = {};
+  for (const r of (dailyLogs || [])) {
+    if (!r || !r.played) continue;
+    const id = r.player_id;
+    if (!out[id]) out[id] = { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, to: 0, days: [] };
+    const a = out[id];
+    a.pts += Number(r.pts) || 0;
+    a.reb += Number(r.reb) || 0;
+    a.ast += Number(r.ast) || 0;
+    a.stl += Number(r.stl) || 0;
+    a.blk += Number(r.blk) || 0;
+    a.to  += Number(r.to)  || 0;
+    a.days.push(r);
+  }
+  return out;
+}
+
 // Yahoo-style matchup roster: 10 starter slots side-by-side + bench section.
 // Mobile (< 768px) collapses to stacked-team layout via CSS.
 function buildYahooMatchupTable(d) {
@@ -1809,13 +1830,19 @@ function buildYahooMatchupTable(d) {
   const lineupB = d.lineup_b || [];
   const benchA = d.bench_a || [];
   const benchB = d.bench_b || [];
+  const aggA = aggregateMatchupStats(d.players_a);
+  const aggB = aggregateMatchupStats(d.players_b);
   const totalA = lineupA.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
   const totalB = lineupB.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
 
-  const cellPlayer = (p) => {
+  const fmt1 = (n) => (Number.isFinite(n) ? n.toFixed(1) : '—');
+  const cellPlayer = (p, agg, side) => {
     if (!p) return `<span class="ymt-empty">(空)</span>`;
-    return `<div class="ymt-pname"><b>${escapeHtml(p.name)}</b></div>
-      <div class="ymt-pmeta">${escapeHtml(p.pos || '')} · 出 ${p.days_played || 0}</div>`;
+    const a = agg || {};
+    const stats = `<span class="ymt-statline">PTS ${fmt1(a.pts || 0)} · REB ${fmt1(a.reb || 0)} · AST ${fmt1(a.ast || 0)} · ST ${fmt1(a.stl || 0)} · BLK ${fmt1(a.blk || 0)} · TO ${fmt1(a.to || 0)}</span>`;
+    return `<div class="ymt-pname"><button class="ymt-expand" data-side="${side}" data-pid="${p.player_id}"><b>${escapeHtml(p.name)}</b></button></div>
+      <div class="ymt-pmeta">${escapeHtml(p.pos || '')} · 出 ${p.days_played || 0} 天</div>
+      ${stats}`;
   };
   const fpCell = (p, isHigh) =>
     `<td class="num ${isHigh ? 'high' : ''}">${p ? fmtStat(Number(p.weekly_fp) || 0) : '—'}</td>`;
@@ -1835,11 +1862,11 @@ function buildYahooMatchupTable(d) {
     const bHigh = pa && pb && fb > fa;
     starterRows.push(`<tr>
       <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(ra.slot)}">${escapeHtml(ra.slot)}</span></td>
-      <td class="ymt-player ymt-left ${aHigh ? 'side-win' : ''}">${cellPlayer(pa)}</td>
+      <td class="ymt-player ymt-left ${aHigh ? 'side-win' : ''}">${cellPlayer(pa, pa && aggA[pa.player_id], 'a')}</td>
       ${fpCell(pa, aHigh)}
       <td class="ymt-mid">·</td>
       ${fpCell(pb, bHigh)}
-      <td class="ymt-player ymt-right ${bHigh ? 'side-win' : ''}">${cellPlayer(pb)}</td>
+      <td class="ymt-player ymt-right ${bHigh ? 'side-win' : ''}">${cellPlayer(pb, pb && aggB[pb.player_id], 'b')}</td>
       <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(rb.slot)}">${escapeHtml(rb.slot)}</span></td>
     </tr>`);
   }
@@ -1865,11 +1892,11 @@ function buildYahooMatchupTable(d) {
     const pb = benchB[i] || null;
     benchRows.push(`<tr class="ymt-bench-row">
       <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
-      <td class="ymt-player ymt-left">${cellPlayer(pa)}</td>
+      <td class="ymt-player ymt-left">${cellPlayer(pa, pa && aggA[pa.player_id], 'a')}</td>
       ${fpCell(pa, false)}
       <td class="ymt-mid">·</td>
       ${fpCell(pb, false)}
-      <td class="ymt-player ymt-right">${cellPlayer(pb)}</td>
+      <td class="ymt-player ymt-right">${cellPlayer(pb, pb && aggB[pb.player_id], 'b')}</td>
       <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
     </tr>`);
   }
@@ -1897,6 +1924,30 @@ function buildYahooMatchupTable(d) {
       ${benchRows.join('')}
     </tbody>
   </table>`;
+  // Delegated click: tap a player name -> show/hide 7-day breakdown row beneath.
+  wrap.addEventListener('click', (e) => {
+    const btn = e.target.closest('.ymt-expand');
+    if (!btn) return;
+    const pid = parseInt(btn.dataset.pid, 10);
+    const side = btn.dataset.side;
+    const tr = btn.closest('tr');
+    if (!tr) return;
+    const next = tr.nextElementSibling;
+    if (next && next.classList.contains('ymt-daily-row') && next.dataset.pid === String(pid)) {
+      next.remove();
+      return;
+    }
+    const agg = side === 'a' ? aggA[pid] : aggB[pid];
+    const days = agg && agg.days || [];
+    const sorted = days.slice().sort((x, y) => (x.day || 0) - (y.day || 0));
+    const cells = sorted.map(r => `<td class="num">D${r.day}: <b>${fmt1(r.fp)}</b><br><span class="ymt-daily-stats">${fmt1(r.pts)}/${fmt1(r.reb)}/${fmt1(r.ast)}/${fmt1(r.stl)}/${fmt1(r.blk)}/${fmt1(r.to)}</span></td>`).join('');
+    const empty = !sorted.length ? `<td colspan="7" style="text-align:center; color:var(--ink-3);">本週無上場紀錄</td>` : '';
+    const dailyRow = document.createElement('tr');
+    dailyRow.className = 'ymt-daily-row';
+    dailyRow.dataset.pid = String(pid);
+    dailyRow.innerHTML = `<td colspan="7" style="padding:0;"><table class="ymt-daily-inner"><thead><tr><th colspan="${sorted.length || 1}">逐日 — PTS / REB / AST / ST / BLK / TO</th></tr></thead><tbody><tr>${cells || empty}</tr></tbody></table></td>`;
+    tr.after(dailyRow);
+  });
   return wrap;
 }
 

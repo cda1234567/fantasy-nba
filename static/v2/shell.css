@@ -1661,3 +1661,35 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
   .matchup-hero .mh-vs-text { font-size: var(--fs-sm); }
 }
 
+/* Click-to-expand player stats inside Yahoo matchup table */
+.yahoo-matchup-table .ymt-statline {
+  display: block; font-size: 10px; color: var(--ink-3);
+  font-family: var(--mono); margin-top: 2px; letter-spacing: 0;
+}
+.yahoo-matchup-table button.ymt-expand {
+  background: transparent; border: 0; padding: 0;
+  color: var(--ink); cursor: pointer; text-align: left; font: inherit;
+}
+.yahoo-matchup-table button.ymt-expand:hover {
+  text-decoration: underline; color: var(--accent);
+}
+.yahoo-matchup-table tr.ymt-daily-row td { padding: 0; }
+.yahoo-matchup-table .ymt-daily-inner {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface-2, rgba(100,100,150,0.04));
+  border-top: 2px dashed var(--line);
+  border-bottom: 2px dashed var(--line);
+}
+.yahoo-matchup-table .ymt-daily-inner th {
+  font-size: 10px; padding: 6px 8px; color: var(--ink-3);
+  text-align: left; letter-spacing: 0; text-transform: uppercase;
+}
+.yahoo-matchup-table .ymt-daily-inner td {
+  font-size: 11px; padding: 6px 4px;
+  font-family: var(--mono); text-align: center;
+  border-left: 1px solid var(--line); vertical-align: top;
+}
+.yahoo-matchup-table .ymt-daily-stats {
+  font-size: 9px; color: var(--ink-3); display: block; margin-top: 2px;
+}
+
