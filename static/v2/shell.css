@@ -1539,3 +1539,11 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
   .nav-item .ni-ic { font-size: 14px; }
   .yahoo-roster-table { min-width: 520px; }
 }
+
+/* ----- Matchup daily breakdown (Schedule / League matchup-detail) ----- */
+.matchup-detail .md-daily { width: 100%; }
+.matchup-detail .md-daily-tbl { font-size: var(--fs-xs); min-width: 520px; }
+.matchup-detail .md-daily-tbl th,
+.matchup-detail .md-daily-tbl td { padding: 3px 5px; white-space: nowrap; }
+.matchup-detail .md-daily-tbl td.num { font-variant-numeric: tabular-nums; }
+

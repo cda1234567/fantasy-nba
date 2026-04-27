@@ -1035,48 +1035,61 @@ function rowHtml(r, playerById, injSet, injuriesMap) {
   </tr>`;
 }
 
-// Simple lineup override modal (v2 has no modal system, built inline)
+// Lineup override modal: tap-to-swap interaction (mobile-friendly).
+// Two zones: 10 starter slots (PG/SG/G/SF/PF/F/C/C/UTIL/UTIL) + bench candidates.
+// Tap one cell -> highlight; tap second cell -> swap player_ids between them.
+// Backend (/api/season/lineup) re-runs assign_slots greedily, so the position
+// of a starter in `starters[]` does not affect final slot assignment, but the
+// swap UI lets the user move a bench player into the starting 10 in one tap.
 function openLineupModal(data) {
-  const { team, players, lineup_slots, injured_out } = data;
+  const { team, players, lineup_slots, bench, injured_out } = data;
   const injSet = new Set(injured_out || []);
-  const targetCount = (lineup_slots || []).length || 10;
-  let selected = new Set((lineup_slots || []).map((s) => s.player_id).filter((id) => id != null));
+  const STARTER_SLOTS = ['PG', 'SG', 'G', 'SF', 'PF', 'F', 'C', 'C', 'UTIL', 'UTIL'];
+  const targetCount = (lineup_slots || []).length || STARTER_SLOTS.length;
+  const playerById = new Map(players.map((p) => [p.id, p]));
 
-  const candidates = players
-    .filter((p) => !injSet.has(p.id))
-    .sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
-
-  function rowsHtml() {
-    return candidates.map((p) => {
-      const checked = selected.has(p.id);
-      return `<tr ${checked ? 'style="background:var(--accent-08);"' : ''}>
-        <td><input type="checkbox" class="lineup-check" data-pid="${p.id}" ${checked ? 'checked' : ''}></td>
-        <td><b>${escapeHtml(p.name)}</b></td>
-        <td><span class="pos-tag" data-pos="${escapeHtml(p.pos)}">${escapeHtml(p.pos)}</span></td>
-        <td class="num"><b>${fppg(p.fppg)}</b></td>
-        <td style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">${escapeHtml(p.team)}</td>
-      </tr>`;
-    }).join('');
+  // Build starter rows in canonical SLOT order (greedy match against backend slots).
+  const backendSlots = (lineup_slots || []).map((s) => ({
+    slot: (s.slot || '').toUpperCase(),
+    player_id: s.player_id,
+  }));
+  const starterRows = [];
+  const usedIdx = new Set();
+  for (const want of STARTER_SLOTS) {
+    const idx = backendSlots.findIndex((s, i) => !usedIdx.has(i) && s.slot === want);
+    if (idx >= 0) { usedIdx.add(idx); starterRows.push({ slot: want, player_id: backendSlots[idx].player_id }); }
+    else { starterRows.push({ slot: want, player_id: null }); }
   }
+
+  // Bench = roster pids not currently in any starter slot. Preserve backend `bench`
+  // order if provided, otherwise derive from players.
+  const starterIds = new Set(starterRows.map((r) => r.player_id).filter((id) => id != null));
+  const benchIds = (bench && bench.length)
+    ? bench.filter((id) => !starterIds.has(id))
+    : players.map((p) => p.id).filter((id) => !starterIds.has(id));
+  const benchRows = benchIds.map((id) => ({ slot: 'BN', player_id: id }));
+
+  // Selection cursor: first tap stores {zone:'s'|'b', index}; second tap performs swap.
+  let firstPick = null;
 
   const overlay = el('div', {
     id: 'lineup-overlay',
     style: 'position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000; display:flex; align-items:center; justify-content:center; padding: var(--s-5);',
   });
   overlay.innerHTML = `
-    <div class="card" style="max-width: 720px; width:100%; max-height: 85vh; display:flex; flex-direction:column;">
+    <div class="card" style="max-width: 720px; width:100%; max-height: 90vh; display:flex; flex-direction:column;">
       <div class="card-header">
-        <h3>設定先發陣容（選 ${targetCount} 人）</h3>
+        <h3>設定先發陣容（點兩個位置交換）</h3>
         <button class="btn ghost sm" id="btn-close-lineup">✕</button>
       </div>
       <div style="padding: var(--s-3) var(--s-4); color:var(--ink-2); font-size: var(--fs-sm); border-bottom: 1px solid var(--line-soft);">
-        已選：<b id="lineup-count">${selected.size}</b> / ${targetCount}
+        提示：點第 1 格 → 高亮；再點第 2 格 → 兩位球員互換。傷兵會以紅字標示。
       </div>
-      <div style="overflow:auto; flex:1;">
-        <table class="standings-table" id="lineup-tbl">
-          <thead><tr><th></th><th>球員</th><th>位置</th><th class="num">FPPG</th><th>球隊</th></tr></thead>
-          <tbody>${rowsHtml()}</tbody>
-        </table>
+      <div style="overflow:auto; flex:1; padding: var(--s-3) var(--s-4);">
+        <div class="lineup-section-title" style="font-weight:600; color:var(--ink-2); margin-bottom: var(--s-2);">先發（10 人）</div>
+        <div id="lineup-starters" class="lineup-grid"></div>
+        <div class="lineup-section-title" style="font-weight:600; color:var(--ink-2); margin: var(--s-4) 0 var(--s-2);">板凳</div>
+        <div id="lineup-bench" class="lineup-grid"></div>
       </div>
       <div style="padding: var(--s-3) var(--s-4); display:flex; gap: var(--s-2); justify-content: flex-end; border-top: 1px solid var(--line-soft);">
         <button class="btn ghost sm" id="btn-auto-lineup">一鍵最佳</button>
@@ -1092,45 +1105,102 @@ function openLineupModal(data) {
   $('#btn-close-lineup').addEventListener('click', close);
   $('#btn-cancel-lineup').addEventListener('click', close);
 
-  function refreshCount() {
-    const n = $('#lineup-count'); if (n) n.textContent = String(selected.size);
+  function cellHtml(zone, index, row) {
+    const p = row.player_id != null ? playerById.get(row.player_id) : null;
+    const injured = p && injSet.has(p.id);
+    const slotLabel = row.slot === 'UTIL' ? 'Util' : row.slot;
+    if (!p) {
+      return `<button type="button" class="lineup-cell empty" data-zone="${zone}" data-idx="${index}">
+        <span class="lc-slot"><span class="pos-tag" data-pos="${escapeHtml(slotLabel)}">${escapeHtml(slotLabel)}</span></span>
+        <span class="lc-name" style="color:var(--ink-3);">(空)</span>
+        <span class="lc-fppg">—</span>
+      </button>`;
+    }
+    return `<button type="button" class="lineup-cell ${injured ? 'injured' : ''}" data-zone="${zone}" data-idx="${index}">
+      <span class="lc-slot"><span class="pos-tag" data-pos="${escapeHtml(slotLabel)}">${escapeHtml(slotLabel)}</span></span>
+      <span class="lc-name"><b style="${injured ? 'color:var(--danger);' : ''}">${escapeHtml(p.name)}</b>
+        <span style="color:var(--ink-3); font-size: var(--fs-xs);"> ${escapeHtml(p.pos || '')} · ${escapeHtml(p.team || '')}</span></span>
+      <span class="lc-fppg"><b>${fppg(p.fppg)}</b></span>
+    </button>`;
   }
-  function wireCheckboxes() {
-    overlay.querySelectorAll('.lineup-check').forEach((cb) => {
-      cb.addEventListener('change', () => {
-        const pid = Number(cb.dataset.pid);
-        if (cb.checked) {
-          if (selected.size >= targetCount) { cb.checked = false; return; }
-          selected.add(pid);
-        } else {
-          selected.delete(pid);
-        }
-        const tr = cb.closest('tr');
-        if (tr) tr.style.background = cb.checked ? 'var(--accent-08)' : '';
-        refreshCount();
-      });
+
+  function render() {
+    const sWrap = $('#lineup-starters');
+    const bWrap = $('#lineup-bench');
+    if (sWrap) sWrap.innerHTML = starterRows.map((r, i) => cellHtml('s', i, r)).join('');
+    if (bWrap) {
+      bWrap.innerHTML = benchRows.length
+        ? benchRows.map((r, i) => cellHtml('b', i, r)).join('')
+        : '<div style="color:var(--ink-3); font-size: var(--fs-sm);">沒有板凳球員。</div>';
+    }
+    overlay.querySelectorAll('.lineup-cell').forEach((btn) => {
+      btn.addEventListener('click', () => onCellClick(btn));
     });
+    if (firstPick) {
+      const sel = overlay.querySelector(`.lineup-cell[data-zone="${firstPick.zone}"][data-idx="${firstPick.index}"]`);
+      if (sel) sel.classList.add('selected');
+    }
   }
-  wireCheckboxes();
+
+  function onCellClick(btn) {
+    const zone = btn.dataset.zone;
+    const index = Number(btn.dataset.idx);
+    if (!firstPick) {
+      firstPick = { zone, index };
+      overlay.querySelectorAll('.lineup-cell.selected').forEach((el) => el.classList.remove('selected'));
+      btn.classList.add('selected');
+      return;
+    }
+    // Same cell tapped twice -> deselect.
+    if (firstPick.zone === zone && firstPick.index === index) {
+      firstPick = null;
+      btn.classList.remove('selected');
+      return;
+    }
+    // Perform swap of player_ids between the two cells.
+    const a = firstPick.zone === 's' ? starterRows[firstPick.index] : benchRows[firstPick.index];
+    const b = zone === 's' ? starterRows[index] : benchRows[index];
+    const tmp = a.player_id;
+    a.player_id = b.player_id;
+    b.player_id = tmp;
+    // If a bench slot ends up empty after a swap, drop it (keep bench compact).
+    for (let i = benchRows.length - 1; i >= 0; i--) {
+      if (benchRows[i].player_id == null) benchRows.splice(i, 1);
+    }
+    firstPick = null;
+    render();
+  }
+
+  render();
 
   $('#btn-auto-lineup').addEventListener('click', () => {
-    selected = new Set(candidates.slice(0, targetCount).map((p) => p.id));
-    const tbody = overlay.querySelector('#lineup-tbl tbody');
-    if (tbody) tbody.innerHTML = rowsHtml();
-    wireCheckboxes();
-    refreshCount();
-    toast(`已套用 FPPG 最佳陣容（${selected.size} 人）`, 'info');
+    // FPPG-greedy: pick top targetCount healthy players, drop into starter rows in order.
+    const candidates = players
+      .filter((p) => !injSet.has(p.id))
+      .sort((a, b) => (b.fppg || 0) - (a.fppg || 0));
+    const top = candidates.slice(0, targetCount).map((p) => p.id);
+    for (let i = 0; i < starterRows.length; i++) {
+      starterRows[i].player_id = top[i] != null ? top[i] : null;
+    }
+    const topSet = new Set(top);
+    const newBench = players.map((p) => p.id).filter((id) => !topSet.has(id));
+    benchRows.length = 0;
+    for (const id of newBench) benchRows.push({ slot: 'BN', player_id: id });
+    firstPick = null;
+    render();
+    toast('已套用 FPPG 最佳陣容', 'info');
   });
 
   $('#btn-save-lineup').addEventListener('click', async () => {
-    if (selected.size !== targetCount) {
-      toast(`請選滿 ${targetCount} 名先發（目前 ${selected.size} 人）`, 'error');
+    const starters = starterRows.map((r) => r.player_id).filter((id) => id != null);
+    if (starters.length !== targetCount) {
+      toast(`請選滿 ${targetCount} 名先發（目前 ${starters.length} 人）`, 'error');
       return;
     }
     try {
       await api('/api/season/lineup', {
         method: 'POST',
-        body: JSON.stringify({ team_id: team.id, starters: [...selected], today_only: false }),
+        body: JSON.stringify({ team_id: team.id, starters, today_only: false }),
       });
       toast('先發陣容已儲存', 'info');
       close();
@@ -1718,6 +1788,8 @@ async function fetchAndRenderMatchupDetail(m, week, container) {
       buildMatchupPlayerTable(aggA, data.team_a_name),
       buildMatchupPlayerTable(aggB, data.team_b_name),
     ));
+    slot.append(buildMatchupDailyTable(data.players_a, data.team_a_name));
+    slot.append(buildMatchupDailyTable(data.players_b, data.team_b_name));
   } catch (e) {
     slot.innerHTML = '';
     slot.append(el('div', { class: 'empty-state' }, `明細載入失敗：${escapeHtml(e.message || '')}`));
@@ -1775,6 +1847,55 @@ function buildMatchupPlayerTable(rows, title) {
   wrap.innerHTML = `
     <div class="md-col-head">${escapeHtml(title)}</div>
     <div class="table-wrap"><table class="standings-table md-tbl"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+  return wrap;
+}
+
+// Daily breakdown: one row per player, columns Day1..Day7 + 週小計 (FP per day).
+// Backend returns per-day rows; we pivot them into a per-player x day grid.
+function buildMatchupDailyTable(rows, title) {
+  const byPid = new Map();
+  let maxDay = 0;
+  for (const r of rows || []) {
+    const d = Number(r.day) || 0;
+    if (d > maxDay) maxDay = d;
+    if (!byPid.has(r.player_id)) {
+      byPid.set(r.player_id, {
+        player_id: r.player_id, name: r.player_name, pos: r.pos,
+        days: {}, total: 0,
+      });
+    }
+    const e = byPid.get(r.player_id);
+    e.days[d] = (e.days[d] || 0) + (r.fp || 0);
+    if (r.played) e.total += r.fp || 0;
+  }
+  // Show at least 7 day columns; if backend has more (rare), expand.
+  const dayCount = Math.max(7, maxDay);
+  const players = Array.from(byPid.values());
+  players.sort((a, b) => b.total - a.total);
+
+  const dayHeads = Array.from({ length: dayCount }, (_, i) => `<th class="num">D${i + 1}</th>`).join('');
+  const head = `<tr>
+      <th>球員</th><th>位</th>${dayHeads}<th class="num">週小計</th>
+    </tr>`;
+  const body = players.length
+    ? players.map((p) => {
+        const cells = Array.from({ length: dayCount }, (_, i) => {
+          const v = p.days[i + 1];
+          return `<td class="num">${v == null ? '—' : fmtStat(v)}</td>`;
+        }).join('');
+        return `<tr>
+          <td><b>${escapeHtml(p.name)}</b></td>
+          <td><span class="pos-tag" data-pos="${escapeHtml(p.pos || '')}">${escapeHtml(p.pos || '')}</span></td>
+          ${cells}
+          <td class="num"><b>${fmtStat(p.total)}</b></td>
+        </tr>`;
+      }).join('')
+    : `<tr><td colspan="${dayCount + 3}" style="text-align:center; color:var(--ink-3); padding: var(--s-5);">無逐日資料</td></tr>`;
+
+  const wrap = el('div', { class: 'md-col md-daily', style: 'margin-top: var(--s-3);' });
+  wrap.innerHTML = `
+    <div class="md-col-head">${escapeHtml(title)}・逐日明細</div>
+    <div class="table-wrap"><table class="standings-table md-tbl md-daily-tbl"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
   return wrap;
 }
 
@@ -2625,6 +2746,8 @@ async function loadScheduleMatchupDetail(week, teamA, teamB, container) {
         buildMatchupPlayerTable(aggA, data.team_a_name),
         buildMatchupPlayerTable(aggB, data.team_b_name),
       ),
+      buildMatchupDailyTable(data.players_a, data.team_a_name),
+      buildMatchupDailyTable(data.players_b, data.team_b_name),
     );
   } catch (e) {
     container.innerHTML = '';
