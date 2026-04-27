@@ -58,7 +58,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.24"
+APP_VERSION = "v26.04.24.25"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -731,12 +731,12 @@ def get_personas():
 @app.get("/api/players")
 def list_players(
     available: bool = True,
-    sort: str = Query("fppg", pattern="^(fppg|pts|reb|ast|stl|blk|to|name|age|mpg)$"),
+    sort: str = Query("total_fp", pattern="^(total_fp|fppg|pts|reb|ast|stl|blk|to|name|age|mpg)$"),
     limit: int = 200,
     q: Optional[str] = None,
     pos: Optional[str] = None,
     exclude_injured: bool = False,
-    min_gp: int = 20,  # filter out small-sample cameos by default; the UI can pass 0 to see everyone
+    min_gp: int = 0,  # default 0 — keep small-sample players in pool, total_fp sort naturally drops them down
 ):
     pool = _get_draft().available_players() if available else list(_get_draft().players)
     if min_gp > 0:
@@ -765,7 +765,12 @@ def list_players(
         pool = [p for p in pool if p.id not in injuries_map]
 
     reverse = sort != "name" and sort != "to"
-    pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
+    if sort == "total_fp":
+        # virtual stat: full-season fantasy production = fppg * gp
+        # rewards consistent contributors over small-sample lottery winners
+        pool.sort(key=lambda p: (getattr(p, "fppg", 0) or 0) * (getattr(p, "gp", 0) or 0), reverse=reverse)
+    else:
+        pool.sort(key=lambda p: getattr(p, sort), reverse=reverse)
     prev_map = getattr(_get_draft(), "_prev_fppg_map", {}) or {}
     out = []
     for p in pool[:limit]:
@@ -1565,6 +1570,91 @@ def season_matchup_detail(week: int = Query(..., ge=1), team_a: int = Query(...)
         t = teams_by_id.get(tid)
         return t.name if t else f"T{tid}"
 
+    # Build Yahoo-style lineup view: starters (assigned to slots) + bench.
+    # Heuristic: players who appeared in game_logs that week are treated as
+    # the "active roster" for that week. Greedy slot assignment by weekly FP.
+    from .season import assign_slots as _assign_slots, LINEUP_SLOTS, LINEUP_SIZE
+
+    def _weekly_totals(rows: list[dict]) -> dict[int, dict]:
+        agg: dict[int, dict] = {}
+        for r in rows:
+            pid = r["player_id"]
+            if pid not in agg:
+                agg[pid] = {
+                    "player_id": pid,
+                    "name": r["player_name"],
+                    "pos": r["pos"],
+                    "weekly_fp": 0.0,
+                    "days_played": 0,
+                }
+            agg[pid]["weekly_fp"] += float(r.get("fp") or 0.0)
+            if r.get("played"):
+                agg[pid]["days_played"] += 1
+        for v in agg.values():
+            v["weekly_fp"] = round(v["weekly_fp"], 1)
+        return agg
+
+    def _build_lineup_view(tid: int, rows: list[dict]):
+        team = teams_by_id.get(tid)
+        roster = list(team.roster) if team else []
+        weekly = _weekly_totals(rows)
+
+        # Candidate starters: players who appeared in game_logs this week.
+        # Order them so assign_slots picks the highest-weekly-fp into each slot
+        # (assign_slots itself ranks by .fppg; we override by patching a temp
+        # players_by_id lookup that uses weekly_fp as the sort key proxy).
+        candidates = sorted(weekly.keys(), key=lambda pid: -weekly[pid]["weekly_fp"])
+
+        # Build a shadow players_by_id where .fppg = weekly_fp so the greedy
+        # slot assigner picks slot-eligible best-of-week players.
+        class _Shadow:
+            __slots__ = ("id", "pos", "fppg")
+            def __init__(self, p, wfp):
+                self.id = p.id
+                self.pos = p.pos
+                self.fppg = float(wfp)
+
+        shadow = {
+            pid: _Shadow(players_by_id[pid], weekly[pid]["weekly_fp"])
+            for pid in candidates if pid in players_by_id
+        }
+        slot_rows = _assign_slots(list(shadow.keys()), shadow, LINEUP_SLOTS[:LINEUP_SIZE])
+        assigned_ids = {s["player_id"] for s in slot_rows if s["player_id"] is not None}
+
+        def _row(pid):
+            if pid is None:
+                return None
+            w = weekly.get(pid) or {
+                "player_id": pid,
+                "name": (players_by_id[pid].name if pid in players_by_id else f"#{pid}"),
+                "pos": (players_by_id[pid].pos if pid in players_by_id else ""),
+                "weekly_fp": 0.0,
+                "days_played": 0,
+            }
+            return {
+                "player_id": pid,
+                "name": w["name"],
+                "pos": w["pos"],
+                "weekly_fp": w["weekly_fp"],
+                "days_played": w["days_played"],
+            }
+
+        lineup = [{"slot": s["slot"], "player": _row(s["player_id"])} for s in slot_rows]
+
+        bench_ids = [pid for pid in roster if pid not in assigned_ids]
+        # Append any in-logs players not on current roster (e.g. dropped post-week)
+        # so their FP is still visible at the bottom.
+        for pid in candidates:
+            if pid not in assigned_ids and pid not in bench_ids:
+                bench_ids.append(pid)
+        bench = [_row(pid) for pid in bench_ids if _row(pid) is not None]
+        # Sort bench by weekly_fp desc so contributors surface first.
+        bench.sort(key=lambda r: -float(r.get("weekly_fp") or 0.0))
+        return lineup, bench
+
+    lineup_a, bench_a = _build_lineup_view(team_a, rows_a)
+    lineup_b, bench_b = _build_lineup_view(team_b, rows_b)
+
     return {
         "week": week,
         "team_a": team_a,
@@ -1577,6 +1667,10 @@ def season_matchup_detail(week: int = Query(..., ge=1), team_a: int = Query(...)
         "complete": bool(matchup.complete),
         "players_a": rows_a,
         "players_b": rows_b,
+        "lineup_a": lineup_a,
+        "lineup_b": lineup_b,
+        "bench_a": bench_a,
+        "bench_b": bench_b,
         "logs_trimmed": logs_trimmed,
     }
 

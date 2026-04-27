@@ -1547,3 +1547,117 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
 .matchup-detail .md-daily-tbl td { padding: 3px 5px; white-space: nowrap; }
 .matchup-detail .md-daily-tbl td.num { font-variant-numeric: tabular-nums; }
 
+/* ----- Matchup hero diff bar ----- */
+.matchup-hero .mh-side.leading .mh-score {
+  color: var(--good, #4ade80);
+}
+.matchup-hero .mh-vs { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.matchup-hero .mh-vs-text { font-weight: 700; font-size: var(--fs-md); }
+.matchup-hero .mh-vs-diff {
+  font-size: var(--fs-xs);
+  font-family: var(--mono);
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+/* ----- Yahoo-style side-by-side matchup roster ----- */
+.yahoo-matchup-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: var(--s-3); }
+.yahoo-matchup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  background: var(--surface);
+}
+.yahoo-matchup-table thead th {
+  text-align: center;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--ink-3);
+  font-weight: 600;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  background: var(--surface-2, var(--surface));
+  white-space: nowrap;
+}
+.yahoo-matchup-table thead th.ymt-left { text-align: left; }
+.yahoo-matchup-table thead th.ymt-right { text-align: right; }
+.yahoo-matchup-table thead th.num { text-align: center; }
+.yahoo-matchup-table tbody td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+}
+.yahoo-matchup-table td.num {
+  text-align: center;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  width: 64px;
+}
+.yahoo-matchup-table td.num.high {
+  background: rgba(74, 222, 128, 0.12);
+  color: var(--good, #4ade80);
+  font-weight: 700;
+}
+.yahoo-matchup-table td.ymt-slot {
+  text-align: center;
+  width: 44px;
+  white-space: nowrap;
+}
+.yahoo-matchup-table td.ymt-mid {
+  text-align: center;
+  color: var(--ink-4);
+  width: 16px;
+  padding: 0;
+}
+.yahoo-matchup-table td.ymt-player { min-width: 140px; }
+.yahoo-matchup-table td.ymt-left { text-align: left; }
+.yahoo-matchup-table td.ymt-right { text-align: right; }
+.yahoo-matchup-table .ymt-pname { font-size: var(--fs-sm); line-height: 1.2; }
+.yahoo-matchup-table .ymt-pmeta {
+  font-size: 10px;
+  color: var(--ink-3);
+  font-family: var(--mono);
+  margin-top: 2px;
+}
+.yahoo-matchup-table .ymt-empty {
+  color: var(--ink-4);
+  font-style: italic;
+  font-size: var(--fs-xs);
+}
+.yahoo-matchup-table td.side-win {
+  background: rgba(74, 222, 128, 0.06);
+}
+.yahoo-matchup-table tr.ymt-totals td {
+  border-top: 2px solid var(--line);
+  background: var(--surface-2, rgba(100,100,150,0.04));
+  font-weight: 600;
+  padding: 10px 8px;
+}
+.yahoo-matchup-table tr.ymt-section td {
+  background: var(--surface-2, rgba(100,100,150,0.05));
+  text-align: center;
+  font-size: 11px;
+  color: var(--ink-3);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 6px;
+  font-family: var(--mono);
+}
+.yahoo-matchup-table tr.ymt-bench-row td { opacity: 0.78; }
+
+/* Mobile (< 768px): collapse side-by-side into stacked teams. The 7-column
+   row becomes 2 stacked rows by hiding right-side columns and showing them
+   below via a duplicate render path... but simpler approach: keep table
+   horizontally scrollable with a sensible min-width so users swipe. */
+@media (max-width: 768px) {
+  .yahoo-matchup-table { min-width: 640px; font-size: var(--fs-xs); }
+  .yahoo-matchup-table thead th,
+  .yahoo-matchup-table tbody td { padding: 6px 4px; }
+  .yahoo-matchup-table td.ymt-player { min-width: 110px; }
+  .yahoo-matchup-table td.num { width: 50px; }
+  .matchup-hero .mh-vs-text { font-size: var(--fs-sm); }
+}
+

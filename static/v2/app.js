@@ -1728,19 +1728,32 @@ function buildMatchupHeroCard(m, week, humanId) {
     else if (m.winner === oppTid) { statusLabel = '敗'; statusClass = 'lost'; }
     else { statusLabel = '平'; statusClass = 'tie'; }
   }
+  // Yahoo-style: side-by-side with diff bar in the middle.
+  const diff = (userScore != null && oppScore != null) ? (userScore - oppScore) : null;
+  let diffLabel = '';
+  if (diff != null) {
+    if (diff > 0) diffLabel = `↑ 領先 ${diff.toFixed(1)}`;
+    else if (diff < 0) diffLabel = `↓ 落後 ${(-diff).toFixed(1)}`;
+    else diffLabel = '↔ 平手';
+  }
+  const userWinning = diff != null && diff > 0;
+  const oppWinning = diff != null && diff < 0;
   return el('div', { class: `card card-pad matchup-hero status-${statusClass}` },
     el('div', { class: 'mh-head' },
       el('span', { class: 'mh-label' }, `第 ${week} 週 你的對戰`),
       el('span', { class: `mh-status status-${statusClass}` }, statusLabel),
     ),
     el('div', { class: 'mh-body' },
-      el('div', { class: 'mh-side user' },
+      el('div', { class: `mh-side user ${userWinning ? 'leading' : ''}` },
         el('div', { class: 'mh-tag' }, '你'),
         el('div', { class: 'mh-name' }, teamNameOf(userTid)),
         el('div', { class: 'mh-score' }, played ? fmtStat(userScore) : '—'),
       ),
-      el('div', { class: 'mh-vs' }, 'VS'),
-      el('div', { class: 'mh-side opp' },
+      el('div', { class: 'mh-vs' },
+        el('div', { class: 'mh-vs-text' }, 'VS'),
+        diffLabel ? el('div', { class: 'mh-vs-diff' }, diffLabel) : null,
+      ),
+      el('div', { class: `mh-side opp ${oppWinning ? 'leading' : ''}` },
         el('div', { class: 'mh-tag' }, '對手'),
         el('div', { class: 'mh-name' }, teamNameOf(oppTid)),
         el('div', { class: 'mh-score' }, played ? fmtStat(oppScore) : '—'),
@@ -1778,22 +1791,113 @@ async function fetchAndRenderMatchupDetail(m, week, container) {
       slot.append(el('div', { class: 'empty-state' }, '此週較早，球員明細已不保留。'));
       return;
     }
-    // Aggregate per-player rows
-    const aggA = aggregateMatchupPlayers(data.players_a);
-    const aggB = aggregateMatchupPlayers(data.players_b);
-    slot.append(el('div', { class: 'md-head' },
-      el('div', {}, `${data.team_a_name} ${fmtStat(data.score_a)} - ${fmtStat(data.score_b)} ${data.team_b_name}`),
-    ));
-    slot.append(el('div', { class: 'md-grid' },
-      buildMatchupPlayerTable(aggA, data.team_a_name),
-      buildMatchupPlayerTable(aggB, data.team_b_name),
-    ));
+    // Yahoo-style side-by-side roster (starters slot-aligned + bench).
+    slot.append(buildYahooMatchupTable(data));
+    // Daily 7-day FP trend tables (one per team) below.
     slot.append(buildMatchupDailyTable(data.players_a, data.team_a_name));
     slot.append(buildMatchupDailyTable(data.players_b, data.team_b_name));
   } catch (e) {
     slot.innerHTML = '';
     slot.append(el('div', { class: 'empty-state' }, `明細載入失敗：${escapeHtml(e.message || '')}`));
   }
+}
+
+// Yahoo-style matchup roster: 10 starter slots side-by-side + bench section.
+// Mobile (< 768px) collapses to stacked-team layout via CSS.
+function buildYahooMatchupTable(d) {
+  const lineupA = d.lineup_a || [];
+  const lineupB = d.lineup_b || [];
+  const benchA = d.bench_a || [];
+  const benchB = d.bench_b || [];
+  const totalA = lineupA.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
+  const totalB = lineupB.reduce((s, r) => s + (r.player ? Number(r.player.weekly_fp) || 0 : 0), 0);
+
+  const cellPlayer = (p) => {
+    if (!p) return `<span class="ymt-empty">(空)</span>`;
+    return `<div class="ymt-pname"><b>${escapeHtml(p.name)}</b></div>
+      <div class="ymt-pmeta">${escapeHtml(p.pos || '')} · 出 ${p.days_played || 0}</div>`;
+  };
+  const fpCell = (p, isHigh) =>
+    `<td class="num ${isHigh ? 'high' : ''}">${p ? fmtStat(Number(p.weekly_fp) || 0) : '—'}</td>`;
+
+  // Starter rows: pair lineup_a[i] with lineup_b[i] by slot (both arrays
+  // share LINEUP_SLOTS order from the backend).
+  const slotCount = Math.max(lineupA.length, lineupB.length, 10);
+  const starterRows = [];
+  for (let i = 0; i < slotCount; i++) {
+    const ra = lineupA[i] || { slot: '-', player: null };
+    const rb = lineupB[i] || { slot: '-', player: null };
+    const pa = ra.player;
+    const pb = rb.player;
+    const fa = pa ? Number(pa.weekly_fp) || 0 : 0;
+    const fb = pb ? Number(pb.weekly_fp) || 0 : 0;
+    const aHigh = pa && pb && fa > fb;
+    const bHigh = pa && pb && fb > fa;
+    starterRows.push(`<tr>
+      <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(ra.slot)}">${escapeHtml(ra.slot)}</span></td>
+      <td class="ymt-player ymt-left ${aHigh ? 'side-win' : ''}">${cellPlayer(pa)}</td>
+      ${fpCell(pa, aHigh)}
+      <td class="ymt-mid">·</td>
+      ${fpCell(pb, bHigh)}
+      <td class="ymt-player ymt-right ${bHigh ? 'side-win' : ''}">${cellPlayer(pb)}</td>
+      <td class="ymt-slot"><span class="pos-tag" data-pos="${escapeHtml(rb.slot)}">${escapeHtml(rb.slot)}</span></td>
+    </tr>`);
+  }
+
+  // Totals row (starter sums; matches game score from backend).
+  const aWins = totalA > totalB;
+  const bWins = totalB > totalA;
+  const totalsRow = `<tr class="ymt-totals">
+    <td></td>
+    <td class="ymt-left ${aWins ? 'side-win' : ''}"><b>合計（先發）</b></td>
+    <td class="num ${aWins ? 'high' : ''}"><b>${fmtStat(totalA)}</b></td>
+    <td class="ymt-mid"></td>
+    <td class="num ${bWins ? 'high' : ''}"><b>${fmtStat(totalB)}</b></td>
+    <td class="ymt-right ${bWins ? 'side-win' : ''}"><b>合計（先發）</b></td>
+    <td></td>
+  </tr>`;
+
+  // Bench rows: pair by index. Bench is flexibly aligned (no slots).
+  const benchCount = Math.max(benchA.length, benchB.length);
+  const benchRows = [];
+  for (let i = 0; i < benchCount; i++) {
+    const pa = benchA[i] || null;
+    const pb = benchB[i] || null;
+    benchRows.push(`<tr class="ymt-bench-row">
+      <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
+      <td class="ymt-player ymt-left">${cellPlayer(pa)}</td>
+      ${fpCell(pa, false)}
+      <td class="ymt-mid">·</td>
+      ${fpCell(pb, false)}
+      <td class="ymt-player ymt-right">${cellPlayer(pb)}</td>
+      <td class="ymt-slot"><span class="pos-tag" data-pos="BN">BN</span></td>
+    </tr>`);
+  }
+  const benchHeader = benchCount
+    ? `<tr class="ymt-section"><td colspan="7">板凳（不計入分數）</td></tr>`
+    : '';
+
+  const head = `<thead><tr>
+    <th>位</th>
+    <th class="ymt-left">${escapeHtml(d.team_a_name || 'A')}</th>
+    <th class="num">週分</th>
+    <th></th>
+    <th class="num">週分</th>
+    <th class="ymt-right">${escapeHtml(d.team_b_name || 'B')}</th>
+    <th>位</th>
+  </tr></thead>`;
+
+  const wrap = el('div', { class: 'yahoo-matchup-wrap' });
+  wrap.innerHTML = `<table class="yahoo-matchup-table">
+    ${head}
+    <tbody>
+      ${starterRows.join('')}
+      ${totalsRow}
+      ${benchHeader}
+      ${benchRows.join('')}
+    </tbody>
+  </table>`;
+  return wrap;
 }
 
 function aggregateMatchupPlayers(rows) {
