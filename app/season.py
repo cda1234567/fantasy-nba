@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Optional
 from .injuries import roll_daily_injuries, roll_preseason_injuries, tick_injuries
 from .llm import DEFAULT_MODEL_ID, OPENROUTER_MODELS
 from .models import GameLog, Matchup, Player, SeasonState
+from .real_games import real_game_for
 from .scoring import compute_fppg
 from .trades import TradeManager
 
@@ -193,14 +194,43 @@ def _sample_game(
     team_id: int,
     weights: dict | None = None,
     injured: bool = False,
+    season_year: str | None = None,
 ) -> GameLog:
-    """Sample one game for one player. Non-playing (DNP) returns zeros."""
+    """Sample one game for one player. Non-playing (DNP) returns zeros.
+
+    If season_year is provided and we have a real-history match for this
+    player on the corresponding calendar day, use those actual stats
+    instead of gauss-sampling.
+    """
     if injured:
         return GameLog(
             day=day, week=week, player_id=player.id, team_id=team_id,
             played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
         )
 
+    real = real_game_for(player.id, season_year, day) if season_year else None
+    if real is not None:
+        if real["minutes"] <= 0 and real["pts"] == 0 and real["reb"] == 0:
+            # Real DNP for this player on this date — preserve the truth.
+            return GameLog(
+                day=day, week=week, player_id=player.id, team_id=team_id,
+                played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
+            )
+        dummy = Player(
+            id=player.id, name=player.name, team=player.team, pos=player.pos,
+            age=player.age, gp=player.gp, mpg=player.mpg,
+            pts=real["pts"], reb=real["reb"], ast=real["ast"],
+            stl=real["stl"], blk=real["blk"], to=real["tov"], fppg=0.0,
+        )
+        fp = round(compute_fppg(dummy, weights), 2)
+        return GameLog(
+            day=day, week=week, player_id=player.id, team_id=team_id,
+            played=True,
+            pts=real["pts"], reb=real["reb"], ast=real["ast"],
+            stl=real["stl"], blk=real["blk"], to=real["tov"], fp=fp,
+        )
+
+    # Fallback: gauss simulation around the player's season average.
     play_prob = 0.9 if player.fppg > 0 else 0.5
     played = rng.random() < play_prob
 
@@ -654,7 +684,11 @@ def advance_day(
             if player is None:
                 continue
             is_injured = pid in season.injuries and season.injuries[pid].status == "out"
-            log = _sample_game(rng, player, next_day, week, team.id, weights, injured=is_injured)
+            log = _sample_game(
+                rng, player, next_day, week, team.id, weights,
+                injured=is_injured,
+                season_year=settings.season_year if settings else None,
+            )
             season.game_logs.append(log)
             day_fp_by_team[team.id] += log.fp
 
@@ -919,7 +953,11 @@ def _sim_playoff_week(
                 if player is None:
                     continue
                 is_injured = pid in season.injuries and season.injuries[pid].status == "out"
-                log = _sample_game(rng, player, next_day, week, team.id, weights, injured=is_injured)
+                log = _sample_game(
+                    rng, player, next_day, week, team.id, weights,
+                    injured=is_injured,
+                    season_year=settings.season_year if settings else None,
+                )
                 season.game_logs.append(log)
 
         season.current_day = next_day
