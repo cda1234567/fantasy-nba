@@ -355,12 +355,33 @@ function buildDraftClock(d) {
           el('b', {}, persona.name || team.gm_persona),
           persona.desc ? ` — ${persona.desc}` : '')
       : el('div', { class: 'dc-sub' }, isYou ? '請在下方「剩餘球員」中點「選秀」。' : 'AI 選秀中…'),
-    el('div', { style: 'display:flex; gap:8px; margin-top: var(--s-4);' },
+    el('div', { style: 'display:flex; gap:8px; margin-top: var(--s-4); flex-wrap: wrap;' },
       el('button', { class: 'btn ghost sm', disabled: isYou, onclick: onAdvance }, '推進 AI 一手'),
+      el('button', {
+        class: `btn ghost sm ${state.draftPaused ? 'primary' : ''}`,
+        disabled: isYou,
+        onclick: onTogglePauseDraft,
+        title: state.draftPaused ? '恢復自動推進' : '暫停 AI 自動推進',
+      }, state.draftPaused ? '▶ 繼續' : '⏸ 暫停'),
       el('button', { class: 'btn sm', onclick: onSimToMe }, '⏭ 模擬到我'),
     ),
+    state.draftPaused
+      ? el('div', { style: 'margin-top: var(--s-3); color: var(--ink-3); font-size: var(--fs-xs);' }, '⏸ AI 自動推進已暫停')
+      : null,
   );
   return card;
+}
+
+function onTogglePauseDraft() {
+  state.draftPaused = !state.draftPaused;
+  if (state.draftPaused) {
+    cancelDraftAutoAdvance();
+    toast('已暫停 AI 自動推進', 'info');
+  } else {
+    toast('已恢復 AI 自動推進', 'info');
+    scheduleDraftAutoAdvance();
+  }
+  render();
 }
 
 function buildDraftRecosCard() {
@@ -621,6 +642,7 @@ function scheduleDraftAutoAdvance() {
   if (currentRoute() !== 'draft') return;
   if (d.current_team_id === d.human_team_id) return;
   if (state.draftAutoBusy) return;
+  if (state.draftPaused) return;
 
   state.draftAutoTimer = setTimeout(async () => {
     state.draftAutoTimer = null;
@@ -983,7 +1005,15 @@ function rowHtml(r, playerById, injSet, injuriesMap) {
   }
   const injured = injSet.has(p.id);
   const injObj = injuriesMap[p.id];
-  const injBadge = injObj ? ` <span class="inj-badge" title="${escapeHtml(injObj.note || '')}">${escapeHtml((injObj.status || 'INJ').toUpperCase())}</span>` : '';
+  let injBadge = '';
+  if (injObj) {
+    const status = (injObj.status || 'INJ').toUpperCase();
+    const days = (injObj.return_in_days != null && injObj.return_in_days > 0)
+      ? `預計 ${injObj.return_in_days} 天回歸` : '回歸時間未定';
+    const noteSuffix = injObj.note ? `，備註：${injObj.note}` : '';
+    const tip = `狀態 ${status}，${days}${noteSuffix}`;
+    injBadge = ` <span class="inj-badge" data-inj-tip="${escapeHtml(tip)}" title="${escapeHtml(tip)}" tabindex="0">${escapeHtml(status)}${injObj.return_in_days > 0 ? ` ${injObj.return_in_days}d` : ''}</span>`;
+  }
   const posLabel = `${escapeHtml(p.team || '')} - ${escapeHtml(p.pos || '')}`;
   return `<tr class="${injured ? 'yahoo-injured' : ''}">
     <td>${slotTag}</td>
@@ -1793,6 +1823,106 @@ function renderStandingsSubV2(container) {
   card.querySelector('.table-wrap').innerHTML =
     `<table class="standings-table standings-v2"><thead>${head}</thead><tbody>${body}</tbody></table>`;
   container.append(card);
+
+  // Playoff bracket visualization (only if we have at least 6 teams to seed
+  // the 6-team bracket). Render whether or not playoffs have started — pre-
+  // playoff it shows projected matchups based on current standings.
+  if (rows.length >= 6) {
+    container.append(buildPlayoffBracketV2(rows));
+  }
+}
+
+function buildPlayoffBracketV2(rows) {
+  const st = state.standings || {};
+  const isPlayoffs = !!st.is_playoffs;
+  const champion = st.champion;
+  const seeds = rows.slice(0, 6).map((r, i) => ({
+    seed: i + 1,
+    team_id: r.team_id,
+    name: r.name,
+    record: `${r.w ?? 0}-${r.l ?? 0}`,
+  }));
+  const headerSub = champion != null ? '🏆 賽季結束'
+    : isPlayoffs ? '季後賽進行中'
+    : '依目前戰績預估';
+
+  const card = el('div', { class: 'card', style: 'margin-top: var(--s-4);' });
+  card.append(el('div', { class: 'card-header' },
+    el('h3', {}, '季後賽 Bracket（6 隊）'),
+    el('span', { class: 'sub' }, headerSub),
+  ));
+
+  // Helper to render one team box
+  const teamBox = (s, opts) => {
+    const isWinner = opts && opts.winner;
+    const isChamp = opts && opts.champ;
+    const isHuman = state.draft?.human_team_id === s.team_id;
+    const cls = ['po-team'];
+    if (isWinner) cls.push('winner');
+    if (isChamp)  cls.push('champ');
+    if (isHuman)  cls.push('you');
+    return el('div', { class: cls.join(' '), style: `
+      padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px;
+      background: ${isChamp ? 'var(--accent-08, rgba(255,193,7,0.15))' : 'var(--surface)'};
+      ${isWinner ? 'border-color: var(--accent); font-weight: 600;' : ''}
+      ${isHuman ? 'box-shadow: inset 3px 0 0 var(--accent);' : ''}
+      font-size: var(--fs-xs);
+    ` },
+      el('span', { style: 'font-family:var(--mono); color:var(--ink-3); margin-right: 6px;' }, `#${s.seed}`),
+      el('span', {}, s.name),
+      isHuman ? el('span', { class: 'pill accent', style: 'margin-left:6px; font-size:9px;' }, 'YOU') : null,
+      el('span', { style: 'margin-left:auto; color:var(--ink-3); font-family:var(--mono); font-size:10px;' }, ` ${s.record}`),
+    );
+  };
+
+  // 3-column grid: Round 1 / Semis / Final
+  const grid = el('div', { style: `
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-4);
+    padding: var(--s-4); align-items: center;
+  ` });
+
+  // Round 1: seed3 vs seed6, seed4 vs seed5 (seed1 + seed2 byes shown in semis)
+  const r1 = el('div', { style: 'display:flex; flex-direction: column; gap: var(--s-3);' });
+  r1.append(el('div', { class: 'po-round-label', style: 'font-size:var(--fs-xs); color:var(--ink-3); text-align:center; font-weight:600;' }, 'Round 1'));
+  r1.append(el('div', { style: 'display:flex; flex-direction:column; gap:4px;' },
+    teamBox(seeds[2]), teamBox(seeds[5]),
+  ));
+  r1.append(el('div', { style: 'display:flex; flex-direction:column; gap:4px; margin-top: var(--s-3);' },
+    teamBox(seeds[3]), teamBox(seeds[4]),
+  ));
+
+  // Semis: seed1 vs (4-5 winner), seed2 vs (3-6 winner). Without ground truth,
+  // show "TBD".
+  const tbd = el('div', { class: 'po-team', style: 'padding:6px 10px; border:1px dashed var(--line); border-radius:6px; color:var(--ink-3); font-size:var(--fs-xs); text-align:center;' }, 'TBD');
+  const tbd2 = tbd.cloneNode(true);
+  const semis = el('div', { style: 'display:flex; flex-direction:column; gap: var(--s-3);' });
+  semis.append(el('div', { class: 'po-round-label', style: 'font-size:var(--fs-xs); color:var(--ink-3); text-align:center; font-weight:600;' }, 'Semifinals'));
+  semis.append(el('div', { style: 'display:flex; flex-direction:column; gap:4px;' },
+    teamBox(seeds[0]), tbd,
+  ));
+  semis.append(el('div', { style: 'display:flex; flex-direction:column; gap:4px; margin-top: var(--s-3);' },
+    teamBox(seeds[1]), tbd2,
+  ));
+
+  // Finals
+  const finals = el('div', { style: 'display:flex; flex-direction:column; gap: var(--s-3); align-items: center;' });
+  finals.append(el('div', { class: 'po-round-label', style: 'font-size:var(--fs-xs); color:var(--ink-3); text-align:center; font-weight:600;' }, 'Finals'));
+  if (champion != null) {
+    const champSeed = seeds.find((s) => s.team_id === champion) || {
+      seed: '?', team_id: champion, name: teamNameOf(champion), record: '',
+    };
+    finals.append(teamBox(champSeed, { champ: true, winner: true }));
+    finals.append(el('div', { style: 'font-size: 18px; color: var(--accent); margin-top: var(--s-2);' }, '🏆 冠軍'));
+  } else {
+    finals.append(el('div', { class: 'po-team', style: 'padding:6px 10px; border:1px dashed var(--line); border-radius:6px; color:var(--ink-3); font-size:var(--fs-xs); text-align:center; min-width: 100px;' }, 'TBD'));
+    finals.append(el('div', { style: 'font-size: 14px; color: var(--ink-3); margin-top: var(--s-2);' }, '冠軍待定'));
+  }
+
+  grid.append(r1, semis, finals);
+  card.append(grid);
+  card.append(el('div', { style: 'padding: 0 var(--s-4) var(--s-4); color: var(--ink-3); font-size: var(--fs-xs);' },
+    '※ 種子 1、2 首輪輪空（直接進入 Semifinals）。完整對戰結果以實際模擬為準。'));
+  return card;
 }
 
 // -------- Management sub-tab -------------------------------------------------
@@ -1872,6 +2002,102 @@ function renderManagementSubV2(container) {
     el('div', { class: 'card-header' }, el('h3', {}, '聯盟資訊')),
     el('div', { class: 'card-body' }, grid),
   ));
+
+  // Mid-season editable settings — only fields in MID_SEASON_ALLOWED on the
+  // backend (`team_names`, `ai_trade_frequency`, `ai_trade_style`,
+  // `ai_decision_mode`, `draft_display_mode`, `show_offseason_headlines`).
+  container.append(buildMidSeasonSettingsCardV2(s));
+}
+
+function buildMidSeasonSettingsCardV2(s) {
+  const card = el('div', { class: 'card', style: 'margin-top: var(--s-4);' });
+  card.append(el('div', { class: 'card-header' },
+    el('h3', {}, '賽季設定（季中可調整）'),
+    el('span', { class: 'sub' }, '其他項目鎖定'),
+  ));
+
+  const body = el('div', { class: 'card-body', style: 'display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); padding: var(--s-4);' });
+
+  // Editable: ai_trade_frequency
+  const freqVal = s.ai_trade_frequency || 'medium';
+  const freqSel = el('select', {
+    onchange: (e) => onMidSeasonPatchV2({ ai_trade_frequency: e.target.value }),
+    html: ['off', 'low', 'medium', 'high'].map((v) =>
+      `<option value="${v}" ${v === freqVal ? 'selected' : ''}>${v}</option>`).join(''),
+    style: 'width: 100%; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+  });
+  body.append(midSettingRow('AI 交易頻率', freqSel));
+
+  // Editable: ai_trade_style
+  const styleVal = s.ai_trade_style || 'balanced';
+  const styleSel = el('select', {
+    onchange: (e) => onMidSeasonPatchV2({ ai_trade_style: e.target.value }),
+    html: ['conservative', 'balanced', 'aggressive'].map((v) =>
+      `<option value="${v}" ${v === styleVal ? 'selected' : ''}>${v}</option>`).join(''),
+    style: 'width: 100%; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+  });
+  body.append(midSettingRow('AI 交易風格', styleSel));
+
+  // Editable: ai_decision_mode
+  const decisionVal = s.ai_decision_mode || 'llm';
+  const decisionSel = el('select', {
+    onchange: (e) => onMidSeasonPatchV2({ ai_decision_mode: e.target.value }),
+    html: ['llm', 'heuristic', 'mixed'].map((v) =>
+      `<option value="${v}" ${v === decisionVal ? 'selected' : ''}>${v}</option>`).join(''),
+    style: 'width: 100%; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface);',
+  });
+  body.append(midSettingRow('AI 決策模式', decisionSel));
+
+  // Editable: show_offseason_headlines
+  const headlinesVal = !!s.show_offseason_headlines;
+  const headlinesChk = el('input', {
+    type: 'checkbox', checked: headlinesVal ? true : null,
+    onchange: (e) => onMidSeasonPatchV2({ show_offseason_headlines: e.target.checked }),
+  });
+  body.append(midSettingRow('顯示季前頭條', headlinesChk));
+
+  // Locked fields hint (read-only with tooltip)
+  const lockedFields = [
+    ['名單人數', `${s.roster_size || '—'} 人`],
+    ['每日先發', `${s.starters_per_day || '—'} 人`],
+    ['例行賽週數', `${s.regular_season_weeks || '—'} 週`],
+    ['交易截止', s.trade_deadline_week ? `W${s.trade_deadline_week}` : '無截止'],
+    ['否決門檻', `${s.veto_threshold ?? '—'} 票`],
+    ['否決窗口', `${s.veto_window_days ?? '—'} 天`],
+  ];
+  for (const [label, val] of lockedFields) {
+    const locked = el('div', {
+      style: 'padding: 6px 10px; background: var(--bg-2, #f6f6f6); border: 1px dashed var(--line); border-radius: 6px; color: var(--ink-3); font-size: var(--fs-sm);',
+      title: '🔒 賽季開始後此欄位已鎖定',
+    },
+      el('span', {}, val),
+      el('span', { style: 'margin-left: 6px; color: var(--ink-4); font-size: var(--fs-xs);' }, '🔒'),
+    );
+    body.append(midSettingRow(label, locked));
+  }
+
+  card.append(body);
+  return card;
+}
+
+function midSettingRow(label, control) {
+  return el('div', { style: 'display: flex; flex-direction: column; gap: 4px;' },
+    el('label', { style: 'font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600;' }, label),
+    control,
+  );
+}
+
+async function onMidSeasonPatchV2(patch) {
+  try {
+    const updated = await api('/api/league/settings', {
+      method: 'POST',
+      body: JSON.stringify(patch),
+    });
+    state.leagueSettings = updated;
+    toast('設定已更新', 'info');
+  } catch (e) {
+    toast(`更新失敗：${e.message || ''}`, 'error');
+  }
 }
 
 // -------- Placeholders -------------------------------------------------------
@@ -1912,21 +2138,37 @@ async function renderActivityPlaceholder(container) {
   const loading = el('div', { class: 'card card-pad' },
     el('div', { class: 'empty-state' }, '載入動態中…'));
   container.append(loading);
-  const data = await apiSoft('/api/season/activity?limit=30');
+  const data = await apiSoft('/api/season/activity?limit=50');
   loading.remove();
   const items = data?.activity || [];
   if (!items.length) {
     container.append(el('div', { class: 'card card-pad' },
-      el('div', { class: 'empty-state' }, '暫無動態（或賽季剛開始）。Phase 5.5 會加分類。')));
+      el('div', { class: 'empty-state' }, '暫無動態（賽季剛開始或尚未發生事件）。')));
     return;
   }
+  const ICONS = {
+    trade_accepted: '🤝', trade_executed: '✅', trade_rejected: '❌', trade_vetoed: '🛑',
+    fa_claim: '🆓', injury_new: '🤕', injury_return: '💪',
+    milestone_blowout: '💥', milestone_nailbiter: '😤',
+    milestone_win_streak: '🔥', milestone_lose_streak: '❄️',
+    milestone_top_performer: '⭐', champion: '🏆',
+  };
   const card = el('div', { class: 'card' },
-    el('div', { class: 'card-header' }, el('h3', {}, '近期動態')),
+    el('div', { class: 'card-header' },
+      el('h3', {}, '近期動態'),
+      el('span', { class: 'sub' }, `${items.length} 則 · 由新到舊`),
+    ),
     el('div', { class: 'activity-list' }),
   );
   const list = card.querySelector('.activity-list');
   for (const it of items) {
+    const wk = it.week != null ? `W${it.week}` : '';
+    const day = it.day != null ? `D${it.day}` : '';
+    const when = [wk, day].filter(Boolean).join(' ') || '—';
+    const icon = ICONS[it.type] || '•';
     list.append(el('div', { class: 'activity-row' },
+      el('span', { class: 'activity-when', style: 'font-family:var(--mono); color:var(--ink-3); font-size:var(--fs-xs); min-width:64px;' }, when),
+      el('span', { class: 'activity-icon', style: 'min-width:22px; text-align:center;' }, icon),
       el('span', { class: 'activity-summary' }, it.summary || it.type || '—'),
     ));
   }
@@ -2635,21 +2877,65 @@ function buildTradeCardV2(trade, opts) {
     ));
   }
 
+  // Counter-offer chain: walk back via counter_of through history + pending so
+  // user can see "原始提案 → 還價 1 → 還價 2 → 此提案".
+  if (trade.counter_of) {
+    const chain = buildCounterChainV2(trade);
+    if (chain) card.append(chain);
+  }
+
   // Category-odds (pending only)
   if (pending) {
     card.append(buildTradeOddsSectionV2(trade));
   }
 
-  // Actions: pending → accept/reject/cancel + incoming counter; history rejected
-  // w/ human proposer → counter-offer.
+  // Actions: pending → accept/reject/cancel + incoming counter; accepted →
+  // veto window for non-trader humans; history rejected w/ human proposer →
+  // counter-offer.
   const humanId = state.draft?.human_team_id ?? 0;
   const canCounter = !pending && trade.status === 'rejected' && trade.from_team === humanId;
-  if (pending || canCounter) {
+  const canVeto = pending && trade.status === 'accepted'
+    && trade.from_team !== humanId && trade.to_team !== humanId;
+  if (pending || canCounter || canVeto) {
     const actions = buildTradeActionsV2(trade);
     if (actions) card.append(actions);
   }
 
   return card;
+}
+
+function buildCounterChainV2(trade) {
+  // Walk back through counter_of pointers using cached pending+history lists.
+  const lookup = new Map();
+  for (const t of (state.tradesPending || [])) lookup.set(t.id, t);
+  for (const t of (state.tradesHistory || [])) lookup.set(t.id, t);
+
+  const chain = [];
+  let cur = trade.counter_of ? lookup.get(trade.counter_of) : null;
+  let guard = 0;
+  while (cur && guard < 8) {
+    chain.unshift(cur);
+    cur = cur.counter_of ? lookup.get(cur.counter_of) : null;
+    guard += 1;
+  }
+  if (!chain.length) {
+    // We know there was a counter_of but couldn't resolve the parent — show a
+    // stub so the user at least knows this is a counter.
+    return el('div', { class: 'trade-counter-chain-v2', style: 'padding: var(--s-2) var(--s-4); color: var(--ink-3); font-size: var(--fs-xs); border-top: 1px dashed var(--line-soft);' },
+      `↩ 此為還價（原始提案 ${trade.counter_of.slice(0, 6)}… 已不在快取中）`);
+  }
+  const wrap = el('div', { class: 'trade-counter-chain-v2', style: 'padding: var(--s-2) var(--s-4); border-top: 1px dashed var(--line-soft);' });
+  wrap.append(el('div', { style: 'font-size: var(--fs-xs); color: var(--ink-3); margin-bottom: 4px;' }, '🔗 還價鏈'));
+  for (let i = 0; i < chain.length; i++) {
+    const t = chain[i];
+    const indent = '　'.repeat(i);
+    const arrow = i === 0 ? '原始' : `第 ${i} 次還價`;
+    wrap.append(el('div', { style: 'font-size: var(--fs-xs); color: var(--ink-2); line-height: 1.6;' },
+      `${indent}${i > 0 ? '↳ ' : ''}${arrow}：${escapeHtml(teamNameOf(t.from_team))} → ${escapeHtml(teamNameOf(t.to_team))} · 狀態 ${t.status}`));
+  }
+  wrap.append(el('div', { style: 'font-size: var(--fs-xs); color: var(--accent); line-height: 1.6;' },
+    `${'　'.repeat(chain.length)}↳ 第 ${chain.length} 次還價（此提案）`));
+  return wrap;
 }
 
 function buildTradeSideV2(title, players, sum) {
@@ -2761,6 +3047,23 @@ function buildTradeActionsV2(trade) {
     );
     return actions;
   }
+  // Veto window: trade is accepted but not yet executed. Anyone except the
+  // two trade parties may cast a veto vote. Show count + button (or "已投票"
+  // pill if the human already voted).
+  if (status === 'accepted' && trade.from_team !== humanId && trade.to_team !== humanId) {
+    const settings = state.leagueSettings || {};
+    const threshold = settings.veto_threshold ?? 3;
+    const voted = Array.isArray(trade.veto_votes) && trade.veto_votes.includes(humanId);
+    const total = Array.isArray(trade.veto_votes) ? trade.veto_votes.length : 0;
+    actions.append(
+      el('span', { class: 'pill', style: 'font-size:10px;' },
+        `否決票 ${total} / ${threshold}`),
+      voted
+        ? el('span', { class: 'pill warn', style: 'font-size:10px;' }, '✓ 你已投票')
+        : el('button', { class: 'btn sm ghost', onclick: () => onVetoTradeV2(trade.id) }, '否決'),
+    );
+    return actions;
+  }
   // Counter-offer entry point on trades that were rejected while the human was
   // the proposer. Only the proposer side gets to counter (the rejector has
   // already spoken — they can re-propose via the normal flow if they want).
@@ -2771,6 +3074,19 @@ function buildTradeActionsV2(trade) {
     return actions;
   }
   return null;
+}
+
+async function onVetoTradeV2(id) {
+  const humanId = state.draft?.human_team_id ?? 0;
+  if (!confirm('確定對此交易投下否決票？達到門檻後交易將被否決。')) return;
+  try {
+    await api(`/api/trades/${id}/veto`, {
+      method: 'POST',
+      body: JSON.stringify({ team_id: humanId }),
+    });
+    toast('已投否決票', 'info');
+    await afterTradeMutationV2();
+  } catch (e) { toast(e.message || '否決失敗', 'error'); }
 }
 
 async function onAcceptTradeV2(id) {
@@ -3222,6 +3538,12 @@ document.addEventListener('click', (e) => {
   if (btn && !btn.disabled) {
     const id = parseInt(btn.getAttribute('data-draft'), 10);
     if (!Number.isNaN(id)) onDraftPlayer(id);
+  }
+  // Injury badge tap → mobile-friendly toast (desktop still gets native title tooltip)
+  const inj = e.target.closest('[data-inj-tip]');
+  if (inj) {
+    const tip = inj.getAttribute('data-inj-tip');
+    if (tip) toast(tip, 'info', 4000);
   }
 });
 
