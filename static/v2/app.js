@@ -82,6 +82,8 @@ const state = {
   leagues: [],                   // [{league_id,name,setup_complete}, ...]
   activeLeague: 'default',
   setupForm: null,               // working copy for #setup
+  setupStep: 1,                  // M3: setup wizard step (1/2/3)
+  teamsScoutId: null,            // M8: opponent team id selected for scouting view
   // M15: render race-condition guard — every render() bumps this; async
   // sub-renderers compare against state.viewToken before appending DOM.
   viewToken: null,
@@ -1065,11 +1067,33 @@ async function renderTeamsView(root) {
     style: 'padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); min-width: 180px;',
     onchange: (e) => {
       state.currentTeamId = parseInt(e.target.value, 10);
-      renderTeamBody();
+      // M8: clear scout if user selected same team as scout target
+      if (state.teamsScoutId === state.currentTeamId) state.teamsScoutId = null;
+      // Re-render whole view so scout dropdown options refresh
+      root.innerHTML = '';
+      renderTeamsView(root);
     },
     html: d.teams.map((t) =>
       `<option value="${t.id}" ${t.id === state.currentTeamId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_human ? ' (你)' : ''}</option>`
     ).join(''),
+  });
+
+  // M8: opponent scouting dropdown — exclude self
+  const scoutOptions = ['<option value="">看對手 (不顯示)</option>']
+    .concat(d.teams
+      .filter((t) => t.id !== state.currentTeamId)
+      .map((t) =>
+        `<option value="${t.id}" ${t.id === state.teamsScoutId ? 'selected' : ''}>${escapeHtml(t.name)}${t.is_human ? ' (你)' : ''}</option>`)
+    ).join('');
+  const scoutSelect = el('select', {
+    id: 'team-scout-pick',
+    style: 'padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); min-width: 180px; margin-left: var(--s-2);',
+    onchange: (e) => {
+      const v = e.target.value;
+      state.teamsScoutId = v === '' ? null : parseInt(v, 10);
+      renderScoutBody();
+    },
+    html: scoutOptions,
   });
 
   const head = el('div', { class: 'view-head' },
@@ -1078,11 +1102,89 @@ async function renderTeamsView(root) {
       el('div', { class: 'view-title' }, '球員名單'),
       el('div', { class: 'view-sub' }, '切換隊伍檢視名單、先發與板凳'),
     ),
-    el('div', { class: 'view-actions' }, teamSelect),
+    el('div', { class: 'view-actions' }, teamSelect, scoutSelect),
   );
   root.append(head);
   root.append(el('div', { id: 'team-body' }));
+  root.append(el('div', { id: 'team-scout-body' }));
   renderTeamBody();
+  renderScoutBody();
+}
+
+// M8: render opponent scouting card. Shows roster + projected weekly FPPG
+// (sum of starters_per_day FPPG, prorated to 7 days). Empty when no scout selected.
+async function renderScoutBody() {
+  const container = $('#team-scout-body');
+  if (!container) return;
+  const sid = state.teamsScoutId;
+  if (sid == null) { container.innerHTML = ''; return; }
+  const tok = state.viewToken;
+  container.innerHTML = '<div class="card card-pad" aria-busy="true">載入對手中…</div>';
+  let data;
+  try {
+    data = await api(`/api/teams/${sid}`);
+  } catch (e) {
+    if (isViewStale(tok) || state.teamsScoutId !== sid) return;
+    container.innerHTML = `<div class="card card-pad" style="color:var(--bad);">對手載入失敗：${escapeHtml(e.message)}</div>`;
+    return;
+  }
+  if (isViewStale(tok) || state.teamsScoutId !== sid) return;
+
+  const { team, players, totals, lineup_slots, bench, injured_out, injuries, persona_desc } = data;
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const injSet = new Set(injured_out || []);
+  const injuriesMap = injuries || {};
+
+  // Projected weekly FPPG: starters total FPPG * 7 days (matches league semantic).
+  // totals.fppg is daily starters total; we present both daily + weekly so users
+  // can compare at a glance.
+  const dailyFppg = (totals && typeof totals.fppg === 'number') ? totals.fppg : 0;
+  const weeklyFppg = dailyFppg * 7;
+
+  const seasonStarted = !!(state.draft && state.draft.is_complete);
+  const slotsPopulated = Array.isArray(lineup_slots) && lineup_slots.some((s) => s && s.player_id != null);
+
+  const card = el('div', { class: 'card', style: 'margin-top: var(--s-3);' });
+  const gmName = team.gm_persona ? (state.personas?.[team.gm_persona]?.name || team.gm_persona) : null;
+  const win = team.wins != null ? team.wins : (team.record?.wins ?? null);
+  const loss = team.losses != null ? team.losses : (team.record?.losses ?? null);
+  const recordStr = (win != null && loss != null) ? `${win}-${loss}` : null;
+
+  const head = el('div', { class: 'card-header' },
+    el('h3', {}, `對手偵察：${team.name}`),
+    el('span', { class: 'sub' }, '預期下週總 FPPG = 先發每日 FPPG × 7'),
+  );
+  const summary = el('div', { class: 'card-pad' });
+  summary.innerHTML = `
+    <div style="display:flex; align-items:center; gap: var(--s-3); flex-wrap:wrap; margin-bottom: var(--s-3);">
+      <span style="font-size: var(--fs-md); font-weight: 600;">${escapeHtml(team.name)}</span>
+      ${gmName ? `<span style="color:var(--ink-3); font-size: var(--fs-sm);">GM：${escapeHtml(gmName)}</span>` : ''}
+      ${recordStr ? `<span class="pill" style="font-size: 12px;">W-L ${recordStr}</span>` : ''}
+    </div>
+    ${persona_desc ? `<div style="color:var(--ink-2); font-size: var(--fs-sm); margin-bottom: var(--s-3);">${escapeHtml(persona_desc)}</div>` : ''}
+    <div style="display:flex; gap: var(--s-5); flex-wrap:wrap; color:var(--ink-2); font-size: var(--fs-sm);">
+      <span>先發每日 FPPG <b style="color:var(--ink);">${fppg(dailyFppg)}</b></span>
+      <span>預期下週總 FPPG <b style="color:var(--good);">${fppg(weeklyFppg)}</b></span>
+    </div>
+  `;
+
+  const rosterWrap = el('div', { id: 'scout-roster-wrap' });
+  if (seasonStarted && slotsPopulated) {
+    rosterWrap.innerHTML = buildYahooRosterHtml({
+      lineup_slots: lineup_slots || [],
+      bench: bench || [],
+      playerById,
+      injSet,
+      injuriesMap,
+      totals,
+    });
+  } else {
+    rosterWrap.innerHTML = `<div style="padding: var(--s-5); color:var(--ink-3);">${seasonStarted ? '對手名單尚未排入先發。' : '選秀尚未完成。'}</div>`;
+  }
+  card.append(head, summary, rosterWrap);
+
+  container.innerHTML = '';
+  container.append(card);
 }
 
 async function renderTeamBody() {
@@ -4336,6 +4438,7 @@ async function onCreateLeague() {
     await loadLeagues();
     await refreshState();
     state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);
+    state.setupStep = 1;
     location.hash = '/setup';
     render();
   } catch (e) {
@@ -4402,11 +4505,52 @@ function makeDefaultSetupFormV2(existing) {
   };
 }
 
+// m2 tooltips: short helper text per field. Rendered as a `?` chip with title.
+const SETUP_TOOLTIPS_V2 = {
+  league_name: '聯盟顯示名稱，僅供識別。',
+  season_year: '使用哪個球季的球員資料。需要 data/seasons/ 有對應檔。',
+  num_teams: '隊伍數：4-12 之間，越多越難搶到大牌。',
+  player_team_index: '人類隊位置：你選秀順位（蛇形）。',
+  randomize_draft_order: '勾選後選秀順序會在開始前隨機重排。',
+  team_names: '每隊顯示名稱。',
+  roster_size: '每隊總人數（含先發 + 板凳）。',
+  starters_per_day: '每天先發人數，計算當日總分用。',
+  il_slots: '傷兵保留位置：受傷球員可暫存於此不佔正式名單。',
+  scoring_weights: '計分權重：每項統計加權後加總成 FPPG。',
+  regular_season_weeks: '例行賽長度（週數）。',
+  trade_deadline_week: '第 N 週後不能交易；留空表示整季皆可。',
+  playoff_teams: '季後賽隊伍數，由例行賽戰績前 N 名晉級。',
+  gm_persona: '每隊 AI GM 風格，影響選秀偏好與交易行為。',
+};
+
+// m1 presets: single-click chips that mutate setupForm.
+const TEAM_COUNT_PRESETS_V2 = [
+  { label: '8 隊小聯盟', n: 8 },
+  { label: '10 隊標準', n: 10 },
+  { label: '12 隊大聯盟', n: 12 },
+];
+const SEASON_LEN_PRESETS_V2 = [
+  { label: '14 週短賽季', w: 14 },
+  { label: '20 週標準', w: 20 },
+  { label: '22 週長賽季', w: 22 },
+];
+
+function setupSummaryText(form) {
+  const n = form.num_teams || 8;
+  const r = form.roster_size || 13;
+  const picks = n * r;
+  const w = form.regular_season_weeks || 20;
+  const dl = form.trade_deadline_week ? `季中 W${form.trade_deadline_week} 截止交易` : '整季皆可交易';
+  return `${n} 隊 × ${r} 輪 = ${picks} picks · 例行賽 ${w} 週 · ${dl}`;
+}
+
 function renderSetupView(root) {
   const status = state.leagueStatus;
   const isLocked = status && status.setup_complete;
   if (!state.setupForm) state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);
   const form = state.setupForm;
+  if (!state.setupStep || state.setupStep < 1 || state.setupStep > 3) state.setupStep = 1;
+  const step = state.setupStep;
   const wrap = el('div', { class: 'setup-v2' });
 
   // If personas weren't loaded yet (boot may have failed softly), fetch once here.
@@ -4428,20 +4572,62 @@ function renderSetupView(root) {
     ),
   ));
 
+  // M4: sticky summary chip — updates on rerender
+  const summaryChip = el('div', { class: 'setup-summary-chip', id: 'setup-summary-chip-v2' },
+    setupSummaryText(form));
+  wrap.append(summaryChip);
+
   if (isLocked) {
     wrap.append(el('div', { class: 'setup-lock-warn' },
       '聯盟已開賽，以下設定已鎖定；如需重新設定請先刪除聯盟或建立新聯盟。'));
   }
 
+  // M3: 3-step stepper indicator
+  const STEP_LABELS = ['基本', '規則', '賽程 + Persona'];
+  const stepper = el('div', { class: 'setup-stepper' });
+  STEP_LABELS.forEach((label, i) => {
+    const stepNum = i + 1;
+    const cls = stepNum === step ? 'setup-step active' : (stepNum < step ? 'setup-step done' : 'setup-step');
+    stepper.append(el('div', { class: cls,
+      onclick: isLocked ? null : (() => {
+        // Allow click-to-jump only if validation passes for steps before
+        if (stepNum < step) { state.setupStep = stepNum; root.innerHTML=''; renderSetupView(root); }
+        else if (stepNum === step) { /* noop */ }
+        else {
+          if (validateSetupStepV2(form, step).length === 0) {
+            state.setupStep = stepNum; root.innerHTML=''; renderSetupView(root);
+          }
+        }
+      }),
+    },
+      el('span', { class: 'setup-step-num' }, String(stepNum)),
+      el('span', { class: 'setup-step-label' }, label),
+    ));
+  });
+  wrap.append(stepper);
+
+  // Re-render helper used after any input that changes derived UI (chip, etc.)
+  function rerender() { root.innerHTML = ''; renderSetupView(root); }
+
+  function tipChip(key) {
+    const text = SETUP_TOOLTIPS_V2[key];
+    if (!text) return null;
+    return el('span', { class: 'setup-tip', title: text, 'aria-label': text, tabindex: '0' }, '?');
+  }
   function section(title, ...children) {
     return el('div', { class: 'setup-section' },
       el('div', { class: 'setup-section-title' }, title),
       ...children,
     );
   }
-  function row(label, control, hint) {
+  function row(label, control, hint, tipKey) {
+    const labelNode = el('div', { class: 'setup-label' }, label);
+    if (tipKey) {
+      const t = tipChip(tipKey);
+      if (t) labelNode.append(' ', t);
+    }
     const r = el('div', { class: 'setup-row' },
-      el('div', { class: 'setup-label' }, label),
+      labelNode,
       el('div', { class: 'setup-control' }, control),
     );
     if (hint) r.append(el('div', { class: 'setup-hint' }, hint));
@@ -4455,208 +4641,301 @@ function renderSetupView(root) {
         type: 'radio', name, id, value: String(val),
         checked: String(val) === String(current) ? true : null,
         disabled: isLocked ? true : null,
-        onchange: () => onChange(typeof current === 'number' ? Number(val) : val),
+        onchange: () => { onChange(typeof current === 'number' ? Number(val) : val); rerender(); },
       });
       grp.append(el('span', { class: 'radio-item' }, inp, el('label', { for: id }, String(label))));
     }
     return grp;
   }
 
-  // Team count select (8/10/12)
-  const numTeamsSelect = el('select', {
-    disabled: isLocked ? true : null,
-    onchange: (e) => {
-      const n = parseInt(e.target.value, 10);
-      form.num_teams = n;
-      // Resize team_names array (pad w/ defaults or truncate)
-      const base = DEFAULT_TEAM_NAMES_V2;
-      const next = form.team_names.slice(0, n);
-      while (next.length < n) next.push(base[next.length] || `隊伍${next.length}`);
-      form.team_names = next;
-      if (form.player_team_index >= n) form.player_team_index = 0;
-      // Rerender just this view
-      root.innerHTML = '';
-      renderSetupView(root);
-    },
-    html: [8, 10, 12].map((n) =>
-      `<option value="${n}" ${n === form.num_teams ? 'selected' : ''}>${n} 隊</option>`).join(''),
-  });
+  // ---------------- Step 1: 基本 ----------------
+  function buildStep1() {
+    // m1 presets row
+    const presetRow = el('div', { class: 'setup-presets' },
+      el('span', { class: 'setup-preset-label' }, '快速設定：'),
+      ...TEAM_COUNT_PRESETS_V2.map((p) =>
+        el('button', { class: 'chip preset-chip', type: 'button', disabled: isLocked ? true : null,
+          onclick: () => {
+            form.num_teams = p.n;
+            const base = DEFAULT_TEAM_NAMES_V2;
+            const next = form.team_names.slice(0, p.n);
+            while (next.length < p.n) next.push(base[next.length] || `隊伍${next.length}`);
+            form.team_names = next;
+            if (form.player_team_index >= p.n) form.player_team_index = 0;
+            rerender();
+          }
+        }, p.label)),
+    );
 
-  const leagueNameInput = el('input', {
-    type: 'text', value: form.league_name, disabled: isLocked ? true : null,
-    oninput: (e) => { form.league_name = e.target.value; },
-  });
-
-  // Hard-coded list of seasons that have data files in app/data/seasons/
-  // (1996-97 through 2025-26 inclusive — 30 seasons)
-  const SEASON_OPTIONS = (() => {
-    const out = [];
-    for (let y = 1996; y <= 2025; y++) {
-      const next = String((y + 1) % 100).padStart(2, '0');
-      out.push(`${y}-${next}`);
-    }
-    return out;
-  })();
-  const seasonInput = el('select', {
-    disabled: isLocked ? true : null,
-    onchange: (e) => { form.season_year = e.target.value; },
-    html: SEASON_OPTIONS.map((s) =>
-      `<option value="${s}" ${s === form.season_year ? 'selected' : ''}>${s}</option>`).join(''),
-  });
-
-  const playerTeamSelect = el('select', {
-    disabled: isLocked ? true : null,
-    onchange: (e) => { form.player_team_index = parseInt(e.target.value, 10); },
-    html: form.team_names.map((n, i) =>
-      `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i}: ${escapeHtml(n)}</option>`).join(''),
-  });
-
-  const randomizeCheck = el('input', {
-    type: 'checkbox', checked: form.randomize_draft_order ? true : null,
-    disabled: isLocked ? true : null,
-    onchange: (e) => { form.randomize_draft_order = e.target.checked; },
-  });
-
-  wrap.append(section('聯盟基本',
-    row('聯盟名稱', leagueNameInput),
-    row('賽季年份', seasonInput, '例如 2025-26（需要 data/seasons/ 有對應檔）'),
-    row('隊伍數', numTeamsSelect),
-    row('我的隊伍', playerTeamSelect),
-    row('隨機選秀順序', randomizeCheck),
-  ));
-
-  // Team names grid
-  const namesGrid = el('div', { class: 'setup-team-names' });
-  form.team_names.forEach((name, i) => {
-    const inp = el('input', {
-      type: 'text', value: name,
-      placeholder: `隊伍 ${i}`,
+    // Team count select (8/10/12)
+    const numTeamsSelect = el('select', {
       disabled: isLocked ? true : null,
-      oninput: (e) => {
-        form.team_names[i] = e.target.value;
-        const opt = playerTeamSelect.options[i];
-        if (opt) opt.textContent = `${i}: ${e.target.value}`;
+      onchange: (e) => {
+        const n = parseInt(e.target.value, 10);
+        form.num_teams = n;
+        const base = DEFAULT_TEAM_NAMES_V2;
+        const next = form.team_names.slice(0, n);
+        while (next.length < n) next.push(base[next.length] || `隊伍${next.length}`);
+        form.team_names = next;
+        if (form.player_team_index >= n) form.player_team_index = 0;
+        rerender();
+      },
+      html: [8, 10, 12].map((n) =>
+        `<option value="${n}" ${n === form.num_teams ? 'selected' : ''}>${n} 隊</option>`).join(''),
+    });
+
+    const leagueNameInput = el('input', {
+      type: 'text', value: form.league_name, disabled: isLocked ? true : null,
+      oninput: (e) => { form.league_name = e.target.value; },
+    });
+
+    const SEASON_OPTIONS = (() => {
+      const out = [];
+      for (let y = 1996; y <= 2025; y++) {
+        const next = String((y + 1) % 100).padStart(2, '0');
+        out.push(`${y}-${next}`);
+      }
+      return out;
+    })();
+    const seasonInput = el('select', {
+      disabled: isLocked ? true : null,
+      onchange: (e) => { form.season_year = e.target.value; },
+      html: SEASON_OPTIONS.map((s) =>
+        `<option value="${s}" ${s === form.season_year ? 'selected' : ''}>${s}</option>`).join(''),
+    });
+
+    const playerTeamSelect = el('select', {
+      disabled: isLocked ? true : null,
+      onchange: (e) => { form.player_team_index = parseInt(e.target.value, 10); },
+      html: form.team_names.map((n, i) =>
+        `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i}: ${escapeHtml(n)}</option>`).join(''),
+    });
+
+    const randomizeCheck = el('input', {
+      type: 'checkbox', checked: form.randomize_draft_order ? true : null,
+      disabled: isLocked ? true : null,
+      onchange: (e) => { form.randomize_draft_order = e.target.checked; },
+    });
+
+    wrap.append(section('聯盟基本',
+      presetRow,
+      row('聯盟名稱', leagueNameInput, null, 'league_name'),
+      row('賽季年份', seasonInput, '例如 2025-26（需要 data/seasons/ 有對應檔）', 'season_year'),
+      row('隊伍數', numTeamsSelect, null, 'num_teams'),
+      row('我的隊伍', playerTeamSelect, null, 'player_team_index'),
+      row('隨機選秀順序', randomizeCheck, null, 'randomize_draft_order'),
+    ));
+
+    // Team names grid
+    const namesGrid = el('div', { class: 'setup-team-names' });
+    form.team_names.forEach((name, i) => {
+      const inp = el('input', {
+        type: 'text', value: name,
+        placeholder: `隊伍 ${i}`,
+        disabled: isLocked ? true : null,
+        oninput: (e) => {
+          form.team_names[i] = e.target.value;
+          const opt = playerTeamSelect.options[i];
+          if (opt) opt.textContent = `${i}: ${e.target.value}`;
+        },
+      });
+      namesGrid.append(el('div', { class: 'team-name-row' },
+        el('label', {}, String(i)), inp));
+    });
+    const namesTitle = el('div', { class: 'setup-section-inline-title' }, '隊伍名稱 ');
+    const tn = tipChip('team_names'); if (tn) namesTitle.append(tn);
+    wrap.append(section('隊伍名稱', namesGrid));
+  }
+
+  // ---------------- Step 2: 規則 ----------------
+  function buildStep2() {
+    const weights = form.scoring_weights;
+    const weightCats = ['pts', 'reb', 'ast', 'stl', 'blk', 'to'];
+    const weightGrid = el('div', { class: 'setup-team-names' });
+    for (const cat of weightCats) {
+      const inp = el('input', {
+        type: 'number', step: '0.1', value: String(weights[cat]),
+        disabled: isLocked ? true : null,
+        oninput: (e) => { weights[cat] = parseFloat(e.target.value); },
+      });
+      weightGrid.append(el('div', { class: 'team-name-row' },
+        el('label', {}, cat.toUpperCase()), inp));
+    }
+
+    wrap.append(section('名單規則',
+      row('名單人數', radioGroup('roster_size', [[10,'10'],[13,'13'],[15,'15']], form.roster_size, (v)=>{form.roster_size=v;}), null, 'roster_size'),
+      row('每日先發', radioGroup('starters_per_day', [[8,'8'],[10,'10'],[12,'12']], form.starters_per_day, (v)=>{form.starters_per_day=v;}), null, 'starters_per_day'),
+      row('傷兵位置', radioGroup('il_slots', [[0,'0'],[1,'1'],[2,'2'],[3,'3 (預設)']], form.il_slots, (v)=>{form.il_slots=v;}), null, 'il_slots'),
+    ));
+
+    const scoringTitle = el('div', { class: 'setup-section-title' }, '計分權重 ');
+    const tw = tipChip('scoring_weights'); if (tw) scoringTitle.append(tw);
+    const scoringSec = el('div', { class: 'setup-section' }, scoringTitle, weightGrid);
+    wrap.append(scoringSec);
+  }
+
+  // ---------------- Step 3: 賽程 + persona ----------------
+  function buildStep3() {
+    // Season-length presets (m1)
+    const presetRow = el('div', { class: 'setup-presets' },
+      el('span', { class: 'setup-preset-label' }, '快速設定：'),
+      ...SEASON_LEN_PRESETS_V2.map((p) =>
+        el('button', { class: 'chip preset-chip', type: 'button', disabled: isLocked ? true : null,
+          onclick: () => {
+            form.regular_season_weeks = p.w;
+            if (form.trade_deadline_week && form.trade_deadline_week > p.w) form.trade_deadline_week = null;
+            rerender();
+          }
+        }, p.label)),
+    );
+
+    // Trade deadline select — options: 無截止 + weeks 1..regular_season_weeks
+    const weeksN = form.regular_season_weeks || 20;
+    const deadlineOptionsHtml = ['<option value="">無截止</option>']
+      .concat(
+        Array.from({ length: weeksN }, (_, i) => i + 1).map((w) =>
+          `<option value="${w}" ${String(form.trade_deadline_week ?? '') === String(w) ? 'selected' : ''}>W${w}</option>`
+        )
+      ).join('');
+    const deadlineSelect = el('select', {
+      disabled: isLocked ? true : null,
+      html: deadlineOptionsHtml,
+      onchange: (e) => {
+        form.trade_deadline_week = e.target.value === '' ? null : parseInt(e.target.value, 10);
+        rerender();
       },
     });
-    namesGrid.append(el('div', { class: 'team-name-row' },
-      el('label', {}, String(i)), inp));
-  });
-  wrap.append(section('隊伍名稱', namesGrid));
 
-  // Personas (optional — only show if /api/personas returned keys)
-  const personaIds = Object.keys(state.personas || {});
-  if (personaIds.length) {
-    const personaGrid = el('div', { class: 'setup-team-names' });
-    // Ensure gm_personas length matches num_teams
-    while (form.gm_personas.length < form.num_teams) form.gm_personas.push('');
-    form.gm_personas = form.gm_personas.slice(0, form.num_teams);
-    for (let i = 0; i < form.num_teams; i++) {
-      if (i === form.player_team_index) continue; // Human team has no persona
-      const sel = el('select', {
-        disabled: isLocked ? true : null,
-        html: '<option value="">(系統預設)</option>' +
-          personaIds.map((pid) => {
-            const p = state.personas[pid];
-            const nm = p && p.name ? `${pid} · ${p.name}` : pid;
-            return `<option value="${escapeHtml(pid)}" ${form.gm_personas[i] === pid ? 'selected' : ''}>${escapeHtml(nm)}</option>`;
-          }).join(''),
-        onchange: (e) => { form.gm_personas[i] = e.target.value; },
-      });
-      personaGrid.append(el('div', { class: 'persona-row team-name-row' },
-        el('label', {}, `${i}: ${escapeHtml(form.team_names[i])}`), sel));
-    }
-    if (personaGrid.childElementCount) {
-      // Helper actions: reset all to default, randomize all
-      const helperRow = el('div', { class: 'setup-btn-row', style: 'justify-content: flex-start; padding: 0 0 var(--s-2) 0;' },
-        el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
-          onclick: () => {
-            for (let i = 0; i < form.num_teams; i++) {
-              if (i === form.player_team_index) continue;
-              form.gm_personas[i] = '';
-            }
-            root.innerHTML = ''; renderSetupView(root);
-          }
-        }, '全部設為預設'),
-        el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
-          onclick: () => {
-            const pool = [...personaIds];
-            for (let i = 0; i < form.num_teams; i++) {
-              if (i === form.player_team_index) continue;
-              form.gm_personas[i] = pool[Math.floor(Math.random() * pool.length)] || '';
-            }
-            root.innerHTML = ''; renderSetupView(root);
-          }
-        }, '全部隨機指派'),
-      );
-      wrap.append(section('GM Persona（可選）', helperRow, personaGrid));
-    }
-  }
-
-  // Scoring weights
-  const weights = form.scoring_weights;
-  const weightCats = ['pts', 'reb', 'ast', 'stl', 'blk', 'to'];
-  const weightGrid = el('div', { class: 'setup-team-names' });
-  for (const cat of weightCats) {
-    const inp = el('input', {
-      type: 'number', step: '0.1', value: String(weights[cat]),
+    const playoffSelect = el('select', {
       disabled: isLocked ? true : null,
-      oninput: (e) => { weights[cat] = parseFloat(e.target.value); },
+      onchange: (e) => { form.playoff_teams = parseInt(e.target.value, 10); rerender(); },
+      html: [2, 4, 6, 8].map((n) =>
+        `<option value="${n}" ${n === form.playoff_teams ? 'selected' : ''}>${n} 隊</option>`).join(''),
     });
-    weightGrid.append(el('div', { class: 'team-name-row' },
-      el('label', {}, cat.toUpperCase()), inp));
+
+    wrap.append(section('賽程 & 季後賽',
+      presetRow,
+      row('例行賽週數', radioGroup('regular_season_weeks', [[14,'14'],[18,'18'],[20,'20'],[22,'22']], form.regular_season_weeks, (v)=>{
+        form.regular_season_weeks=v;
+        if (form.trade_deadline_week && form.trade_deadline_week > v) form.trade_deadline_week = null;
+      }), null, 'regular_season_weeks'),
+      row('交易截止週', deadlineSelect, '例行賽中的哪一週為交易截止；留空表示整季皆可交易', 'trade_deadline_week'),
+      row('季後賽隊伍數', playoffSelect, null, 'playoff_teams'),
+    ));
+
+    // Personas (optional — only show if /api/personas returned keys)
+    const personaIds = Object.keys(state.personas || {});
+    if (personaIds.length) {
+      const personaGrid = el('div', { class: 'setup-team-names' });
+      while (form.gm_personas.length < form.num_teams) form.gm_personas.push('');
+      form.gm_personas = form.gm_personas.slice(0, form.num_teams);
+      for (let i = 0; i < form.num_teams; i++) {
+        if (i === form.player_team_index) continue;
+        const sel = el('select', {
+          disabled: isLocked ? true : null,
+          html: '<option value="">(系統預設)</option>' +
+            personaIds.map((pid) => {
+              const p = state.personas[pid];
+              const nm = p && p.name ? `${pid} · ${p.name}` : pid;
+              return `<option value="${escapeHtml(pid)}" ${form.gm_personas[i] === pid ? 'selected' : ''}>${escapeHtml(nm)}</option>`;
+            }).join(''),
+          onchange: (e) => { form.gm_personas[i] = e.target.value; },
+        });
+        personaGrid.append(el('div', { class: 'persona-row team-name-row' },
+          el('label', {}, `${i}: ${escapeHtml(form.team_names[i])}`), sel));
+      }
+      if (personaGrid.childElementCount) {
+        const helperRow = el('div', { class: 'setup-btn-row', style: 'justify-content: flex-start; padding: 0 0 var(--s-2) 0;' },
+          el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
+            onclick: () => {
+              for (let i = 0; i < form.num_teams; i++) {
+                if (i === form.player_team_index) continue;
+                form.gm_personas[i] = '';
+              }
+              rerender();
+            }
+          }, '全部設為預設'),
+          el('button', { class: 'btn ghost', type: 'button', disabled: isLocked ? true : null,
+            onclick: () => {
+              const pool = [...personaIds];
+              for (let i = 0; i < form.num_teams; i++) {
+                if (i === form.player_team_index) continue;
+                form.gm_personas[i] = pool[Math.floor(Math.random() * pool.length)] || '';
+              }
+              rerender();
+            }
+          }, '全部隨機指派'),
+        );
+        const sectTitle = el('div', { class: 'setup-section-title' }, 'GM Persona（可選） ');
+        const tp = tipChip('gm_persona'); if (tp) sectTitle.append(tp);
+        wrap.append(el('div', { class: 'setup-section' }, sectTitle, helperRow, personaGrid));
+      }
+    }
   }
-  wrap.append(section('計分權重', weightGrid));
 
-  // Trade deadline select — options: 無截止 + weeks 1..regular_season_weeks
-  const weeksN = form.regular_season_weeks || 20;
-  const deadlineOptionsHtml = ['<option value="">無截止</option>']
-    .concat(
-      Array.from({ length: weeksN }, (_, i) => i + 1).map((w) =>
-        `<option value="${w}" ${String(form.trade_deadline_week ?? '') === String(w) ? 'selected' : ''}>W${w}</option>`
-      )
-    ).join('');
-  const deadlineSelect = el('select', {
-    disabled: isLocked ? true : null,
-    html: deadlineOptionsHtml,
-    onchange: (e) => {
-      form.trade_deadline_week = e.target.value === '' ? null : parseInt(e.target.value, 10);
-    },
-  });
-
-  // Roster / schedule
-  wrap.append(section('名單 & 賽程',
-    row('名單人數', radioGroup('roster_size', [[10,'10'],[13,'13'],[15,'15']], form.roster_size, (v)=>{form.roster_size=v;})),
-    row('每日先發', radioGroup('starters_per_day', [[8,'8'],[10,'10'],[12,'12']], form.starters_per_day, (v)=>{form.starters_per_day=v;})),
-    row('傷兵位置', radioGroup('il_slots', [[0,'0'],[1,'1'],[2,'2'],[3,'3 (預設)']], form.il_slots, (v)=>{form.il_slots=v;})),
-    row('例行賽週數', radioGroup('regular_season_weeks', [[18,'18'],[19,'19'],[20,'20'],[21,'21'],[22,'22']], form.regular_season_weeks, (v)=>{
-      form.regular_season_weeks=v;
-      // Keep trade_deadline_week valid when shrinking week count
-      if (form.trade_deadline_week && form.trade_deadline_week > v) form.trade_deadline_week = null;
-      root.innerHTML=''; renderSetupView(root);
-    })),
-    row('交易截止週', deadlineSelect, '例行賽中的哪一週為交易截止；留空表示整季皆可交易'),
-  ));
+  if (step === 1) buildStep1();
+  else if (step === 2) buildStep2();
+  else buildStep3();
 
   // Errors
   const errBox = el('div', { id: 'setup-errors-v2', class: 'setup-errors', hidden: true });
   wrap.append(errBox);
 
-  // Submit
+  // Wizard nav buttons
   if (!isLocked) {
-    wrap.append(el('div', { class: 'setup-btn-row' },
-      el('button', { class: 'btn ghost', type: 'button', onclick: () => {
-        state.setupForm = makeDefaultSetupFormV2(null);
-        root.innerHTML = ''; renderSetupView(root);
-      }}, '使用預設值'),
-      el('button', { class: 'btn', type: 'button', id: 'btn-setup-submit-v2',
-        onclick: () => onSubmitSetupV2(root) }, '開始選秀 →'),
-    ));
+    const navRow = el('div', { class: 'setup-btn-row' });
+    // Reset (always)
+    navRow.append(el('button', { class: 'btn ghost', type: 'button', onclick: () => {
+      state.setupForm = makeDefaultSetupFormV2(null);
+      state.setupStep = 1;
+      rerender();
+    }}, '使用預設值'));
+    if (step > 1) {
+      navRow.append(el('button', { class: 'btn ghost', type: 'button', onclick: () => {
+        state.setupStep = step - 1; rerender();
+      }}, '← 上一步'));
+    }
+    if (step < 3) {
+      navRow.append(el('button', { class: 'btn', type: 'button', onclick: () => {
+        const errors = validateSetupStepV2(form, step);
+        const eb = $('#setup-errors-v2');
+        if (errors.length) {
+          if (eb) {
+            eb.hidden = false;
+            eb.innerHTML = errors.map((e) => `<div>• ${escapeHtml(e)}</div>`).join('');
+          }
+          return;
+        }
+        if (eb) eb.hidden = true;
+        state.setupStep = step + 1; rerender();
+      }}, '下一步 →'));
+    } else {
+      navRow.append(el('button', { class: 'btn', type: 'button', id: 'btn-setup-submit-v2',
+        onclick: () => onSubmitSetupV2(root) }, '開始選秀 →'));
+    }
+    wrap.append(navRow);
   } else {
     wrap.append(el('div', { class: 'setup-btn-row' },
       el('button', { class: 'btn', type: 'button', onclick: () => navigate('draft') }, '前往選秀')));
   }
 
   root.append(wrap);
+}
+
+// M3: per-step validation. Step 1: names + basics; Step 2: weights; Step 3: ok.
+function validateSetupStepV2(form, step) {
+  const errors = [];
+  if (step === 1) {
+    if (!String(form.league_name || '').trim()) errors.push('聯盟名稱不可為空');
+    for (let i = 0; i < form.team_names.length; i++) {
+      if (!String(form.team_names[i] || '').trim()) errors.push(`隊伍 ${i} 名稱不可為空`);
+    }
+  } else if (step === 2) {
+    for (const cat of ['pts','reb','ast','stl','blk','to']) {
+      if (isNaN(form.scoring_weights[cat])) errors.push(`權重「${cat.toUpperCase()}」必須是數字`);
+    }
+  }
+  return errors;
 }
 
 function validateSetupFormV2(form) {
@@ -4717,6 +4996,7 @@ async function onSubmitSetupV2(root) {
     state.leagueStatus = status;
     state.leagueSettings = settings;
     state.setupForm = null;
+    state.setupStep = 1;
     await refreshState().catch(() => {});
     toast('聯盟設定完成');
     navigate('draft');

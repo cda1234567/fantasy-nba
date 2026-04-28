@@ -1745,6 +1745,97 @@ dialog.dlg-v2::backdrop { background: rgba(0,0,0,0.55); }
 }
 
 /* ============================================================
+   v26.04.24.37 — Setup wizard (M3-M4) + scouting (M8) + minors (m1-m2)
+   ============================================================ */
+
+/* M3: 3-step stepper */
+.setup-v2 .setup-stepper {
+  display: flex; gap: var(--s-2); align-items: stretch;
+  margin-bottom: var(--s-3);
+}
+.setup-v2 .setup-step {
+  flex: 1; display: flex; align-items: center; gap: 8px;
+  padding: 10px var(--s-3); border-radius: 8px;
+  background: var(--surface-2); color: var(--ink-3);
+  border: 1px solid var(--line);
+  cursor: pointer; transition: background 200ms, color 200ms;
+  font-size: var(--fs-sm);
+}
+.setup-v2 .setup-step:hover { background: var(--surface); }
+.setup-v2 .setup-step.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  font-weight: 600;
+}
+.setup-v2 .setup-step.done {
+  background: var(--surface); color: var(--good);
+  border-color: var(--good);
+}
+.setup-v2 .setup-step-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(255,255,255,0.18); color: inherit;
+  font-family: var(--mono); font-size: var(--fs-xs); font-weight: 700;
+}
+.setup-v2 .setup-step:not(.active) .setup-step-num {
+  background: var(--surface-2); color: var(--ink-3);
+}
+.setup-v2 .setup-step.done .setup-step-num {
+  background: rgba(34,197,94,0.18); color: var(--good);
+}
+.setup-v2 .setup-step-label { white-space: nowrap; }
+
+/* M4: sticky summary chip */
+.setup-v2 .setup-summary-chip {
+  position: sticky; top: 0; z-index: 4;
+  padding: 8px var(--s-3); border-radius: var(--r-pill);
+  background: var(--surface-2); border: 1px solid var(--line);
+  color: var(--ink-2); font-size: var(--fs-sm);
+  font-family: var(--mono); letter-spacing: 0.02em;
+  align-self: flex-start;
+  margin-bottom: var(--s-2);
+}
+
+/* m1 presets row */
+.setup-v2 .setup-presets {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  padding: 0 0 var(--s-3) 0;
+}
+.setup-v2 .setup-preset-label {
+  color: var(--ink-3); font-size: var(--fs-xs); margin-right: 4px;
+}
+.setup-v2 .preset-chip {
+  padding: 4px 10px; border-radius: var(--r-pill);
+  background: var(--surface-2); border: 1px solid var(--line);
+  color: var(--ink-2); font-size: var(--fs-xs);
+  cursor: pointer; transition: all 150ms;
+}
+.setup-v2 .preset-chip:hover {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.setup-v2 .preset-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* m2 tooltip chip */
+.setup-v2 .setup-tip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--line);
+  color: var(--ink-3); font-size: 10px; font-weight: 700;
+  cursor: help; user-select: none;
+  vertical-align: middle;
+}
+.setup-v2 .setup-tip:hover, .setup-v2 .setup-tip:focus {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  outline: none;
+}
+
+@media (max-width: 800px) {
+  .setup-v2 .setup-stepper { flex-direction: column; }
+  .setup-v2 .setup-summary-chip {
+    font-size: var(--fs-xs); padding: 6px 10px;
+  }
+}
+
+/* ============================================================
    v26.04.24.36 — Draft polish (M3-M11) + minors (m1-m8)
    ============================================================ */
 
