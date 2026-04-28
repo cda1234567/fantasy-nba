@@ -4716,8 +4716,10 @@ function renderSetupView(root) {
     const playerTeamSelect = el('select', {
       disabled: isLocked ? true : null,
       onchange: (e) => { form.player_team_index = parseInt(e.target.value, 10); },
-      html: form.team_names.map((n, i) =>
-        `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i}: ${escapeHtml(n)}</option>`).join(''),
+      // Display labels are 1-indexed for humans; option value stays 0-indexed
+      // because backend / draft order is 0-based throughout.
+      html: form.team_names.slice(0, form.num_teams).map((n, i) =>
+        `<option value="${i}" ${i === form.player_team_index ? 'selected' : ''}>${i + 1}. ${escapeHtml(n)}</option>`).join(''),
     });
 
     const randomizeCheck = el('input', {
@@ -4735,21 +4737,22 @@ function renderSetupView(root) {
       row('隨機選秀順序', randomizeCheck, null, 'randomize_draft_order'),
     ));
 
-    // Team names grid
+    // Team names grid — only show first num_teams entries (was rendering all
+    // 12 default names even when num_teams was 8). Labels are 1-indexed.
     const namesGrid = el('div', { class: 'setup-team-names' });
-    form.team_names.forEach((name, i) => {
+    form.team_names.slice(0, form.num_teams).forEach((name, i) => {
       const inp = el('input', {
         type: 'text', value: name,
-        placeholder: `隊伍 ${i}`,
+        placeholder: `隊伍 ${i + 1}`,
         disabled: isLocked ? true : null,
         oninput: (e) => {
           form.team_names[i] = e.target.value;
           const opt = playerTeamSelect.options[i];
-          if (opt) opt.textContent = `${i}: ${e.target.value}`;
+          if (opt) opt.textContent = `${i + 1}. ${e.target.value}`;
         },
       });
       namesGrid.append(el('div', { class: 'team-name-row' },
-        el('label', {}, String(i)), inp));
+        el('label', {}, String(i + 1)), inp));
     });
     // Team names section (m2: tooltip surfaced via section title)
     const namesTitle = el('div', { class: 'setup-section-title' }, '隊伍名稱 ');
@@ -4852,7 +4855,7 @@ function renderSetupView(root) {
           onchange: (e) => { form.gm_personas[i] = e.target.value; },
         });
         personaGrid.append(el('div', { class: 'persona-row team-name-row' },
-          el('label', {}, `${i}: ${escapeHtml(form.team_names[i])}`), sel));
+          el('label', {}, `${i + 1}. ${escapeHtml(form.team_names[i])}`), sel));
       }
       if (personaGrid.childElementCount) {
         const helperRow = el('div', { class: 'setup-btn-row', style: 'justify-content: flex-start; padding: 0 0 var(--s-2) 0;' },
