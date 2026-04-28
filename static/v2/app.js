@@ -193,6 +193,19 @@ function setConnected(ok) {
   dot.classList.toggle('bad', !ok);
 }
 
+// One-shot fetch of server version on boot so the user can confirm the
+// deploy reached them (no more guessing if a stale cache is being served).
+async function fetchAndShowVersion() {
+  try {
+    const r = await fetch('/api/health', { cache: 'no-store' });
+    const d = await r.json();
+    const el = $('#app-version');
+    if (el && d.version) el.textContent = d.version;
+  } catch {
+    /* leave dash */
+  }
+}
+
 // ---------------------------------------------------------------- toast
 function toast(msg, kind = 'info', ms = 3000) {
   const stack = $('#toast-stack');
@@ -5058,6 +5071,9 @@ function bindLeagueSwitcherV2() {
 window.addEventListener('hashchange', render);
 
 (async function boot() {
+  // Show server version pill in header (one-shot, fire-and-forget).
+  fetchAndShowVersion();
+
   // A: parse share-link query params (?league=foo&t=<token>). When both are
   // present we (1) write the token to the manager_token cookie so writes
   // work, and (2) ask the backend to switch to the named league. ?t alone
