@@ -158,25 +158,34 @@ function _maybeToast401() {
 
 // ---------------------------------------------------------------- api
 async function api(path, opts = {}) {
-  const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    ...opts,
-  });
-  if (!res.ok) {
-    let msg = `${res.status}`;
-    try {
-      const j = await res.json();
-      msg = j.detail || j.message || JSON.stringify(j);
-    } catch {
-      try { msg = await res.text(); } catch { /* swallow */ }
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 30000);
+  const signals = [ctrl.signal, opts.signal].filter(Boolean);
+  const signal = signals.length > 1 ? AbortSignal.any(signals) : signals[0];
+  try {
+    const res = await fetch(path, {
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      ...opts,
+      signal,
+    });
+    if (!res.ok) {
+      let msg = `${res.status}`;
+      try {
+        const j = await res.json();
+        msg = j.detail || j.message || JSON.stringify(j);
+      } catch {
+        try { msg = await res.text(); } catch { /* swallow */ }
+      }
+      const err = new Error(msg);
+      err.status = res.status;
+      if (res.status === 401) _maybeToast401();
+      throw err;
     }
-    const err = new Error(msg);
-    err.status = res.status;
-    if (res.status === 401) _maybeToast401();
-    throw err;
+    if (res.status === 204) return null;
+    return res.json();
+  } finally {
+    clearTimeout(timer);
   }
-  if (res.status === 204) return null;
-  return res.json();
 }
 
 async function apiSoft(path, opts) {
@@ -4103,6 +4112,9 @@ async function onSubmitProposeTradeV2() {
     render();
   } catch (e) {
     toast(e.message || '送出失敗', 'error');
+    $('#trade-propose-v2').close();
+    const msgEl = $('#trade-message-v2');
+    if (msgEl) msgEl.value = '';
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '送出提案'; }
   }
@@ -4291,6 +4303,9 @@ async function onSubmitCounterTradeV2() {
     render();
   } catch (e) {
     toast(e.message || '送出失敗', 'error');
+    $('#trade-counter-v2').close();
+    const msgEl = $('#trade-counter-message-v2');
+    if (msgEl) msgEl.value = '';
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '送出還價'; }
   }

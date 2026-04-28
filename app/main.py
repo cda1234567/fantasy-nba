@@ -5,10 +5,11 @@ import contextvars
 import json
 import os
 import re
+import threading
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request, Response
+from fastapi import Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -60,7 +61,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.42"
+APP_VERSION = "v26.04.28.43"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -2229,7 +2230,7 @@ def trades_history(limit: int = Query(50, ge=1, le=500)):
 
 
 @app.post("/api/trades/propose")
-def trades_propose(req: TradeProposeRequest, background: BackgroundTasks, _: bool = Depends(require_manager)):
+def trades_propose(req: TradeProposeRequest, _: bool = Depends(require_manager)):
     if req.from_team != _get_draft().human_team_id:
         raise HTTPException(400, "只有玩家隊伍可透過此端點發起交易")
     season = _require_season()
@@ -2327,7 +2328,12 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks, _: boo
         finally:
             _current_league_var.reset(bg_token)
 
-    background.add_task(_finalize, trade.id, req.to_team, season.current_day)
+    ctx = contextvars.copy_context()
+    threading.Thread(
+        target=ctx.run,
+        args=(_finalize, trade.id, req.to_team, season.current_day),
+        daemon=True,
+    ).start()
     return trade.model_dump()
 
 
