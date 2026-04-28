@@ -159,7 +159,7 @@ function _maybeToast401() {
 // ---------------------------------------------------------------- api
 async function api(path, opts = {}) {
   const res = await fetch(path, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8' },
     ...opts,
   });
   if (!res.ok) {
@@ -4373,7 +4373,11 @@ function closeLeagueSwitchMenu() {
 
 function openNewLeagueModal() {
   const dlg = $('#dlg-new-league-v2');
-  const inp = $('#new-league-id-v2');
+  // Modal input was renamed from id-v2 to name-v2 in v.38; this opener
+  // missed the update and was clearing/focusing nothing, leaving the input
+  // unfocused (still worked) but more importantly nobody verified the new
+  // selector path before deploy.
+  const inp = $('#new-league-name-v2');
   if (!dlg) return;
   if (inp) inp.value = '';
   try { dlg.showModal(); setTimeout(() => inp && inp.focus(), 50); } catch {}
