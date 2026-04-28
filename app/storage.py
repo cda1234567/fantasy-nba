@@ -31,15 +31,19 @@ _FILE_LOCKS: dict[str, threading.Lock] = {}
 _FILE_LOCKS_GUARD = threading.Lock()
 
 
-def _lock_for(path: Path) -> threading.Lock:
+def _lock_for(path: Path) -> "threading.RLock":
     # Use absolute() not resolve() — resolve() would fail on non-existent
     # files (first-write case) and produce a different key than subsequent
     # writes after the file exists.
+    # RLock (re-entrant) is required because append_log holds this lock and
+    # then calls _atomic_write which also acquires it — same thread, same
+    # path, would self-deadlock with a plain Lock (introduced in 0c194f8
+    # when append_log switched to path-keyed lock).
     key = str(Path(path).absolute())
     with _FILE_LOCKS_GUARD:
         lk = _FILE_LOCKS.get(key)
         if lk is None:
-            lk = threading.Lock()
+            lk = threading.RLock()
             _FILE_LOCKS[key] = lk
         return lk
 
