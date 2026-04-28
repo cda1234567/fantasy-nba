@@ -4742,9 +4742,10 @@ function renderSetupView(root) {
       namesGrid.append(el('div', { class: 'team-name-row' },
         el('label', {}, String(i)), inp));
     });
-    const namesTitle = el('div', { class: 'setup-section-inline-title' }, '隊伍名稱 ');
+    // Team names section (m2: tooltip surfaced via section title)
+    const namesTitle = el('div', { class: 'setup-section-title' }, '隊伍名稱 ');
     const tn = tipChip('team_names'); if (tn) namesTitle.append(tn);
-    wrap.append(section('隊伍名稱', namesGrid));
+    wrap.append(el('div', { class: 'setup-section' }, namesTitle, namesGrid));
   }
 
   // ---------------- Step 2: 規則 ----------------
