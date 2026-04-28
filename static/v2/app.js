@@ -77,6 +77,16 @@ const state = {
   leagues: [],                   // [{league_id,name,setup_complete}, ...]
   activeLeague: 'default',
   setupForm: null,               // working copy for #setup
+  // M15: render race-condition guard — every render() bumps this; async
+  // sub-renderers compare against state.viewToken before appending DOM.
+  viewToken: null,
+  // M16: abort in-flight player searches when a new keystroke fires.
+  activePlayerSearchAbort: null,
+  activeFaSearchAbort: null,
+  // M17/M20: abort in-flight team fetches when the user switches teams.
+  activeTeamFetchAbort: null,
+  // M19: track active EventSource so route changes / league switches close it.
+  activeES: null,
 };
 
 const VALID_ROUTES = ['teams', 'fa', 'league', 'schedule', 'trades', 'draft', 'setup'];
@@ -110,6 +120,35 @@ const DEFAULT_SETTINGS_V2 = {
   gm_personas: [],
 };
 
+// ---------------------------------------------------------------- cookies
+function setCookie(name, value, days = 365) {
+  const maxAge = days * 24 * 60 * 60;
+  // path=/ so every API path can read it; SameSite=Lax matches backend.
+  document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+}
+
+function getCookie(name) {
+  const parts = document.cookie ? document.cookie.split('; ') : [];
+  for (const part of parts) {
+    const eq = part.indexOf('=');
+    const k = eq >= 0 ? part.slice(0, eq) : part;
+    if (k === name) return decodeURIComponent(part.slice(eq + 1));
+  }
+  return null;
+}
+
+// Track whether we already toasted a 401 in the current second so a burst of
+// concurrent writes doesn't spam the user.
+let _last401ToastAt = 0;
+function _maybeToast401() {
+  const now = Date.now();
+  if (now - _last401ToastAt < 1500) return;
+  _last401ToastAt = now;
+  try {
+    toast('你不是這個聯盟的 manager，無法操作。請向 owner 索取分享連結（含 ?t=token）。', 'error', 5000);
+  } catch {}
+}
+
 // ---------------------------------------------------------------- api
 async function api(path, opts = {}) {
   const res = await fetch(path, {
@@ -126,6 +165,7 @@ async function api(path, opts = {}) {
     }
     const err = new Error(msg);
     err.status = res.status;
+    if (res.status === 401) _maybeToast401();
     throw err;
   }
   if (res.status === 204) return null;
@@ -200,6 +240,14 @@ function navigate(route) {
 
 function render() {
   const route = currentRoute();
+  // M15: bump view-token so any in-flight async sub-renderers know they are
+  // stale and must drop their results instead of clobbering fresh DOM.
+  state.viewToken = Symbol('view');
+  // M19/M20/M21: tear down anything tied to the previous view before swapping.
+  closeActiveES();
+  abortActiveTeamFetch();
+  abortActivePlayerSearch();
+  abortActiveFaSearch();
   // Highlight active nav
   $$('.nav-item').forEach((a) => {
     const active = a.dataset.route === route;
@@ -209,6 +257,9 @@ function render() {
   const main = $('#main');
   if (!main) return;
   main.innerHTML = '';
+  // Snapshot the token so each branch can pass it to async helpers if needed.
+  const tok = state.viewToken;
+  main.dataset.viewToken = tok.description || '';
   switch (route) {
     case 'draft':    renderDraftView(main); break;
     case 'teams':    renderTeamsView(main); break;
@@ -222,6 +273,43 @@ function render() {
   if (route === 'trades') startTradesPolling();
   else stopTradesPolling();
   try { main.focus({ preventScroll: true }); } catch {}
+}
+
+// M15 helper: async renderers call this after awaiting; if the view changed
+// underneath them the result must be dropped.
+function isViewStale(tok) {
+  return tok !== state.viewToken;
+}
+
+// M19 helper: close the active EventSource (advance-week / sim streams) so a
+// route change doesn't leave the connection ticking against the old view.
+function closeActiveES() {
+  if (state.activeES) {
+    try { state.activeES.close(); } catch {}
+    state.activeES = null;
+  }
+}
+
+// M17/M20 helper: abort any in-flight /api/teams/{id} fetch.
+function abortActiveTeamFetch() {
+  if (state.activeTeamFetchAbort) {
+    try { state.activeTeamFetchAbort.abort(); } catch {}
+    state.activeTeamFetchAbort = null;
+  }
+}
+
+// M16 helpers: abort player/FA search fetches.
+function abortActivePlayerSearch() {
+  if (state.activePlayerSearchAbort) {
+    try { state.activePlayerSearchAbort.abort(); } catch {}
+    state.activePlayerSearchAbort = null;
+  }
+}
+function abortActiveFaSearch() {
+  if (state.activeFaSearchAbort) {
+    try { state.activeFaSearchAbort.abort(); } catch {}
+    state.activeFaSearchAbort = null;
+  }
 }
 
 function renderPlaceholder(root, title, note) {
@@ -239,6 +327,8 @@ function renderPlaceholder(root, title, note) {
 
 // ================================================================ DRAFT VIEW
 async function renderDraftView(root) {
+  // M15: snapshot view-token; bail out if the user navigated away mid-await.
+  const tok = state.viewToken;
   // Blank state: league created but setup not yet run.
   if (state.leagueStatus && state.leagueStatus.setup_complete === false) {
     root.append(
@@ -499,6 +589,7 @@ async function renderAvailableTable(displayMode) {
   const d = state.draft;
   if (!d) return;
   const mode = displayMode || state.draftDisplayMode || 'prev_full';
+  const tok = state.viewToken;
 
   const params = new URLSearchParams({
     available: 'true',
@@ -508,13 +599,24 @@ async function renderAvailableTable(displayMode) {
   if (state.draftFilter.q) params.set('q', state.draftFilter.q);
   if (state.draftFilter.pos) params.set('pos', state.draftFilter.pos);
 
+  // M16: abort any prior in-flight player search so a slow earlier response
+  // can't replace the freshly-typed query's results.
+  abortActivePlayerSearch();
+  const ctrl = new AbortController();
+  state.activePlayerSearchAbort = ctrl;
+
   let players;
   try {
-    players = await api(`/api/players?${params.toString()}`);
+    players = await api(`/api/players?${params.toString()}`, { signal: ctrl.signal });
   } catch (e) {
+    if (e.name === 'AbortError') return;
+    if (isViewStale(tok)) return;
     wrap.innerHTML = `<div style="padding: var(--s-6); color: var(--bad);">載入失敗：${escapeHtml(e.message)}</div>`;
     return;
+  } finally {
+    if (state.activePlayerSearchAbort === ctrl) state.activePlayerSearchAbort = null;
   }
+  if (isViewStale(tok)) return;
 
   const canDraft = !d.is_complete && d.current_team_id === d.human_team_id;
   wrap.innerHTML = buildAvailableTableHtml(players, mode, canDraft);
@@ -697,6 +799,10 @@ function appendDraftCommentary(commentary) {
 }
 
 async function onAdvance() {
+  // M18: share the same busy flag as the auto-advance loop so the manual
+  // "推進 AI 一手" button can't fire a second concurrent ai-advance request.
+  if (state.draftAutoBusy) return;
+  state.draftAutoBusy = true;
   try {
     const r = await api('/api/draft/ai-advance', { method: 'POST' });
     state.draft = r.state;
@@ -705,6 +811,8 @@ async function onAdvance() {
     maybeAutoStartSeason();
   } catch (e) {
     toast(e.message || '推進失敗', 'error');
+  } finally {
+    state.draftAutoBusy = false;
   }
 }
 
@@ -785,11 +893,14 @@ function injuryPillHtml(inj) {
 }
 
 async function renderTeamsView(root) {
+  // M15: guard view-token; renderTeamBody also re-checks per fetch.
+  const tok = state.viewToken;
   const d = state.draft;
   if (!d || !Array.isArray(d.teams) || d.teams.length === 0) {
     root.append(el('div', { class: 'card card-pad' }, '載入隊伍資訊中…'));
     return;
   }
+  if (isViewStale(tok)) return;
 
   // Pick default team: human team if available, else first team.
   if (state.currentTeamId == null || state.currentTeamId >= d.teams.length) {
@@ -825,15 +936,28 @@ async function renderTeamBody() {
   const container = $('#team-body');
   if (!container) return;
   const tid = state.currentTeamId;
+  const tok = state.viewToken;
   container.innerHTML = '<div class="card card-pad" aria-busy="true">載入中…</div>';
+
+  // M17: abort previous in-flight team fetch so its later response can't
+  // overwrite the freshly-selected team's render.
+  abortActiveTeamFetch();
+  const ctrl = new AbortController();
+  state.activeTeamFetchAbort = ctrl;
 
   let data;
   try {
-    data = await api(`/api/teams/${tid}`);
+    data = await api(`/api/teams/${tid}`, { signal: ctrl.signal });
   } catch (e) {
+    if (e.name === 'AbortError') return;
+    if (isViewStale(tok) || state.currentTeamId !== tid) return;
     container.innerHTML = `<div class="card card-pad" style="color:var(--bad);">載入失敗：${escapeHtml(e.message)}</div>`;
     return;
+  } finally {
+    if (state.activeTeamFetchAbort === ctrl) state.activeTeamFetchAbort = null;
   }
+  // Drop stale response if the user already switched teams or routes.
+  if (isViewStale(tok) || state.currentTeamId !== tid) return;
   state.teamView = data;
 
   const { team, players, totals, persona_desc, lineup_slots, bench, injured_out, injuries, has_lineup_override } = data;
@@ -1315,6 +1439,7 @@ async function renderFaTable() {
   const countEl = $('#fa-count');
   if (!wrap) return;
   const f = state.faFilter;
+  const tok = state.viewToken;
 
   // Note: we do NOT send `pos` query. Backend strict-matches, but UI needs
   // multi-position matching (e.g. "PG/SG" player should match PG filter).
@@ -1322,13 +1447,24 @@ async function renderFaTable() {
   const params = new URLSearchParams({ available: 'true', limit: '400' });
   if (f.q) params.set('q', f.q);
 
+  // M16: abort prior in-flight FA search so old responses don't paint over
+  // the latest keystroke's results.
+  abortActiveFaSearch();
+  const ctrl = new AbortController();
+  state.activeFaSearchAbort = ctrl;
+
   let players;
   try {
-    players = await api(`/api/players?${params.toString()}`);
+    players = await api(`/api/players?${params.toString()}`, { signal: ctrl.signal });
   } catch (e) {
+    if (e.name === 'AbortError') return;
+    if (isViewStale(tok)) return;
     wrap.innerHTML = `<div style="padding: var(--s-6); color:var(--bad);">載入失敗：${escapeHtml(e.message)}</div>`;
     return;
+  } finally {
+    if (state.activeFaSearchAbort === ctrl) state.activeFaSearchAbort = null;
   }
+  if (isViewStale(tok)) return;
 
   // Client-side multi-position filter
   if (f.pos) {
@@ -1510,11 +1646,14 @@ async function refreshLeagueData() {
 }
 
 async function renderLeagueView(root) {
+  // M15: snapshot view-token; abort post-await DOM writes if user navigated.
+  const tok = state.viewToken;
   const d = state.draft;
   if (!d) {
     root.append(el('div', { class: 'card card-pad' }, '載入中…'));
     return;
   }
+  if (isViewStale(tok)) return;
 
   // Selection gate: draft must be complete
   if (!d.is_complete) {
@@ -1548,6 +1687,7 @@ async function renderLeagueView(root) {
   );
 
   await refreshLeagueData();
+  if (isViewStale(tok)) return;
 
   // Not-started gate: standings empty → offer 開始賽季
   const rows = state.standings?.standings || [];
@@ -2554,8 +2694,17 @@ function onLeagueAdvanceWeek() {
   if (state.advancing) return;
   state.advancing = true;
   _logMgmt('🗓 推進一週（SSE 串流）…');
+  // M19: register the EventSource on state so route/league switches can close
+  // it via closeActiveES(); also close any prior stream still hanging around.
+  closeActiveES();
+  let es = null;
+  const finish = () => {
+    if (state.activeES === es) state.activeES = null;
+    state.advancing = false;
+  };
   try {
-    const es = new EventSource('/api/season/advance-week/stream');
+    es = new EventSource('/api/season/advance-week/stream');
+    state.activeES = es;
     es.onmessage = (ev) => {
       try {
         const payload = JSON.parse(ev.data);
@@ -2563,14 +2712,14 @@ function onLeagueAdvanceWeek() {
           _logMgmt(`❌ ${payload.error}`);
           toast(payload.error, 'error');
           es.close();
-          state.advancing = false;
+          finish();
           return;
         }
         if (payload.done) {
           _logMgmt(`✅ 本週推進完成（W${payload.week}）`);
           toast('推進一週完成', 'info');
           es.close();
-          state.advancing = false;
+          finish();
           refreshLeagueData().then(() => rerenderLeagueSubFromTabs());
           return;
         }
@@ -2583,7 +2732,7 @@ function onLeagueAdvanceWeek() {
     es.onerror = () => {
       _logMgmt('⚠ SSE 連線中斷');
       es.close();
-      state.advancing = false;
+      finish();
       refreshLeagueData().then(() => rerenderLeagueSubFromTabs());
     };
   } catch (e) {
@@ -2614,17 +2763,22 @@ async function onLeagueSimToPlayoffs() {
   // Loop weekly streams (each stream is below Cloudflare's 60s timeout) until
   // we either enter the playoffs or champion is set. Use heuristic (use_ai=false)
   // so each week finishes in seconds rather than minutes.
+  // M19: each per-week stream is registered on state.activeES so a route /
+  // league change can close it via closeActiveES().
   const streamOneWeek = () => new Promise((resolve, reject) => {
+    closeActiveES();
     const es = new EventSource('/api/season/advance-week/stream?use_ai=false');
+    state.activeES = es;
+    const cleanup = () => { try { es.close(); } catch {} if (state.activeES === es) state.activeES = null; };
     es.onmessage = (ev) => {
       try {
         const p = JSON.parse(ev.data);
-        if (p.error) { es.close(); reject(new Error(p.error)); return; }
-        if (p.done) { es.close(); resolve(p); return; }
+        if (p.error) { cleanup(); reject(new Error(p.error)); return; }
+        if (p.done) { cleanup(); resolve(p); return; }
         _logMgmt(`· W${p.week} D${p.day}`);
       } catch (err) { /* ignore parse errors */ }
     };
-    es.onerror = () => { es.close(); reject(new Error('SSE 中斷')); };
+    es.onerror = () => { cleanup(); reject(new Error('SSE 中斷')); };
   });
 
   try {
@@ -3088,10 +3242,19 @@ async function ensurePlayersCachedV2(ids) {
 }
 
 function startTradesPolling() {
+  // M21: stale tick guard — capture viewToken at schedule time so a tick
+  // landing after a route change can detect it and skip the DOM write.
   if (state.tradesPollTimer) return;
+  const tok = state.viewToken;
   state.tradesPollTimer = setInterval(async () => {
-    if (currentRoute() !== 'trades') return;
+    // Bail out if user navigated away (and clear ourselves so we don't keep
+    // ticking even though render() is supposed to call stopTradesPolling).
+    if (currentRoute() !== 'trades' || isViewStale(tok)) {
+      stopTradesPolling();
+      return;
+    }
     await refreshTradesV2();
+    if (currentRoute() !== 'trades' || isViewStale(tok)) return;
     const body = $('#trades-sub-body');
     if (body && (state.tradesTab === 'pending' || state.tradesTab === 'history')) {
       body.innerHTML = '';
@@ -3512,12 +3675,26 @@ async function onCounterpartyChangeV2(e) {
   const id = parseInt(e.target.value, 10);
   state.proposeDraft.counterparty = Number.isFinite(id) ? id : null;
   state.proposeDraft.receive = new Set();
+  // M20: abort any prior counterparty roster fetch so a slow earlier response
+  // can't overwrite the freshly-picked team's roster (rapid dropdown changes).
+  abortActiveTeamFetch();
   if (state.proposeDraft.counterparty != null) {
+    const targetId = state.proposeDraft.counterparty;
+    const ctrl = new AbortController();
+    state.activeTeamFetchAbort = ctrl;
     try {
-      const data = await api(`/api/teams/${state.proposeDraft.counterparty}`);
+      const data = await api(`/api/teams/${targetId}`, { signal: ctrl.signal });
+      // Drop stale response if user changed counterparty mid-flight.
+      if (state.proposeDraft.counterparty !== targetId) return;
       state.proposeDraft.counterpartyRoster = data.players || [];
       for (const p of state.proposeDraft.counterpartyRoster) state.playerCache.set(p.id, p);
-    } catch { state.proposeDraft.counterpartyRoster = []; }
+    } catch (err) {
+      if (err.name === 'AbortError') return;
+      if (state.proposeDraft.counterparty !== targetId) return;
+      state.proposeDraft.counterpartyRoster = [];
+    } finally {
+      if (state.activeTeamFetchAbort === ctrl) state.activeTeamFetchAbort = null;
+    }
   } else {
     state.proposeDraft.counterpartyRoster = [];
   }
@@ -3958,12 +4135,48 @@ async function onSwitchLeague(leagueId) {
   }
 }
 
+// A: share-link button. Calls /api/leagues/share-link (manager-only) and
+// shows the URL in a small modal so the owner can copy + send to friends.
+async function onShareLeague() {
+  let info;
+  try {
+    info = await api('/api/leagues/share-link');
+  } catch (e) {
+    if (e.status !== 401) toast(e.message || '無法取得分享連結', 'error');
+    return;  // 401 already toasted via _maybeToast401
+  }
+  const baseUrl = location.origin + location.pathname;
+  const fullUrl = baseUrl + (info.qs || '');
+  // Try the native clipboard first; fall back to a prompt() so the user can
+  // copy manually on browsers that block writeText without user activation.
+  let copied = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(fullUrl);
+      copied = true;
+    }
+  } catch {}
+  if (copied) {
+    toast(`已複製分享連結：${info.league_id}`, 'info', 4000);
+  } else {
+    // window.prompt lets the user select+copy by hand without us touching the DOM.
+    try { window.prompt('複製此分享連結（含 manager token）：', fullUrl); } catch {}
+  }
+}
+
 async function onCreateLeague() {
   const inp = $('#new-league-id-v2');
   const lid = (inp && inp.value || '').trim();
   if (!lid) { toast('請輸入聯盟 ID', 'info'); return; }
   try {
-    await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, switch: true }) });
+    // A: backend now mints a manager_token and returns it in the response.
+    // The Set-Cookie header is httponly=False so the browser will adopt it
+    // automatically, but we also persist explicitly via setCookie() in case
+    // the cookie path/sameSite combo is dropped in some edge case.
+    const resp = await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, switch: true }) });
+    if (resp && resp.manager_token) {
+      setCookie('manager_token', resp.manager_token);
+    }
     const dlg = $('#dlg-new-league-v2');
     if (dlg) dlg.close();
     toast(`已建立聯盟 ${lid}，請完成設定`);
@@ -4386,12 +4599,44 @@ function bindLeagueSwitcherV2() {
   }
   const resetBtn = $('#btn-reset-draft');
   if (resetBtn) resetBtn.addEventListener('click', onResetDraft);
+  // A: share-link button (manager-only). 401 will trigger the global toast.
+  const shareBtn = $('#btn-share-league');
+  if (shareBtn) shareBtn.addEventListener('click', onShareLeague);
 }
 
 // ---------------------------------------------------------------- boot
 window.addEventListener('hashchange', render);
 
 (async function boot() {
+  // A: parse share-link query params (?league=foo&t=<token>). When both are
+  // present we (1) write the token to the manager_token cookie so writes
+  // work, and (2) ask the backend to switch to the named league. ?t alone
+  // (no league switch) still gets persisted so refreshes keep working.
+  try {
+    const qs = new URLSearchParams(location.search);
+    const qLeague = (qs.get('league') || '').trim();
+    const qToken = (qs.get('t') || '').trim();
+    if (qToken) setCookie('manager_token', qToken);
+    if (qLeague) {
+      // Pass ?t through to backend; backend validates and sets cookie too.
+      const path = qToken
+        ? `/api/leagues/switch?t=${encodeURIComponent(qToken)}`
+        : '/api/leagues/switch';
+      try {
+        await api(path, { method: 'POST', body: JSON.stringify({ league_id: qLeague }) });
+      } catch (err) {
+        console.warn('share-link switch failed', err);
+      }
+      // Strip the params from the URL so a refresh won't repeatedly switch.
+      try {
+        const cleanUrl = location.pathname + (location.hash || '');
+        history.replaceState(null, '', cleanUrl);
+      } catch {}
+    }
+  } catch (err) {
+    console.warn('share-link parse failed', err);
+  }
+
   // Default landing: draft if draft pending, teams otherwise. We finalise
   // this after state refresh below; the initial hash just avoids a blank
   // flicker during boot.
