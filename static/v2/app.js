@@ -40,6 +40,11 @@ const state = {
   draftRecos: null,
   draftAutoTimer: null,
   draftAutoBusy: false,
+  // M5: per-pick countdown for the human draft clock. Reset every render that
+  // detects a new human turn; nulled when the timer fires or the user picks.
+  draftClockSec: null,
+  draftClockInterval: null,
+  draftClockTurnKey: null, // `${current_overall}` so we don't reset mid-turn
   draftFilter: { q: '', pos: '', sort: 'fppg' },
   draftDisplayMode: 'prev_full',
   connected: false,
@@ -363,10 +368,28 @@ async function renderDraftView(root) {
   );
   root.append(head);
 
+  // M7: sticky draft sub-header with current team + persona summary so the
+  // user always sees who's on the clock when scrolling the board.
+  root.append(buildDraftStickyHeader(d));
+
   // Top: clock + commentary feed (replaces old recos panel)
   const clock = buildDraftClock(d);
   const top = el('div', { class: 'draft-top' }, clock, buildDraftCommentaryPanel());
   root.append(top);
+
+  // M6: AI recommendation card on human turns (lazy-fetched).
+  const isHumanTurn = !d.is_complete && d.current_team_id === d.human_team_id;
+  if (isHumanTurn) {
+    const recoHost = el('div', { id: 'draft-recos-host', style: 'margin-top: var(--s-4);' });
+    root.append(recoHost);
+    refreshDraftRecos().then(() => {
+      const card = buildDraftRecosCard();
+      if (card && tok === state.viewToken) {
+        const host = $('#draft-recos-host');
+        if (host) { host.innerHTML = ''; host.append(card); }
+      }
+    }).catch(() => {});
+  }
 
   // Available players table (left) + board (right)
   const availPanel = buildAvailablePanel(d);
@@ -378,11 +401,62 @@ async function renderDraftView(root) {
   );
   root.append(grid);
 
+  // M7: recent picks scrolling feed below the board.
+  root.append(buildRecentPicksFeed(d));
+
   // Kick off table render
   renderAvailableTable(state.draftDisplayMode || 'prev_full');
 
+  // M5: start the per-pick countdown timer (human turn only).
+  startDraftClockTimer(d);
+
   // Auto-advance AI turn
   scheduleDraftAutoAdvance();
+}
+
+// M7: sticky sub-header that names the team currently on the clock + persona.
+function buildDraftStickyHeader(d) {
+  const wrap = el('div', { class: 'draft-sticky-head' });
+  if (d.is_complete) {
+    wrap.append(el('span', { class: 'pill good' }, '✅ 完成'));
+    return wrap;
+  }
+  const team = d.teams[d.current_team_id];
+  const persona = team?.gm_persona ? state.personas?.[team.gm_persona] : null;
+  const isYou = team?.is_human;
+  wrap.append(
+    el('span', { class: `pill ${isYou ? 'accent' : ''}` }, isYou ? '🎯 你' : '🤖 AI'),
+    el('b', {}, team?.name || ''),
+    persona && !isYou ? el('span', { class: 'sticky-persona' }, ` · ${persona.name || team.gm_persona}`) : null,
+    el('span', { class: 'sticky-pickno' }, `第 ${d.current_round} 輪 · 第 ${d.current_pick_in_round} 順 · 總 #${d.current_overall}`),
+  );
+  return wrap;
+}
+
+// M7: recent 5 picks scrolling feed.
+function buildRecentPicksFeed(d) {
+  const card = el('div', { class: 'card', style: 'margin-top: var(--s-5);' });
+  card.append(el('div', { class: 'card-header' },
+    el('h3', {}, '最近 5 順'),
+    el('span', { class: 'sub' }, `共 ${(d.picks || []).length} 順`),
+  ));
+  const body = el('div', { class: 'recent-picks-feed' });
+  const recent = (d.picks || []).slice(-5).reverse();
+  if (!recent.length) {
+    body.append(el('div', { class: 'empty-state', style: 'padding: var(--s-4);' }, '尚未開始選秀。'));
+  } else {
+    for (const p of recent) {
+      const team = d.teams[p.team_id];
+      body.append(el('div', { class: 'rp-row' },
+        el('span', { class: 'rp-num' }, `#${p.overall}`),
+        el('span', { class: 'rp-name' }, p.player_name),
+        el('span', { class: 'rp-team' }, team?.name || `T${p.team_id}`),
+        el('span', { class: 'rp-rd' }, `R${p.round}`),
+      ));
+    }
+  }
+  card.append(body);
+  return card;
 }
 
 function buildDraftCommentaryPanel() {
@@ -445,6 +519,9 @@ function buildDraftClock(d) {
           el('b', {}, persona.name || team.gm_persona),
           persona.desc ? ` — ${persona.desc}` : '')
       : el('div', { class: 'dc-sub' }, isYou ? '請在下方「剩餘球員」中點「選秀」。' : 'AI 選秀中…'),
+    // M5: countdown placeholder. Filled by tickDraftClock(); only visible on
+    // human turns. We render a slot even on AI turns so layout doesn't jump.
+    isYou ? el('div', { class: 'dc-clock', id: 'draft-clock-readout', 'data-state': 'normal' }, '90s') : null,
     el('div', { style: 'display:flex; gap:8px; margin-top: var(--s-4); flex-wrap: wrap;' },
       el('button', { class: 'btn ghost sm', disabled: isYou, onclick: onAdvance }, '推進 AI 一手'),
       el('button', {
@@ -655,7 +732,7 @@ function buildAvailableTableHtml(players, mode, canDraft) {
 
   const body = players.map((p) => {
     const injBadge = p.injury && p.injury.status !== 'healthy'
-      ? ` <span class="pill bad" style="font-size:9px; padding: 1px 6px;">${p.injury.status === 'out' ? 'OUT' : 'DTD'}</span>`
+      ? ` <span class="pill bad" style="font-size: 12px; padding: 1px 6px;">${p.injury.status === 'out' ? 'OUT' : 'DTD'}</span>`
       : '';
     const action = `<td style="text-align:right;"><button class="btn sm" data-draft="${p.id}" ${canDraft ? '' : 'disabled'}>選秀</button></td>`;
     const nameCell = `<td><b>${escapeHtml(p.name)}</b>${injBadge}</td>`;
@@ -710,14 +787,14 @@ function buildBoardHtml(d) {
       const cell = d.board[r][t];
       const isCurrent = !d.is_complete && d.current_round === r + 1 && d.current_team_id === t;
       const isYou = t === d.human_team_id;
-      let style = 'text-align:center; padding: 6px 8px; font-size: 10px;';
+      let style = 'text-align:center; padding: 6px 8px; font-size: 12px;';
       if (isCurrent) style += ' background: var(--accent-14); box-shadow: inset 0 0 0 1px var(--accent);';
       else if (isYou && !cell) style += ' background: var(--accent-08);';
       if (cell) {
         style += ' font-weight: 500;';
         html += `<td style="${style}" title="${escapeHtml(cell.reason || '')}">
           <div>${escapeHtml(cell.player_name)}</div>
-          <div style="color:var(--ink-3); font-family:var(--mono); font-size: 9px;">#${cell.overall}</div>
+          <div style="color:var(--ink-3); font-family:var(--mono); font-size: 12px;">#${cell.overall}</div>
         </td>`;
       } else {
         html += `<td style="${style}; color: var(--ink-4);">${isCurrent ? '選秀中' : '—'}</td>`;
@@ -735,6 +812,82 @@ function cancelDraftAutoAdvance() {
     clearTimeout(state.draftAutoTimer);
     state.draftAutoTimer = null;
   }
+  // M5: also stop the per-pick countdown so background ticks don't keep
+  // running after the user picked / navigated away.
+  cancelDraftClockTimer();
+}
+
+// M5 ---------------------------------------------------------------- draft clock
+function cancelDraftClockTimer() {
+  if (state.draftClockInterval) {
+    clearInterval(state.draftClockInterval);
+    state.draftClockInterval = null;
+  }
+  state.draftClockSec = null;
+  state.draftClockTurnKey = null;
+}
+
+function startDraftClockTimer(d) {
+  if (!d || d.is_complete) { cancelDraftClockTimer(); return; }
+  // Only run for human turns; AI turns are paced by the auto-advance loop.
+  if (d.current_team_id !== d.human_team_id) { cancelDraftClockTimer(); return; }
+  const turnKey = String(d.current_overall);
+  if (state.draftClockTurnKey === turnKey && state.draftClockInterval) {
+    // Same turn re-render — keep existing countdown running.
+    tickDraftClock();
+    return;
+  }
+  cancelDraftClockTimer();
+  state.draftClockTurnKey = turnKey;
+  state.draftClockSec = 90;
+  tickDraftClock();
+  state.draftClockInterval = setInterval(() => {
+    if (state.draftClockSec == null) return;
+    state.draftClockSec -= 1;
+    tickDraftClock();
+    if (state.draftClockSec <= 0) {
+      // Time's up — auto-pick best remaining recommendation, falling back to
+      // the top fppg available player. Best-effort; failure just stops the
+      // clock so the user can pick manually.
+      const cur = state.draft;
+      if (!cur || cur.is_complete || cur.current_team_id !== cur.human_team_id) {
+        cancelDraftClockTimer();
+        return;
+      }
+      cancelDraftClockTimer();
+      autoPickOnTimeout().catch(() => {});
+    }
+  }, 1000);
+}
+
+function tickDraftClock() {
+  const node = $('#draft-clock-readout');
+  if (!node) return;
+  const s = state.draftClockSec ?? 90;
+  node.textContent = `${s}s`;
+  let stt = 'normal';
+  if (s <= 10) stt = 'critical';
+  else if (s <= 30) stt = 'warn';
+  node.dataset.state = stt;
+}
+
+async function autoPickOnTimeout() {
+  // Prefer the top recommendation if available; otherwise grab the highest
+  // fppg available player from the current draft state.
+  let pid = null;
+  try {
+    const recos = state.draftRecos?.recos;
+    if (Array.isArray(recos) && recos.length) pid = recos[0].player_id;
+  } catch {}
+  if (pid == null) {
+    try {
+      const r = await api('/api/players?available=true&sort=total_fp&limit=1');
+      if (Array.isArray(r) && r.length) pid = r[0].id;
+    } catch {}
+  }
+  if (pid == null) { toast('時間到，但找不到可選球員', 'error'); return; }
+  toast('⏰ 時間到，自動選 BPA', 'info');
+  await onDraftPlayer(pid);
 }
 
 function scheduleDraftAutoAdvance() {
@@ -889,7 +1042,7 @@ function injuryPillHtml(inj) {
   const label = inj.status === 'out' ? 'OUT' : 'DTD';
   const days = inj.return_in_days > 0 ? ` ${inj.return_in_days}d` : '';
   const title = `${label}${inj.return_in_days > 0 ? `，預計 ${inj.return_in_days} 天後復出` : ''}${inj.note ? '：' + inj.note : ''}`;
-  return ` <span class="pill ${kind}" style="font-size:9px; padding:1px 6px;" title="${escapeHtml(title)}">${label}${days}</span>`;
+  return ` <span class="pill ${kind}" style="font-size: 12px; padding:1px 6px;" title="${escapeHtml(title)}">${label}${days}</span>`;
 }
 
 async function renderTeamsView(root) {
@@ -975,17 +1128,17 @@ async function renderTeamBody() {
   const loss = team.losses != null ? team.losses : (team.record?.losses ?? null);
   const recordStr = (win != null && loss != null) ? `${win}-${loss}` : null;
   const overrideBadge = has_lineup_override
-    ? '<span class="pill warn" style="font-size:10px;" title="手動設定陣容">手動陣容</span>'
-    : '<span class="pill" style="font-size:10px;" title="自動最佳化">自動陣容</span>';
+    ? '<span class="pill warn" style="font-size: 12px;" title="手動設定陣容">手動陣容</span>'
+    : '<span class="pill" style="font-size: 12px;" title="自動最佳化">自動陣容</span>';
 
   const summary = el('div', { class: 'card card-pad' });
   summary.innerHTML = `
     <div style="display:flex; align-items:center; gap: var(--s-3); flex-wrap:wrap; margin-bottom: var(--s-3);">
       <span style="font-size: var(--fs-lg); font-weight: 600;">${escapeHtml(team.name)}</span>
-      ${isHuman ? '<span class="pill accent" style="font-size:10px;">你</span>' : ''}
+      ${isHuman ? '<span class="pill accent" style="font-size: 12px;">你</span>' : ''}
       ${isHuman && seasonStarted ? overrideBadge : ''}
       ${gmName ? `<span style="color:var(--ink-3); font-size: var(--fs-sm);">GM：${escapeHtml(gmName)}</span>` : ''}
-      ${recordStr ? `<span class="pill" style="font-size:10px;">W-L ${recordStr}</span>` : ''}
+      ${recordStr ? `<span class="pill" style="font-size: 12px;">W-L ${recordStr}</span>` : ''}
     </div>
     ${persona_desc ? `<div style="color:var(--ink-2); font-size: var(--fs-sm); margin-bottom: var(--s-3);">${escapeHtml(persona_desc)}</div>` : ''}
     <div style="display:flex; gap: var(--s-5); flex-wrap:wrap; color:var(--ink-2); font-size: var(--fs-sm);">
@@ -1366,7 +1519,7 @@ async function renderFaView(root) {
       el('div', { class: 'view-sub' }, '簽入想要的球員並釋出一位替換'),
     ),
     el('div', { class: 'view-actions' },
-      el('div', { id: 'fa-quota-box', class: 'pill', style: 'font-size:11px;' }, '—'),
+      el('div', { id: 'fa-quota-box', class: 'pill', style: 'font-size: 12px;' }, '—'),
     ),
   );
   root.append(head);
@@ -1496,7 +1649,7 @@ async function renderFaTable() {
   const canSign = !!(state.draft && state.draft.is_complete);
   const body = players.map((p) => {
     const injBadge = p.injury && p.injury.status !== 'healthy'
-      ? ` <span class="pill bad" style="font-size:9px; padding:1px 6px;">${p.injury.status === 'out' ? 'OUT' : 'DTD'}</span>`
+      ? ` <span class="pill bad" style="font-size: 12px; padding:1px 6px;">${p.injury.status === 'out' ? 'OUT' : 'DTD'}</span>`
       : '';
     return `<tr>
       <td><b>${escapeHtml(p.name)}</b>${injBadge}</td>
@@ -1567,7 +1720,7 @@ function pickDropDialog(addPlayer, roster) {
         <input type="radio" name="fa-drop-pid" value="${p.id}" ${i === 0 ? 'checked' : ''}>
         <span style="flex:1;"><b>${escapeHtml(p.name)}</b> <span class="pos-tag" data-pos="${escapeHtml(p.pos || '')}" style="margin-left:6px;">${escapeHtml(p.pos || '')}</span></span>
         <span style="color:var(--ink-3); font-family:var(--mono); font-size: var(--fs-xs);">FPPG ${fppg(p.fppg)}</span>
-        ${i === 0 ? '<span class="pill accent" style="font-size:9px;">建議</span>' : ''}
+        ${i === 0 ? '<span class="pill accent" style="font-size: 12px;">建議</span>' : ''}
       </label>
     `).join('');
 
@@ -2257,7 +2410,7 @@ function renderStandingsSubV2(container) {
     const rowCls = isYou ? 'you' : '';
     return `<tr class="${rowCls}">
       <td><span class="rank-pill ${i <= 2 ? 'top-' + (i + 1) : ''}">${i + 1}</span></td>
-      <td class="name"><b>${escapeHtml(r.name)}</b>${isYou ? ' <span class="pill accent" style="font-size:10px;">YOU</span>' : ''}</td>
+      <td class="name"><b>${escapeHtml(r.name)}</b>${isYou ? ' <span class="pill accent" style="font-size: 12px;">YOU</span>' : ''}</td>
       <td class="num"><b>${w}-${l}</b></td>
       <td class="num">${pct}</td>
       <td class="num">${gb}</td>
@@ -2320,8 +2473,8 @@ function buildPlayoffBracketV2(rows) {
     ` },
       el('span', { style: 'font-family:var(--mono); color:var(--ink-3); margin-right: 6px;' }, `#${s.seed}`),
       el('span', {}, s.name),
-      isHuman ? el('span', { class: 'pill accent', style: 'margin-left:6px; font-size:9px;' }, 'YOU') : null,
-      el('span', { style: 'margin-left:auto; color:var(--ink-3); font-family:var(--mono); font-size:10px;' }, ` ${s.record}`),
+      isHuman ? el('span', { class: 'pill accent', style: 'margin-left:6px; font-size: 12px;' }, 'YOU') : null,
+      el('span', { style: 'margin-left:auto; color:var(--ink-3); font-family:var(--mono); font-size: 12px;' }, ` ${s.record}`),
     );
   };
 
@@ -2642,7 +2795,7 @@ async function renderTradesPlaceholder(container) {
     <td>${escapeHtml(teamNameOf(t.from_team))}</td>
     <td>↔</td>
     <td>${escapeHtml(teamNameOf(t.to_team))}</td>
-    <td><span class="pill" style="font-size:10px;">${escapeHtml(t.status)}</span></td>
+    <td><span class="pill" style="font-size: 12px;">${escapeHtml(t.status)}</span></td>
   </tr>`).join('');
   const card = el('div', { class: 'card' },
     el('div', { class: 'card-header' }, el('h3', {}, `近期交易（${hist.length}）`)),
@@ -3531,10 +3684,10 @@ function buildTradeActionsV2(trade) {
     const voted = Array.isArray(trade.veto_votes) && trade.veto_votes.includes(humanId);
     const total = Array.isArray(trade.veto_votes) ? trade.veto_votes.length : 0;
     actions.append(
-      el('span', { class: 'pill', style: 'font-size:10px;' },
+      el('span', { class: 'pill', style: 'font-size: 12px;' },
         `否決票 ${total} / ${threshold}`),
       voted
-        ? el('span', { class: 'pill warn', style: 'font-size:10px;' }, '✓ 你已投票')
+        ? el('span', { class: 'pill warn', style: 'font-size: 12px;' }, '✓ 你已投票')
         : el('button', { class: 'btn sm ghost', onclick: () => onVetoTradeV2(trade.id) }, '否決'),
     );
     return actions;

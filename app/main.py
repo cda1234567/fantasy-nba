@@ -60,7 +60,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.35"
+APP_VERSION = "v26.04.24.36"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -1017,12 +1017,98 @@ def get_team(team_id: int):
     }
 
 
+@app.get("/api/players/{player_id}/recent_games")
+def player_recent_games(player_id: int, n: int = Query(7, ge=1, le=20)):
+    """M9: return up to N recent games for a player.
+
+    Tries in-season game_logs first (most recent week/day desc). If the season
+    hasn't run that long (or the player wasn't on a roster), falls back to the
+    SQLite real-history DB so the FA sign modal still has signal.
+    """
+    if player_id not in _get_draft().players_by_id:
+        raise HTTPException(404, "Unknown player_id")
+    player = _get_draft().players_by_id[player_id]
+    out = {"player_id": player_id, "player_name": player.name, "n": n, "source": "none", "games": []}
+
+    # Source 1: in-season game logs (per-fantasy-day stats)
+    season = _load_or_init_season()
+    if season is not None and season.game_logs:
+        logs = [g for g in season.game_logs if g.player_id == player_id and g.played]
+        logs.sort(key=lambda g: (g.week, g.day), reverse=True)
+        if logs:
+            out["source"] = "season"
+            out["games"] = [
+                {
+                    "week": g.week,
+                    "day": g.day,
+                    "fp": round(float(g.fp), 1),
+                    "pts": round(float(g.pts), 1),
+                    "reb": round(float(g.reb), 1),
+                    "ast": round(float(g.ast), 1),
+                    "stl": round(float(g.stl), 1),
+                    "blk": round(float(g.blk), 1),
+                    "to": round(float(g.to), 1),
+                }
+                for g in logs[:n]
+            ]
+            return out
+
+    # Source 2: real-history DB scan back from a late-season day. We sweep
+    # backwards from day 200 (covers full regular season) and grab the latest
+    # N played games. Only runs when the DB is available; otherwise empty list.
+    settings = _current_settings()
+    season_year = getattr(settings, "season_year", None) if settings else None
+    from .real_games import db_available as _real_db_available, real_game_for as _rgf
+    if season_year and _real_db_available():
+        weights = settings.scoring_weights if settings else None
+        games: list[dict] = []
+        for day in range(200, 0, -1):
+            row = _rgf(player_id, season_year, day)
+            if not row:
+                continue
+            fp = 0.0
+            if weights:
+                try:
+                    fp = (
+                        row["pts"] * weights.pts
+                        + row["reb"] * weights.reb
+                        + row["ast"] * weights.ast
+                        + row["stl"] * weights.stl
+                        + row["blk"] * weights.blk
+                        + row["tov"] * weights.to
+                    )
+                except Exception:
+                    fp = 0.0
+            games.append({
+                "day": day,
+                "week": (day - 1) // 7 + 1,
+                "fp": round(fp, 1),
+                "pts": float(row["pts"]),
+                "reb": float(row["reb"]),
+                "ast": float(row["ast"]),
+                "stl": float(row["stl"]),
+                "blk": float(row["blk"]),
+                "to": float(row["tov"]),
+                "minutes": float(row["minutes"]),
+            })
+            if len(games) >= n:
+                break
+        if games:
+            out["source"] = "real"
+            out["games"] = games
+    return out
+
+
 def _maybe_draft_commentary(pick) -> list[dict]:
     """Return 0 or 1 AI GM commentary entries for a draft pick (25% chance).
 
     The commentator must be an AI team that is not the picker. Falls back to
     heuristic one-liners silently on any error — this is best-effort flavour
     and must never block a pick from being recorded.
+
+    m6: tag each entry with a coarse `kind` (reach/steal/fit/snark) inferred
+    from the pick context so the UI can colour the chip and let the user
+    filter by category.
     """
     if pick is None:
         return []
@@ -1040,10 +1126,23 @@ def _maybe_draft_commentary(pick) -> list[dict]:
         text = ai_gm.pick_commentary(pick, _get_draft(), speaker)
         if not text:
             return []
+        # m6: classify commentary kind from pick.reason / overall vs round.
+        # Order matters: reach / steal first (data-driven), fit (position
+        # talk), then snark fallback.
+        reason_l = (pick.reason or "").lower()
+        text_l = (text or "").lower()
+        kind = "snark"
+        if "reach" in reason_l or "reach" in text_l or "冒險" in text or "高估" in text:
+            kind = "reach"
+        elif "steal" in reason_l or "steal" in text_l or "撿到" in text or "便宜" in text or "好價" in text:
+            kind = "steal"
+        elif any(tag in text for tag in ("PG", "SG", "SF", "PF", " C ", "需求", "陣容", "搭配")):
+            kind = "fit"
         return [{
             "gm_team_id": speaker.id,
             "gm_team_name": speaker.name,
             "text": text,
+            "kind": kind,
             "ts": _time.time(),
         }]
     except Exception:
