@@ -60,7 +60,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.34"
+APP_VERSION = "v26.04.24.35"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -1178,11 +1178,60 @@ def season_advance_day_endpoint(req: AdvanceRequest = AdvanceRequest(), _: bool 
     state = _require_season()
     settings = _current_settings()
     lid = _current_league_var.get()
+    pre_injured_ids = set(state.injuries.keys()) if state.injuries else set()
     with _league_mutation_lock(lid):
         state = season_advance_day(
             _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
         )
-    return state.model_dump()
+    payload = state.model_dump()
+    # G3: append a `recap` block so the UI can show a day summary instead of
+    # a one-line toast. Top 3 performers (by FP) + new injuries this day.
+    try:
+        draft = _get_draft()
+        players_by_id = {p.id: p for p in (draft.players or [])}
+        teams_by_id = {t.id: t for t in (draft.teams or [])}
+        today = state.current_day
+        todays_logs = [g for g in state.game_logs if g.day == today and g.played]
+        top = sorted(todays_logs, key=lambda g: g.fp, reverse=True)[:3]
+        post_injured_ids = set(state.injuries.keys()) if state.injuries else set()
+        new_injury_ids = post_injured_ids - pre_injured_ids
+        returned_ids = pre_injured_ids - post_injured_ids
+        payload["recap"] = {
+            "day": today,
+            "week": state.current_week,
+            "top_performers": [
+                {
+                    "player_id": g.player_id,
+                    "player_name": getattr(players_by_id.get(g.player_id), "name", "?"),
+                    "team_name": getattr(teams_by_id.get(g.team_id), "name", "?"),
+                    "fp": round(g.fp, 1),
+                    "pts": round(g.pts, 1),
+                    "reb": round(g.reb, 1),
+                    "ast": round(g.ast, 1),
+                }
+                for g in top
+            ],
+            "new_injuries": [
+                {
+                    "player_id": pid,
+                    "player_name": getattr(players_by_id.get(pid), "name", "?"),
+                    "status": getattr(state.injuries.get(pid), "status", "?"),
+                    "note": getattr(state.injuries.get(pid), "note", ""),
+                }
+                for pid in list(new_injury_ids)[:5]
+            ],
+            "returned_from_injury": [
+                {
+                    "player_id": pid,
+                    "player_name": getattr(players_by_id.get(pid), "name", "?"),
+                }
+                for pid in list(returned_ids)[:5]
+            ],
+        }
+    except Exception:
+        # Recap is best-effort; never break advance-day on a recap glitch.
+        pass
+    return payload
 
 
 @app.post("/api/season/advance-week")

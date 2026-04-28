@@ -44,7 +44,7 @@ class LeagueSettings(BaseModel):
     )
     regular_season_weeks: int = Field(20, ge=2, le=40)
     playoff_teams: int = Field(6, ge=0, le=16)
-    trade_deadline_week: Optional[int] = Field(None, ge=1, le=40)
+    trade_deadline_week: Optional[int] = Field(15, ge=1, le=40)
     ai_trade_frequency: Literal["off", "low", "normal", "high"] = "normal"
     ai_trade_style: Literal["conservative", "balanced", "aggressive"] = "balanced"
     veto_threshold: int = Field(3, ge=0, le=16)

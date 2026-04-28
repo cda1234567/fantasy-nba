@@ -88,7 +88,7 @@ const state = {
   activityFilter: 'all',        // all | trade | fa | injury | milestone
 };
 
-const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup'];
+const VALID_ROUTES = ['draft', 'teams', 'fa', 'league', 'schedule', 'setup', 'onboarding'];
 
 // ---------------------------------------------------------------- defaults
 const DEFAULT_TEAM_NAMES = [
@@ -109,7 +109,7 @@ const DEFAULT_SETTINGS = {
   scoring_weights: { pts: 1, reb: 1.2, ast: 1.5, stl: 2.5, blk: 2.5, to: -1 },
   regular_season_weeks: 20,
   playoff_teams: 6,
-  trade_deadline_week: null,
+  trade_deadline_week: 15,
   ai_trade_frequency: 'normal',
   ai_trade_style: 'balanced',
   veto_threshold: 3,
@@ -302,6 +302,7 @@ function render() {
   main.innerHTML = '';
 
   switch (route) {
+    case 'onboarding': renderOnboardingView(main); break;
     case 'setup':    renderSetupView(main);    break;
     case 'draft':    renderDraftView(main);    break;
     case 'teams':    renderTeamsView(main);    break;
@@ -1102,19 +1103,26 @@ function buildDraftHero(d) {
   const pct = Math.min(100, Math.max(0, ((d.current_overall - 1) / Math.max(1, totalPicks)) * 100));
 
   if (d.is_complete) {
+    // G2: show full draft summary (grades + best/worst pick) instead of a
+    // bare "go to league" CTA. The 進入賽季 button starts the season inline.
     hero.classList.add('complete');
+    const summary = buildDraftSummaryBlock(d);
     hero.append(
       el('div', { class: 'dh-main' },
         el('div', { class: 'dh-badge' }, '✅ 選秀完成'),
-        el('div', { class: 'dh-who' }, '所有順位已選完'),
-        el('div', { class: 'dh-sub' }, `${totalPicks} 順位全部完成。前往聯盟頁面開始賽季。`),
+        el('div', { class: 'dh-who' }, '8 隊選秀總結'),
+        el('div', { class: 'dh-sub' }, `${totalPicks} 順位全部完成。下方為各隊評分與亮點。`),
         el('div', { class: 'dh-actions' },
-          el('a', { class: 'btn primary', href: '#league' }, '🏁 前往聯盟'),
+          el('button', {
+            class: 'btn primary',
+            onclick: onMaybeAutoStartSeason,
+          }, '🏁 進入賽季'),
         ),
       ),
       el('div', { class: 'dh-progress' },
         el('div', { class: 'dh-progress-fill', style: 'width: 100%' }),
       ),
+      summary,
     );
     return hero;
   }
@@ -4711,9 +4719,76 @@ async function onAdvanceDay() {
     await refreshState();
     refreshLogs();
     render();
-    const summary = r?.summary || r?.message || '已推進一天';
-    toast(summary, 'success');
+    // G3: show a day-recap modal (top performers + injuries) when backend
+    // provides one; fallback to toast for older servers.
+    if (r && r.recap) showDayRecapDialog(r.recap);
+    else toast(r?.summary || r?.message || '已推進一天', 'success');
   }));
+}
+
+// G3: render the day recap as a friendly modal dialog.
+function showDayRecapDialog(recap) {
+  const tops = Array.isArray(recap.top_performers) ? recap.top_performers : [];
+  const injuries = Array.isArray(recap.new_injuries) ? recap.new_injuries : [];
+  const returned = Array.isArray(recap.returned_from_injury) ? recap.returned_from_injury : [];
+
+  const sections = [];
+  sections.push(el('div', { class: 'day-recap-section' },
+    el('h3', {}, '🔥 今日表現'),
+    tops.length ? (() => {
+      const ul = el('ul', { class: 'day-recap-list' });
+      for (const p of tops) {
+        ul.append(el('li', {},
+          el('span', { class: 'drl-fp' }, `${p.fp}`),
+          el('span', {}, ` ${p.player_name}`),
+          el('span', { class: 'drl-meta' }, ` · ${p.team_name} · ${p.pts}p ${p.reb}r ${p.ast}a`),
+        ));
+      }
+      return ul;
+    })() : el('div', { class: 'drl-meta' }, '今天沒有比賽'),
+  ));
+
+  if (injuries.length) {
+    sections.push(el('div', { class: 'day-recap-section' },
+      el('h3', {}, '🚑 新傷兵'),
+      (() => {
+        const ul = el('ul', { class: 'day-recap-list' });
+        for (const p of injuries) {
+          ul.append(el('li', {},
+            el('span', {}, `${p.player_name}`),
+            el('span', { class: 'drl-meta' }, ` · ${p.status}${p.note ? ' · ' + p.note : ''}`),
+          ));
+        }
+        return ul;
+      })(),
+    ));
+  }
+
+  if (returned.length) {
+    sections.push(el('div', { class: 'day-recap-section' },
+      el('h3', {}, '✅ 傷兵歸隊'),
+      (() => {
+        const ul = el('ul', { class: 'day-recap-list' });
+        for (const p of returned) ul.append(el('li', {}, p.player_name));
+        return ul;
+      })(),
+    ));
+  }
+
+  // Reuse the matchup dialog shell (already in DOM).
+  const dlg = $('#dlg-matchup');
+  const body = $('#matchup-body');
+  const title = $('#matchup-title');
+  if (!dlg || !body || !title) {
+    toast(`已推進到第 ${recap.day} 天`, 'success');
+    return;
+  }
+  title.textContent = `第 ${recap.day} 天 · 第 ${recap.week} 週 戰況`;
+  body.innerHTML = '';
+  const wrap = el('div', { class: 'day-recap-card' });
+  for (const s of sections) wrap.append(s);
+  body.append(wrap);
+  try { dlg.showModal(); } catch {}
 }
 
 async function onAdvanceWeek() {
@@ -5189,6 +5264,26 @@ function bindGlobalUI() {
 
   const newLeagueBtn = $('#btn-new-league-create');
   if (newLeagueBtn) newLeagueBtn.addEventListener('click', onCreateLeague);
+
+  // M1: header CTAs — 建立 / 加入(分享 URL) so first-timers see the entry points.
+  const headerCreate = $('#btn-header-create-league');
+  if (headerCreate) headerCreate.addEventListener('click', () => {
+    const dlg = $('#dlg-new-league');
+    const inp = $('#new-league-id');
+    if (inp) inp.value = '';
+    try { dlg.showModal(); setTimeout(() => inp && inp.focus(), 50); } catch {}
+  });
+  const headerJoin = $('#btn-header-join-league');
+  if (headerJoin) headerJoin.addEventListener('click', () => {
+    const url = window.prompt('貼上朋友給你的分享 URL（含 ?league=...&t=...）：');
+    if (!url) return;
+    try {
+      const u = new URL(url, location.origin);
+      location.href = u.pathname + u.search + (u.hash || '#league');
+    } catch {
+      toast('URL 格式不正確', 'error');
+    }
+  });
   // Enter in the league-ID field submits "建立並切換" instead of the form's
   // default action (which would just close the dialog via method="dialog").
   const newLeagueInput = $('#new-league-id');
@@ -5395,6 +5490,126 @@ async function refreshStateWithRetry(maxAttempts = 3) {
   throw lastErr;
 }
 
+// G1: Onboarding splash for first-time visitors with no leagues.
+function renderOnboardingView(root) {
+  const wrap = el('section', { class: 'onboarding-splash' });
+  wrap.append(
+    el('h1', { class: 'ob-title' }, 'NBA Fantasy 模擬器'),
+    el('p', { class: 'ob-sub' }, '8 隊聯盟，AI 隊友每天上線。先建一個聯盟，或用朋友給你的分享連結加入。'),
+    el('div', { class: 'ob-actions' },
+      el('button', {
+        class: 'btn primary big',
+        onclick: () => {
+          const dlg = $('#dlg-new-league');
+          const inp = $('#new-league-id');
+          if (inp) inp.value = '';
+          try { dlg.showModal(); setTimeout(() => inp && inp.focus(), 50); } catch {}
+        },
+      }, '🏗  建立新聯盟'),
+      el('button', {
+        class: 'btn ghost big',
+        onclick: () => {
+          const url = window.prompt('貼上朋友給你的分享 URL（含 ?league=...&t=...）：');
+          if (!url) return;
+          try {
+            const u = new URL(url, location.origin);
+            location.href = u.pathname + u.search + (u.hash || '#league');
+          } catch {
+            toast('URL 格式不正確', 'error');
+          }
+        },
+      }, '🔗  貼上分享 URL 加入'),
+    ),
+    el('p', { class: 'ob-hint' }, '建好後會走 3 步設定，問你幾個問題就能開選秀。'),
+  );
+  root.append(wrap);
+}
+
+// G2: Per-team draft summary block (grades + best/worst picks).
+// Heuristic-only: ranks teams by total roster FPPG, grades by rank.
+function buildDraftSummaryBlock(d) {
+  const wrap = el('section', { class: 'draft-summary' });
+  wrap.append(el('h2', { class: 'ds-head' }, '🎓 選秀評分'));
+
+  // Build {teamId -> [{pick, fppg, name, overall}]} map.
+  const picksByTeam = new Map();
+  for (const p of (d.picks || [])) {
+    if (!picksByTeam.has(p.team_id)) picksByTeam.set(p.team_id, []);
+    const cached = state.playerCache?.get(p.player_id);
+    picksByTeam.get(p.team_id).push({
+      overall: p.overall,
+      name: p.player_name,
+      fppg: cached?.fppg ?? null,
+    });
+  }
+
+  // Compute total FPPG per team (skip nulls).
+  const teamScores = (d.teams || []).map((t) => {
+    const picks = picksByTeam.get(t.id) || [];
+    const totalFppg = picks.reduce((s, p) => s + (p.fppg || 0), 0);
+    return { team: t, picks, totalFppg };
+  });
+
+  // Grade by rank: top 1=A+, 2=A, 3=B+, 4=B, 5=C+, 6=C, 7=D, 8=F (and so on).
+  const sortedByScore = [...teamScores].sort((a, b) => b.totalFppg - a.totalFppg);
+  const gradeAt = (rank, n) => {
+    const grades = ['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F'];
+    if (n <= grades.length) return grades[Math.min(rank, grades.length - 1)];
+    const idx = Math.floor((rank / n) * grades.length);
+    return grades[Math.min(idx, grades.length - 1)];
+  };
+  const gradeMap = new Map();
+  sortedByScore.forEach((entry, idx) => gradeMap.set(entry.team.id, gradeAt(idx, sortedByScore.length)));
+
+  // Best/worst pick per team = highest/lowest FPPG when fppg known.
+  const grid = el('div', { class: 'ds-grid' });
+  for (const entry of teamScores) {
+    const grade = gradeMap.get(entry.team.id) || '-';
+    const sortedPicks = [...entry.picks].sort((a, b) => (b.fppg ?? 0) - (a.fppg ?? 0));
+    const best = sortedPicks[0];
+    const worst = sortedPicks[sortedPicks.length - 1];
+    const card = el('div', { class: `ds-card grade-${grade.replace('+', 'plus').toLowerCase()}` },
+      el('div', { class: 'ds-card-head' },
+        el('span', { class: 'ds-team-name' }, entry.team.name + (entry.team.is_human ? ' (你)' : '')),
+        el('span', { class: 'ds-grade' }, grade),
+      ),
+      el('div', { class: 'ds-card-body' },
+        best ? el('div', { class: 'ds-pick-row' },
+          el('span', { class: 'ds-pick-label' }, '最佳'),
+          el('span', { class: 'ds-pick-name' }, best.name || '—'),
+          best.fppg != null ? el('span', { class: 'ds-pick-fppg' }, `${best.fppg.toFixed(1)} FP`) : null,
+        ) : null,
+        worst && worst !== best ? el('div', { class: 'ds-pick-row dim' },
+          el('span', { class: 'ds-pick-label' }, '最弱'),
+          el('span', { class: 'ds-pick-name' }, worst.name || '—'),
+          worst.fppg != null ? el('span', { class: 'ds-pick-fppg' }, `${worst.fppg.toFixed(1)} FP`) : null,
+        ) : null,
+        el('div', { class: 'ds-pick-row dim' },
+          el('span', { class: 'ds-pick-label' }, '隊伍 FP'),
+          el('span', { class: 'ds-pick-name' }, entry.totalFppg.toFixed(1)),
+        ),
+      ),
+    );
+    grid.append(card);
+  }
+  wrap.append(grid);
+  return wrap;
+}
+
+// G2: 進入賽季 single-button — start season then jump to league.
+async function onMaybeAutoStartSeason() {
+  await mutate(async () => {
+    try {
+      await api('/api/season/start', { method: 'POST' });
+    } catch (e) {
+      // If already started, just navigate; otherwise rethrow for toast.
+      if (!/already|started|409/i.test(e.message || '')) throw e;
+    }
+    await refreshState();
+    location.hash = 'league';
+  }, '賽季已開始');
+}
+
 async function init() {
   // B1: process share-link before any API call so the cookie is set first.
   await consumeShareLink();
@@ -5419,12 +5634,22 @@ async function init() {
     state.draftDisplayMode = leagueSettings.draft_display_mode || 'prev_full';
   }
 
-  // If setup not complete, redirect to #setup regardless of current hash
+  // G1: Smart boot routing — never dump first-timers on a blank draft page.
+  // No leagues at all → onboarding splash with create / join CTAs.
+  if (!state.leagues || state.leagues.length === 0) {
+    if (currentRoute() !== 'onboarding') {
+      location.hash = 'onboarding';
+      return;
+    }
+    render();
+    return;
+  }
+
+  // Have a league but setup not complete → setup wizard.
   if (leagueStatus && !leagueStatus.setup_complete) {
     _setupForm = makeDefaultSetupForm(leagueSettings);
     if (currentRoute() !== 'setup') {
       location.hash = 'setup';
-      // hashchange will trigger render()
       return;
     }
   }
@@ -5434,7 +5659,28 @@ async function init() {
     await refreshStateWithRetry(3);
   } catch (e) {
     toast(`載入狀態失敗：${e.message}`, 'error', 6000);
-    // Still render (setup page doesn't need draft state)
+  }
+
+  // G1: route to the right view based on draft + season state.
+  if (leagueStatus && leagueStatus.setup_complete) {
+    const d = state.draft;
+    const seasonStarted = !!state.season?.active;
+    const seasonOver = state.standings?.champion != null;
+    // Only auto-redirect if user is sitting on a default-ish hash.
+    const currentHash = (location.hash || '').replace(/^#\/?/, '').trim();
+    const wantsDefault = !currentHash || currentHash === 'draft' || currentHash === 'onboarding';
+    if (wantsDefault) {
+      if (d && !d.is_complete) {
+        location.hash = 'draft';
+      } else if (seasonOver || seasonStarted) {
+        location.hash = 'league';
+      } else {
+        // draft complete but season not yet started — stay on draft so the
+        // summary card shows up with the 進入賽季 button.
+        location.hash = 'draft';
+      }
+      return;
+    }
   }
   render();
 }
