@@ -28,8 +28,18 @@ def _connect() -> sqlite3.Connection | None:
         return None
     with _lock:
         if _conn is None:
-            _conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
+            try:
+                _conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
+            except sqlite3.Error:
+                return None
     return _conn
+
+
+def db_available() -> bool:
+    """BUG #7 helper: distinguish "DB unavailable" from "player has no game".
+    season._sample_game uses this so DB-absent days fall back to gauss instead
+    of getting stamped as DNP and tanking everyone's score."""
+    return _connect() is not None
 
 
 def _season_year_int(season_str: str | None) -> int | None:
@@ -71,34 +81,43 @@ def real_game_for(person_id: int, season_str: str | None, fantasy_day: int) -> d
 
     Mapping: fantasy day 1 = season's first game date; day N = + (N-1) days.
     Choose the highest-minute game that day if the player played twice (rare).
+
+    BUG #8: any sqlite/type error inside is caught and surfaced as None so
+    season._sample_game treats it like a missing row and the daily sim
+    doesn't crash on a single bad DB read.
     """
     if fantasy_day < 1:
         return None
-    season_year = _season_year_int(season_str)
-    if season_year is None:
+    try:
+        season_year = _season_year_int(season_str)
+        if season_year is None:
+            return None
+        conn = _connect()
+        if conn is None:
+            return None
+        start = _season_start(season_year)
+        if start is None:
+            return None
+        target = (start + timedelta(days=fantasy_day - 1)).isoformat()
+        row = conn.execute(
+            """SELECT pts, reb, ast, stl, blk, tov, minutes
+               FROM player_games
+               WHERE person_id = ? AND game_date = ? AND season_year = ?
+               ORDER BY minutes DESC LIMIT 1""",
+            (person_id, target, season_year),
+        ).fetchone()
+        if not row:
+            return None
+        return {
+            "pts": int(row[0] or 0),
+            "reb": int(row[1] or 0),
+            "ast": int(row[2] or 0),
+            "stl": int(row[3] or 0),
+            "blk": int(row[4] or 0),
+            "tov": int(row[5] or 0),
+            "minutes": float(row[6] or 0),
+        }
+    except Exception as exc:
+        import sys
+        print(f"[real_games] real_game_for failed person={person_id} day={fantasy_day}: {exc!r}", file=sys.stderr)
         return None
-    conn = _connect()
-    if conn is None:
-        return None
-    start = _season_start(season_year)
-    if start is None:
-        return None
-    target = (start + timedelta(days=fantasy_day - 1)).isoformat()
-    row = conn.execute(
-        """SELECT pts, reb, ast, stl, blk, tov, minutes
-           FROM player_games
-           WHERE person_id = ? AND game_date = ? AND season_year = ?
-           ORDER BY minutes DESC LIMIT 1""",
-        (person_id, target, season_year),
-    ).fetchone()
-    if not row:
-        return None
-    return {
-        "pts": int(row[0] or 0),
-        "reb": int(row[1] or 0),
-        "ast": int(row[2] or 0),
-        "stl": int(row[3] or 0),
-        "blk": int(row[4] or 0),
-        "tov": int(row[5] or 0),
-        "minutes": float(row[6] or 0),
-    }

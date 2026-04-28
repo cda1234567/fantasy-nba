@@ -3,15 +3,24 @@ from __future__ import annotations
 
 import asyncio
 import random
+import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import TYPE_CHECKING, Optional
 
 from .injuries import roll_daily_injuries, roll_preseason_injuries, tick_injuries
 from .llm import DEFAULT_MODEL_ID, OPENROUTER_MODELS
 from .models import GameLog, Matchup, Player, SeasonState
-from .real_games import real_game_for
+from .real_games import real_game_for, db_available as _real_db_available
 from .scoring import compute_fppg
 from .trades import TradeManager
+
+
+# BUG #1: Two concurrent advance-day requests would both read the same
+# current_day, both append game logs, then second save_season would clobber
+# the first. Per-process lock around advance_day serialises sims for any
+# league running in this worker. Same lock guards sim_playoffs / advance_week
+# / sim_to_playoffs so playoff and regular sims can't race either.
+_season_lock = threading.Lock()
 
 if TYPE_CHECKING:
     from .draft import DraftState
@@ -31,7 +40,12 @@ LINEUP_SIZE = 10            # default starters; overridden by settings
 # Greedy assign_slots still respects strict-before-combo: PG/SG fill before G,
 # SF/PF before F, and all single-position slots before UTIL.
 LINEUP_SLOTS: list[str] = [
-    "PG", "SG", "G", "SF", "PF", "F", "C", "C", "UTIL", "UTIL"
+    "PG", "SG", "G", "SF", "PF", "F", "C", "C", "UTIL", "UTIL",
+    # BUG #6: settings.starters_per_day allows 1..15 but LINEUP_SLOTS used to
+    # max out at 10, so the 11th-15th starters had no slot definition and got
+    # dropped silently by default_lineup. Extend with extra UTIL slots so
+    # leagues with bigger starting rosters fill correctly.
+    "UTIL", "UTIL", "UTIL", "UTIL", "UTIL",
 ]
 SLOT_ELIGIBILITY: dict[str, set[str]] = {
     "PG":   {"PG"},
@@ -52,6 +66,29 @@ def _player_positions(pos: str) -> set[str]:
     return {p.strip().upper() for p in pos.replace(",", "/").split("/") if p.strip()}
 
 
+def _slot_pick_key(
+    pid: int,
+    players_by_id: dict[int, "Player"],
+    available_ids: list[int],
+) -> tuple[int, float]:
+    """Sort key for greedy slot assignment.
+
+    BUG #5: previous greedy sorted purely by -fppg, which let a 60 fppg dual
+    PG/SG eat the PG slot, leaving a 25 fppg pure PG with no home (G/UTIL
+    already taken by other guards) and the lineup_feasibility check would
+    falsely flag PG as unfilled. Fix: prefer players with FEWER eligible slots
+    among the still-available roster (strict positions first), then by -fppg
+    among equally constrained players. Pure PG beats dual PG/SG for the PG
+    slot; the dual player still has G/UTIL to fall back to.
+    """
+    player = players_by_id[pid]
+    pos_set = _player_positions(player.pos)
+    # Count how many of the remaining slots this player is eligible for.
+    # Players with narrower position eligibility get scheduled first.
+    pos_count = len(pos_set) if pos_set else 99
+    return (pos_count, -player.fppg)
+
+
 def check_lineup_feasibility(
     player_ids: list[int],
     players_by_id: dict[int, "Player"],
@@ -70,7 +107,7 @@ def check_lineup_feasibility(
             pid for pid in valid_ids
             if pid not in used and (_player_positions(players_by_id[pid].pos) & eligible_pos)
         ]
-        candidates.sort(key=lambda pid: players_by_id[pid].fppg, reverse=True)
+        candidates.sort(key=lambda pid: _slot_pick_key(pid, players_by_id, valid_ids))
         if candidates:
             used.add(candidates[0])
         else:
@@ -84,13 +121,15 @@ def assign_slots(
     slot_order: list[str] = LINEUP_SLOTS,
 ) -> list[dict]:
     """Greedy: fill stricter slots first; for each slot pick the best-eligible
-    unassigned player by FPPG. Returns [{slot, player_id|None}, ...] in slot_order.
+    unassigned player by (eligibility_count, -fppg). Returns
+    [{slot, player_id|None}, ...] in slot_order.
     """
     remaining = [pid for pid in player_ids if pid in players_by_id]
     slots: list[dict] = [{"slot": s, "player_id": None} for s in slot_order]
 
     # Fill strictness order: single-position slots first (already at front of slot_order),
     # then G/F (2-pos), then UTIL (any). slot_order is already in that order.
+    # Within a slot, prefer narrowly-eligible players (BUG #5 fix).
     used: set[int] = set()
     for i, slot_name in enumerate(slot_order):
         eligible_pos = SLOT_ELIGIBILITY.get(slot_name, set())
@@ -98,7 +137,7 @@ def assign_slots(
             pid for pid in remaining
             if pid not in used and (_player_positions(players_by_id[pid].pos) & eligible_pos)
         ]
-        candidates.sort(key=lambda pid: players_by_id[pid].fppg, reverse=True)
+        candidates.sort(key=lambda pid: _slot_pick_key(pid, players_by_id, remaining))
         if candidates:
             slots[i]["player_id"] = candidates[0]
             used.add(candidates[0])
@@ -115,18 +154,24 @@ def build_schedule(
 ) -> list[Matchup]:
     """Round-robin: `num_teams` teams over `regular_season_weeks` regular weeks.
     Uses the circle method.  Playoff matchups are appended in sim_playoffs().
-    """
-    if num_teams % 2:
-        raise ValueError("num_teams must be even")
 
-    teams = list(range(num_teams))
+    BUG #9: odd team counts used to raise ValueError, which crashed start_season
+    if a future settings change ever permitted odd num_teams. Auto-add a "bye"
+    sentinel team so the bracket builds; matchups against the bye are skipped.
+    """
+    # Bye dummy when odd: -1 is never a real team_id (team ids start at 0)
+    has_bye = bool(num_teams % 2)
+    teams = list(range(num_teams)) + ([-1] if has_bye else [])
+    n = len(teams)
     rounds: list[list[tuple[int, int]]] = []
-    n = num_teams
     arr = teams[:]
     for _ in range(n - 1):
         pairs: list[tuple[int, int]] = []
         for i in range(n // 2):
             a, b = arr[i], arr[n - 1 - i]
+            # Skip pairs containing the bye sentinel; that team has a bye week
+            if a == -1 or b == -1:
+                continue
             pairs.append((a, b))
         rounds.append(pairs)
         arr = [arr[0]] + [arr[-1]] + arr[1:-1]
@@ -213,25 +258,47 @@ def _sample_game(
         # date, otherwise treat as DNP. Don't fall back to gauss — that would
         # invent stats on days the player didn't actually play, which is
         # exactly what produced absurd lines like Duncan 37/21 on opener.
-        real = real_game_for(player.id, season_year, day)
-        if real is None or (real["minutes"] <= 0 and real["pts"] == 0 and real["reb"] == 0):
+        #
+        # BUG #7: previously real_game_for returning None always meant DNP,
+        # but None also fired when the SQLite DB file was missing — that made
+        # an entire season tally zero points if real_games DB went away.
+        # Distinguish DB-unavailable (fall back to gauss) from real DNP
+        # (return zeroed log) using db_available().
+        # BUG #8: real_game_for / DB lookup can throw on type errors or
+        # corrupted rows; treat any exception the same as DB-unavailable
+        # so the daily sim degrades gracefully instead of crashing.
+        try:
+            db_ok = _real_db_available()
+            real = real_game_for(player.id, season_year, day) if db_ok else None
+        except Exception as exc:
+            import sys
+            print(f"[real_games] lookup failed for player={player.id} day={day}: {exc!r}", file=sys.stderr)
+            db_ok = False
+            real = None
+
+        if not db_ok:
+            # DB missing/broken — fall through to gauss sampling below
+            pass
+        elif real is None or (real["minutes"] <= 0 and real["pts"] == 0 and real["reb"] == 0):
+            # DB present but player didn't play — real DNP
             return GameLog(
                 day=day, week=week, player_id=player.id, team_id=team_id,
                 played=False, pts=0, reb=0, ast=0, stl=0, blk=0, to=0, fp=0.0,
             )
-        dummy = Player(
-            id=player.id, name=player.name, team=player.team, pos=player.pos,
-            age=player.age, gp=player.gp, mpg=player.mpg,
-            pts=real["pts"], reb=real["reb"], ast=real["ast"],
-            stl=real["stl"], blk=real["blk"], to=real["tov"], fppg=0.0,
-        )
-        fp = round(compute_fppg(dummy, weights), 2)
-        return GameLog(
-            day=day, week=week, player_id=player.id, team_id=team_id,
-            played=True,
-            pts=real["pts"], reb=real["reb"], ast=real["ast"],
-            stl=real["stl"], blk=real["blk"], to=real["tov"], fp=fp,
-        )
+        else:
+            dummy = Player(
+                id=player.id, name=player.name, team=player.team, pos=player.pos,
+                age=player.age, gp=player.gp, mpg=player.mpg,
+                pts=real["pts"], reb=real["reb"], ast=real["ast"],
+                stl=real["stl"], blk=real["blk"], to=real["tov"], fppg=0.0,
+            )
+            fp = round(compute_fppg(dummy, weights), 2)
+            return GameLog(
+                day=day, week=week, player_id=player.id, team_id=team_id,
+                played=True,
+                pts=real["pts"], reb=real["reb"], ast=real["ast"],
+                stl=real["stl"], blk=real["blk"], to=real["tov"], fp=fp,
+            )
 
     # No season_year provided (current/active season without DB): gauss sim.
     play_prob = 0.9 if player.fppg > 0 else 0.5
@@ -428,9 +495,20 @@ def _set_lineups(
                     season.ai_models.get(t.id, DEFAULT_MODEL_ID),
                 )
                 futures_map[fut] = t.id
-            results_map: dict[int, dict] = {
-                futures_map[f]: f.result() for f in as_completed(futures_map)
-            }
+            # BUG #4: previously this was a dict-comp of f.result() which made
+            # any single future's exception/timeout abort the whole advance_day.
+            # Now: catch per-future and fall back to default_lineup so one slow
+            # AI never wedges the daily sim.
+            results_map: dict[int, dict] = {}
+            for f in as_completed(futures_map):
+                tid = futures_map[f]
+                try:
+                    results_map[tid] = f.result(timeout=60)
+                except Exception as exc:
+                    import traceback, sys
+                    print(f"[ai-lineup] team={tid} fallback to default: {exc!r}", file=sys.stderr)
+                    traceback.print_exc()
+                    results_map[tid] = {"used_api": False, "lineup": [], "excerpt": f"fallback: {exc!r}"[:300]}
         decisions = [results_map[t.id] for t in ai_teams]
         for team, decision in zip(ai_teams, decisions):
             if decision.get("used_api"):
@@ -642,7 +720,23 @@ def advance_day(
     use_ai: bool = True,
     settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
-    """Advance one sim day. Every team plays (7 game days per week)."""
+    """Advance one sim day. Every team plays (7 game days per week).
+
+    BUG #1: serialise via _season_lock so two requests can't both read the
+    same current_day, both append game logs, and clobber each other on save.
+    """
+    with _season_lock:
+        return _advance_day_locked(draft, season, storage, ai_gm, use_ai, settings)
+
+
+def _advance_day_locked(
+    draft: "DraftState",
+    season: SeasonState,
+    storage: "Storage",
+    ai_gm: Optional["AIGM"],
+    use_ai: bool,
+    settings: Optional["LeagueSettings"],
+) -> SeasonState:
     if not season.started:
         raise ValueError("Season not started")
     if season.champion is not None:
@@ -871,10 +965,13 @@ def advance_week(
     use_ai: bool = True,
     settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
-    for _ in range(DAYS_PER_WEEK):
-        if season.champion is not None:
-            break
-        advance_day(draft, season, storage, ai_gm, use_ai, settings)
+    """BUG #1: hold the lock for the whole 7-day batch so concurrent
+    advance-day requests can't slip in between days."""
+    with _season_lock:
+        for _ in range(DAYS_PER_WEEK):
+            if season.champion is not None:
+                break
+            _advance_day_locked(draft, season, storage, ai_gm, use_ai, settings)
     return season
 
 
@@ -886,22 +983,24 @@ def sim_to_playoffs(
     use_ai: bool = True,
     settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
-    reg_weeks = _regular_weeks(settings)
-    guard = 0
-    while season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
-        if season.champion is not None:
-            break
-        advance_day(draft, season, storage, ai_gm, use_ai, settings)
-        guard += 1
-        if guard > reg_weeks * DAYS_PER_WEEK + 2:
-            break
-    # Regular season complete — flip playoffs flag so UI surfaces the bracket CTA.
-    # advance_day only flips this on the NEXT day (when week > reg_weeks), which
-    # sim_to_playoffs never reaches because the loop exits at day=reg_weeks*7.
-    if season.champion is None and season.current_week >= reg_weeks and not season.is_playoffs:
-        season.is_playoffs = True
-        storage.save_season(season.model_dump())
-        storage.append_log({"type": "regular_season_end", "week": reg_weeks})
+    """BUG #1: lock the whole regular-season bulk-sim."""
+    with _season_lock:
+        reg_weeks = _regular_weeks(settings)
+        guard = 0
+        while season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
+            if season.champion is not None:
+                break
+            _advance_day_locked(draft, season, storage, ai_gm, use_ai, settings)
+            guard += 1
+            if guard > reg_weeks * DAYS_PER_WEEK + 2:
+                break
+        # Regular season complete — flip playoffs flag so UI surfaces the bracket CTA.
+        # advance_day only flips this on the NEXT day (when week > reg_weeks), which
+        # sim_to_playoffs never reaches because the loop exits at day=reg_weeks*7.
+        if season.champion is None and season.current_week >= reg_weeks and not season.is_playoffs:
+            season.is_playoffs = True
+            storage.save_season(season.model_dump())
+            storage.append_log({"type": "regular_season_end", "week": reg_weeks})
     return season
 
 
@@ -909,13 +1008,62 @@ def sim_to_playoffs(
 # Playoffs — 6-team bracket: top-2 bye, Round1 (seeds 3v6, 4v5),
 #            Semis (seed1 v low-winner, seed2 v high-winner), Finals
 # ---------------------------------------------------------------------------
+def _head_to_head_score(season: SeasonState, team_id: int) -> tuple[int, float]:
+    """BUG #11 helper: head-to-head wins / point diff for tie-breakers.
+
+    Returns (wins, net_points) across all completed regular-season matchups.
+    Used to break ties between teams with identical (w, pf) — without this
+    the standings sort was non-deterministic on ties (dict iteration order).
+    """
+    h2h_w = 0
+    h2h_diff = 0.0
+    for m in season.schedule:
+        if not m.complete or m.score_a is None or m.score_b is None:
+            continue
+        if m.team_a == team_id:
+            h2h_diff += float(m.score_a) - float(m.score_b)
+            if m.winner == team_id:
+                h2h_w += 1
+        elif m.team_b == team_id:
+            h2h_diff += float(m.score_b) - float(m.score_a)
+            if m.winner == team_id:
+                h2h_w += 1
+    return (h2h_w, h2h_diff)
+
+
+def _seed_sort_key(season: SeasonState, tid: int, row: dict) -> tuple:
+    """BUG #11: extend tie-breaker beyond (w, pf) to (w, pf, -pa, h2h_w, h2h_diff, tid).
+    Final tid term gives deterministic ordering when everything else ties.
+    """
+    h2h_w, h2h_diff = _head_to_head_score(season, int(tid))
+    return (
+        row.get("w", 0),
+        row.get("pf", 0),
+        -row.get("pa", 0),
+        h2h_w,
+        h2h_diff,
+        -int(tid),  # negate so lower tid wins on full tie (deterministic)
+    )
+
+
 def _top_seeds(season: SeasonState, n: int = 6) -> list[int]:
     rows = sorted(
         season.standings.items(),
-        key=lambda kv: (kv[1].get("w", 0), kv[1].get("pf", 0)),
+        key=lambda kv: _seed_sort_key(season, kv[0], kv[1]),
         reverse=True,
     )
     return [int(tid) for tid, _ in rows[:n]]
+
+
+def _seed_rank(season: SeasonState, tid: int) -> int:
+    """Return 1-indexed rank of a team in the standings (1 = best seed).
+    Used by playoff reseeding to put winners back in seed order.
+    """
+    ordered = _top_seeds(season, len(season.standings))
+    try:
+        return ordered.index(int(tid)) + 1
+    except ValueError:
+        return len(ordered) + 1
 
 
 def _sim_playoff_week(
@@ -975,9 +1123,40 @@ def _sim_playoff_week(
     for a, b in pairings:
         for m in season.schedule:
             if m.week == week and m.team_a == a and m.team_b == b and m.complete:
-                winners.append(m.winner if m.winner is not None else a)
+                if m.winner is not None:
+                    winners.append(m.winner)
+                else:
+                    # BUG #10: previously tied playoff weeks defaulted to
+                    # team_a winning, which let bracket order arbitrarily
+                    # decide a series. Use standings seed (lower rank wins).
+                    rank_a = _seed_rank(season, a)
+                    rank_b = _seed_rank(season, b)
+                    chosen = a if rank_a <= rank_b else b
+                    m.winner = chosen
+                    winners.append(chosen)
                 break
     return winners
+
+
+def _reseed_for_semis(
+    season: SeasonState,
+    bye_seeds: list[int],
+    r1_winners: list[int],
+) -> list[tuple[int, int]]:
+    """BUG #3: previous reseeding paired r1_winners[1] with bye[0] and
+    r1_winners[0] with bye[1] — that meant a 6-seed upset over the 3-seed
+    sent the upset winner to face the 2-seed instead of the 1-seed. Correct
+    reseeding: top remaining seed plays LOWEST remaining seed.
+
+    Given 2 bye seeds + 2 r1 winners (4 teams left), produce 2 semis pairs:
+    bye_seeds[0] (best) vs lowest-ranked of {bye_seeds[1], *r1_winners},
+    bye_seeds[1] vs the other.
+    """
+    remaining = list(bye_seeds) + list(r1_winners)
+    # Sort by standings rank (best first, worst last)
+    remaining.sort(key=lambda t: _seed_rank(season, t))
+    # remaining = [best, 2nd, 3rd, worst]; semis = best v worst, 2nd v 3rd
+    return [(remaining[0], remaining[3]), (remaining[1], remaining[2])]
 
 
 def sim_playoffs(
@@ -988,67 +1167,291 @@ def sim_playoffs(
     use_ai: bool = True,
     settings: Optional["LeagueSettings"] = None,
 ) -> SeasonState:
+    """BUG #1: lock so two requests can't sim playoffs concurrently.
+    BUG #2: respect settings.playoff_teams (4 / 6 / 8) instead of hardcoding 6.
+    """
+    with _season_lock:
+        return _sim_playoffs_locked(draft, season, storage, ai_gm, use_ai, settings)
+
+
+def _sim_playoffs_locked(
+    draft: "DraftState",
+    season: SeasonState,
+    storage: "Storage",
+    ai_gm: Optional["AIGM"],
+    use_ai: bool,
+    settings: Optional["LeagueSettings"],
+) -> SeasonState:
     if season.champion is not None:
         return season
 
     reg_weeks = _regular_weeks(settings)
 
     if season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
-        sim_to_playoffs(draft, season, storage, ai_gm, use_ai, settings)
+        # sim_to_playoffs eventually calls advance_day which would re-acquire
+        # _season_lock. Avoid deadlock by inlining the unlocked variant.
+        guard = 0
+        while season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
+            if season.champion is not None:
+                break
+            _advance_day_locked(draft, season, storage, ai_gm, use_ai, settings)
+            guard += 1
+            if guard > reg_weeks * DAYS_PER_WEEK + 2:
+                break
+        if season.champion is None and season.current_week >= reg_weeks and not season.is_playoffs:
+            season.is_playoffs = True
+            storage.save_season(season.model_dump())
+            storage.append_log({"type": "regular_season_end", "week": reg_weeks})
 
     season.is_playoffs = True
-    seeds = _top_seeds(season, 6)
-    if len(seeds) < 6:
-        # Fallback: fewer than 6 teams with standings — use whatever we have
-        if len(seeds) < 4:
-            return season
-        # Run old 4-team bracket
-        semis = [(seeds[0], seeds[3]), (seeds[1], seeds[2])]
-        winners = _sim_playoff_week(
-            draft, season, storage, semis, reg_weeks + 1, ai_gm, use_ai, settings
-        )
-        if len(winners) < 2:
-            return season
-        final_pair = [(winners[0], winners[1])]
+
+    # BUG #2: pull bracket size from settings (default 6)
+    desired_teams = settings.playoff_teams if settings is not None else 6
+    if desired_teams < 2:
+        return season
+    seeds = _top_seeds(season, desired_teams)
+    if len(seeds) < 2:
+        return season
+
+    # Determine bracket shape based on # of seeds we actually have.
+    n = len(seeds)
+    week_offset = 1
+
+    if n == 2:
+        # Just a final
         final_winners = _sim_playoff_week(
-            draft, season, storage, final_pair, reg_weeks + 2, ai_gm, use_ai, settings
+            draft, season, storage, [(seeds[0], seeds[1])],
+            reg_weeks + week_offset, ai_gm, use_ai, settings,
+        )
+        if final_winners:
+            season.champion = final_winners[0]
+    elif n == 3:
+        # 3 teams: seed2 v seed3 round-1, winner faces seed1
+        r1 = _sim_playoff_week(
+            draft, season, storage, [(seeds[1], seeds[2])],
+            reg_weeks + week_offset, ai_gm, use_ai, settings,
+        )
+        if len(r1) < 1:
+            return season
+        final_winners = _sim_playoff_week(
+            draft, season, storage, [(seeds[0], r1[0])],
+            reg_weeks + week_offset + 1, ai_gm, use_ai, settings,
+        )
+        if final_winners:
+            season.champion = final_winners[0]
+    elif n in (4, 5):
+        # 4-team bracket: semis (1v4, 2v3) → final.
+        # If 5 seeds requested but only 4 remain, fall through here too.
+        top4 = seeds[:4]
+        semis = [(top4[0], top4[3]), (top4[1], top4[2])]
+        sw = _sim_playoff_week(
+            draft, season, storage, semis,
+            reg_weeks + week_offset, ai_gm, use_ai, settings,
+        )
+        if len(sw) < 2:
+            return season
+        # BUG #3: reseed the final too — best remaining seed always advances
+        # against worst remaining. With only 2 winners this is just an order
+        # adjustment but matches the convention.
+        sw_sorted = sorted(sw, key=lambda t: _seed_rank(season, t))
+        final_winners = _sim_playoff_week(
+            draft, season, storage, [(sw_sorted[0], sw_sorted[1])],
+            reg_weeks + week_offset + 1, ai_gm, use_ai, settings,
+        )
+        if final_winners:
+            season.champion = final_winners[0]
+    elif n in (6, 7):
+        # 6-team bracket: top-2 bye, R1 (3v6, 4v5), reseed semis, final
+        top6 = seeds[:6]
+        seed1, seed2, seed3, seed4, seed5, seed6 = top6
+        r1_pairings = [(seed3, seed6), (seed4, seed5)]
+        r1_winners = _sim_playoff_week(
+            draft, season, storage, r1_pairings,
+            reg_weeks + week_offset, ai_gm, use_ai, settings,
+        )
+        if len(r1_winners) < 2:
+            return season
+        # BUG #3: reseed correctly — top bye plays lowest remaining seed
+        semi_pairings = _reseed_for_semis(season, [seed1, seed2], r1_winners)
+        r2_winners = _sim_playoff_week(
+            draft, season, storage, semi_pairings,
+            reg_weeks + week_offset + 1, ai_gm, use_ai, settings,
+        )
+        if len(r2_winners) < 2:
+            return season
+        r2_sorted = sorted(r2_winners, key=lambda t: _seed_rank(season, t))
+        final_winners = _sim_playoff_week(
+            draft, season, storage, [(r2_sorted[0], r2_sorted[1])],
+            reg_weeks + week_offset + 2, ai_gm, use_ai, settings,
         )
         if final_winners:
             season.champion = final_winners[0]
     else:
-        # 6-team bracket
-        # Round 1 (reg+1): seed3 v seed6, seed4 v seed5 (seed1, seed2 have bye)
-        seed1, seed2, seed3, seed4, seed5, seed6 = (
-            seeds[0], seeds[1], seeds[2], seeds[3], seeds[4], seeds[5]
+        # 8+ teams: full QF (no byes), reseed SF, F. Cap at top 8.
+        top8 = seeds[:8]
+        # QF: 1v8, 2v7, 3v6, 4v5
+        qf_pairings = [
+            (top8[0], top8[7]),
+            (top8[1], top8[6]),
+            (top8[2], top8[5]),
+            (top8[3], top8[4]),
+        ]
+        qf_winners = _sim_playoff_week(
+            draft, season, storage, qf_pairings,
+            reg_weeks + week_offset, ai_gm, use_ai, settings,
         )
-        r1_pairings = [(seed3, seed6), (seed4, seed5)]
-        r1_winners = _sim_playoff_week(
-            draft, season, storage, r1_pairings, reg_weeks + 1, ai_gm, use_ai, settings
-        )
-        if len(r1_winners) < 2:
+        if len(qf_winners) < 4:
             return season
-
-        # Round 2 (reg+2): seed1 v low-winner (winner of 4v5), seed2 v high-winner (winner of 3v6)
-        low_winner = r1_winners[1]   # winner of seed4 v seed5
-        high_winner = r1_winners[0]  # winner of seed3 v seed6
-        r2_pairings = [(seed1, low_winner), (seed2, high_winner)]
-        r2_winners = _sim_playoff_week(
-            draft, season, storage, r2_pairings, reg_weeks + 2, ai_gm, use_ai, settings
+        # Reseed SF: best remaining vs worst remaining
+        qf_sorted = sorted(qf_winners, key=lambda t: _seed_rank(season, t))
+        sf_pairings = [
+            (qf_sorted[0], qf_sorted[3]),
+            (qf_sorted[1], qf_sorted[2]),
+        ]
+        sf_winners = _sim_playoff_week(
+            draft, season, storage, sf_pairings,
+            reg_weeks + week_offset + 1, ai_gm, use_ai, settings,
         )
-        if len(r2_winners) < 2:
+        if len(sf_winners) < 2:
             return season
-
-        # Finals (reg+3)
-        final_pair = [(r2_winners[0], r2_winners[1])]
+        sf_sorted = sorted(sf_winners, key=lambda t: _seed_rank(season, t))
         final_winners = _sim_playoff_week(
-            draft, season, storage, final_pair, reg_weeks + 3, ai_gm, use_ai, settings
+            draft, season, storage, [(sf_sorted[0], sf_sorted[1])],
+            reg_weeks + week_offset + 2, ai_gm, use_ai, settings,
         )
         if final_winners:
             season.champion = final_winners[0]
 
     storage.save_season(season.model_dump())
-    storage.append_log({
-        "type": "champion",
-        "team_id": season.champion,
-    })
+    # BUG #13: don't pollute storage log with a champion=None entry when the
+    # bracket bailed early (insufficient seeds, R1 result missing, etc).
+    if season.champion is not None:
+        storage.append_log({
+            "type": "champion",
+            "team_id": season.champion,
+        })
     return season
+
+
+# BUG #12: full sim_playoffs can run 30-90s for a 6-team bracket which trips
+# Cloudflare's 100s edge timeout. Generator below yields after each round so
+# the SSE endpoint can stream progress and keep the connection alive.
+def sim_playoffs_iter(
+    draft: "DraftState",
+    season: SeasonState,
+    storage: "Storage",
+    ai_gm: Optional["AIGM"] = None,
+    use_ai: bool = True,
+    settings: Optional["LeagueSettings"] = None,
+):
+    """Yield {'round': name, 'week': N, 'champion': tid|None} after each round.
+    Final yield carries 'done': True. Lock is held for the entire bracket."""
+    with _season_lock:
+        if season.champion is not None:
+            yield {"done": True, "champion": season.champion}
+            return
+
+        reg_weeks = _regular_weeks(settings)
+
+        if season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
+            guard = 0
+            while season.current_week < reg_weeks or season.current_day % DAYS_PER_WEEK != 0:
+                if season.champion is not None:
+                    break
+                _advance_day_locked(draft, season, storage, ai_gm, use_ai, settings)
+                guard += 1
+                if guard > reg_weeks * DAYS_PER_WEEK + 2:
+                    break
+            if season.champion is None and season.current_week >= reg_weeks and not season.is_playoffs:
+                season.is_playoffs = True
+                storage.save_season(season.model_dump())
+                storage.append_log({"type": "regular_season_end", "week": reg_weeks})
+            yield {"round": "regular_season_end", "week": reg_weeks, "champion": None}
+
+        season.is_playoffs = True
+        desired_teams = settings.playoff_teams if settings is not None else 6
+        seeds = _top_seeds(season, desired_teams)
+        if desired_teams < 2 or len(seeds) < 2:
+            yield {"done": True, "champion": season.champion}
+            return
+
+        n = len(seeds)
+        wo = 1
+
+        def _run(round_name: str, pairings, week_idx):
+            wins = _sim_playoff_week(
+                draft, season, storage, pairings, week_idx, ai_gm, use_ai, settings
+            )
+            return wins
+
+        if n == 2:
+            fw = _run("final", [(seeds[0], seeds[1])], reg_weeks + wo)
+            if fw:
+                season.champion = fw[0]
+            yield {"round": "final", "week": reg_weeks + wo, "champion": season.champion}
+        elif n == 3:
+            r1 = _run("r1", [(seeds[1], seeds[2])], reg_weeks + wo)
+            yield {"round": "r1", "week": reg_weeks + wo, "champion": None}
+            if not r1:
+                yield {"done": True, "champion": season.champion}
+                return
+            fw = _run("final", [(seeds[0], r1[0])], reg_weeks + wo + 1)
+            if fw:
+                season.champion = fw[0]
+            yield {"round": "final", "week": reg_weeks + wo + 1, "champion": season.champion}
+        elif n in (4, 5):
+            top4 = seeds[:4]
+            sw = _run("semis", [(top4[0], top4[3]), (top4[1], top4[2])], reg_weeks + wo)
+            yield {"round": "semis", "week": reg_weeks + wo, "champion": None}
+            if len(sw) < 2:
+                yield {"done": True, "champion": season.champion}
+                return
+            sw_sorted = sorted(sw, key=lambda t: _seed_rank(season, t))
+            fw = _run("final", [(sw_sorted[0], sw_sorted[1])], reg_weeks + wo + 1)
+            if fw:
+                season.champion = fw[0]
+            yield {"round": "final", "week": reg_weeks + wo + 1, "champion": season.champion}
+        elif n in (6, 7):
+            top6 = seeds[:6]
+            seed1, seed2, seed3, seed4, seed5, seed6 = top6
+            r1w = _run("r1", [(seed3, seed6), (seed4, seed5)], reg_weeks + wo)
+            yield {"round": "r1", "week": reg_weeks + wo, "champion": None}
+            if len(r1w) < 2:
+                yield {"done": True, "champion": season.champion}
+                return
+            sp = _reseed_for_semis(season, [seed1, seed2], r1w)
+            r2w = _run("semis", sp, reg_weeks + wo + 1)
+            yield {"round": "semis", "week": reg_weeks + wo + 1, "champion": None}
+            if len(r2w) < 2:
+                yield {"done": True, "champion": season.champion}
+                return
+            r2_sorted = sorted(r2w, key=lambda t: _seed_rank(season, t))
+            fw = _run("final", [(r2_sorted[0], r2_sorted[1])], reg_weeks + wo + 2)
+            if fw:
+                season.champion = fw[0]
+            yield {"round": "final", "week": reg_weeks + wo + 2, "champion": season.champion}
+        else:
+            top8 = seeds[:8]
+            qf = [(top8[0], top8[7]), (top8[1], top8[6]), (top8[2], top8[5]), (top8[3], top8[4])]
+            qfw = _run("qf", qf, reg_weeks + wo)
+            yield {"round": "qf", "week": reg_weeks + wo, "champion": None}
+            if len(qfw) < 4:
+                yield {"done": True, "champion": season.champion}
+                return
+            qf_sorted = sorted(qfw, key=lambda t: _seed_rank(season, t))
+            sf_pairs = [(qf_sorted[0], qf_sorted[3]), (qf_sorted[1], qf_sorted[2])]
+            sfw = _run("semis", sf_pairs, reg_weeks + wo + 1)
+            yield {"round": "semis", "week": reg_weeks + wo + 1, "champion": None}
+            if len(sfw) < 2:
+                yield {"done": True, "champion": season.champion}
+                return
+            sf_sorted = sorted(sfw, key=lambda t: _seed_rank(season, t))
+            fw = _run("final", [(sf_sorted[0], sf_sorted[1])], reg_weeks + wo + 2)
+            if fw:
+                season.champion = fw[0]
+            yield {"round": "final", "week": reg_weeks + wo + 2, "champion": season.champion}
+
+        storage.save_season(season.model_dump())
+        if season.champion is not None:
+            storage.append_log({"type": "champion", "team_id": season.champion})
+        yield {"done": True, "champion": season.champion}

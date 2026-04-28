@@ -36,6 +36,7 @@ from .season import (
     advance_week as season_advance_week,
     check_lineup_feasibility,
     sim_playoffs as season_sim_playoffs,
+    sim_playoffs_iter as season_sim_playoffs_iter,
     sim_to_playoffs as season_sim_to_playoffs,
     start_season as season_start,
 )
@@ -58,7 +59,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.31"
+APP_VERSION = "v26.04.24.32"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -1056,6 +1057,28 @@ def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
         _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
     )
     return state.model_dump()
+
+
+@app.get("/api/season/sim-playoffs/stream")
+def season_sim_playoffs_stream(use_ai: bool = False):
+    """BUG #12: SSE variant — yields after each playoff round so the
+    Cloudflare tunnel sees activity within its 100s edge timeout. Frontend
+    can opt in by switching to EventSource against this URL."""
+    _require_setup()
+    state = _require_season()
+    settings = _current_settings()
+
+    def event_stream():
+        try:
+            for evt in season_sim_playoffs_iter(
+                _get_draft(), state, _get_storage(),
+                ai_gm=ai_gm, use_ai=use_ai, settings=settings,
+            ):
+                yield f"data: {json.dumps(evt)}\n\n"
+        except Exception as exc:
+            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 class FAClaimRequest(BaseModel):
