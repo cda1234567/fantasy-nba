@@ -60,7 +60,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.41"
+APP_VERSION = "v26.04.24.42"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -2272,7 +2272,17 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks, _: boo
     # Defer LLM calls (peer commentary + counterparty auto-decide) to background
     # so the POST returns immediately. Frontend polls /api/trades/pending to
     # pick up commentary and the eventual decision.
+    #
+    # CRITICAL: capture the active league_id NOW, before the request unwinds.
+    # FastAPI's BackgroundTasks run after the response is built, by which
+    # time `_resolve_active_league` middleware has already reset the
+    # ContextVar in its `finally`. Without re-pinning it inside the bg task,
+    # `_get_storage()` falls back to the default LEAGUE_ID and the bg task
+    # decides someone else's trades (or noops on a league with no pending).
+    pinned_league = _current_league_var.get()
+
     def _finalize(trade_id: str, to_team: int, current_day: int) -> None:
+        bg_token = _current_league_var.set(pinned_league)
         try:
             fresh_season = _load_or_init_season()
             if fresh_season is None:
@@ -2314,6 +2324,8 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks, _: boo
             import traceback, sys
             print(f"[finalize] outer failure: {exc!r}", file=sys.stderr)
             traceback.print_exc()
+        finally:
+            _current_league_var.reset(bg_token)
 
     background.add_task(_finalize, trade.id, req.to_team, season.current_day)
     return trade.model_dump()

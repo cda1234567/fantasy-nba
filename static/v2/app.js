@@ -3930,6 +3930,13 @@ async function openProposeTradeDialogV2() {
     humanRoster: [],
     counterpartyRoster: [],
   };
+  // Reset DOM-side controls too — state.proposeDraft only covers the in-memory
+  // model; the message textarea + force checkbox live on the form and
+  // previously kept their values from the last submission.
+  const msgEl = $('#trade-message-v2');
+  if (msgEl) msgEl.value = '';
+  const forceEl = $('#trade-force-v2');
+  if (forceEl) forceEl.checked = false;
   try {
     const data = await api(`/api/teams/${humanId}`);
     state.proposeDraft.humanRoster = data.players || [];
