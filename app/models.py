@@ -1,8 +1,9 @@
 """Pydantic models for the draft simulator."""
 from __future__ import annotations
 
+import re
 from typing import Any, Literal, Optional
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 DEFAULT_TEAM_NAMES = [
@@ -53,6 +54,11 @@ class LeagueSettings(BaseModel):
     show_offseason_headlines: bool = True
     setup_complete: bool = False
     use_openrouter: bool = True
+    # Per-league manager token. Whoever holds this token (via cookie /
+    # share-link) can mutate league state. Read endpoints stay public so
+    # friends can spectate. Generated on league creation; rotating it
+    # immediately revokes all stale share-links.
+    manager_token: str = Field(default_factory=lambda: __import__("uuid").uuid4().hex)
 
     @field_validator("team_names")
     @classmethod
@@ -64,6 +70,30 @@ class LeagueSettings(BaseModel):
             if not isinstance(name, str) or not name.strip():
                 raise ValueError(f"隊名不可為空白（第 {i + 1} 個）")
         return [s.strip() for s in v]
+
+    @field_validator("season_year")
+    @classmethod
+    def _validate_season_year(cls, v: str) -> str:
+        # Path-traversal defense: season_year is later concatenated into
+        # filesystem paths (data/seasons/{year}.json). Restrict to YYYY-YY.
+        if not re.match(r"^\d{4}-\d{2}$", v):
+            raise ValueError("season_year 格式必須為 YYYY-YY")
+        return v
+
+    @model_validator(mode="after")
+    def _check_consistency(self) -> "LeagueSettings":
+        # player_team_index must reference a real team slot.
+        if self.player_team_index >= self.num_teams:
+            raise ValueError(
+                f"player_team_index ({self.player_team_index}) 必須小於 num_teams ({self.num_teams})"
+            )
+        # team_names list must cover every team slot. Pad-or-trim happens at
+        # /api/league/setup time; a direct PATCH here must already be sized.
+        if len(self.team_names) < self.num_teams:
+            raise ValueError(
+                f"team_names 長度 ({len(self.team_names)}) 不可小於 num_teams ({self.num_teams})"
+            )
+        return self
 
 
 class Player(BaseModel):

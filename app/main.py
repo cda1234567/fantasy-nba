@@ -4,10 +4,11 @@ from __future__ import annotations
 import contextvars
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Optional
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException, Query, Response
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -59,7 +60,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.32"
+APP_VERSION = "v26.04.24.33"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -316,6 +317,83 @@ def _apply_league_cookie(response: Response, league_id: str) -> None:
     )
 
 
+# Path-traversal guard for season_year used by /api/seasons/{year}/headlines
+# and /api/draft/reset season override.
+_SEASON_YEAR_RE = re.compile(r"^\d{4}-\d{2}$")
+
+
+def _apply_manager_cookie(response: Response, token: str) -> None:
+    """Set the per-league manager-token cookie. Holding this token allows
+    write access to the league. The cookie is namespaced per-league via the
+    cookie name so a single browser can hold tokens for multiple leagues.
+    """
+    response.set_cookie(
+        "manager_token",
+        token,
+        max_age=31536000,
+        httponly=False,
+        samesite="lax",
+        path="/",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Auth: require_manager — verifies the manager_token cookie matches the
+# league's stored token. Read endpoints stay public so friends can spectate
+# via a share link without write access. Mutating endpoints add this as a
+# FastAPI dependency.
+# ---------------------------------------------------------------------------
+def require_manager(request: Request) -> bool:
+    storage = _get_storage()
+    settings = storage.load_league_settings()
+    expected = (settings.manager_token or "").strip()
+    # Defense-in-depth: a league with no token (corrupted settings) refuses
+    # writes rather than allowing anyone in.
+    if not expected:
+        raise HTTPException(401, "聯盟沒有設定 manager_token，無法寫入")
+    provided = (request.cookies.get("manager_token") or "").strip()
+    # Allow ?t= query param so a share-link can mint the token for the holder
+    # before the cookie is set on first load.
+    if not provided:
+        provided = (request.query_params.get("t") or "").strip()
+    if not provided or provided != expected:
+        raise HTTPException(401, "需要管理員權限（manager_token 缺失或不符）")
+    return True
+
+
+# Per-league mutation lock keyed by league_id. Serializes draft / season /
+# reset / FA / lineup writes so concurrent requests on the same league don't
+# clobber each other (separate from the season._season_lock which is a
+# per-process simulation lock; this one is per-league mutation lock).
+import threading as _threading_mut
+_per_league_locks: dict[str, _threading_mut.Lock] = {}
+_per_league_locks_guard = _threading_mut.Lock()
+
+
+def _league_mutation_lock(lid: str) -> _threading_mut.Lock:
+    with _per_league_locks_guard:
+        lk = _per_league_locks.get(lid)
+        if lk is None:
+            lk = _threading_mut.Lock()
+            _per_league_locks[lid] = lk
+        return lk
+
+
+def _current_team_id_from_cookie(request: Request) -> int:
+    """Resolve the caller's team id from cookie. Used by trade endpoints to
+    enforce caller==party. Falls back to the human team id if the cookie is
+    missing — preserves existing single-user UX where the cookie may not yet
+    be set after the migration.
+    """
+    raw = request.cookies.get("team_id")
+    if raw is None:
+        return _get_draft().human_team_id
+    try:
+        return int(raw)
+    except (TypeError, ValueError):
+        return _get_draft().human_team_id
+
+
 def _prime_league_cache(league_id: str) -> None:
     """Eagerly warm Storage + DraftState for a league id.
 
@@ -529,6 +607,7 @@ def leagues_create(req: CreateLeagueRequest, response: Response):
     except ValueError as e:
         raise HTTPException(400, str(e))
     active = _current_league_var.get()
+    new_token = None
     if req.switch:
         try:
             target = _validate_switch_target(req.league_id)
@@ -539,23 +618,48 @@ def leagues_create(req: CreateLeagueRequest, response: Response):
         # defaults follow the most-recent create.
         _apply_league_cookie(response, target)
         _prime_league_cache(target)
+        # Mint manager_token cookie for the creator so they immediately have
+        # write access to the league they just made.
+        try:
+            tgt_storage = Storage(DATA_DIR, league_id=target)
+            tgt_settings = tgt_storage.load_league_settings()
+            new_token = tgt_settings.manager_token
+            if new_token:
+                _apply_manager_cookie(response, new_token)
+        except Exception as _exc:
+            import sys as _sys
+            print(f"[create] mint manager_token failed: {_exc!r}", file=_sys.stderr)
         try:
             set_active_league(DATA_DIR, target)
         except Exception as _exc:
             import sys as _sys
             print(f"[create] set_active_league failed: {_exc!r}", file=_sys.stderr)
         active = target
-    return {"ok": True, "active": active}
+    # Return the share URL the creator can hand out. Friends opening it can
+    # spectate (no token needed); only the creator's cookie can mutate.
+    return {"ok": True, "active": active, "manager_token": new_token}
 
 
 @app.post("/api/leagues/switch")
-def leagues_switch(req: SwitchLeagueRequest, response: Response):
+def leagues_switch(req: SwitchLeagueRequest, request: Request, response: Response):
     try:
         target = _validate_switch_target(req.league_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
     _apply_league_cookie(response, target)
     _prime_league_cache(target)
+    # If a share-link token is present in the query string, persist it as a
+    # cookie so the holder gets write access on the new league. Token is
+    # validated against the target league's stored manager_token.
+    qt = (request.query_params.get("t") or "").strip()
+    if qt:
+        try:
+            target_storage = Storage(DATA_DIR, league_id=target)
+            expected = (target_storage.load_league_settings().manager_token or "").strip()
+            if expected and qt == expected:
+                _apply_manager_cookie(response, qt)
+        except Exception:
+            pass
     try:
         set_active_league(DATA_DIR, target)
     except Exception as _exc:
@@ -564,8 +668,19 @@ def leagues_switch(req: SwitchLeagueRequest, response: Response):
     return {"ok": True, "active": target}
 
 
+@app.get("/api/leagues/share-link")
+def leagues_share_link(request: Request, _: bool = Depends(require_manager)):
+    """Return the share-link URL for the active league. Only the manager can
+    fetch this — friends opening the link get spectator-only access."""
+    storage = _get_storage()
+    settings = storage.load_league_settings()
+    lid = _current_league_var.get()
+    token = settings.manager_token
+    return {"league_id": lid, "manager_token": token, "qs": f"?league={lid}&t={token}"}
+
+
 @app.post("/api/leagues/delete")
-def leagues_delete(req: SwitchLeagueRequest):
+def leagues_delete(req: SwitchLeagueRequest, _: bool = Depends(require_manager)):
     # Refuse to delete the league THIS client is currently viewing. Under
     # per-request isolation, only the requester's cookie matters — other
     # clients with different cookies can keep using their own leagues.
@@ -603,6 +718,8 @@ OFFSEASON_DIR = BASE_DIR / "data" / "offseason"
 
 @app.get("/api/seasons/{year}/headlines")
 def season_headlines(year: str):
+    if not _SEASON_YEAR_RE.match(year):
+        raise HTTPException(400, "season year format must be YYYY-YY")
     path = OFFSEASON_DIR / f"{year}.json"
     if not path.exists():
         raise HTTPException(404, "no headlines for this season")
@@ -634,32 +751,70 @@ def get_league_settings():
     return _current_settings().model_dump()
 
 
+class LeagueSettingsPatch(BaseModel):
+    """Strict patch model: only fields we explicitly allow. Forbids extra
+    keys (so a stray `setup_complete: true` or `manager_token: xxx` from a
+    crafted payload can't slip through). Mid-season callers can only patch
+    fields in _MID_SEASON_ALLOWED, enforced below.
+    """
+    model_config = {"extra": "forbid"}
+    league_name: Optional[str] = Field(None, min_length=1, max_length=60)
+    season_year: Optional[str] = Field(None, min_length=4, max_length=20)
+    player_team_index: Optional[int] = Field(None, ge=0, le=31)
+    team_names: Optional[list[str]] = None
+    randomize_draft_order: Optional[bool] = None
+    num_teams: Optional[int] = Field(None, ge=8, le=12)
+    roster_size: Optional[int] = Field(None, ge=8, le=20)
+    starters_per_day: Optional[int] = Field(None, ge=1, le=15)
+    il_slots: Optional[int] = Field(None, ge=0, le=5)
+    scoring_weights: Optional[dict[str, float]] = None
+    regular_season_weeks: Optional[int] = Field(None, ge=2, le=40)
+    playoff_teams: Optional[int] = Field(None, ge=0, le=16)
+    trade_deadline_week: Optional[int] = Field(None, ge=1, le=40)
+    ai_trade_frequency: Optional[str] = None
+    ai_trade_style: Optional[str] = None
+    veto_threshold: Optional[int] = Field(None, ge=0, le=16)
+    veto_window_days: Optional[int] = Field(None, ge=0, le=7)
+    ai_decision_mode: Optional[str] = None
+    draft_display_mode: Optional[str] = None
+    show_offseason_headlines: Optional[bool] = None
+    use_openrouter: Optional[bool] = None
+    # Note: setup_complete and manager_token are intentionally NOT here.
+
+
 @app.post("/api/league/settings")
-def patch_league_settings(body: dict[str, Any]):
+def patch_league_settings(body: LeagueSettingsPatch, _: bool = Depends(require_manager)):
     # Pin the storage reference for the whole read-modify-write. Per-request
     # isolation means `_get_storage()` already returns the caller's league,
     # but we still take the lock + local alias so cache construction (if any)
     # happens exactly once across concurrent settings writes.
     with _league_lock:
         local_storage = _get_storage()
-    settings = local_storage.load_league_settings()
-    if settings.setup_complete:
-        forbidden = set(body.keys()) - _MID_SEASON_ALLOWED
-        if forbidden:
-            raise HTTPException(
-                400,
-                f"聯盟設定完成後無法變更欄位：{sorted(forbidden)}",
-            )
-    try:
-        updated = LeagueSettings.model_validate({**settings.model_dump(), **body})
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    local_storage.save_league_settings(updated)
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        settings = local_storage.load_league_settings()
+        # Only fields the caller actually set (model_dump exclude_unset).
+        diff = body.model_dump(exclude_unset=True)
+        if not diff:
+            return settings.model_dump()
+        if settings.setup_complete:
+            forbidden = set(diff.keys()) - _MID_SEASON_ALLOWED
+            if forbidden:
+                raise HTTPException(
+                    400,
+                    f"聯盟設定完成後無法變更欄位：{sorted(forbidden)}",
+                )
+        try:
+            # Merge; preserve setup_complete + manager_token from current state.
+            updated = LeagueSettings.model_validate({**settings.model_dump(), **diff})
+        except ValueError as e:
+            raise HTTPException(400, str(e))
+        local_storage.save_league_settings(updated)
     return updated.model_dump()
 
 
 @app.post("/api/league/setup")
-def league_setup(body: LeagueSettings):
+def league_setup(body: LeagueSettings, _: bool = Depends(require_manager)):
     """Validate and save full settings; reset draft to the chosen season."""
     errors: list[str] = []
 
@@ -671,9 +826,13 @@ def league_setup(body: LeagueSettings):
     while len(team_names) < body.num_teams:
         team_names.append(f"隊伍{len(team_names) + 1}")
     body.team_names = team_names[:body.num_teams]
-    season_file = SEASONS_DIR / f"{body.season_year}.json"
-    if not season_file.exists():
-        errors.append(f"season_year '{body.season_year}' not found in seasons data")
+    # Path-traversal: season_year is interpolated into the filesystem path.
+    if not _SEASON_YEAR_RE.match(body.season_year or ""):
+        errors.append("season_year format must be YYYY-YY")
+    else:
+        season_file = SEASONS_DIR / f"{body.season_year}.json"
+        if not season_file.exists():
+            errors.append(f"season_year '{body.season_year}' not found in seasons data")
     if body.roster_size not in _VALID_ROSTER_SIZES:
         errors.append(f"roster_size must be one of {sorted(_VALID_ROSTER_SIZES)}")
     if body.starters_per_day not in _VALID_STARTERS:
@@ -686,19 +845,25 @@ def league_setup(body: LeagueSettings):
     if errors:
         raise HTTPException(400, {"errors": errors})
 
-    # Mark complete and persist
-    body.setup_complete = True
-    _get_storage().save_league_settings(body)
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        # Preserve existing manager_token across full-replace setup so the
+        # creator's cookie continues to work after re-running setup.
+        current_settings = _get_storage().load_league_settings()
+        body.manager_token = current_settings.manager_token or body.manager_token
+        # Mark complete and persist
+        body.setup_complete = True
+        _get_storage().save_league_settings(body)
 
-    # Re-initialize draft with new settings
-    _get_draft().reset(
-        randomize_order=body.randomize_draft_order,
-        seed=int(_time.time() * 1000) & 0xFFFFFFFF,
-        settings=body,
-    )
-    _persist_draft()
-    _get_storage().clear_season()
-    _get_storage().clear_trades()
+        # Re-initialize draft with new settings
+        _get_draft().reset(
+            randomize_order=body.randomize_draft_order,
+            seed=int(_time.time() * 1000) & 0xFFFFFFFF,
+            settings=body,
+        )
+        _persist_draft()
+        _get_storage().clear_season()
+        _get_storage().clear_trades()
 
     return _state_snapshot().model_dump()
 
@@ -733,7 +898,7 @@ def get_personas():
 def list_players(
     available: bool = True,
     sort: str = Query("total_fp", pattern="^(total_fp|fppg|pts|reb|ast|stl|blk|to|name|age|mpg)$"),
-    limit: int = 200,
+    limit: int = Query(200, ge=1, le=500),
     q: Optional[str] = None,
     pos: Optional[str] = None,
     exclude_injured: bool = False,
@@ -886,58 +1051,67 @@ def _maybe_draft_commentary(pick) -> list[dict]:
 
 
 @app.post("/api/draft/pick")
-def human_pick(req: PickRequest):
+def human_pick(req: PickRequest, _: bool = Depends(require_manager)):
     _require_setup()
-    try:
-        pick = _get_draft().human_pick(req.player_id)
-    except ValueError as e:
-        msg = str(e)
-        if "not the human's turn" in msg:
-            _, _, next_team = _get_draft().current_pointers()
-            raise HTTPException(400, {
-                "detail": "human_slot_already_consumed",
-                "next_picker": next_team,
-                "is_complete": _get_draft().is_complete,
-            })
-        raise HTTPException(400, msg)
-    _persist_draft()
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        try:
+            pick = _get_draft().human_pick(req.player_id)
+        except ValueError as e:
+            msg = str(e)
+            if "not the human's turn" in msg:
+                _, _, next_team = _get_draft().current_pointers()
+                raise HTTPException(400, {
+                    "detail": "human_slot_already_consumed",
+                    "next_picker": next_team,
+                    "is_complete": _get_draft().is_complete,
+                })
+            raise HTTPException(400, msg)
+        _persist_draft()
+        snap = _state_snapshot().model_dump()
     return {
         "pick": pick.model_dump(),
-        "state": _state_snapshot().model_dump(),
+        "state": snap,
         "commentary": _maybe_draft_commentary(pick),
     }
 
 
 @app.post("/api/draft/ai-advance")
-def ai_advance():
+def ai_advance(_: bool = Depends(require_manager)):
     _require_setup()
-    if _get_draft().is_complete:
-        return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
-    _, _, team_id = _get_draft().current_pointers()
-    # Snake-round turnarounds produce back-to-back human picks (e.g. #16→#17
-    # for an 8-team draft with the human at position 1). The auto-advance
-    # timer and race conditions can call this endpoint when it's the human's
-    # turn; return a no-op snapshot instead of 409 so the client can simply
-    # refresh state and stop the loop.
-    if team_id == _get_draft().human_team_id:
-        return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
-    pick = _get_draft().ai_pick()
-    _persist_draft()
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        if _get_draft().is_complete:
+            return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
+        _, _, team_id = _get_draft().current_pointers()
+        # Snake-round turnarounds produce back-to-back human picks (e.g. #16→#17
+        # for an 8-team draft with the human at position 1). The auto-advance
+        # timer and race conditions can call this endpoint when it's the human's
+        # turn; return a no-op snapshot instead of 409 so the client can simply
+        # refresh state and stop the loop.
+        if team_id == _get_draft().human_team_id:
+            return {"pick": None, "state": _state_snapshot().model_dump(), "commentary": []}
+        pick = _get_draft().ai_pick()
+        _persist_draft()
+        snap = _state_snapshot().model_dump()
     return {
         "pick": pick.model_dump() if pick else None,
-        "state": _state_snapshot().model_dump(),
+        "state": snap,
         "commentary": _maybe_draft_commentary(pick),
     }
 
 
 @app.post("/api/draft/sim-to-me")
-def sim_to_me():
+def sim_to_me(_: bool = Depends(require_manager)):
     _require_setup()
-    made = _get_draft().sim_to_human()
-    _persist_draft()
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        made = _get_draft().sim_to_human()
+        _persist_draft()
+        snap = _state_snapshot().model_dump()
     return {
         "picks": [p.model_dump() for p in made],
-        "state": _state_snapshot().model_dump(),
+        "state": snap,
     }
 
 
@@ -948,30 +1122,36 @@ class ResetRequestV2(BaseModel):
 
 
 @app.post("/api/draft/reset")
-def reset_draft(req: ResetRequestV2 = ResetRequestV2()):
+def reset_draft(req: ResetRequestV2 = ResetRequestV2(), _: bool = Depends(require_manager)):
     seed = req.seed if req.seed is not None else (int(_time.time() * 1000) & 0xFFFFFFFF)
     settings = _current_settings()
     if req.season_year is not None:
+        # Path-traversal: tighten before touching the filesystem.
+        if not _SEASON_YEAR_RE.match(req.season_year):
+            raise HTTPException(400, "season_year format must be YYYY-YY")
         season_file = SEASONS_DIR / f"{req.season_year}.json"
         if not season_file.exists():
             raise HTTPException(400, f"season_year '{req.season_year}' not found")
         settings = settings.model_copy(update={"season_year": req.season_year})
-    _get_draft().reset(
-        randomize_order=req.randomize_order,
-        seed=seed,
-        settings=settings if settings.setup_complete or req.season_year else None,
-    )
-    _persist_draft()
-    _get_storage().clear_season()
-    _get_storage().clear_trades()
-    return _state_snapshot()
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        _get_draft().reset(
+            randomize_order=req.randomize_order,
+            seed=seed,
+            settings=settings if settings.setup_complete or req.season_year else None,
+        )
+        _persist_draft()
+        _get_storage().clear_season()
+        _get_storage().clear_trades()
+        snap = _state_snapshot()
+    return snap
 
 
 # ---------------------------------------------------------------------------
 # Season API
 # ---------------------------------------------------------------------------
 @app.post("/api/season/start")
-def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
+def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest(), _: bool = Depends(require_manager)):
     _require_setup()
     if not _get_draft().is_complete:
         raise HTTPException(400, "Draft is not complete")
@@ -986,37 +1166,44 @@ def season_start_endpoint(_req: StartSeasonRequest = StartSeasonRequest()):
             "賽季已存在，請先使用「重置賽季」清除後再開始。",
         )
     settings = _current_settings()
-    state = season_start(_get_draft(), _get_storage(), settings=settings)
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = season_start(_get_draft(), _get_storage(), settings=settings)
     return state.model_dump()
 
 
 @app.post("/api/season/advance-day")
-def season_advance_day_endpoint(req: AdvanceRequest = AdvanceRequest()):
+def season_advance_day_endpoint(req: AdvanceRequest = AdvanceRequest(), _: bool = Depends(require_manager)):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
-    state = season_advance_day(
-        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
-    )
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = season_advance_day(
+            _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        )
     return state.model_dump()
 
 
 @app.post("/api/season/advance-week")
-def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest()):
+def season_advance_week_endpoint(req: AdvanceRequest = AdvanceRequest(), _: bool = Depends(require_manager)):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
-    state = season_advance_week(
-        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
-    )
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = season_advance_week(
+            _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        )
     return state.model_dump()
 
 
 @app.get("/api/season/advance-week/stream")
-def season_advance_week_stream(use_ai: bool = True):
+def season_advance_week_stream(use_ai: bool = True, _: bool = Depends(require_manager)):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
+    lid = _current_league_var.get()
 
     def event_stream():
         nonlocal state
@@ -1024,43 +1211,52 @@ def season_advance_week_stream(use_ai: bool = True):
             for _ in range(7):
                 if state.champion is not None:
                     break
-                state = season_advance_day(
-                    _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=use_ai, settings=settings
-                )
+                with _league_mutation_lock(lid):
+                    state = season_advance_day(
+                        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=use_ai, settings=settings
+                    )
                 yield f"data: {json.dumps({'day': state.current_day, 'week': state.current_week})}\n\n"
                 if state.current_day % 7 == 0:
                     break
             yield f"data: {json.dumps({'done': True, 'week': state.current_week})}\n\n"
         except Exception as exc:
-            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+            # m1: don't leak internal exception text to the client.
+            import sys, traceback
+            print(f"[advance-week-stream] {exc!r}", file=sys.stderr)
+            traceback.print_exc()
+            yield f"data: {json.dumps({'error': '推進失敗'})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.post("/api/season/sim-to-playoffs")
-def season_sim_to_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
+def season_sim_to_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest(), _: bool = Depends(require_manager)):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
-    state = season_sim_to_playoffs(
-        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
-    )
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = season_sim_to_playoffs(
+            _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        )
     return state.model_dump()
 
 
 @app.post("/api/season/sim-playoffs")
-def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest()):
+def season_sim_playoffs_endpoint(req: AdvanceRequest = AdvanceRequest(), _: bool = Depends(require_manager)):
     _require_setup()
     state = _require_season()
     settings = _current_settings()
-    state = season_sim_playoffs(
-        _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
-    )
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = season_sim_playoffs(
+            _get_draft(), state, _get_storage(), ai_gm=ai_gm, use_ai=req.use_ai, settings=settings
+        )
     return state.model_dump()
 
 
 @app.get("/api/season/sim-playoffs/stream")
-def season_sim_playoffs_stream(use_ai: bool = False):
+def season_sim_playoffs_stream(use_ai: bool = False, _: bool = Depends(require_manager)):
     """BUG #12: SSE variant — yields after each playoff round so the
     Cloudflare tunnel sees activity within its 100s edge timeout. Frontend
     can opt in by switching to EventSource against this URL."""
@@ -1076,7 +1272,11 @@ def season_sim_playoffs_stream(use_ai: bool = False):
             ):
                 yield f"data: {json.dumps(evt)}\n\n"
         except Exception as exc:
-            yield f"data: {json.dumps({'error': str(exc)})}\n\n"
+            # m1: generic message; details to logs.
+            import sys, traceback
+            print(f"[sim-playoffs-stream] {exc!r}", file=sys.stderr)
+            traceback.print_exc()
+            yield f"data: {json.dumps({'error': '季後賽推進失敗'})}\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -1118,66 +1318,72 @@ def fa_claim_status():
 
 
 @app.post("/api/fa/claim")
-def fa_claim(req: FAClaimRequest):
-    state = _require_season()
-    # Find the human team
-    human = next((t for t in _get_draft().teams if t.is_human), None)
-    if human is None:
-        raise HTTPException(400, "此聯盟沒有玩家隊伍")
+def fa_claim(req: FAClaimRequest, _: bool = Depends(require_manager)):
+    lid = _current_league_var.get()
+    # Whole read-modify-write must hold the lock; otherwise two concurrent
+    # claims for the same player both see budget OK and both append to roster.
+    with _league_mutation_lock(lid):
+        state = _require_season()
+        # Find the human team
+        human = next((t for t in _get_draft().teams if t.is_human), None)
+        if human is None:
+            raise HTTPException(400, "此聯盟沒有玩家隊伍")
 
-    # Validate drop
-    if req.drop_player_id not in human.roster:
-        raise HTTPException(400, "釋出的球員不在你的陣容中")
-    # Validate add: must exist and not on any roster
-    if req.add_player_id not in _get_draft().players_by_id:
-        raise HTTPException(400, "找不到此球員")
-    on_any_roster = {pid for t in _get_draft().teams for pid in t.roster}
-    if req.add_player_id in on_any_roster:
-        raise HTTPException(400, "此球員已被其他隊伍簽走")
+        # Validate drop
+        if req.drop_player_id not in human.roster:
+            raise HTTPException(400, "釋出的球員不在你的陣容中")
+        # Validate add: must exist and not on any roster
+        if req.add_player_id not in _get_draft().players_by_id:
+            raise HTTPException(400, "找不到此球員")
+        on_any_roster = {pid for t in _get_draft().teams for pid in t.roster}
+        if req.add_player_id in on_any_roster:
+            raise HTTPException(400, "此球員已被其他隊伍簽走")
 
-    # Daily limit
-    today = state.current_day
-    used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
-    if used >= HUMAN_DAILY_CLAIM_LIMIT:
-        raise HTTPException(400, f"今日已用完 {HUMAN_DAILY_CLAIM_LIMIT} 次自由球員簽約配額")
+        # Daily limit
+        today = state.current_day
+        used = sum(1 for c in state.human_claims if int(c.get("day", -1)) == today)
+        if used >= HUMAN_DAILY_CLAIM_LIMIT:
+            raise HTTPException(400, f"今日已用完 {HUMAN_DAILY_CLAIM_LIMIT} 次自由球員簽約配額")
 
-    # FAAB budget check
-    budget = int(state.waiver_budgets.get(human.id, 100))
-    if req.bid > budget:
-        raise HTTPException(400, f"FAAB 預算不足（剩 ${budget}）")
+        # FAAB budget check
+        budget = int(state.waiver_budgets.get(human.id, 100))
+        if req.bid > budget:
+            raise HTTPException(400, f"FAAB 預算不足（剩 ${budget}）")
 
-    # Execute swap (keep drafted_ids in sync so dropped player returns to FA pool
-    # and claimed player disappears from FA pool)
-    human.roster = [p for p in human.roster if p != req.drop_player_id]
-    human.roster.append(req.add_player_id)
-    _get_draft().drafted_ids.discard(req.drop_player_id)
-    _get_draft().drafted_ids.add(req.add_player_id)
+        # Execute swap (keep drafted_ids in sync so dropped player returns to FA pool
+        # and claimed player disappears from FA pool)
+        human.roster = [p for p in human.roster if p != req.drop_player_id]
+        human.roster.append(req.add_player_id)
+        _get_draft().drafted_ids.discard(req.drop_player_id)
+        _get_draft().drafted_ids.add(req.add_player_id)
 
-    # Deduct FAAB
-    state.waiver_budgets[human.id] = budget - req.bid
+        # Deduct FAAB
+        state.waiver_budgets[human.id] = budget - req.bid
 
-    import time as _t
-    state.human_claims.append({
-        "day": today,
-        "drop": req.drop_player_id,
-        "add": req.add_player_id,
-        "bid": req.bid,
-        "ts": int(_t.time()),
-    })
+        import time as _t
+        state.human_claims.append({
+            "day": today,
+            "drop": req.drop_player_id,
+            "add": req.add_player_id,
+            "bid": req.bid,
+            "ts": int(_t.time()),
+        })
 
-    # Persist
-    try:
-        _get_storage().save_draft(_get_draft().snapshot())
-    except Exception as exc:
-        import traceback, sys
-        print(f"[waiver] save_draft failed: {exc!r}", file=sys.stderr)
-        traceback.print_exc()
-    try:
-        _get_storage().save_season(state.model_dump())
-    except Exception as exc:
-        import traceback, sys
-        print(f"[waiver] save_season failed: {exc!r}", file=sys.stderr)
-        traceback.print_exc()
+        # Persist — M6: silent failure here would leave roster/budget split-brain.
+        try:
+            _get_storage().save_draft(_get_draft().snapshot())
+        except Exception as exc:
+            import traceback, sys
+            print(f"[waiver] save_draft failed: {exc!r}", file=sys.stderr)
+            traceback.print_exc()
+            raise HTTPException(500, "儲存陣容失敗，請重試") from exc
+        try:
+            _get_storage().save_season(state.model_dump())
+        except Exception as exc:
+            import traceback, sys
+            print(f"[waiver] save_season failed: {exc!r}", file=sys.stderr)
+            traceback.print_exc()
+            raise HTTPException(500, "儲存賽季資料失敗") from exc
 
     drop_name = _get_draft().players_by_id[req.drop_player_id].name
     add_name = _get_draft().players_by_id[req.add_player_id].name
@@ -1208,77 +1414,81 @@ class LineupOverrideRequest(BaseModel):
 
 
 @app.post("/api/season/lineup")
-def set_lineup_override(req: LineupOverrideRequest):
+def set_lineup_override(req: LineupOverrideRequest, _: bool = Depends(require_manager)):
     """Human user manually sets their 10 starters. Persists until cleared (or one-shot if today_only)."""
-    state = _require_season()
-    human = next((t for t in _get_draft().teams if t.is_human), None)
-    if human is None:
-        raise HTTPException(400, "找不到人類隊伍")
-    if req.team_id != human.id:
-        raise HTTPException(403, "只能修改自己的陣容")
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = _require_season()
+        human = next((t for t in _get_draft().teams if t.is_human), None)
+        if human is None:
+            raise HTTPException(400, "找不到人類隊伍")
+        if req.team_id != human.id:
+            raise HTTPException(403, "只能修改自己的陣容")
 
-    from .season import SLOT_ELIGIBILITY, _player_positions, LINEUP_SIZE
-    lineup_sz = LINEUP_SIZE
-    settings = _get_storage().load_league_settings()
-    if settings is not None:
-        lineup_sz = settings.starters_per_day
+        from .season import SLOT_ELIGIBILITY, _player_positions, LINEUP_SIZE
+        lineup_sz = LINEUP_SIZE
+        settings = _get_storage().load_league_settings()
+        if settings is not None:
+            lineup_sz = settings.starters_per_day
 
-    if len(req.starters) != lineup_sz:
-        raise HTTPException(400, f"必須選滿 {lineup_sz} 名先發球員")
-    if len(set(req.starters)) != lineup_sz:
-        raise HTTPException(400, "先發球員不可重複")
+        if len(req.starters) != lineup_sz:
+            raise HTTPException(400, f"必須選滿 {lineup_sz} 名先發球員")
+        if len(set(req.starters)) != lineup_sz:
+            raise HTTPException(400, "先發球員不可重複")
 
-    roster_set = set(human.roster)
-    for pid in req.starters:
-        if pid not in roster_set:
-            raise HTTPException(400, f"球員 {pid} 不在你的名單中")
-        player = _get_draft().players_by_id.get(pid)
-        if player is None:
-            raise HTTPException(400, f"找不到球員 {pid}")
-        # Check player can fill at least one slot
-        player_pos = _player_positions(player.pos)
-        eligible_for_any = any(
-            player_pos & eligible_pos
-            for eligible_pos in SLOT_ELIGIBILITY.values()
-        )
-        if not eligible_for_any:
-            raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
+        roster_set = set(human.roster)
+        for pid in req.starters:
+            if pid not in roster_set:
+                raise HTTPException(400, f"球員 {pid} 不在你的名單中")
+            player = _get_draft().players_by_id.get(pid)
+            if player is None:
+                raise HTTPException(400, f"找不到球員 {pid}")
+            # Check player can fill at least one slot
+            player_pos = _player_positions(player.pos)
+            eligible_for_any = any(
+                player_pos & eligible_pos
+                for eligible_pos in SLOT_ELIGIBILITY.values()
+            )
+            if not eligible_for_any:
+                raise HTTPException(400, f"球員 {player.name} 無法填入任何位置")
 
-    # Feasibility check: ensure all 10 slots can be filled
-    unfilled = check_lineup_feasibility(list(req.starters), _get_draft().players_by_id)
-    if unfilled:
-        slots_str = '/'.join(unfilled)
-        raise HTTPException(400, f'這 10 位球員無法填滿全部先發位置 (缺:{slots_str})')
+        # Feasibility check: ensure all 10 slots can be filled
+        unfilled = check_lineup_feasibility(list(req.starters), _get_draft().players_by_id)
+        if unfilled:
+            slots_str = '/'.join(unfilled)
+            raise HTTPException(400, f'這 10 位球員無法填滿全部先發位置 (缺:{slots_str})')
 
-    state.lineup_overrides[human.id] = list(req.starters)
-    if req.today_only:
-        state.lineup_override_today_only[human.id] = True
-    else:
-        state.lineup_override_today_only.pop(human.id, None)
-    _get_storage().save_season(state.model_dump())
-    _get_storage().append_log({
-        "type": "lineup_override_set",
-        "team_id": human.id,
-        "starters": req.starters,
-        "today_only": req.today_only,
-    })
+        state.lineup_overrides[human.id] = list(req.starters)
+        if req.today_only:
+            state.lineup_override_today_only[human.id] = True
+        else:
+            state.lineup_override_today_only.pop(human.id, None)
+        _get_storage().save_season(state.model_dump())
+        _get_storage().append_log({
+            "type": "lineup_override_set",
+            "team_id": human.id,
+            "starters": req.starters,
+            "today_only": req.today_only,
+        })
     return {"ok": True, "starters": req.starters, "today_only": req.today_only}
 
 
 @app.delete("/api/season/lineup/{team_id}")
-def clear_lineup_override(team_id: int):
+def clear_lineup_override(team_id: int, _: bool = Depends(require_manager)):
     """Reset human lineup override back to auto."""
-    state = _require_season()
-    human = next((t for t in _get_draft().teams if t.is_human), None)
-    if human is None:
-        raise HTTPException(400, "找不到人類隊伍")
-    if team_id != human.id:
-        raise HTTPException(403, "只能修改自己的陣容")
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        state = _require_season()
+        human = next((t for t in _get_draft().teams if t.is_human), None)
+        if human is None:
+            raise HTTPException(400, "找不到人類隊伍")
+        if team_id != human.id:
+            raise HTTPException(403, "只能修改自己的陣容")
 
-    state.lineup_overrides.pop(human.id, None)
-    state.lineup_override_today_only.pop(human.id, None)
-    _get_storage().save_season(state.model_dump())
-    _get_storage().append_log({"type": "lineup_override_cleared", "team_id": human.id})
+        state.lineup_overrides.pop(human.id, None)
+        state.lineup_override_today_only.pop(human.id, None)
+        _get_storage().save_season(state.model_dump())
+        _get_storage().append_log({"type": "lineup_override_cleared", "team_id": human.id})
     return {"ok": True}
 
 
@@ -1292,7 +1502,7 @@ def get_lineup_override_alerts():
 
 
 @app.delete("/api/season/lineup-alerts")
-def clear_lineup_override_alerts():
+def clear_lineup_override_alerts(_: bool = Depends(require_manager)):
     """Clear the pending lineup_override_alerts list (called by UI after showing toasts)."""
     state = _require_season()
     state.lineup_override_alerts = []
@@ -1440,10 +1650,12 @@ def season_ai_models():
 
 
 @app.post("/api/season/reset")
-def season_reset():
-    _get_storage().clear_season()
-    _get_storage().clear_trades()
-    _get_storage().append_log({"type": "season_reset"})
+def season_reset(_: bool = Depends(require_manager)):
+    lid = _current_league_var.get()
+    with _league_mutation_lock(lid):
+        _get_storage().clear_season()
+        _get_storage().clear_trades()
+        _get_storage().append_log({"type": "season_reset"})
     return {"ok": True}
 
 
@@ -1856,7 +2068,7 @@ def trades_history(limit: int = Query(50, ge=1, le=500)):
 
 
 @app.post("/api/trades/propose")
-def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
+def trades_propose(req: TradeProposeRequest, background: BackgroundTasks, _: bool = Depends(require_manager)):
     if req.from_team != _get_draft().human_team_id:
         raise HTTPException(400, "只有玩家隊伍可透過此端點發起交易")
     season = _require_season()
@@ -1947,7 +2159,7 @@ def trades_propose(req: TradeProposeRequest, background: BackgroundTasks):
 
 
 @app.post("/api/trades/{trade_id}/accept")
-def trades_accept(trade_id: str):
+def trades_accept(trade_id: str, request: Request, _: bool = Depends(require_manager)):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
@@ -1957,6 +2169,11 @@ def trades_accept(trade_id: str):
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")
+    # B2: caller must be the trade counterparty (to_team). Without this any
+    # holder of the manager_token could accept on someone else's behalf.
+    caller_team = _current_team_id_from_cookie(request)
+    if caller_team != trade.to_team:
+        raise HTTPException(403, "只有對方（被提案者）才能接受此交易")
     try:
         result = mgr.decide(
             trade_id, trade.to_team, True, season.current_day, ai_gm=ai_gm
@@ -1975,7 +2192,7 @@ def trades_accept(trade_id: str):
 
 
 @app.post("/api/trades/{trade_id}/reject")
-def trades_reject(trade_id: str):
+def trades_reject(trade_id: str, request: Request, _: bool = Depends(require_manager)):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
@@ -1985,6 +2202,10 @@ def trades_reject(trade_id: str):
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")
+    # B2: caller must be the trade counterparty.
+    caller_team = _current_team_id_from_cookie(request)
+    if caller_team != trade.to_team:
+        raise HTTPException(403, "只有對方（被提案者）才能拒絕此交易")
     try:
         result = mgr.decide(trade_id, trade.to_team, False, season.current_day)
     except ValueError as e:
@@ -2001,13 +2222,17 @@ def trades_reject(trade_id: str):
 
 
 @app.post("/api/trades/{trade_id}/veto")
-def trades_veto(trade_id: str, req: TradeVetoRequest):
+def trades_veto(trade_id: str, req: TradeVetoRequest, request: Request, _: bool = Depends(require_manager)):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
         _get_storage(), _get_draft(), season,
         settings=settings if settings.setup_complete else None,
     )
+    # B3: vote must come from the caller's own team. No proxy voting.
+    caller_team = _current_team_id_from_cookie(request)
+    if req.team_id != caller_team:
+        raise HTTPException(403, "只能用自己隊伍的名義投票否決")
     try:
         result = mgr.veto(trade_id, req.team_id)
     except ValueError as e:
@@ -2023,7 +2248,7 @@ def trades_veto(trade_id: str, req: TradeVetoRequest):
 
 
 @app.post("/api/trades/{trade_id}/cancel")
-def trades_cancel(trade_id: str):
+def trades_cancel(trade_id: str, request: Request, _: bool = Depends(require_manager)):
     season = _require_season()
     settings = _current_settings()
     mgr = TradeManager(
@@ -2033,6 +2258,10 @@ def trades_cancel(trade_id: str):
     trade = mgr._find(trade_id)
     if trade is None:
         raise HTTPException(404, "Unknown trade_id")
+    # B2: only the proposer can cancel.
+    caller_team = _current_team_id_from_cookie(request)
+    if caller_team != trade.from_team:
+        raise HTTPException(403, "只有提案者才能撤回")
     try:
         result = mgr.cancel(trade_id, trade.from_team)
     except ValueError as e:
@@ -2047,7 +2276,7 @@ def trades_cancel(trade_id: str):
 
 
 @app.post("/api/trades/{trade_id}/message")
-def trades_message(trade_id: str, req: TradeMessageRequest):
+def trades_message(trade_id: str, req: TradeMessageRequest, _: bool = Depends(require_manager)):
     """Append a chat message from the human to an open trade thread.
 
     Only pending_accept trades accept messages. When the human writes to an
@@ -2193,8 +2422,12 @@ def api_home_actions():
                     "cta": "前往交易",
                     "time": "",
                 })
-    except Exception:
-        pass
+    except Exception as exc:
+        # m3: don't pass silently — this hides legit bugs in
+        # _trade_manager() / draft hydration that we'd never notice otherwise.
+        import sys, traceback
+        print(f"[home_actions] trade pull failed: {exc!r}", file=sys.stderr)
+        traceback.print_exc()
 
     # Injured players on human roster
     if state is not None and human_id is not None and 0 <= human_id < len(_get_draft().teams):

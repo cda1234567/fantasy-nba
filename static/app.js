@@ -1438,7 +1438,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
       return `<tr>
         <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
-        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${escapeHtml(p.age)} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
         <td class="stats" colspan="1">
           <span class="s"><b>${fmtStat(p.pts)}</b>PTS</span>
@@ -1465,7 +1465,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
       return `<tr>
         <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
-        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${escapeHtml(p.age)} 歲</td>
         <td class="num hidden-m meta">${p.age}</td>
         <td class="num fppg hidden-m">${fppg(prevFppgVal)}</td>
         <td class="stats" colspan="1">
@@ -1486,7 +1486,7 @@ function renderPlayersTable(players, { withDraft = false, canDraft = false, with
       return `<tr>
         <td class="name">${escapeHtml(p.name)}${injuryBadgeHtml(pInj(p))}</td>
         <td class="hidden-m"><span class="pos-tag">${escapeHtml(p.pos)}</span></td>
-        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${p.age} 歲</td>
+        <td class="meta-row">${escapeHtml(p.pos)} · ${escapeHtml(p.team)} · ${escapeHtml(p.age)} 歲</td>
         <td class="hidden-m num meta">${p.age}</td>
         <td class="num fppg hidden-m">${fppg(p.fppg)}</td>
         <td class="stats" colspan="1">
@@ -5343,7 +5343,61 @@ async function onDeleteLeague(leagueId) {
   }
 }
 
+// B1: parse share-link query parameters into cookies on first load.
+// Format: ?league=foo&t=<manager_token>
+// After applying, scrub the URL so refresh doesn't re-set them.
+function _setCookieRaw(name, value, days = 365) {
+  const expires = new Date(Date.now() + days * 86400000).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+async function consumeShareLink() {
+  const params = new URLSearchParams(location.search);
+  const league = params.get('league');
+  const token = params.get('t');
+  if (!league && !token) return;
+  if (league) _setCookieRaw('league_id', league);
+  if (token) _setCookieRaw('manager_token', token);
+  // If we got a league, ask the server to switch (also primes server caches
+  // and validates the token against the target league).
+  if (league) {
+    try {
+      const qs = token ? `?t=${encodeURIComponent(token)}` : '';
+      await apiSoft(`/api/leagues/switch${qs}`, {
+        method: 'POST',
+        body: JSON.stringify({ league_id: league }),
+      });
+    } catch (_) { /* best-effort */ }
+  }
+  // Strip ?league/&t from URL so a refresh doesn't reapply or share them.
+  params.delete('league');
+  params.delete('t');
+  const search = params.toString();
+  const newUrl = location.pathname + (search ? '?' + search : '') + location.hash;
+  history.replaceState(null, '', newUrl);
+}
+
+// m9: refreshState retry helper. Boot-time fetches occasionally fail on a
+// cold container; one transient 502 used to leave the app blank. Retry up
+// to 3 times with backoff before giving up.
+async function refreshStateWithRetry(maxAttempts = 3) {
+  let lastErr = null;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      await refreshState();
+      return;
+    } catch (e) {
+      lastErr = e;
+      if (i < maxAttempts - 1) {
+        await new Promise((r) => setTimeout(r, 500 * (i + 1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function init() {
+  // B1: process share-link before any API call so the cookie is set first.
+  await consumeShareLink();
   bindGlobalUI();
   try {
     state.personas = await api('/api/personas');
@@ -5376,7 +5430,8 @@ async function init() {
   }
 
   try {
-    await refreshState();
+    // m9: retry on transient boot failures (cold-start container, etc).
+    await refreshStateWithRetry(3);
   } catch (e) {
     toast(`載入狀態失敗：${e.message}`, 'error', 6000);
     // Still render (setup page doesn't need draft state)

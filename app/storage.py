@@ -79,13 +79,37 @@ class Storage:
         # Per-path lock serializes concurrent writers to the same file. On
         # Windows, two threads calling os.replace() on the same destination
         # can trip PermissionError; the lock makes tmp→replace exclusive.
+        # m4: fsync the temp file before rename so a crash between rename and
+        # disk flush doesn't leave a zero-byte file. Best-effort; some
+        # filesystems (FAT, network shares) don't honour fsync — swallow
+        # those errors rather than corrupting the call site.
         tmp = path.with_suffix(path.suffix + f".{os.getpid()}.{uuid.uuid4().hex}.tmp")
         with _lock_for(path):
             try:
-                tmp.write_text(
-                    json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
-                )
+                payload = json.dumps(data, ensure_ascii=False, indent=2).encode("utf-8")
+                # Open with O_RDWR so we can fsync after writing.
+                fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)
+                try:
+                    os.write(fd, payload)
+                    try:
+                        os.fsync(fd)
+                    except OSError:
+                        pass
+                finally:
+                    os.close(fd)
                 os.replace(tmp, path)
+                # Best-effort directory fsync so the rename is durable.
+                try:
+                    dir_fd = os.open(str(path.parent), os.O_RDONLY)
+                    try:
+                        os.fsync(dir_fd)
+                    except OSError:
+                        pass
+                    finally:
+                        os.close(dir_fd)
+                except OSError:
+                    # Windows doesn't support directory fsync; that's fine.
+                    pass
             except Exception:
                 try:
                     if tmp.exists():
@@ -184,7 +208,12 @@ class Storage:
     def append_log(self, event: dict) -> None:
         if "ts" not in event:
             event = {"ts": time.time(), **event}
-        with self._log_lock:
+        # M12: switch from a per-instance lock to a path-keyed lock so two
+        # Storage objects (e.g. one in main thread, one inside a background
+        # task) targeting the same log.json file actually serialize against
+        # each other. Per-instance lock left a small race where the two
+        # instances clobbered each other's appends.
+        with _lock_for(self.log_path):
             entries = self._safe_read(self.log_path)
             if not isinstance(entries, list):
                 entries = []

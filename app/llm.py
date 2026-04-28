@@ -176,8 +176,14 @@ def _call_openrouter(
         content = (choices[0].get("message") or {}).get("content") or ""
         return content
     except httpx.HTTPStatusError as e:
-        raise LLMError(f"OpenRouter HTTP {e.response.status_code}: {e.response.text[:200]}") from e
+        # m5: sanitize — strip auth/url metadata; only keep status code.
+        raise LLMError(f"OpenRouter HTTP {e.response.status_code}") from e
     except httpx.TimeoutException as e:
-        raise LLMError(f"OpenRouter timeout: {e}") from e
+        raise LLMError("OpenRouter timeout") from e
     except Exception as e:
-        raise LLMError(str(e)) from e
+        # Strip any url/key fragments accidentally included in repr.
+        msg = str(e)
+        for needle in (api_key, _OPENROUTER_BASE):
+            if needle:
+                msg = msg.replace(needle, "[redacted]")
+        raise LLMError(msg) from e

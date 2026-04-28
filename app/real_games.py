@@ -6,6 +6,7 @@ to override gauss-sampled stats with real history when available.
 """
 from __future__ import annotations
 
+import re
 import sqlite3
 import threading
 from datetime import date, timedelta
@@ -14,25 +15,30 @@ from typing import Optional
 
 _DB_PATH = Path(__file__).resolve().parent.parent / "data" / "nba_db" / "player_games.sqlite"
 _lock = threading.Lock()
-_conn: sqlite3.Connection | None = None
+# M11: per-thread connection. SQLite Connection objects with
+# check_same_thread=False technically work across threads but every cursor on
+# the same connection serializes through one mutex; under our 8-way lineup
+# ThreadPoolExecutor that turned into a real-world bottleneck. One conn per
+# thread — created lazily on first use — gives us actual parallelism.
+_thread_local = threading.local()
 _season_start_cache: dict[int, date] = {}
+_SEASON_YEAR_RE = re.compile(r"^\d{4}-\d{2}$")
 
 
 def _connect() -> sqlite3.Connection | None:
-    """Lazy-open the SQLite connection. Returns None if the DB file is absent
-    so the simulator can fall back to gauss sampling cleanly."""
-    global _conn
-    if _conn is not None:
-        return _conn
+    """Lazy-open a per-thread SQLite connection. Returns None if the DB file
+    is absent so the simulator can fall back to gauss sampling cleanly."""
+    conn = getattr(_thread_local, "conn", None)
+    if conn is not None:
+        return conn
     if not _DB_PATH.exists():
         return None
-    with _lock:
-        if _conn is None:
-            try:
-                _conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
-            except sqlite3.Error:
-                return None
-    return _conn
+    try:
+        conn = sqlite3.connect(str(_DB_PATH), check_same_thread=False)
+    except sqlite3.Error:
+        return None
+    _thread_local.conn = conn
+    return conn
 
 
 def db_available() -> bool:
@@ -43,8 +49,12 @@ def db_available() -> bool:
 
 
 def _season_year_int(season_str: str | None) -> int | None:
-    """'2018-19' -> 2018. None / malformed -> None."""
-    if not season_str:
+    """'2018-19' -> 2018. None / malformed / non-canonical -> None.
+
+    M14: enforce the YYYY-YY shape so a hostile / corrupted setting can't
+    feed weird strings into SQL parameters or downstream date math.
+    """
+    if not season_str or not _SEASON_YEAR_RE.match(season_str):
         return None
     try:
         return int(season_str.split("-")[0])

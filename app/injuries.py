@@ -66,16 +66,21 @@ def sample_new_injury(player_id: int, rng: random.Random, current_day: int) -> I
 
 
 def tick_injuries(season: SeasonState, current_day: int) -> None:
-    """Decrement return_in_days; move healed players to history."""
+    """Decrement return_in_days; move healed players to history.
+
+    M10: previously the comparison was `<= 1`, so a 1-day injury healed on
+    the SAME day it was created — players never actually missed a game. Use
+    `<= 0` (post-decrement) so a 1-day injury costs exactly one game.
+    """
     healed: list[int] = []
     for pid, inj in season.injuries.items():
-        if inj.return_in_days <= 1:
+        # Decrement first, then check.
+        inj.return_in_days -= 1
+        if inj.return_in_days <= 0:
             # Mark healthy and move to history
             healed_inj = inj.model_copy(update={"status": "healthy", "return_in_days": 0})
             season.injury_history.append(healed_inj)
             healed.append(pid)
-        else:
-            inj.return_in_days -= 1
 
     for pid in healed:
         del season.injuries[pid]

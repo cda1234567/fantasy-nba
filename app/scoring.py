@@ -19,15 +19,33 @@ SCORING_WEIGHTS = {
 }
 
 
+import math
+
+
+def _safe_weight(raw, default: float) -> float:
+    """M9: clamp scoring weights to a finite, sensible range. A user-supplied
+    inf/nan would poison every fppg calc downstream; out-of-range (e.g. 999)
+    weights would tilt the entire league. Caller falls back to default if the
+    value is unusable.
+    """
+    try:
+        v = float(raw)
+    except (TypeError, ValueError):
+        return float(default)
+    if not math.isfinite(v):
+        return float(default)
+    return max(-10.0, min(10.0, v))
+
+
 def compute_fppg(p: Player, weights: dict | None = None) -> float:
     w = weights if weights is not None else SCORING_WEIGHTS
     return (
-        p.pts * w.get("pts", SCORING_WEIGHTS["pts"])
-        + p.reb * w.get("reb", SCORING_WEIGHTS["reb"])
-        + p.ast * w.get("ast", SCORING_WEIGHTS["ast"])
-        + p.stl * w.get("stl", SCORING_WEIGHTS["stl"])
-        + p.blk * w.get("blk", SCORING_WEIGHTS["blk"])
-        + p.to * w.get("to", SCORING_WEIGHTS["to"])
+        p.pts * _safe_weight(w.get("pts", SCORING_WEIGHTS["pts"]), SCORING_WEIGHTS["pts"])
+        + p.reb * _safe_weight(w.get("reb", SCORING_WEIGHTS["reb"]), SCORING_WEIGHTS["reb"])
+        + p.ast * _safe_weight(w.get("ast", SCORING_WEIGHTS["ast"]), SCORING_WEIGHTS["ast"])
+        + p.stl * _safe_weight(w.get("stl", SCORING_WEIGHTS["stl"]), SCORING_WEIGHTS["stl"])
+        + p.blk * _safe_weight(w.get("blk", SCORING_WEIGHTS["blk"]), SCORING_WEIGHTS["blk"])
+        + p.to * _safe_weight(w.get("to", SCORING_WEIGHTS["to"]), SCORING_WEIGHTS["to"])
     )
 
 

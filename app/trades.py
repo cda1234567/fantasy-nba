@@ -351,69 +351,76 @@ class TradeManager:
         When accepted and ai_gm is provided, immediately collect AI veto votes
         from all non-party AI teams. If votes >= threshold the trade is vetoed
         immediately; otherwise the veto window opens.
+
+        B4: hold the module write lock and re-load fresh state inside the
+        critical section. Without this two simultaneous accept calls would
+        both read pending_accept, both flip to accepted/executed, and the
+        second save_trades clobbers veto_votes from the first run.
         """
-        trade = self._find(trade_id)
-        if trade is None:
-            raise ValueError("Unknown trade_id")
-        if trade.status != "pending_accept":
-            raise ValueError(f"Trade is not pending_accept (status={trade.status})")
-        if counterparty_id != trade.to_team:
-            raise ValueError("Only the counterparty can accept or reject")
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            trade = self._find(trade_id)
+            if trade is None:
+                raise ValueError("Unknown trade_id")
+            if trade.status != "pending_accept":
+                raise ValueError(f"Trade is not pending_accept (status={trade.status})")
+            if counterparty_id != trade.to_team:
+                raise ValueError("Only the counterparty can accept or reject")
 
-        trade.counterparty_decided_day = current_day
-        if not accept:
-            trade.status = "rejected"
-            if reason:
-                clean = reason.strip()[:200]
-                if clean:
-                    prior = (trade.reasoning or "").strip()
-                    trade.reasoning = f"{prior} ｜ 拒絕原因：{clean}" if prior else f"拒絕原因：{clean}"
-                    trade.messages.append(TradeMessage(
-                        from_team=counterparty_id, body=clean,
-                        ts=time.time(), kind="ai_reason",
-                    ))
-            self._move_to_history(trade)
-            self._save()
-            return trade
-
-        # Force flag: skip veto window entirely — execute immediately
-        if trade.force:
-            trade.status = "executed"
-            trade.executed_day = current_day
-            trade.force_executed = True
-            trade.reasoning = (trade.reasoning + " 強制執行,跳過否決").strip()
-            self._apply_swap(trade)
-            self.state.season_executed_count += 1
-            self._move_to_history(trade)
-            self._save()
-            return trade
-
-        # Accepted — collect immediate AI veto votes if ai_gm available
-        trade.status = "accepted"
-        trade.veto_deadline_day = current_day + self._veto_window_days
-
-        if ai_gm is not None:
-            for voter in self.draft.teams:
-                if voter.is_human:
-                    continue
-                if voter.id in (trade.from_team, trade.to_team):
-                    continue
-                if voter.id in trade.veto_votes:
-                    continue
-                if ai_gm.vote_veto_multi_factor(
-                    trade, self.draft, voter.gm_persona or "bpa", self._settings
-                ):
-                    trade.veto_votes.append(voter.id)
-
-            # Immediate veto if threshold already met
-            if len(trade.veto_votes) >= self._veto_threshold:
-                trade.status = "vetoed"
+            trade.counterparty_decided_day = current_day
+            if not accept:
+                trade.status = "rejected"
+                if reason:
+                    clean = reason.strip()[:200]
+                    if clean:
+                        prior = (trade.reasoning or "").strip()
+                        trade.reasoning = f"{prior} ｜ 拒絕原因：{clean}" if prior else f"拒絕原因：{clean}"
+                        trade.messages.append(TradeMessage(
+                            from_team=counterparty_id, body=clean,
+                            ts=time.time(), kind="ai_reason",
+                        ))
                 self._move_to_history(trade)
                 self._save()
                 return trade
 
-        self._save()
-        return trade
+            # Force flag: skip veto window entirely — execute immediately
+            if trade.force:
+                trade.status = "executed"
+                trade.executed_day = current_day
+                trade.force_executed = True
+                trade.reasoning = (trade.reasoning + " 強制執行,跳過否決").strip()
+                self._apply_swap(trade)
+                self.state.season_executed_count += 1
+                self._move_to_history(trade)
+                self._save()
+                return trade
+
+            # Accepted — collect immediate AI veto votes if ai_gm available
+            trade.status = "accepted"
+            trade.veto_deadline_day = current_day + self._veto_window_days
+
+            if ai_gm is not None:
+                for voter in self.draft.teams:
+                    if voter.is_human:
+                        continue
+                    if voter.id in (trade.from_team, trade.to_team):
+                        continue
+                    if voter.id in trade.veto_votes:
+                        continue
+                    if ai_gm.vote_veto_multi_factor(
+                        trade, self.draft, voter.gm_persona or "bpa", self._settings
+                    ):
+                        trade.veto_votes.append(voter.id)
+
+                # Immediate veto if threshold already met
+                if len(trade.veto_votes) >= self._veto_threshold:
+                    trade.status = "vetoed"
+                    self._move_to_history(trade)
+                    self._save()
+                    return trade
+
+            self._save()
+            return trade
 
     def add_message(
         self,
@@ -548,35 +555,43 @@ class TradeManager:
         return decided
 
     def veto(self, trade_id: str, voter_team_id: int) -> TradeProposal:
-        trade = self._find(trade_id)
-        if trade is None:
-            raise ValueError("Unknown trade_id")
-        if trade.status != "accepted":
-            raise ValueError(f"Trade is not in veto window (status={trade.status})")
-        if voter_team_id in (trade.from_team, trade.to_team):
-            raise ValueError("Trade parties cannot cast veto votes")
-        if voter_team_id in trade.veto_votes:
-            return trade  # idempotent
-        trade.veto_votes.append(voter_team_id)
-        # Immediately veto if threshold met
-        if len(trade.veto_votes) >= self._veto_threshold:
-            trade.status = "vetoed"
-            self._move_to_history(trade)
-        self._save()
-        return trade
+        # B5: lock + fresh state. Two voters racing toward the threshold both
+        # used to read N-1 votes, both append, both write — and only one
+        # vote is preserved on disk. With a fresh re-load under the lock, we
+        # see the up-to-date veto_votes list.
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            trade = self._find(trade_id)
+            if trade is None:
+                raise ValueError("Unknown trade_id")
+            if trade.status != "accepted":
+                raise ValueError(f"Trade is not in veto window (status={trade.status})")
+            if voter_team_id in (trade.from_team, trade.to_team):
+                raise ValueError("Trade parties cannot cast veto votes")
+            if voter_team_id in trade.veto_votes:
+                return trade  # idempotent
+            trade.veto_votes.append(voter_team_id)
+            # Immediately veto if threshold met
+            if len(trade.veto_votes) >= self._veto_threshold:
+                trade.status = "vetoed"
+                self._move_to_history(trade)
+            self._save()
+            return trade
 
     def cancel(self, trade_id: str, by_team_id: int) -> TradeProposal:
-        trade = self._find(trade_id)
-        if trade is None:
-            raise ValueError("Unknown trade_id")
-        if trade.status != "pending_accept":
-            raise ValueError("Only pending_accept trades can be cancelled")
-        if by_team_id != trade.from_team:
-            raise ValueError("Only the proposer can cancel")
-        trade.status = "expired"
-        self._move_to_history(trade)
-        self._save()
-        return trade
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            trade = self._find(trade_id)
+            if trade is None:
+                raise ValueError("Unknown trade_id")
+            if trade.status != "pending_accept":
+                raise ValueError("Only pending_accept trades can be cancelled")
+            if by_team_id != trade.from_team:
+                raise ValueError("Only the proposer can cancel")
+            trade.status = "expired"
+            self._move_to_history(trade)
+            self._save()
+            return trade
 
     # ----------------------------------------------------------------- daily
     # Pending human-counterparty trades auto-expire after this many sim days.
@@ -588,39 +603,44 @@ class TradeManager:
         have sat unread for more than PENDING_ACCEPT_TTL_DAYS sim days — so a
         neglected offer doesn't linger forever.
         Returns list of trades whose status flipped this tick (for logging).
+
+        M7: hold the trades write lock + re-load fresh state so a concurrent
+        accept/cancel can't sneak in between the read and the save.
         """
-        resolved: list[TradeProposal] = []
+        with _TRADES_WRITE_LOCK:
+            self.state = self._load()
+            resolved: list[TradeProposal] = []
 
-        for trade in list(self.state.pending):
-            # Resolve accepted trades past veto deadline
-            if trade.status == "accepted":
-                if (
-                    trade.veto_deadline_day is not None
-                    and current_day >= trade.veto_deadline_day
-                ):
-                    if len(trade.veto_votes) >= self._veto_threshold:
-                        trade.status = "vetoed"
-                    else:
-                        trade.status = "executed"
-                        trade.executed_day = current_day
-                        self._apply_swap(trade)
-                        # _apply_swap may flip status back to "expired" if a
-                        # player has since moved — don't count those.
-                        if trade.status == "executed":
-                            self.state.season_executed_count += 1
-                    self._move_to_history(trade)
-                    resolved.append(trade)
-            # Auto-expire pending_accept trades that have sat too long
-            elif trade.status == "pending_accept":
-                age = current_day - int(trade.proposed_day or current_day)
-                if age >= self.PENDING_ACCEPT_TTL_DAYS:
-                    trade.status = "expired"
-                    self._move_to_history(trade)
-                    resolved.append(trade)
+            for trade in list(self.state.pending):
+                # Resolve accepted trades past veto deadline
+                if trade.status == "accepted":
+                    if (
+                        trade.veto_deadline_day is not None
+                        and current_day >= trade.veto_deadline_day
+                    ):
+                        if len(trade.veto_votes) >= self._veto_threshold:
+                            trade.status = "vetoed"
+                        else:
+                            trade.status = "executed"
+                            trade.executed_day = current_day
+                            self._apply_swap(trade)
+                            # _apply_swap may flip status back to "expired" if a
+                            # player has since moved — don't count those.
+                            if trade.status == "executed":
+                                self.state.season_executed_count += 1
+                        self._move_to_history(trade)
+                        resolved.append(trade)
+                # Auto-expire pending_accept trades that have sat too long
+                elif trade.status == "pending_accept":
+                    age = current_day - int(trade.proposed_day or current_day)
+                    if age >= self.PENDING_ACCEPT_TTL_DAYS:
+                        trade.status = "expired"
+                        self._move_to_history(trade)
+                        resolved.append(trade)
 
-        if resolved:
-            self._save()
-        return resolved
+            if resolved:
+                self._save()
+            return resolved
 
     def _apply_swap(self, trade: TradeProposal) -> None:
         """Swap players between rosters in the draft state and persist the draft.
@@ -629,6 +649,11 @@ class TradeManager:
         have referenced players that have since moved (e.g. a second trade
         already shipped them out). Executing blindly here used to leave one
         player on two rosters and another team with 14 players.
+
+        M8: if save_draft fails we MUST roll back the in-memory roster swap;
+        otherwise the next request sees the swap on the live DraftState while
+        disk holds the pre-swap roster, and a process restart silently undoes
+        the trade on disk while the active session thinks it shipped.
         """
         sender = self.draft.teams[trade.from_team]
         receiver = self.draft.teams[trade.to_team]
@@ -647,6 +672,10 @@ class TradeManager:
                 + f" [自動撤銷：球員已不在隊伍名單中 {sorted(missing_on_sender | missing_on_receiver)}]"
             )
             return
+
+        # Snapshot rosters for rollback in case save_draft fails.
+        prev_sender_roster = list(sender.roster)
+        prev_receiver_roster = list(receiver.roster)
 
         sender.roster = [pid for pid in sender.roster if pid not in send_set]
         sender.roster.extend(trade.receive_player_ids)
@@ -680,11 +709,16 @@ class TradeManager:
         try:
             self.storage.save_draft(self.draft.snapshot())
         except Exception as e:
-            # Roster mutation already happened in-memory; surface this so
-            # we know the on-disk state may diverge. Without logging, a silent
-            # failure leaves the league in a split-brain state after restart.
+            # Rollback the in-memory swap so disk and memory stay aligned.
+            sender.roster = prev_sender_roster
+            receiver.roster = prev_receiver_roster
+            trade.status = "expired"
+            trade.reasoning = (
+                (trade.reasoning or "")
+                + f" [儲存失敗自動撤銷: {e!r}]"
+            )
             import sys, traceback
-            print(f"[trades] save_draft failed after trade swap: {e!r}", file=sys.stderr)
+            print(f"[trades] save_draft failed after trade swap, rolled back: {e!r}", file=sys.stderr)
             traceback.print_exc()
 
     # ------------------------------------------------------------------ info
