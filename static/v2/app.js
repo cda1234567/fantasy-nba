@@ -4420,21 +4420,30 @@ async function onShareLeague() {
 }
 
 async function onCreateLeague() {
-  const inp = $('#new-league-id-v2');
-  const lid = (inp && inp.value || '').trim();
-  if (!lid) { toast('請輸入聯盟 ID', 'info'); return; }
+  // BUG: input used to be the league_id (folder name) which only allows
+  // ASCII alnum/-/_, blocking Chinese names. Split now: user types the
+  // display name (any unicode), client mints a short slug for league_id.
+  const inp = $('#new-league-name-v2');
+  const name = (inp && inp.value || '').trim();
+  if (!name) { toast('請輸入聯盟名稱', 'info'); return; }
+  // Slug: random 8 hex chars prefixed with timestamp seconds — short, unique,
+  // safe for filesystem. The display name is sent separately so the league
+  // page can show "我的傳奇聯盟" while disk uses "26-04-28-3f9a1".
+  const ts = Math.floor(Date.now() / 1000).toString(36);
+  const rnd = Math.random().toString(36).slice(2, 6);
+  const lid = `lg-${ts}-${rnd}`;
   try {
     // A: backend now mints a manager_token and returns it in the response.
     // The Set-Cookie header is httponly=False so the browser will adopt it
     // automatically, but we also persist explicitly via setCookie() in case
     // the cookie path/sameSite combo is dropped in some edge case.
-    const resp = await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, switch: true }) });
+    const resp = await api('/api/leagues/create', { method: 'POST', body: JSON.stringify({ league_id: lid, league_name: name, switch: true }) });
     if (resp && resp.manager_token) {
       setCookie('manager_token', resp.manager_token);
     }
     const dlg = $('#dlg-new-league-v2');
     if (dlg) dlg.close();
-    toast(`已建立聯盟 ${lid}，請完成設定`);
+    toast(`已建立聯盟「${name}」，請完成設定`);
     await loadLeagues();
     await refreshState();
     state.setupForm = makeDefaultSetupFormV2(state.leagueSettings);

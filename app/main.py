@@ -60,7 +60,7 @@ STATIC_DIR = BASE_DIR.parent / "static"
 PLAYERS_FILE = BASE_DIR / "data" / "players.json"
 SEASONS_DIR = BASE_DIR / "data" / "seasons"
 DEFAULT_DATA_DIR = BASE_DIR.parent / "data"
-APP_VERSION = "v26.04.24.37"
+APP_VERSION = "v26.04.24.38"
 
 DATA_DIR = resolve_data_dir(os.getenv("DATA_DIR"), DEFAULT_DATA_DIR)
 # LEAGUE_ID resolution: active-league pointer wins over env. The env var
@@ -587,6 +587,9 @@ def health():
 # ---------------------------------------------------------------------------
 class CreateLeagueRequest(BaseModel):
     league_id: str
+    # Display name (Chinese OK). league_id is the filesystem-safe slug; this
+    # is what users actually see on the switcher / setup pages.
+    league_name: Optional[str] = None
     switch: bool = True  # immediately make this the active league
 
 
@@ -606,6 +609,16 @@ def leagues_create(req: CreateLeagueRequest, response: Response):
         storage_create_league(DATA_DIR, req.league_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    # Persist display name so the switcher / setup page show the user-typed
+    # Chinese name instead of the filesystem slug.
+    if req.league_name and req.league_name.strip():
+        try:
+            new_storage = Storage(DATA_DIR, league_id=req.league_id)
+            new_settings = new_storage.load_league_settings()
+            new_settings.league_name = req.league_name.strip()[:60]
+            new_storage.save_league_settings(new_settings)
+        except Exception:
+            pass  # non-fatal; user can still rename in setup
     active = _current_league_var.get()
     new_token = None
     if req.switch:
